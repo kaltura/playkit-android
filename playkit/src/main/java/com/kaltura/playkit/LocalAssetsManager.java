@@ -15,6 +15,9 @@ package com.kaltura.playkit;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +30,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Responsible for managing the local(offline) assets. When offline playback of the
@@ -60,6 +65,12 @@ public class LocalAssetsManager {
      */
     public void forceWidevineL3Playback(boolean forceWidevineL3Playback) {
         this.forceWidevineL3Playback = forceWidevineL3Playback;
+        if (forceWidevineL3Playback) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                Executor executor = Executors.newSingleThreadExecutor();
+                executor.execute(() -> MediaSupport.provisionWidevineL3());
+            }
+        }
     }
 
     /**

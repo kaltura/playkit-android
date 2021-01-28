@@ -17,6 +17,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.drm.DrmManagerClient;
 import android.media.MediaDrm;
+import android.media.MediaDrmException;
 import android.media.NotProvisionedException;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -26,10 +27,13 @@ import androidx.annotation.RequiresApi;
 import android.util.Base64;
 import android.util.Log;
 
+import com.kaltura.android.exoplayer2.drm.ExoMediaDrm;
+import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,7 +48,10 @@ public class MediaSupport {
     public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
     public static final UUID PLAYREADY_UUID = UUID.fromString("9a04f079-9840-4286-ab92-e65be0885f95");
     private static final String WIDEVINE_SECURITY_LEVEL_1 = "L1";
+    private static final String WIDEVINE_SECURITY_LEVEL_3 = "L3";
+
     private static final String SECURITY_LEVEL_PROPERTY = "securityLevel";
+    private static boolean intitialzing;
 
     private static boolean initSucceeded;
     @Nullable private static Boolean widevineClassic;
@@ -86,7 +93,10 @@ public class MediaSupport {
      * @param drmInitCallback callback object that will get the result. See {@link DrmInitCallback}.
      */
     public static void initializeDrm(Context context, final DrmInitCallback drmInitCallback) {
-
+        if (intitialzing) {
+            return;
+        }
+        intitialzing = true;
         if (initSucceeded) {
             runCallback(drmInitCallback, hardwareDrm(), false, null);
             return;
@@ -124,7 +134,7 @@ public class MediaSupport {
     }
 
     private static void runCallback(DrmInitCallback drmInitCallback, boolean isHardwareDrmSupported, boolean provisionPerformed, Exception provisionError) {
-
+        intitialzing = false;
         final Set<PKDrmParams.Scheme> supportedDrmSchemes = supportedDrmSchemes();
         if (drmInitCallback != null) {
             drmInitCallback.onDrmInitComplete(new PKDeviceCapabilitiesInfo(supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed,
@@ -319,6 +329,47 @@ public class MediaSupport {
     public static class DrmNotProvisionedException extends Exception {
         DrmNotProvisionedException(String message, Exception e) {
             super(message, e);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public static void provisionWidevineL3() {
+        log.d("Running provisionWidevineL3");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            ExoMediaDrm.Provider exoMediaDrmProvider = FrameworkMediaDrm.DEFAULT_PROVIDER;
+            ExoMediaDrm exoMediaDrm = exoMediaDrmProvider.acquireExoMediaDrm(MediaSupport.WIDEVINE_UUID);
+            exoMediaDrm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
+            byte[] session = null;
+            try {
+                session = exoMediaDrm.openSession();
+            } catch (@SuppressLint("NewApi") NotProvisionedException notProvisionedException) {
+                log.d("provisionWidevineL3: Widevine provisioning NotProvisionedException", notProvisionedException);
+                ExoMediaDrm.ProvisionRequest provisionRequest = exoMediaDrm.getProvisionRequest();
+                String url = provisionRequest.getDefaultUrl() + "&signedRequest=" + new String(provisionRequest.getData());
+                final byte[] response;
+                try {
+                    response = Utils.executePost(url, null, null);
+                    Log.i("RESULT", Base64.encodeToString(response, Base64.NO_WRAP));
+                    exoMediaDrm.provideProvisionResponse(response);
+                } catch (IOException ioException) {
+                    log.e("provisionWidevineL3: ExoMediaDrm Widevine provisioning ioException", ioException);
+                } catch (Exception exception) {
+                    log.e("provisionWidevineL3: ExoMediaDrm Widevine provisioning deniedByServerException", exception);
+                }
+            } catch (@SuppressLint("NewApi") MediaDrmException e) {
+                log.e("provisionWidevineL3 ExoMediaDrm Widevine provisioning MediaDrmException", e);
+            } finally {
+                if (exoMediaDrm != null && session != null) {
+                    log.e("provisionWidevineL3 Closing Session...");
+                    exoMediaDrm.closeSession(session);
+                }
+                if (exoMediaDrm != null) {
+                    log.e("provisionWidevineL3 Releasing ExoMediaDrm...");
+                    exoMediaDrm.release();
+                }
+            }
         }
     }
 }
