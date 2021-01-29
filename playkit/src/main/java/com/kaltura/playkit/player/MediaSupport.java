@@ -345,7 +345,7 @@ public class MediaSupport {
             try {
                 session = exoMediaDrm.openSession();
             } catch (@SuppressLint("NewApi") NotProvisionedException notProvisionedException) {
-                log.d("provisionWidevineL3: Widevine provisioning NotProvisionedException", notProvisionedException);
+                log.d("provisionWidevineL3: Widevine provisioning NotProvisionedException");
                 ExoMediaDrm.ProvisionRequest provisionRequest = exoMediaDrm.getProvisionRequest();
                 String url = provisionRequest.getDefaultUrl() + "&signedRequest=" + new String(provisionRequest.getData());
                 final byte[] response;

@@ -68,7 +68,7 @@ public class LocalAssetsManager {
         if (forceWidevineL3Playback) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 Executor executor = Executors.newSingleThreadExecutor();
-                executor.execute(() -> MediaSupport.provisionWidevineL3());
+                executor.execute(MediaSupport::provisionWidevineL3);
             }
         }
     }
