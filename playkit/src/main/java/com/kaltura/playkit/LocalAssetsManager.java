@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +28,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Responsible for managing the local(offline) assets. When offline playback of the
@@ -60,6 +63,12 @@ public class LocalAssetsManager {
      */
     public void forceWidevineL3Playback(boolean forceWidevineL3Playback) {
         this.forceWidevineL3Playback = forceWidevineL3Playback;
+        if (forceWidevineL3Playback) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                Executor executor = Executors.newSingleThreadExecutor();
+                executor.execute(MediaSupport::provisionWidevineL3);
+            }
+        }
     }
 
     /**
@@ -179,7 +188,7 @@ public class LocalAssetsManager {
         }
 
         if (drmParams != null) {
-            registerDrmAsset(localAssetPath, assetId, mediaFormat, drmParams, listener, forceWidevineL3Playback);
+            registerDrmAsset(localAssetPath, assetId, mediaFormat, drmParams, forceWidevineL3Playback, listener);
         } else {
             registerClearAsset(localAssetPath, assetId, mediaFormat, listener);
         }
@@ -192,16 +201,16 @@ public class LocalAssetsManager {
      * @param assetId                       - the asset id.
      * @param mediaFormat                   - the media format converted to byte[].
      * @param drmParams                     - drm params of the media.
-     * @param listener                      - notify about the success/fail after the completion of the registration process.
      * @param forceWidevineL3Playback     - if the device codec is known to fail if security level L1 is used then set flag to true, it will force the player to use Widevine L3
+     * @param listener                      - notify about the success/fail after the completion of the registration process.
      */
-    private void registerDrmAsset(final String localAssetPath, final String assetId, final PKMediaFormat mediaFormat, final PKDrmParams drmParams, final AssetRegistrationListener listener, boolean forceWidevineL3Playback) {
+    private void registerDrmAsset(final String localAssetPath, final String assetId, final PKMediaFormat mediaFormat, final PKDrmParams drmParams, boolean forceWidevineL3Playback, final AssetRegistrationListener listener) {
         doInBackground(() -> {
             try {
                 DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), helper.context, helper.localDataStore);
                 String licenseUri = drmParams.getLicenseUri();
 
-                boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, helper.licenseRequestParamAdapter, listener, forceWidevineL3Playback);
+                boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, helper.licenseRequestParamAdapter, forceWidevineL3Playback, listener);
                 if (isRegistered) {
                     helper.saveMediaFormat(assetId, mediaFormat, drmParams.getScheme());
                 }
@@ -241,11 +250,11 @@ public class LocalAssetsManager {
         final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(scheme, helper.context, helper.localDataStore);
 
         doInBackground(() -> {
-            drmAdapter.unregisterAsset(localAssetPath, assetId, localAssetPath1 -> {
+            drmAdapter.unregisterAsset(localAssetPath, assetId, forceWidevineL3Playback, localAssetPath1 -> {
                 helper.mainHandler.post(() -> {
                     removeAsset(localAssetPath1, assetId, listener);
                 });
-            }, forceWidevineL3Playback);
+            });
         });
     }
 
@@ -275,13 +284,13 @@ public class LocalAssetsManager {
 
         final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(scheme, helper.context, helper.localDataStore);
 
-        doInBackground(() -> drmAdapter.checkAssetStatus(localAssetPath, assetId, (localAssetPath1, expiryTimeSeconds, availableTimeSeconds, isRegistered) -> {
+        doInBackground(() -> drmAdapter.checkAssetStatus(localAssetPath, assetId, forceWidevineL3Playback, (localAssetPath1, expiryTimeSeconds, availableTimeSeconds, isRegistered) -> {
             if (listener != null) {
                 helper.mainHandler.post(() ->  {
                     listener.onStatus(localAssetPath1, expiryTimeSeconds, availableTimeSeconds, isRegistered);
                 });
             }
-        }, forceWidevineL3Playback));
+        }));
     }
 
     private void checkClearAssetStatus(String localAssetPath, String assetId, AssetStatusListener listener) {

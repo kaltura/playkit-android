@@ -138,6 +138,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     }
 
     private DrmSessionManager getDRMSessionManager(DrmCallback drmCallback) {
+        log.d("getDRMSessionManager forceWidevineL3Playback = " + forceWidevineL3Playback);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             DefaultDrmSessionManager.Builder drmSessionManagerBuilder = new DefaultDrmSessionManager.Builder();
             drmSessionManagerBuilder.setMultiSession(true) // key rotation
