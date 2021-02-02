@@ -110,17 +110,17 @@ public class MediaSupport {
 
             runCallback(drmInitCallback, hardwareDrm(), false, null);
 
-        } catch (DrmNotProvisionedException e) {
+        } catch (DrmNotProvisionedException drmNotProvisionedException) {
             log.d("Widevine Modular needs provisioning");
             AsyncTask.execute(() -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                     try {
                         provisionWidevine();
                         runCallback(drmInitCallback, hardwareDrm(), true, null);
-                    } catch (Exception e1) {
+                    } catch (Exception exception) {
                         // Send any exception to the callback
-                        log.e("Widevine provisioning has failed", e1);
-                        runCallback(drmInitCallback, hardwareDrm(), true, e1);
+                        log.e("Widevine provisioning has failed", exception);
+                        runCallback(drmInitCallback, hardwareDrm(), true, exception);
                     }
                 }
             });
@@ -344,7 +344,7 @@ public class MediaSupport {
             byte[] session = null;
             try {
                 session = exoMediaDrm.openSession();
-            } catch (@SuppressLint("NewApi") NotProvisionedException notProvisionedException) {
+            } catch (NotProvisionedException notProvisionedException) {
                 log.d("provisionWidevineL3: Widevine provisioning NotProvisionedException");
                 ExoMediaDrm.ProvisionRequest provisionRequest = exoMediaDrm.getProvisionRequest();
                 String url = provisionRequest.getDefaultUrl() + "&signedRequest=" + new String(provisionRequest.getData());
@@ -358,8 +358,8 @@ public class MediaSupport {
                 } catch (Exception exception) {
                     log.e("provisionWidevineL3: ExoMediaDrm Widevine provisioning deniedByServerException", exception);
                 }
-            } catch (@SuppressLint("NewApi") MediaDrmException e) {
-                log.e("provisionWidevineL3 ExoMediaDrm Widevine provisioning MediaDrmException", e);
+            } catch (Exception exception) {
+                log.e("provisionWidevineL3 ExoMediaDrm Widevine provisioning MediaDrmException", exception);
             } finally {
                 if (exoMediaDrm != null && session != null) {
                     log.e("provisionWidevineL3 Closing Session...");
