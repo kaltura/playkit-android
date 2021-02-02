@@ -133,6 +133,12 @@ public class MediaSupport {
         }
     }
 
+    public static void provisionWidevineL3() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            WidevineModularUtil.provisionWidevineL3();
+        }
+    }
+
     private static void runCallback(DrmInitCallback drmInitCallback, boolean isHardwareDrmSupported, boolean provisionPerformed, Exception provisionError) {
         intitialzing = false;
         final Set<PKDrmParams.Scheme> supportedDrmSchemes = supportedDrmSchemes();
@@ -324,52 +330,52 @@ public class MediaSupport {
             }
             return widevineModular;
         }
+
+        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+        public static void provisionWidevineL3() {
+            log.d("Running provisionWidevineL3");
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                ExoMediaDrm.Provider exoMediaDrmProvider = FrameworkMediaDrm.DEFAULT_PROVIDER;
+                ExoMediaDrm exoMediaDrm = exoMediaDrmProvider.acquireExoMediaDrm(MediaSupport.WIDEVINE_UUID);
+                exoMediaDrm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
+                byte[] session = null;
+                try {
+                    session = exoMediaDrm.openSession();
+                } catch (NotProvisionedException notProvisionedException) {
+                    log.d("provisionWidevineL3: Widevine provisioning NotProvisionedException");
+                    ExoMediaDrm.ProvisionRequest provisionRequest = exoMediaDrm.getProvisionRequest();
+                    String url = provisionRequest.getDefaultUrl() + "&signedRequest=" + new String(provisionRequest.getData());
+                    final byte[] response;
+                    try {
+                        response = Utils.executePost(url, null, null);
+                        Log.i("RESULT", Base64.encodeToString(response, Base64.NO_WRAP));
+                        exoMediaDrm.provideProvisionResponse(response);
+                    } catch (IOException ioException) {
+                        log.e("provisionWidevineL3: ExoMediaDrm Widevine provisioning ioException", ioException);
+                    } catch (Exception exception) {
+                        log.e("provisionWidevineL3: ExoMediaDrm Widevine provisioning deniedByServerException", exception);
+                    }
+                } catch (Exception exception) {
+                    log.e("provisionWidevineL3 ExoMediaDrm Widevine provisioning MediaDrmException", exception);
+                } finally {
+                    if (exoMediaDrm != null && session != null) {
+                        log.e("provisionWidevineL3 Closing Session...");
+                        exoMediaDrm.closeSession(session);
+                    }
+                    if (exoMediaDrm != null) {
+                        log.e("provisionWidevineL3 Releasing ExoMediaDrm...");
+                        exoMediaDrm.release();
+                    }
+                }
+            }
+        }
     }
 
     public static class DrmNotProvisionedException extends Exception {
         DrmNotProvisionedException(String message, Exception e) {
             super(message, e);
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public static void provisionWidevineL3() {
-        log.d("Running provisionWidevineL3");
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            ExoMediaDrm.Provider exoMediaDrmProvider = FrameworkMediaDrm.DEFAULT_PROVIDER;
-            ExoMediaDrm exoMediaDrm = exoMediaDrmProvider.acquireExoMediaDrm(MediaSupport.WIDEVINE_UUID);
-            exoMediaDrm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
-            byte[] session = null;
-            try {
-                session = exoMediaDrm.openSession();
-            } catch (NotProvisionedException notProvisionedException) {
-                log.d("provisionWidevineL3: Widevine provisioning NotProvisionedException");
-                ExoMediaDrm.ProvisionRequest provisionRequest = exoMediaDrm.getProvisionRequest();
-                String url = provisionRequest.getDefaultUrl() + "&signedRequest=" + new String(provisionRequest.getData());
-                final byte[] response;
-                try {
-                    response = Utils.executePost(url, null, null);
-                    Log.i("RESULT", Base64.encodeToString(response, Base64.NO_WRAP));
-                    exoMediaDrm.provideProvisionResponse(response);
-                } catch (IOException ioException) {
-                    log.e("provisionWidevineL3: ExoMediaDrm Widevine provisioning ioException", ioException);
-                } catch (Exception exception) {
-                    log.e("provisionWidevineL3: ExoMediaDrm Widevine provisioning deniedByServerException", exception);
-                }
-            } catch (Exception exception) {
-                log.e("provisionWidevineL3 ExoMediaDrm Widevine provisioning MediaDrmException", exception);
-            } finally {
-                if (exoMediaDrm != null && session != null) {
-                    log.e("provisionWidevineL3 Closing Session...");
-                    exoMediaDrm.closeSession(session);
-                }
-                if (exoMediaDrm != null) {
-                    log.e("provisionWidevineL3 Releasing ExoMediaDrm...");
-                    exoMediaDrm.release();
-                }
-            }
         }
     }
 }
