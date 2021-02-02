@@ -331,8 +331,6 @@ public class MediaSupport {
             return widevineModular;
         }
 
-        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
         public static void provisionWidevineL3() {
             log.d("Running provisionWidevineL3");
 
