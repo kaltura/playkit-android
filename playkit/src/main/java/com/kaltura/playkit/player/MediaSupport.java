@@ -56,7 +56,9 @@ public class MediaSupport {
     private static boolean initSucceeded;
     @Nullable private static Boolean widevineClassic;
     @Nullable private static Boolean widevineModular;
+    @Nullable private static Boolean playReady;
     @Nullable private static String securityLevel;
+    @Nullable private static String playReadySecurityLevel;
 
     public static final String DEVICE_CHIPSET = getDeviceChipset();
 
@@ -105,6 +107,7 @@ public class MediaSupport {
         try {
             checkWidevineClassic(context);
             checkWidevineModular();
+            checkPlayready();
 
             initSucceeded = true;
 
@@ -124,12 +127,31 @@ public class MediaSupport {
                     }
                 }
             });
+
+            AsyncTask.execute(() -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    try {
+                        provisionPlayReady();
+                        runCallback(drmInitCallback, hardwareDrm(), true, null);
+                    } catch (Exception exception) {
+                        // Send any exception to the callback
+                        log.e("Widevine provisioning has failed", exception);
+                        runCallback(drmInitCallback, hardwareDrm(), true, exception);
+                    }
+                }
+            });
         }
     }
 
     private static void checkWidevineModular() throws DrmNotProvisionedException {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             widevineModular = WidevineModularUtil.checkWidevineModular(widevineModular);
+        }
+    }
+
+    private static void checkPlayready() throws DrmNotProvisionedException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            playReady = PlayReadyUtil.checkPlayReady(playReady);
         }
     }
 
@@ -245,7 +267,11 @@ public class MediaSupport {
     }
 
     public static boolean playReady() {
-        return Boolean.FALSE;   // Not yet.
+        if (playReady == null) {
+            log.w("PlayReady DRM is not initialized; assuming not supported");
+            return false;
+        }
+        return playReady;
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -263,6 +289,33 @@ public class MediaSupport {
 
             mediaDrm.provideProvisionResponse(response);
             widevineModular = true; // provisioning didn't fail
+
+        } catch (Exception e) {
+            log.e("Provision Widevine failed", e);
+            throw e;
+
+        } finally {
+            if (mediaDrm != null) {
+                mediaDrm.release();
+            }
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private static void provisionPlayReady() throws Exception {
+        MediaDrm mediaDrm = null;
+        try {
+            mediaDrm = new MediaDrm(PLAYREADY_UUID);
+            MediaDrm.ProvisionRequest provisionRequest = mediaDrm.getProvisionRequest();
+            String url = provisionRequest.getDefaultUrl() + "&signedRequest=" + new String(provisionRequest.getData());
+
+            final byte[] response = Utils.executePost(url, null, null);
+
+            Log.d("Playready RESULT", Base64.encodeToString(response, Base64.NO_WRAP));
+
+            mediaDrm.provideProvisionResponse(response);
+            playReady = true; // provisioning didn't fail
 
         } catch (Exception e) {
             log.e("Provision Widevine failed", e);
@@ -368,6 +421,51 @@ public class MediaSupport {
                     }
                 }
             }
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private static class PlayReadyUtil {
+
+        @SuppressLint("WrongConstant")
+        private static Boolean checkPlayReady(Boolean playReady) throws MediaSupport.DrmNotProvisionedException {
+
+            if (playReady != null) {
+                return playReady;
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(MediaSupport.PLAYREADY_UUID)) {
+
+                // Open a session to check if Widevine needs provisioning.
+                MediaDrm mediaDrm = null;
+                byte[] session = null;
+                try {
+                    mediaDrm = new MediaDrm(MediaSupport.PLAYREADY_UUID);
+                    session = mediaDrm.openSession();
+                    playReady = true;
+                    try {
+                        playReadySecurityLevel = mediaDrm.getPropertyString(SECURITY_LEVEL_PROPERTY);
+                    } catch (RuntimeException e) {
+                        playReadySecurityLevel = null;
+                    }
+                } catch (NotProvisionedException e) {
+                    log.e("Playready not provisioned");
+                    throw new MediaSupport.DrmNotProvisionedException("Playready not provisioned", e);
+                } catch (Exception e) {
+                    playReady = false;
+                } finally {
+                    if (session != null) {
+                        mediaDrm.closeSession(session);
+                    }
+                    if (mediaDrm != null) {
+                        mediaDrm.release();
+                    }
+                }
+            } else {
+                playReady = false;
+            }
+            return playReady;
         }
     }
 

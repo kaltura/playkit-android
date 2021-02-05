@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -217,7 +218,8 @@ public class PlayerController implements Player {
         profiler.onSetMedia(mediaConfig);
 
         this.mediaConfig = mediaConfig;
-        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry(), playerSettings.getPreferredMediaFormat());
+        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry(), playerSettings.getPreferredMediaFormat(),
+                (playerSettings.isPlayReadyPlayback() ? PKDrmParams.Scheme.PlayReadyCENC : PKDrmParams.Scheme.WidevineCENC));
 
         if (source == null) {
             sendErrorMessage(PKPlayerErrorType.SOURCE_SELECTION_FAILED, "No playable source found for entry", null);

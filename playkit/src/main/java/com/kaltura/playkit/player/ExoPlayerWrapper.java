@@ -383,7 +383,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private DeferredDrmSessionManager getDeferredDRMSessionManager() {
         final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-        return new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead(), playerSettings.isForceWidevineL3Playback());
+        return new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead(), playerSettings.isForceWidevineL3Playback(), playerSettings.isPlayReadyPlayback());
     }
 
     private MediaSource buildInternalExoMediaSource(MediaItem mediaItem, PKMediaSourceConfig sourceConfig) {
@@ -521,7 +521,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private void setMediaItemBuilderDRMParams(PKMediaSourceConfig sourceConfig, MediaItem.Builder builder) {
         // selecting WidevineCENC as default right now
-        PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
+        PKDrmParams.Scheme scheme = playerSettings.isPlayReadyPlayback() ? PKDrmParams.Scheme.PlayReadyCENC : PKDrmParams.Scheme.WidevineCENC;
         String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
 
         if (licenseUri != null) {

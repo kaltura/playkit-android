@@ -64,14 +64,20 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     private DrmSessionManager drmSessionManager;
     private boolean allowClearLead;
     private boolean forceWidevineL3Playback;
+    private boolean isPlayReadyPlayback;
 
-    public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead, boolean forceWidevineL3Playback) {
+    public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead, boolean forceWidevineL3Playback, boolean isPlayReadyPlayback) {
         this.mainHandler = mainHandler;
         this.drmCallback = drmCallback;
         this.drmSessionListener = drmSessionListener;
         this.allowClearLead = allowClearLead;
         this.forceWidevineL3Playback = forceWidevineL3Playback;
-        this.drmSessionManager = getDRMSessionManager(drmCallback);
+        this.isPlayReadyPlayback = isPlayReadyPlayback;
+        if (isPlayReadyPlayback) {
+            this.drmSessionManager = getPlayReadyDRMSessionManager(drmCallback);
+        } else {
+            this.drmSessionManager = getWidevineDRMSessionManager(drmCallback);
+        }
     }
 
     public interface DrmSessionListener {
@@ -117,7 +123,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
 
         if (localMediaSource != null) {
             byte[] offlineKey;
-            DrmInitData.SchemeData schemeData = getWidevineInitData(format.drmInitData);
+            DrmInitData.SchemeData schemeData = isPlayReadyPlayback ? getPlayReadyInitData(format.drmInitData) : getWidevineInitData(format.drmInitData);
             try {
                 if (schemeData != null) {
                     offlineKey = localMediaSource.getStorage().load(toBase64(schemeData.data));
@@ -137,7 +143,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         return drmSessionManager.acquireSession(playbackLooper, eventDispatcher, format);
     }
 
-    private DrmSessionManager getDRMSessionManager(DrmCallback drmCallback) {
+    private DrmSessionManager getWidevineDRMSessionManager(DrmCallback drmCallback) {
         log.d("getDRMSessionManager forceWidevineL3Playback = " + forceWidevineL3Playback);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             DefaultDrmSessionManager.Builder drmSessionManagerBuilder = new DefaultDrmSessionManager.Builder();
@@ -160,6 +166,21 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
             } else {
                 drmSessionManagerBuilder.setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER);
             }
+            drmSessionManager = drmSessionManagerBuilder.build(drmCallback);
+        } else {
+            drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
+        }
+
+        return drmSessionManager;
+    }
+
+    private DrmSessionManager getPlayReadyDRMSessionManager(DrmCallback drmCallback) {
+        log.d("getPlayReadyDRMSessionManager");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            DefaultDrmSessionManager.Builder drmSessionManagerBuilder = new DefaultDrmSessionManager.Builder();
+            drmSessionManagerBuilder.setMultiSession(true) // key rotation
+                    .setPlayClearSamplesWithoutKeys(allowClearLead);
+            drmSessionManagerBuilder.setUuidAndExoMediaDrmProvider(MediaSupport.PLAYREADY_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER);
             drmSessionManager = drmSessionManagerBuilder.build(drmCallback);
         } else {
             drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
@@ -220,12 +241,48 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         return schemeData;
     }
 
+    private DrmInitData.SchemeData getPlayReadyInitData(DrmInitData drmInitData) {
+        if (drmInitData == null) {
+            log.e("No PSSH in media");
+            return null;
+        }
+
+        DrmInitData.SchemeData schemeData = null;
+        for (int i = 0 ; i < drmInitData.schemeDataCount ; i++) {
+            if (drmInitData.get(i) != null && drmInitData.get(i).matches(MediaSupport.PLAYREADY_UUID)) {
+                schemeData = drmInitData.get(i);
+            }
+        }
+
+        if (schemeData == null) {
+            return null;
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            byte[] psshData = PsshAtomUtil.parseSchemeSpecificData(schemeData.data, MediaSupport.PLAYREADY_UUID);
+            if (psshData == null) {
+                log.w("Extraction failed. schemeData isn't a Widevine PSSH atom, so leave it unchanged.");
+            } else {
+                schemeData = new DrmInitData.SchemeData(MediaSupport.PLAYREADY_UUID, schemeData.mimeType, psshData);
+            }
+        }
+        return schemeData;
+    }
+
     private String getLicenseUrl(PKMediaSource mediaSource) {
         String licenseUrl = null;
 
         if (mediaSource.hasDrmParams()) {
             List<PKDrmParams> drmData = mediaSource.getDrmData();
             for (PKDrmParams pkDrmParam : drmData) {
+                if (isPlayReadyPlayback) {
+                    if (pkDrmParam.getScheme() == PKDrmParams.Scheme.PlayReadyCENC) {
+                        licenseUrl = pkDrmParam.getLicenseUri();
+                        break;
+                    } else {
+                        continue;
+                    }
+                }
                 // selecting WidevineCENC as default right now
                 if (PKDrmParams.Scheme.WidevineCENC == pkDrmParam.getScheme()) {
                     licenseUrl = pkDrmParam.getLicenseUri();

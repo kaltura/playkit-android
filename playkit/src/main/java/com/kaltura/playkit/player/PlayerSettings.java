@@ -32,6 +32,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
+    private boolean isPlayReadyPlayback = false;
     private VideoCodecSettings preferredVideoCodecSettings = new VideoCodecSettings();
     private AudioCodecSettings preferredAudioCodecSettings = new AudioCodecSettings();
     private boolean isTunneledAudioPlayback;
@@ -200,6 +201,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isForceWidevineL3Playback() {
         return forceWidevineL3Playback;
+    }
+
+    public boolean isPlayReadyPlayback() {
+        return isPlayReadyPlayback;
     }
 
     @Override
@@ -417,6 +422,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings forceWidevineL3Playback(boolean forceWidevineL3Playback) {
         this.forceWidevineL3Playback = forceWidevineL3Playback;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setPlayReadyPlayback(boolean isPlayReadyPlayback) {
+        this.isPlayReadyPlayback = isPlayReadyPlayback;
         return this;
     }
 }

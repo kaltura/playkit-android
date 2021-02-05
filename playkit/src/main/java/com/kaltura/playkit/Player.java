@@ -344,6 +344,8 @@ public interface Player {
          * @return - Player Settings
          */
         Settings forceWidevineL3Playback(boolean forceWidevineL3Playback);
+
+        Settings setPlayReadyPlayback(boolean isPlayReadyPlayback);
     }
 
     /**

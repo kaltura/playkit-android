@@ -28,7 +28,7 @@ public class SourceSelector {
     private static final PKLog log = PKLog.get("SourceSelector");
     private final PKMediaEntry mediaEntry;
     private final PKMediaFormat preferredMediaFormat;
-
+    private PKDrmParams.Scheme selectedDrmScheme = PKDrmParams.Scheme.WidevineCENC;
     private String preferredSourceId;
 
     @Nullable private PKMediaSource selectedSource;
@@ -37,9 +37,10 @@ public class SourceSelector {
     private static final List<PKMediaFormat> defaultFormatPriority = Collections.unmodifiableList(
             Arrays.asList(PKMediaFormat.dash, PKMediaFormat.hls, PKMediaFormat.wvm, PKMediaFormat.mp4, PKMediaFormat.mp3, PKMediaFormat.udp));
 
-    public SourceSelector(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
+    public SourceSelector(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat, PKDrmParams.Scheme selectedDrmScheme) {
         this.mediaEntry = mediaEntry;
         this.preferredMediaFormat = preferredMediaFormat;
+        this.selectedDrmScheme = selectedDrmScheme;
     }
 
     // Should not normally be used.
@@ -115,6 +116,17 @@ public class SourceSelector {
         if (source.hasDrmParams()) {
             List<PKDrmParams> drmParams = source.getDrmData();
             for (PKDrmParams params : drmParams) {
+                if (selectedDrmScheme == PKDrmParams.Scheme.PlayReadyCENC) {
+                    if (params.isSchemeSupported() && params.getScheme() == PKDrmParams.Scheme.PlayReadyCENC) {
+                        selectedSource = source;
+                        selectedDrmParams = params;
+                        return true;
+                    } else if (!params.isSchemeSupported() && params.getScheme() == PKDrmParams.Scheme.PlayReadyCENC) {
+                        log.w("PlayReady is not supported on this device.");
+                        continue;
+                    }
+                }
+
                 if (params.isSchemeSupported()) {
                     selectedSource = source;
                     selectedDrmParams = params;
@@ -150,8 +162,8 @@ public class SourceSelector {
         return formatsPriorityList;
     }
 
-    static PKMediaSource selectSource(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
-        final SourceSelector sourceSelector = new SourceSelector(mediaEntry, preferredMediaFormat);
+    static PKMediaSource selectSource(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat, PKDrmParams.Scheme selectedDrmScheme) {
+        final SourceSelector sourceSelector = new SourceSelector(mediaEntry, preferredMediaFormat, selectedDrmScheme);
         return sourceSelector.getSelectedSource();
     }
 
