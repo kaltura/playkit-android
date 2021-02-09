@@ -26,6 +26,7 @@ import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
+import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
@@ -530,7 +531,7 @@ class TrackSelectionHelper {
                 if (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
                     if (trackList.get(i) instanceof TextTrack && hasExternalSubtitlesInTracks && playerSettings.getSubtitlePreference() != PKSubtitlePreference.OFF) {
                         PKSubtitlePreference pkSubtitlePreference = playerSettings.getSubtitlePreference();
-                        TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_TEXT);
+                        ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(TRACK_TYPE_TEXT);
 
                         // TrackSelection is giving the default tracks for video, audio and text.
                         // If trackSelection contains a text which is an external text track, it means that either internal text track
@@ -612,7 +613,7 @@ class TrackSelectionHelper {
             }
 
             if (trackType == TRACK_TYPE_AUDIO && trackSelectionArray != null && trackType < trackSelectionArray.length) {
-                TrackSelection trackSelection = trackSelectionArray.get(trackType);
+                ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(trackType);
                 if (trackSelection != null && trackSelection.getSelectedFormat() != null) {
                     defaultTrackIndex = findDefaultTrackIndex(trackSelection.getSelectedFormat().language, trackList, defaultTrackIndex);
                 }
@@ -1090,7 +1091,7 @@ class TrackSelectionHelper {
         }
 
         if (playerSettings.isTunneledAudioPlayback() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            parametersBuilder.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
+            parametersBuilder.setTunnelingEnabled(playerSettings.isTunneledAudioPlayback());
         }
         if (playerSettings.getMaxVideoSize() != null) {
             parametersBuilder.setMaxVideoSize(playerSettings.getMaxVideoSize().getMaxVideoWidth(), playerSettings.getMaxVideoSize().getMaxVideoHeight());
@@ -1308,7 +1309,7 @@ class TrackSelectionHelper {
 
     protected long getCurrentVideoBitrate() {
         if (trackSelectionArray != null) {
-            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(TRACK_TYPE_VIDEO);
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().bitrate;
             }
@@ -1318,7 +1319,7 @@ class TrackSelectionHelper {
 
     protected long getCurrentAudioBitrate() {
         if (trackSelectionArray != null) {
-            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_AUDIO);
+            ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(TRACK_TYPE_AUDIO);
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().bitrate;
             }
@@ -1328,7 +1329,7 @@ class TrackSelectionHelper {
 
     protected long getCurrentVideoWidth() {
         if (trackSelectionArray != null) {
-            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(TRACK_TYPE_VIDEO);
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().width;
             }
@@ -1338,7 +1339,7 @@ class TrackSelectionHelper {
 
     protected long getCurrentVideoHeight() {
         if (trackSelectionArray != null) {
-            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(TRACK_TYPE_VIDEO);
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().height;
             }
