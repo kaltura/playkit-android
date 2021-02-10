@@ -530,7 +530,7 @@ class TrackSelectionHelper {
                 if (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
                     if (trackList.get(i) instanceof TextTrack && hasExternalSubtitlesInTracks && playerSettings.getSubtitlePreference() != PKSubtitlePreference.OFF) {
                         PKSubtitlePreference pkSubtitlePreference = playerSettings.getSubtitlePreference();
-                        ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(TRACK_TYPE_TEXT);
+                        ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_TEXT));
 
                         // TrackSelection is giving the default tracks for video, audio and text.
                         // If trackSelection contains a text which is an external text track, it means that either internal text track
@@ -612,7 +612,7 @@ class TrackSelectionHelper {
             }
 
             if (trackType == TRACK_TYPE_AUDIO && trackSelectionArray != null && trackType < trackSelectionArray.length) {
-                ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(trackType);
+                ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(trackType));
                 if (trackSelection != null && trackSelection.getSelectedFormat() != null) {
                     defaultTrackIndex = findDefaultTrackIndex(trackSelection.getSelectedFormat().language, trackList, defaultTrackIndex);
                 }
@@ -1308,7 +1308,7 @@ class TrackSelectionHelper {
 
     protected long getCurrentVideoBitrate() {
         if (trackSelectionArray != null) {
-            ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_VIDEO));
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().bitrate;
             }
@@ -1318,7 +1318,7 @@ class TrackSelectionHelper {
 
     protected long getCurrentAudioBitrate() {
         if (trackSelectionArray != null) {
-            ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(TRACK_TYPE_AUDIO);
+            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_AUDIO));
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().bitrate;
             }
@@ -1328,7 +1328,7 @@ class TrackSelectionHelper {
 
     protected long getCurrentVideoWidth() {
         if (trackSelectionArray != null) {
-            ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_VIDEO));
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().width;
             }
@@ -1338,12 +1338,19 @@ class TrackSelectionHelper {
 
     protected long getCurrentVideoHeight() {
         if (trackSelectionArray != null) {
-            ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_VIDEO));
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().height;
             }
         }
         return -1;
+    }
+
+    private ExoTrackSelection getTrackSelection(TrackSelection trackSelection) {
+        if (trackSelection instanceof ExoTrackSelection) {
+            return (ExoTrackSelection) trackSelection;
+        }
+        return null;
     }
 
     protected void notifyAboutTrackChange(TrackSelectionArray trackSelections) {

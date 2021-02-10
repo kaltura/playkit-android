@@ -250,7 +250,10 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
         JsonArray jTrackSelections = new JsonArray(trackSelections.length);
         for (int i = 0; i < trackSelections.length; i++) {
-            final ExoTrackSelection trackSelection = (ExoTrackSelection) trackSelections.get(i);
+            ExoTrackSelection trackSelection = null;
+            if (trackSelections.get(i) instanceof ExoTrackSelection) {
+                trackSelection = (ExoTrackSelection) trackSelections.get(i);
+            }
             final Format selectedFormat = trackSelection == null ? null : trackSelection.getSelectedFormat();
             jTrackSelections.add(toJSON(selectedFormat));
         }
