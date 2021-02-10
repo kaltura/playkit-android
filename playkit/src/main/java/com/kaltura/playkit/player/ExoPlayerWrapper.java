@@ -34,7 +34,7 @@ import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
-import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
+import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
@@ -59,7 +59,6 @@ import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
 import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
-import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 
@@ -375,7 +374,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
         }
 
-        mediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());
+        mediaSourceFactory.setDrmSessionManagerProvider(sourceConfig.mediaSource.hasDrmParams() ? unusedMediaItem -> drmSessionManager : unusedMediaItem -> DrmSessionManager.DRM_UNSUPPORTED);
 
         return mediaItem;
     }
@@ -411,7 +410,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             case dash:
                 mediaSource = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
-                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
+                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
                         .createMediaSource(mediaItem);
                 break;
 
@@ -594,20 +593,17 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     builder.eventListenerFactory(okListenerFactory);
                 }
             }
-            httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
+            httpDataSourceFactory = new OkHttpDataSource.Factory(builder.build()).setUserAgent(userAgent);
         } else {
 
-            httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
-                    DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                    DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
-                    crossProtocolRedirectEnabled);
+            httpDataSourceFactory = new DefaultHttpDataSource.Factory().setUserAgent(userAgent)
+                    .setConnectTimeoutMs(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS)
+                    .setReadTimeoutMs(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS)
+                    .setAllowCrossProtocolRedirects(crossProtocolRedirectEnabled);
         }
 
-        if (headers != null) {
-            HttpDataSource.RequestProperties defaultRequestProperties = httpDataSourceFactory.getDefaultRequestProperties();
-            for (Map.Entry<String, String> headerEntry : headers.entrySet()) {
-                defaultRequestProperties.set(headerEntry.getKey(), headerEntry.getValue());
-            }
+        if (headers != null && !headers.isEmpty()) {
+            httpDataSourceFactory.setDefaultRequestProperties(headers);
         }
         return httpDataSourceFactory;
     }
@@ -844,7 +840,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
         return errorMessage;
     }
-    
+
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
         sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);

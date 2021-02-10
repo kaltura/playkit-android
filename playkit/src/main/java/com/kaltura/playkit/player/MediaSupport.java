@@ -17,7 +17,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.drm.DrmManagerClient;
 import android.media.MediaDrm;
-import android.media.MediaDrmException;
 import android.media.NotProvisionedException;
 import android.os.AsyncTask;
 import android.os.Build;

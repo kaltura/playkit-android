@@ -162,7 +162,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
             }
             drmSessionManager = drmSessionManagerBuilder.build(drmCallback);
         } else {
-            drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
+            drmSessionManager = DrmSessionManager.DRM_UNSUPPORTED;
         }
 
         return drmSessionManager;
