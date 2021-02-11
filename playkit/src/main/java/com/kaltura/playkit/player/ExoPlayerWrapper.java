@@ -26,7 +26,6 @@ import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
-import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
@@ -35,12 +34,13 @@ import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
-import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
+import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
 import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
+import com.kaltura.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.android.exoplayer2.source.MediaSourceFactory;
 import com.kaltura.android.exoplayer2.source.MergingMediaSource;
@@ -59,7 +59,6 @@ import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
 import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
-import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 
@@ -81,7 +80,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import okhttp3.OkHttpClient;
 
@@ -204,7 +202,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
         addExternalTextTrackErrorListener();
-        mediaSourceFactory = new CustomMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
+        mediaSourceFactory = new DefaultMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
         mediaSourceFactory.setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy);
 
         player = new SimpleExoPlayer.Builder(context, renderersFactory)
@@ -376,7 +374,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
         }
 
-        mediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());
+        mediaSourceFactory.setDrmSessionManagerProvider(sourceConfig.mediaSource.hasDrmParams() ? unusedMediaItem -> drmSessionManager : unusedMediaItem -> DrmSessionManager.DRM_UNSUPPORTED);
 
         return mediaItem;
     }
@@ -412,7 +410,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             case dash:
                 mediaSource = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
-                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
+                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
                         .createMediaSource(mediaItem);
                 break;
 
@@ -595,20 +593,17 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     builder.eventListenerFactory(okListenerFactory);
                 }
             }
-            httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
+            httpDataSourceFactory = new OkHttpDataSource.Factory(builder.build()).setUserAgent(userAgent);
         } else {
 
-            httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
-                    DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                    DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
-                    crossProtocolRedirectEnabled);
+            httpDataSourceFactory = new DefaultHttpDataSource.Factory().setUserAgent(userAgent)
+                    .setConnectTimeoutMs(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS)
+                    .setReadTimeoutMs(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS)
+                    .setAllowCrossProtocolRedirects(crossProtocolRedirectEnabled);
         }
 
-        if (headers != null) {
-            HttpDataSource.RequestProperties defaultRequestProperties = httpDataSourceFactory.getDefaultRequestProperties();
-            for (Map.Entry<String, String> headerEntry : headers.entrySet()) {
-                defaultRequestProperties.set(headerEntry.getKey(), headerEntry.getValue());
-            }
+        if (headers != null && !headers.isEmpty()) {
+            httpDataSourceFactory.setDefaultRequestProperties(headers);
         }
         return httpDataSourceFactory;
     }
@@ -783,14 +778,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     errorType = PKPlayerErrorType.RENDERER_ERROR;
                 }
                 break;
-            case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
-                errorType = PKPlayerErrorType.OUT_OF_MEMORY;
-                errorMessage = getOutOfMemoryErrorMessage(error, errorMessage);
-                break;
-            case ExoPlaybackException.TYPE_TIMEOUT:
-                errorType = PKPlayerErrorType.TIMEOUT;
-                errorMessage = getTimeoutErrorMessage(error, errorMessage);
-                break;
             case ExoPlaybackException.TYPE_REMOTE:
                 errorType = PKPlayerErrorType.REMOTE_COMPONENT_ERROR;
                 break;
@@ -848,22 +835,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private String getSourceErrorMessage(ExoPlaybackException error, String errorMessage) {
         Exception cause = error.getSourceException();
-        if (cause.getCause() != null) {
-            errorMessage = cause.getCause().getMessage();
-        }
-        return errorMessage;
-    }
-
-    private String getOutOfMemoryErrorMessage(ExoPlaybackException error, String errorMessage) {
-        OutOfMemoryError cause = error.getOutOfMemoryError();
-        if (cause.getCause() != null) {
-            errorMessage = cause.getCause().getMessage();
-        }
-        return errorMessage;
-    }
-
-    private String getTimeoutErrorMessage(ExoPlaybackException error, String errorMessage) {
-        TimeoutException cause = error.getTimeoutException();
         if (cause.getCause() != null) {
             errorMessage = cause.getCause().getMessage();
         }

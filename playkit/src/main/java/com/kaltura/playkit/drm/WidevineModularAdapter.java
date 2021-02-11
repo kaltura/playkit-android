@@ -28,7 +28,7 @@ import com.kaltura.android.exoplayer2.drm.ExoMediaDrm;
 import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.kaltura.android.exoplayer2.drm.HttpMediaDrmCallback;
 import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
-import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.MediaSupport;
@@ -334,9 +334,6 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest, PKRequestParams.Adapter adapter) throws Exception {
-
-
-
         HttpMediaDrmCallback httpMediaDrmCallback = new HttpMediaDrmCallback(licenseUrl, buildDataSourceFactory());
         if (adapter != null) {
             PKRequestParams params = new PKRequestParams(Uri.parse(licenseUrl), new HashMap<>());
@@ -353,7 +350,7 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     private HttpDataSource.Factory buildDataSourceFactory() {
-        return new DefaultHttpDataSourceFactory(getUserAgent(context), null);
+        return new DefaultHttpDataSource.Factory().setUserAgent((getUserAgent(context)));
     }
 
     private static String getUserAgent(Context context) {
