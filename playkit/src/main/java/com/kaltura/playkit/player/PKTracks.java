@@ -26,21 +26,26 @@ public class PKTracks {
     protected int defaultVideoTrackIndex;
     protected int defaultAudioTrackIndex;
     protected int defaultTextTrackIndex;
+    protected int defaultImageTrackIndex;
+
 
     private List<VideoTrack> videoTracks;
     private List<AudioTrack> audioTracks;
     private List<TextTrack> textTracks;
+    private List<ImageTrack> imageTracks;
 
-    public PKTracks(List<VideoTrack> videoTracks, List<AudioTrack> audioTracks, List<TextTrack> textTracks,
-                    int defaultVideoTrackIndex, int defaultAudioTrackIndex, int defaultTextTrackIndex) {
+    public PKTracks(List<VideoTrack> videoTracks, List<AudioTrack> audioTracks, List<TextTrack> textTracks, List<ImageTrack> imageTracks,
+                    int defaultVideoTrackIndex, int defaultAudioTrackIndex, int defaultTextTrackIndex, int defaultImageTrackIndex) {
 
         this.audioTracks = audioTracks;
         this.videoTracks = videoTracks;
         this.textTracks = textTracks;
+        this.imageTracks = imageTracks;
 
         this.defaultVideoTrackIndex = defaultVideoTrackIndex;
         this.defaultAudioTrackIndex = defaultAudioTrackIndex;
         this.defaultTextTrackIndex = defaultTextTrackIndex;
+        this.defaultImageTrackIndex = defaultImageTrackIndex;
     }
 
     /**
@@ -83,6 +88,19 @@ public class PKTracks {
     }
 
     /**
+     * Getter for imageTracks list.
+     * Before use, the list entry's should be casted to {@link ImageTrack} in order to receive the
+     * full track info of that type.
+     * Can be empty, if no tracks available.
+     *
+     * @return - the list of all available Image tracks, that can be used for image preview feature.
+     */
+    @NonNull
+    public List<ImageTrack> getImageTracks() {
+        return imageTracks;
+    }
+
+    /**
      * Getter for default video track index.
      * The one that will be selected by player based on the media manifest.
      * If no default available in the manifest, the index will be 0.
@@ -113,6 +131,17 @@ public class PKTracks {
      */
     public int getDefaultTextTrackIndex() {
         return defaultTextTrackIndex;
+    }
+
+    /**
+     * Getter for default image track index.
+     * The one that will be selected by player based on the media manifest.
+     * If no default available in the manifest, the index will be 0.
+     *
+     * @return - the index of the track that is set by default.
+     */
+    public int getDefaultImageTrackIndex() {
+        return defaultImageTrackIndex;
     }
 }
 

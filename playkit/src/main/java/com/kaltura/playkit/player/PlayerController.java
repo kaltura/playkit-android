@@ -855,6 +855,13 @@ public class PlayerController implements Player {
                         }
                         event = new PlayerEvent.TextTrackChanged(textTrack);
                         break;
+                    case IMAGE_TRACK_CHANGED:
+                        ImageTrack imageTrack = (ImageTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_IMAGE);
+                        if (imageTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.ImageTrackChanged(imageTrack);
+                        break;    
                     case PLAYBACK_RATE_CHANGED:
                         event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
                         break;

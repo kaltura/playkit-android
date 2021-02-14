@@ -136,7 +136,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
 
     private List<PKMetadata> metadataList = new ArrayList<>();
-    private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+    private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
@@ -1297,7 +1297,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         preferredLanguageWasSelected = false;
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
-        lastSelectedTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+        lastSelectedTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
         if (assertTrackSelectionIsNotNull("stop()")) {
             trackSelectionHelper.stop();
         }
@@ -1426,6 +1426,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             @Override
             public void onTextTrackChanged() {
                 sendEvent(PlayerEvent.Type.TEXT_TRACK_CHANGED);
+            }
+
+            @Override
+            public void onImageTrackChanged() {
+                sendEvent(PlayerEvent.Type.IMAGE_TRACK_CHANGED);
             }
         };
     }
