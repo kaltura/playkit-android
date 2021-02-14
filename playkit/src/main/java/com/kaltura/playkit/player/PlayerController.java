@@ -661,6 +661,14 @@ public class PlayerController implements Player {
         return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
     }
 
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+        log.v("getThumbnailInfo");
+        if (assertPlayerIsNotNull("getThumbnailInfo()")) {
+            return player.getThumbnailInfo(positionMS);
+        }
+        return null;
+    }
 
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {

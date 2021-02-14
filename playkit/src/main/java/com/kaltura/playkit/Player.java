@@ -21,6 +21,7 @@ import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.ThumbnailInfo;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
@@ -518,6 +519,13 @@ public interface Player {
      * get current player speed
      */
     float getPlaybackRate();
+
+    /**
+     * get the Information for a thumbnailImage by position
+     *
+     * @param positionMS - relevant image for given player position.
+     */
+    ThumbnailInfo getThumbnailInfo(long positionMS);
 
     /**
      * Generic getters for playkit controllers.

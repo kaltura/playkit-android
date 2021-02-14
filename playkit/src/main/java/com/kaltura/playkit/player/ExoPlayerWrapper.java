@@ -1466,6 +1466,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return false;
     }
 
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+        return trackSelectionHelper.getThumbnailInfo(positionMS);
+    }
+
     private void closeProfilerSession() {
         profiler.onSessionFinished();
     }
@@ -1566,7 +1571,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         configureAspectRatioResizeMode();
         sendEvent(PlayerEvent.Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
     }
-
+    
     private void configureAspectRatioResizeMode() {
         if(exoPlayerView != null){
             exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());

@@ -307,7 +307,7 @@ class TrackSelectionHelper {
                             imageFormat.height,
                             formatThumbnailInfo.tilesHorizontal,
                             formatThumbnailInfo.tilesVertical,
-                            formatThumbnailInfo.segmentDuration,
+                            formatThumbnailInfo.segmentDuration * Consts.MILLISECONDS_MULTIPLIER,
                             formatThumbnailInfo.startNumber,
                             formatThumbnailInfo.endNumber,
                             formatThumbnailInfo.presentationTimeOffset,
@@ -1156,6 +1156,37 @@ class TrackSelectionHelper {
             parametersBuilder.setAllowVideoMixedMimeTypeAdaptiveness(true);
         }
     }
+
+    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+        if (imageTracks.isEmpty()) {
+            return null;
+        }
+
+        ImageTrack imageTrack = null;
+        for (int index = 0; index < imageTracks.size() ; index++) {
+            if (imageTracks.get(index).getUniqueId().equals(lastSelectedTrackIds[TRACK_TYPE_IMAGE])) {
+                imageTrack = imageTracks.get(index);
+                break;
+            }
+        }
+
+        long seq = (long)Math.floor(positionMS / imageTrack.getSegmentDuration());
+        double offset = positionMS % imageTrack.getSegmentDuration();
+        int thumbIndex = (int) Math.floor((offset * imageTrack.getTilesHorizontal() * imageTrack.getTilesVertical()) / imageTrack.getSegmentDuration());
+        long seqIdx = seq + imageTrack.getStartNumber();
+        int imageWidth = (int) Math.floor(imageTrack.getWidth() / imageTrack.getTilesHorizontal());
+        int imageHeight = (int) Math.floor(imageTrack.getHeight() / imageTrack.getTilesVertical());
+        int imageX = (int) Math.floor(thumbIndex % imageTrack.getTilesHorizontal()) * imageWidth;
+        int imageY = (int) Math.floor(thumbIndex / imageTrack.getTilesHorizontal()) * imageHeight;
+
+        long imageRealUrlTime = ((seqIdx - 1) * imageTrack.getSegmentDuration());
+        String realImageUrl = imageTrack.getImageTemplateUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$",  String.valueOf(imageRealUrlTime));
+        //int imageXColIndex = imageX / imageWidth;
+        //int imageYRowIndex = imageY / imageHeight;
+        //Rect rect = new Rect(imageX, imageY, imageXColIndex * imageWidth + imageWidth, imageYRowIndex * imageHeight + imageHeight);
+        return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
+    }
+
 
     /**
      * Checks if adaptive track for the specified group was created.
