@@ -286,6 +286,8 @@ public interface PlayerEngine {
      */
     void onOrientationChanged();
 
+    default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
+
     interface EventListener {
         void onEvent(PlayerEvent.Type event);
     }
