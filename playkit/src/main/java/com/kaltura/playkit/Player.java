@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKLlLiveConfiguration;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
@@ -344,6 +345,14 @@ public interface Player {
          * @return - Player Settings
          */
         Settings forceWidevineL3Playback(boolean forceWidevineL3Playback);
+
+        /**
+         * Creates a Low Latency Live playback configuration.
+         *
+         * @param PKLlLiveConfiguration - Configuration for Low Latency
+         * @return - Player Settings
+         */
+        Settings setLlLiveConfiguration(PKLlLiveConfiguration PKLlLiveConfiguration);
     }
 
     /**

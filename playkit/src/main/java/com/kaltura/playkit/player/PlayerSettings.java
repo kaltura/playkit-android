@@ -48,6 +48,7 @@ public class PlayerSettings implements Player.Settings {
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
     private VRSettings vrSettings;
+    private PKLlLiveConfiguration PKLlLiveConfiguration;
     /**
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
@@ -202,6 +203,10 @@ public class PlayerSettings implements Player.Settings {
         return forceWidevineL3Playback;
     }
 
+    public PKLlLiveConfiguration getPKLlLiveConfiguration() {
+        return PKLlLiveConfiguration;
+    }
+
     @Override
     public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
         this.vrPlayerEnabled = vrPlayerEnabled;
@@ -267,7 +272,6 @@ public class PlayerSettings implements Player.Settings {
         this.preferredMediaFormat = preferredMediaFormat;
         return this;
     }
-
 
     @Override
     public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
@@ -417,6 +421,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings forceWidevineL3Playback(boolean forceWidevineL3Playback) {
         this.forceWidevineL3Playback = forceWidevineL3Playback;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setLlLiveConfiguration(PKLlLiveConfiguration PKLlLiveConfiguration) {
+        this.PKLlLiveConfiguration = PKLlLiveConfiguration;
         return this;
     }
 }

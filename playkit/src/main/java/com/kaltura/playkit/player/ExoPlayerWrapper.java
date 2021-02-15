@@ -509,6 +509,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         .setClipStartPositionMs(0L)
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
 
+        if (playerSettings.getPKLlLiveConfiguration() != null) {
+            builder.setLiveTargetOffsetMs(playerSettings.getPKLlLiveConfiguration().getTargetOffsetMs())
+                    .setLiveMinOffsetMs(playerSettings.getPKLlLiveConfiguration().getMinOffsetMs())
+                    .setLiveMaxOffsetMs(playerSettings.getPKLlLiveConfiguration().getMaxOffsetMs())
+                    .setLiveMinPlaybackSpeed(playerSettings.getPKLlLiveConfiguration().getMinPlaybackSpeed())
+                    .setLiveMaxPlaybackSpeed(playerSettings.getPKLlLiveConfiguration().getMaxPlaybackSpeed());
+        }
+
         if (format == PKMediaFormat.dash && sourceConfig.mediaSource.hasDrmParams()) {
             setMediaItemBuilderDRMParams(sourceConfig, builder);
         } else  if (format == PKMediaFormat.udp) {
