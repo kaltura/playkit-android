@@ -349,10 +349,10 @@ public interface Player {
         /**
          * Creates a Low Latency Live playback configuration.
          *
-         * @param PKLlLiveConfiguration - Configuration for Low Latency
+         * @param pkLlLiveConfiguration - Configuration for Low Latency
          * @return - Player Settings
          */
-        Settings setLlLiveConfiguration(PKLlLiveConfiguration PKLlLiveConfiguration);
+        Settings setLlLiveConfiguration(PKLlLiveConfiguration pkLlLiveConfiguration);
     }
 
     /**
