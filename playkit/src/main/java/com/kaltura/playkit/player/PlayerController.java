@@ -679,6 +679,14 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updateLlLiveConfiguration(PKLlLiveConfiguration pkLlLiveConfiguration) {
+        log.v("updateLlLiveConfiguration");
+        if (assertPlayerIsNotNull("updateLlLiveConfiguration")) {
+            player.updateLlLiveConfiguration(pkLlLiveConfiguration);
+        }
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         Assert.shouldNeverHappen();
     }

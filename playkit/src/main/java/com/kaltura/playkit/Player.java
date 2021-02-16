@@ -547,6 +547,8 @@ public interface Player {
      */
     void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
+    void updateLlLiveConfiguration(PKLlLiveConfiguration pkLlLiveConfiguration);
+
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to
      * avoid the otherwise required cast.

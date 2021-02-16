@@ -33,7 +33,9 @@ import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
+import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManagerProvider;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.DrmSessionManagerProvider;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
@@ -1568,6 +1570,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         playerSettings.setSurfaceAspectRatioResizeMode(resizeMode);
         configureAspectRatioResizeMode();
         sendEvent(PlayerEvent.Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
+    }
+
+    @Override
+    public void updateLlLiveConfiguration(PKLlLiveConfiguration pkLlLiveConfiguration) {
+        playerSettings.setLlLiveConfiguration(pkLlLiveConfiguration);
+        if (player != null && player.getCurrentMediaItem() != null && player.getCurrentMediaItem().buildUpon() != null) {
+            player.setMediaItem(player.getCurrentMediaItem().buildUpon()
+                    .setLiveTargetOffsetMs(pkLlLiveConfiguration.getTargetOffsetMs())
+                    .setLiveMinOffsetMs(pkLlLiveConfiguration.getMinOffsetMs())
+                    .setLiveMaxOffsetMs(pkLlLiveConfiguration.getMaxOffsetMs())
+                    .setLiveMaxPlaybackSpeed(pkLlLiveConfiguration.getMaxPlaybackSpeed())
+                    .setLiveMinPlaybackSpeed(pkLlLiveConfiguration.getMinPlaybackSpeed()).build());
+        }
     }
 
     private void configureAspectRatioResizeMode() {
