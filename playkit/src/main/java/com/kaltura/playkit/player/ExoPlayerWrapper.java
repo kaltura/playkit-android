@@ -34,6 +34,7 @@ import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.DrmSessionManagerProvider;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
@@ -374,7 +375,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
         }
 
-        mediaSourceFactory.setDrmSessionManagerProvider(sourceConfig.mediaSource.hasDrmParams() ? unusedMediaItem -> drmSessionManager : unusedMediaItem -> DrmSessionManager.DRM_UNSUPPORTED);
+        if (drmSessionManager != null) {
+            DrmSessionManagerProvider drmSessionManagerProvider = drmMediaItem -> {
+                if (sourceConfig.mediaSource.hasDrmParams()) {
+                    return drmSessionManager;
+                } else {
+                    return DrmSessionManager.DRM_UNSUPPORTED;
+                }
+            };
+            mediaSourceFactory.setDrmSessionManagerProvider(drmSessionManagerProvider);
+        }
 
         return mediaItem;
     }
