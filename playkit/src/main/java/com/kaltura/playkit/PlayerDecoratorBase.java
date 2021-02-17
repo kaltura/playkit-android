@@ -16,7 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
-import com.kaltura.playkit.player.PKLlLiveConfiguration;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 
@@ -225,8 +225,8 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void updateLlLiveConfiguration(PKLlLiveConfiguration pkLlLiveConfiguration) {
-        player.updateLlLiveConfiguration(pkLlLiveConfiguration);
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        player.updatePKLowLatencyConfig(pkLowLatencyConfig);
     }
 
     @Override

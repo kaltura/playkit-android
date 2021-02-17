@@ -679,10 +679,10 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void updateLlLiveConfiguration(PKLlLiveConfiguration pkLlLiveConfiguration) {
-        log.v("updateLlLiveConfiguration");
-        if (assertPlayerIsNotNull("updateLlLiveConfiguration")) {
-            player.updateLlLiveConfiguration(pkLlLiveConfiguration);
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        log.v("updatePKLowLatencyConfig");
+        if (assertPlayerIsNotNull("updatePKLowLatencyConfig")) {
+            player.updatePKLowLatencyConfig(pkLowLatencyConfig);
         }
     }
 

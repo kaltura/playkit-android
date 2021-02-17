@@ -33,9 +33,7 @@ import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
-import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManagerProvider;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
-import com.kaltura.android.exoplayer2.drm.DrmSessionManagerProvider;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
@@ -511,12 +509,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         .setClipStartPositionMs(0L)
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
 
-        if (playerSettings.getPKLlLiveConfiguration() != null) {
-            builder.setLiveTargetOffsetMs(playerSettings.getPKLlLiveConfiguration().getTargetOffsetMs())
-                    .setLiveMinOffsetMs(playerSettings.getPKLlLiveConfiguration().getMinOffsetMs())
-                    .setLiveMaxOffsetMs(playerSettings.getPKLlLiveConfiguration().getMaxOffsetMs())
-                    .setLiveMinPlaybackSpeed(playerSettings.getPKLlLiveConfiguration().getMinPlaybackSpeed())
-                    .setLiveMaxPlaybackSpeed(playerSettings.getPKLlLiveConfiguration().getMaxPlaybackSpeed());
+        if (playerSettings.getPKLowLatencyConfig() != null) {
+            builder.setLiveTargetOffsetMs(playerSettings.getPKLowLatencyConfig().getTargetOffsetMs())
+                    .setLiveMinOffsetMs(playerSettings.getPKLowLatencyConfig().getMinOffsetMs())
+                    .setLiveMaxOffsetMs(playerSettings.getPKLowLatencyConfig().getMaxOffsetMs())
+                    .setLiveMinPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed())
+                    .setLiveMaxPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed());
         }
 
         if (format == PKMediaFormat.dash && sourceConfig.mediaSource.hasDrmParams()) {
@@ -1573,15 +1571,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void updateLlLiveConfiguration(PKLlLiveConfiguration pkLlLiveConfiguration) {
-        playerSettings.setLlLiveConfiguration(pkLlLiveConfiguration);
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        playerSettings.setPKLowLatencyConfig(pkLowLatencyConfig);
         if (player != null && player.getCurrentMediaItem() != null && player.getCurrentMediaItem().buildUpon() != null) {
             player.setMediaItem(player.getCurrentMediaItem().buildUpon()
-                    .setLiveTargetOffsetMs(pkLlLiveConfiguration.getTargetOffsetMs())
-                    .setLiveMinOffsetMs(pkLlLiveConfiguration.getMinOffsetMs())
-                    .setLiveMaxOffsetMs(pkLlLiveConfiguration.getMaxOffsetMs())
-                    .setLiveMaxPlaybackSpeed(pkLlLiveConfiguration.getMaxPlaybackSpeed())
-                    .setLiveMinPlaybackSpeed(pkLlLiveConfiguration.getMinPlaybackSpeed()).build());
+                    .setLiveTargetOffsetMs(pkLowLatencyConfig.getTargetOffsetMs())
+                    .setLiveMinOffsetMs(pkLowLatencyConfig.getMinOffsetMs())
+                    .setLiveMaxOffsetMs(pkLowLatencyConfig.getMaxOffsetMs())
+                    .setLiveMaxPlaybackSpeed(pkLowLatencyConfig.getMaxPlaybackSpeed())
+                    .setLiveMinPlaybackSpeed(pkLowLatencyConfig.getMinPlaybackSpeed()).build());
         }
     }
 

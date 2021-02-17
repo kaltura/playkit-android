@@ -18,7 +18,7 @@ import androidx.annotation.Nullable;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
-import com.kaltura.playkit.player.PKLlLiveConfiguration;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
@@ -349,10 +349,10 @@ public interface Player {
         /**
          * Creates a Low Latency Live playback configuration.
          *
-         * @param pkLlLiveConfiguration - Configuration for Low Latency
+         * @param pkLowLatencyConfig - Configuration for Low Latency
          * @return - Player Settings
          */
-        Settings setLlLiveConfiguration(PKLlLiveConfiguration pkLlLiveConfiguration);
+        Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig);
     }
 
     /**
@@ -547,7 +547,10 @@ public interface Player {
      */
     void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
-    void updateLlLiveConfiguration(PKLlLiveConfiguration pkLlLiveConfiguration);
+    /**
+     * Update Low Latency configuration
+     */
+    void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig);
 
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to

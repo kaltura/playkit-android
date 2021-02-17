@@ -272,7 +272,7 @@ public interface PlayerEngine {
       */
     default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
     
-    default void updateLlLiveConfiguration(PKLlLiveConfiguration pkLlLiveConfiguration) {}
+    default void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {}
 
     /**
      * Generic getters for playkit controllers.

@@ -2,7 +2,7 @@ package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.utils.Consts;
 
-public class PKLlLiveConfiguration {
+public class PKLowLatencyConfig {
 
     private long targetOffsetMs = Consts.TIME_UNSET;
     private long minOffsetMs = Consts.TIME_UNSET;
@@ -10,23 +10,23 @@ public class PKLlLiveConfiguration {
     private float minPlaybackSpeed = Consts.RATE_UNSET;
     private float maxPlaybackSpeed = Consts.RATE_UNSET;
 
-    long getTargetOffsetMs() {
+    public long getTargetOffsetMs() {
         return targetOffsetMs;
     }
 
-    long getMinOffsetMs() {
+    public long getMinOffsetMs() {
         return minOffsetMs;
     }
 
-    long getMaxOffsetMs() {
+    public long getMaxOffsetMs() {
         return maxOffsetMs;
     }
 
-    float getMinPlaybackSpeed() {
+    public float getMinPlaybackSpeed() {
         return minPlaybackSpeed;
     }
 
-    float getMaxPlaybackSpeed() {
+    public float getMaxPlaybackSpeed() {
         return maxPlaybackSpeed;
     }
 
@@ -35,7 +35,7 @@ public class PKLlLiveConfiguration {
      * media-defined default.
      * The player will attempt to get close to this live offset during playback if possible.
      */
-    public PKLlLiveConfiguration setTargetOffsetMs(long targetOffsetMs) {
+    public PKLowLatencyConfig setTargetOffsetMs(long targetOffsetMs) {
         this.targetOffsetMs = targetOffsetMs;
         return this;
     }
@@ -46,7 +46,7 @@ public class PKLlLiveConfiguration {
      * Even when adjusting the offset to current network conditions,
      * the player will not attempt to get below this offset during playback.
      */
-    public PKLlLiveConfiguration setMinOffsetMs(long minOffsetMs) {
+    public PKLowLatencyConfig setMinOffsetMs(long minOffsetMs) {
         this.minOffsetMs = minOffsetMs;
         return this;
     }
@@ -57,7 +57,7 @@ public class PKLlLiveConfiguration {
      * Even when adjusting the offset to current network conditions,
      * the player will not attempt to get above this offset during playback.
      */
-    public PKLlLiveConfiguration setMaxOffsetMs(long maxOffsetMs) {
+    public PKLowLatencyConfig setMaxOffsetMs(long maxOffsetMs) {
         this.maxOffsetMs = maxOffsetMs;
         return this;
     }
@@ -68,7 +68,7 @@ public class PKLlLiveConfiguration {
      * The minimum playback speed the player can use to fall back
      * when trying to reach the target live offset.
      */
-    public PKLlLiveConfiguration setMinPlaybackSpeed(float minPlaybackSpeed) {
+    public PKLowLatencyConfig setMinPlaybackSpeed(float minPlaybackSpeed) {
         this.minPlaybackSpeed = minPlaybackSpeed;
         return this;
     }
@@ -79,7 +79,7 @@ public class PKLlLiveConfiguration {
      * The maximum playback speed the player can use to catch up
      * when trying to reach the target live offset.
      */
-    public PKLlLiveConfiguration setMaxPlaybackSpeed(float maxPlaybackSpeed) {
+    public PKLowLatencyConfig setMaxPlaybackSpeed(float maxPlaybackSpeed) {
         this.maxPlaybackSpeed = maxPlaybackSpeed;
         return this;
     }
