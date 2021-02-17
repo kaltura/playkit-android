@@ -7,8 +7,8 @@ public class PKLowLatencyConfig {
     private long targetOffsetMs = Consts.TIME_UNSET;
     private long minOffsetMs = Consts.TIME_UNSET;
     private long maxOffsetMs = Consts.TIME_UNSET;
-    private float minPlaybackSpeed = Consts.RATE_UNSET;
-    private float maxPlaybackSpeed = Consts.RATE_UNSET;
+    private float minPlaybackSpeed = Consts.DEFAULT_FALLBACK_MIN_PLAYBACK_SPEED;
+    private float maxPlaybackSpeed = Consts.DEFAULT_FALLBACK_MAX_PLAYBACK_SPEED;
 
     public long getTargetOffsetMs() {
         return targetOffsetMs;
@@ -69,7 +69,8 @@ public class PKLowLatencyConfig {
      * when trying to reach the target live offset.
      */
     public PKLowLatencyConfig setMinPlaybackSpeed(float minPlaybackSpeed) {
-        this.minPlaybackSpeed = minPlaybackSpeed;
+        this.minPlaybackSpeed = 
+                minPlaybackSpeed != Consts.RATE_UNSET ? minPlaybackSpeed : Consts.DEFAULT_FALLBACK_MIN_PLAYBACK_SPEED;
         return this;
     }
 
@@ -80,7 +81,8 @@ public class PKLowLatencyConfig {
      * when trying to reach the target live offset.
      */
     public PKLowLatencyConfig setMaxPlaybackSpeed(float maxPlaybackSpeed) {
-        this.maxPlaybackSpeed = maxPlaybackSpeed;
+        this.maxPlaybackSpeed =
+                maxPlaybackSpeed != Consts.RATE_UNSET ? maxPlaybackSpeed : Consts.DEFAULT_FALLBACK_MAX_PLAYBACK_SPEED;
         return this;
     }
 }
