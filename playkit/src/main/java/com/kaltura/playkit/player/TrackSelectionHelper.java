@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.RendererCapabilities;
+import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -157,7 +158,7 @@ class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    boolean prepareTracks(TrackSelectionArray trackSelections) {
+    boolean prepareTracks(TrackSelectionArray trackSelections, CustomDashManifest customDashManifest) {
         trackSelectionArray = trackSelections;
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {

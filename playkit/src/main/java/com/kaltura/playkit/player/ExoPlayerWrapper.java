@@ -15,6 +15,7 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.media.MediaCodec;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -33,6 +34,8 @@ import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
+import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
+import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifestParser;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManagerProvider;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
@@ -50,17 +53,20 @@ import com.kaltura.android.exoplayer2.source.SingleSampleMediaSource;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
 import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
+import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
+import com.kaltura.android.exoplayer2.upstream.ByteArrayDataSink;
 import com.kaltura.android.exoplayer2.upstream.DataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
 import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.upstream.TeeDataSource;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 
 import com.kaltura.playkit.*;
@@ -71,10 +77,12 @@ import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.NativeCookieJarBridge;
 
+import java.io.IOException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -89,6 +97,8 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
 public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
+
+    private ByteArrayDataSink lastDataSink;
 
     public interface LoadControlStrategy {
         LoadControl getCustomLoadControl();
@@ -367,7 +377,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         MediaItem.DrmConfiguration drmConfiguration = mediaItem.playbackProperties.drmConfiguration;
         if (!(sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource) &&
-                playerSettings.isForceWidevineL3Playback() &&
+
                 drmConfiguration != null &&
                 drmConfiguration.licenseUri != null &&
                 !TextUtils.isEmpty(drmConfiguration.licenseUri.toString())) {
@@ -410,16 +420,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         PKRequestParams requestParams = sourceConfig.getRequestParams();
         if (requestParams.headers == null || requestParams.headers.isEmpty()) {
-            return null;
+            //return null;
         }
 
         final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
+        final DataSource.Factory teedDtaSourceFactory = () -> {
+            lastDataSink = new ByteArrayDataSink();
+            return new TeeDataSource(dataSourceFactory.createDataSource(), lastDataSink);            };
 
         MediaSource mediaSource;
         switch (format) {
             case dash:
                 mediaSource = new DashMediaSource.Factory(
-                        new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
+                        new DefaultDashChunkSource.Factory(dataSourceFactory), teedDtaSourceFactory)
                         .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
                         .createMediaSource(mediaItem);
                 break;
@@ -865,12 +878,28 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
 
         log.d("onTracksChanged");
-
+        String dashManifestString = "";
+       
         //if onTracksChanged happened when application went background, do not update the tracks.
         if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
+            
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
-                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(trackSelections);
+                CustomDashManifest customDashManifest = null;
+                if (player.getCurrentManifest() instanceof DashManifest) {
+                    byte[] bytes = lastDataSink.getData();
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        dashManifestString = new String(bytes, StandardCharsets.UTF_8);
+                        
+                        try {
+                            customDashManifest = new CustomDashManifestParser().parse(player.getMediaItemAt(0).playbackProperties.uri ,dashManifestString);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(trackSelections, customDashManifest);
             }
 
             trackSelectionHelper.notifyAboutTrackChange(trackSelections);
@@ -1020,6 +1049,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void seekTo(long position) {
         log.v("seekTo");
+
         if (assertPlayerIsNotNull("seekTo()")) {
             isSeeking = true;
             sendDistinctEvent(PlayerEvent.Type.SEEKING);
