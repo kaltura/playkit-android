@@ -147,7 +147,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
 
     private List<PKMetadata> metadataList = new ArrayList<>();
-    private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+    private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
@@ -1337,7 +1337,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         preferredLanguageWasSelected = false;
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
-        lastSelectedTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+        lastSelectedTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
         if (assertTrackSelectionIsNotNull("stop()")) {
             trackSelectionHelper.stop();
         }
@@ -1467,6 +1467,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             public void onTextTrackChanged() {
                 sendEvent(PlayerEvent.Type.TEXT_TRACK_CHANGED);
             }
+
+            @Override
+            public void onImageTrackChanged() {
+                sendEvent(PlayerEvent.Type.IMAGE_TRACK_CHANGED);
+            }
         };
     }
 
@@ -1499,6 +1504,17 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             return player.isCurrentWindowLive();
         }
         return false;
+    }
+
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+        if(isLive()) {
+            Timeline timeline = player.getCurrentTimeline();
+            if (!timeline.isEmpty()) {
+                positionMS -= timeline.getPeriod(player.getCurrentPeriodIndex(), new Timeline.Period()).getPositionInWindowMs();
+            }
+        }
+        return trackSelectionHelper.getThumbnailInfo(positionMS);
     }
 
     private void closeProfilerSession() {

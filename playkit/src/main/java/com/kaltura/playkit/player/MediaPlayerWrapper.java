@@ -289,8 +289,8 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public PKTracks getPKTracks() {
-        return new PKTracks(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
-                0, 0, 0);
+        return new PKTracks(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
+                0, 0, 0, 0);
     }
 
     @Override

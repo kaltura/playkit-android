@@ -661,6 +661,14 @@ public class PlayerController implements Player {
         return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
     }
 
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+        log.v("getThumbnailInfo");
+        if (assertPlayerIsNotNull("getThumbnailInfo()")) {
+            return player.getThumbnailInfo(positionMS);
+        }
+        return null;
+    }
 
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
@@ -855,6 +863,13 @@ public class PlayerController implements Player {
                         }
                         event = new PlayerEvent.TextTrackChanged(textTrack);
                         break;
+                    case IMAGE_TRACK_CHANGED:
+                        ImageTrack imageTrack = (ImageTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_IMAGE);
+                        if (imageTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.ImageTrackChanged(imageTrack);
+                        break;    
                     case PLAYBACK_RATE_CHANGED:
                         event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
                         break;
