@@ -55,6 +55,8 @@ import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
 import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
+import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParser;
+import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParserForThumbnail;
 import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
@@ -436,6 +438,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 mediaSource = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), teedDtaSourceFactory)
                         .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
+                        .setManifestParser(new DashManifestParserForThumbnail())
                         .createMediaSource(mediaItem);
                 break;
 
