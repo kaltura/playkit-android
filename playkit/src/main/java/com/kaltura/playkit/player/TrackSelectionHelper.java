@@ -19,9 +19,13 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.RendererCapabilities;
+import com.kaltura.android.exoplayer2.dashmanifestparser.CustomAdaptationSet;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
+import com.kaltura.android.exoplayer2.dashmanifestparser.CustomFormat;
+import com.kaltura.android.exoplayer2.dashmanifestparser.CustomRepresentation;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -180,7 +184,28 @@ class TrackSelectionHelper {
         }
 
         warnAboutUnsupportedRendererTypes();
-        PKTracks tracksInfo = buildTracks();
+
+        List<CustomFormat> rawImageTracks = new ArrayList<>();
+        if (customDashManifest != null) {
+            for (int periodIndex = 0; periodIndex < customDashManifest.getPeriodCount(); periodIndex++) {
+                List<CustomAdaptationSet> adaptationSets = customDashManifest.getPeriod(periodIndex).adaptationSets;
+
+                for (int adaptationSetIndex = 0 ; adaptationSetIndex < adaptationSets.size() ; adaptationSetIndex++) {
+                    if (adaptationSets.get(adaptationSetIndex).type != C.TRACK_TYPE_IMAGE) {
+                        continue;
+                    }
+                    List<CustomRepresentation> representations = adaptationSets.get(adaptationSetIndex).representations;
+                    for (CustomRepresentation representation : representations) {
+                        if (representation.format == null || representation.format.formatThumbnailInfo == null) {
+                            continue;
+                        }
+                        rawImageTracks.add(representation.format);
+                    }
+                }
+            }
+        }
+
+        PKTracks tracksInfo = buildTracks(rawImageTracks);
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
@@ -193,7 +218,7 @@ class TrackSelectionHelper {
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private PKTracks buildTracks() {
+    private PKTracks buildTracks(List<CustomFormat> rawImageTracks) {
 
         clearTracksLists();
 
@@ -293,29 +318,25 @@ class TrackSelectionHelper {
             }
         }
 
-        if (mappedTrackInfo != null) {
-            TrackGroupArray imageTrackGroupArray = mappedTrackInfo.getUnmappedTrackGroups();
-            for (int imageTrackIndex = 0 ; imageTrackIndex < imageTrackGroupArray.length; imageTrackIndex++) {
-                TrackGroup imageTrackGroup = imageTrackGroupArray.get(imageTrackIndex);
-                for (int trackIndex = 0; trackIndex < imageTrackGroup.length; trackIndex++) {
-                    Format imageFormat = imageTrackGroup.getFormat(trackIndex);
-                    Format.FormatThumbnailInfo formatThumbnailInfo = imageFormat.formatThumbnailInfo;
-                    String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, trackIndex);
-                    imageTracks.add(trackIndex, new ImageTrack(uniqueId,
-                            imageFormat.id,
-                            imageFormat.bitrate,
-                            imageFormat.width,
-                            imageFormat.height,
-                            formatThumbnailInfo.tilesHorizontal,
-                            formatThumbnailInfo.tilesVertical,
-                            formatThumbnailInfo.segmentDuration * Consts.MILLISECONDS_MULTIPLIER,
-                            formatThumbnailInfo.startNumber,
-                            formatThumbnailInfo.endNumber,
-                            formatThumbnailInfo.presentationTimeOffset,
-                            formatThumbnailInfo.timeScale,
-                            formatThumbnailInfo.imageTemplateUrl
-                            ));
-                }
+        if (rawImageTracks != null && !rawImageTracks.isEmpty()) {
+            for (int trackIndex = 0; trackIndex < rawImageTracks.size(); trackIndex++) {
+                CustomFormat imageFormat = rawImageTracks.get(trackIndex);
+                CustomFormat.FormatThumbnailInfo formatThumbnailInfo = imageFormat.formatThumbnailInfo;
+                String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, trackIndex);
+                imageTracks.add(trackIndex, new ImageTrack(uniqueId,
+                        imageFormat.id,
+                        imageFormat.bitrate,
+                        imageFormat.width,
+                        imageFormat.height,
+                        formatThumbnailInfo.tilesHorizontal,
+                        formatThumbnailInfo.tilesVertical,
+                        formatThumbnailInfo.segmentDuration * Consts.MILLISECONDS_MULTIPLIER,
+                        formatThumbnailInfo.startNumber,
+                        formatThumbnailInfo.endNumber,
+                        formatThumbnailInfo.presentationTimeOffset,
+                        formatThumbnailInfo.timeScale,
+                        formatThumbnailInfo.imageTemplateUrl
+                ));
             }
         }
 
@@ -538,7 +559,7 @@ class TrackSelectionHelper {
         if (textTracks.isEmpty()) {
             return;
         }
-        
+
         String uniqueId = getUniqueId(TRACK_TYPE_TEXT, 0, TRACK_DISABLED);
         textTracks.add(0, new TextTrack(uniqueId, NONE, NONE, NONE, -1));
     }
@@ -588,7 +609,7 @@ class TrackSelectionHelper {
                         } else if (!isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.INTERNAL) {
                             defaultTrackIndex = i;
                             break;
-                        } 
+                        }
                     } else {
                         defaultTrackIndex = i;
                         break;
@@ -797,7 +818,7 @@ class TrackSelectionHelper {
             tracksInfoListener.onImageTrackChanged();
             return;
         }
-        
+
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
         if (rendererIndex == TRACK_TYPE_TEXT) {
             //Disable text track renderer if needed.
@@ -1373,6 +1394,7 @@ class TrackSelectionHelper {
         videoTracks.clear();
         audioTracks.clear();
         textTracks.clear();
+        imageTracks.clear();
         for (Map.Entry<PKVideoCodec,List<VideoTrack>> videoTrackEntry : videoTracksCodecsMap.entrySet()) {
             videoTrackEntry.getValue().clear();
         }
@@ -1524,6 +1546,7 @@ class TrackSelectionHelper {
         videoTracks.clear();
         audioTracks.clear();
         textTracks.clear();
+        imageTracks.clear();
     }
 
     /**

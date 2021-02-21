@@ -29,6 +29,7 @@ import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.MediaItem;
+import com.kaltura.android.exoplayer2.ParserException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
@@ -78,6 +79,7 @@ import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.NativeCookieJarBridge;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -879,31 +881,29 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         log.d("onTracksChanged");
         String dashManifestString = "";
-       
+
         //if onTracksChanged happened when application went background, do not update the tracks.
         if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
-            
+
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
                 CustomDashManifest customDashManifest = null;
-                if (player.getCurrentManifest() instanceof DashManifest) {
+                if (lastDataSink != null && player.getCurrentManifest() instanceof DashManifest) {
                     byte[] bytes = lastDataSink.getData();
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                        dashManifestString = new String(bytes, StandardCharsets.UTF_8);
-                        
-                        try {
-                            customDashManifest = new CustomDashManifestParser().parse(player.getMediaItemAt(0).playbackProperties.uri ,dashManifestString);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                    try {
+                        dashManifestString = new String(bytes, "UTF-8");
+                        customDashManifest = new CustomDashManifestParser().parse(player.getMediaItemAt(0).playbackProperties.uri, dashManifestString);
+                    } catch (IOException e) {
+                        log.e("imageTracks assemble error " + e.getMessage());
+                    } finally {
+                        lastDataSink = null;
                     }
                 }
                 shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(trackSelections, customDashManifest);
             }
-
-            trackSelectionHelper.notifyAboutTrackChange(trackSelections);
         }
+
+        trackSelectionHelper.notifyAboutTrackChange(trackSelections);
     }
 
     @Override
