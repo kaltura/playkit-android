@@ -338,6 +338,12 @@ class TrackSelectionHelper {
                         formatThumbnailInfo.imageTemplateUrl
                 ));
             }
+
+            if (NONE.equals(requestedChangeTrackIds[TRACK_TYPE_IMAGE])) {
+                log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
+                lastSelectedTrackIds[TRACK_TYPE_IMAGE] = imageTracks.get(0).getUniqueId();
+                tracksInfoListener.onImageTrackChanged();
+            }
         }
 
         //add disable option to the text tracks.
@@ -806,7 +812,6 @@ class TrackSelectionHelper {
             return;
         }
 
-
         int[] uniqueTrackId = validateUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
@@ -1191,6 +1196,10 @@ class TrackSelectionHelper {
                 break;
             }
         }
+        
+        if (imageTrack == null) {
+            return null;
+        }
 
         long seq = (long)Math.floor(positionMS / imageTrack.getSegmentDuration());
         double offset = positionMS % imageTrack.getSegmentDuration();
@@ -1487,12 +1496,6 @@ class TrackSelectionHelper {
             log.d("Text track changed to: " + requestedChangeTrackIds[TRACK_TYPE_TEXT]);
             lastSelectedTrackIds[TRACK_TYPE_TEXT] = requestedChangeTrackIds[TRACK_TYPE_TEXT];
             tracksInfoListener.onTextTrackChanged();
-        }
-
-        if (shouldNotifyAboutTrackChanged(TRACK_TYPE_IMAGE)) {
-            log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
-            lastSelectedTrackIds[TRACK_TYPE_IMAGE] = requestedChangeTrackIds[TRACK_TYPE_IMAGE];
-            tracksInfoListener.onImageTrackChanged();
         }
     }
 
