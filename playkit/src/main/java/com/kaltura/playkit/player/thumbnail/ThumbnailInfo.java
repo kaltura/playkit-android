@@ -2,12 +2,12 @@ package com.kaltura.playkit.player.thumbnail;
 
 public class ThumbnailInfo {
     private String url;  // url of the image that contains the thumbnail slice
-    private int x;       // x position of the thumbnail
-    private int y;       // y position of the thumbnail
-    private int width;   // width of the thumbnail
-    private int height;  // height of the thumbnail
+    private float x;       // x position of the thumbnail
+    private float y;       // y position of the thumbnail
+    private float width;   // width of the thumbnail
+    private float height;  // height of the thumbnail
 
-    public ThumbnailInfo(String url, int x, int y, int width, int height) {
+    public ThumbnailInfo(String url, float x, float y, float width, float height) {
         this.url = url;
         this.x = x;
         this.y = y;
@@ -19,19 +19,19 @@ public class ThumbnailInfo {
         return url;
     }
 
-    public int getX() {
+    public float getX() {
         return x;
     }
 
-    public int getY() {
+    public float getY() {
         return y;
     }
 
-    public int getWidth() {
+    public float getWidth() {
         return width;
     }
 
-    public int getHeight() {
+    public float getHeight() {
         return height;
     }
 }

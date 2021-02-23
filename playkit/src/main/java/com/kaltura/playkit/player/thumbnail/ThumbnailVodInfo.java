@@ -17,7 +17,7 @@ public class ThumbnailVodInfo {
     public ThumbnailVodInfo(Map<ImageRangeInfo,ThumbnailInfo> imageRangeThumbnailMap) {
         this.imageRangeThumbnailtMap = imageRangeThumbnailMap;
     }
-    
+
     public ThumbnailVodInfo(long imageUrlIndex, ImageTrack imageTrack, long mediaDurationMS, long startNumber, boolean isCatchup) {
 
         long imageMultiplier = imageUrlIndex <= 0 ? 0 : imageUrlIndex - 1;
@@ -40,12 +40,10 @@ public class ThumbnailVodInfo {
             rangeEnd = rangeStart + rangeEnd;
         }
         diff = rangeEnd - rangeStart;
-        int widthPerTile = Math.round(imageTrack.getWidth() / imageTrack.getTilesHorizontal());
-        int heightPerTile = Math.round(imageTrack.getHeight() / imageTrack.getTilesVertical());
+        float widthPerTile = imageTrack.getWidth() / imageTrack.getTilesHorizontal();
+        float heightPerTile = imageTrack.getHeight() / imageTrack.getTilesVertical();
         for (int rowIndex = 0; rowIndex < imageTrack.getTilesVertical(); rowIndex++) {
             for (int colIndex = 0; colIndex < imageTrack.getTilesHorizontal(); colIndex++) {
-                //Log.d("GILAD BY POSITION THUMB", "[" + rowIndex + "," + colIndex + "] = [" + rangeStart + "," + rangeEnd + "]");
-
                 ImageRangeInfo imageRangeInfo = new ImageRangeInfo(rangeStart, rangeEnd);
                 ThumbnailInfo thumbnailInfo = new ThumbnailInfo(realImageUrl, colIndex * widthPerTile, rowIndex * heightPerTile, widthPerTile, heightPerTile);
 //                Rect rect =

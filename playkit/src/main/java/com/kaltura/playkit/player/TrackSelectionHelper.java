@@ -41,8 +41,8 @@ import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
-import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -1209,10 +1209,10 @@ class TrackSelectionHelper {
         double offset = positionMS % imageTrack.getSegmentDuration();
         int thumbIndex = (int) Math.floor((offset * imageTrack.getTilesHorizontal() * imageTrack.getTilesVertical()) / imageTrack.getSegmentDuration());
         long seqIdx = seq + imageTrack.getStartNumber();
-        int imageWidth = (int) Math.floor(imageTrack.getWidth() / imageTrack.getTilesHorizontal());
-        int imageHeight = (int) Math.floor(imageTrack.getHeight() / imageTrack.getTilesVertical());
-        int imageX = (int) Math.floor(thumbIndex % imageTrack.getTilesHorizontal()) * imageWidth;
-        int imageY = (int) Math.floor(thumbIndex / imageTrack.getTilesHorizontal()) * imageHeight;
+        float imageWidth = imageTrack.getWidth() / imageTrack.getTilesHorizontal();
+        float imageHeight = imageTrack.getHeight() / imageTrack.getTilesVertical();
+        float imageX = (float) Math.floor(thumbIndex % imageTrack.getTilesHorizontal()) * imageWidth;
+        float imageY = (float) Math.floor(thumbIndex / imageTrack.getTilesHorizontal()) * imageHeight;
 
         long imageRealUrlTime = ((seqIdx - 1) * imageTrack.getSegmentDuration());
         String realImageUrl = imageTrack.getImageTemplateUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$",  String.valueOf(imageRealUrlTime));
@@ -1293,7 +1293,7 @@ class TrackSelectionHelper {
                 }
             }
         }
-        
+
         return new ThumbnailVodInfo(imageRangeThumbnailMap);
     }
 
@@ -1861,5 +1861,5 @@ class TrackSelectionHelper {
 
 
 
-    
+
 }
