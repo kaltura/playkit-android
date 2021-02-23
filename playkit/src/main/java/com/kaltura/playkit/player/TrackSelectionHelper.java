@@ -14,7 +14,6 @@ package com.kaltura.playkit.player;
 
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -1220,7 +1219,7 @@ class TrackSelectionHelper {
         return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
     }
 
-    public Map<ImageRangeInfo,Rect> getVodThumbnailInfo(long mediaDurationMS) {
+    public ThumbnailVodInfo getVodThumbnailInfo(long mediaDurationMS) {
         if (imageTracks.isEmpty()) {
             return null;
         }
@@ -1237,7 +1236,7 @@ class TrackSelectionHelper {
             return null;
         }
 
-        Map<ImageRangeInfo,Rect> imageRangeRectMap = new LinkedHashMap<>();
+        Map<ImageRangeInfo,ThumbnailInfo> imageRangeThumbnailMap = new LinkedHashMap<>();
 
         boolean isCatchup = false;
         final long segmentDuration = imageTrack.getSegmentDuration();
@@ -1268,7 +1267,7 @@ class TrackSelectionHelper {
                 long indexValue = index;
                 imageData = new ThumbnailVodInfo(indexValue, imageTrack, mediaDurationMS, forLoopStartNumber, isCatchup);
                 if (imageData != null) {
-                    imageRangeRectMap.putAll(imageData.getImageRangeRectMap());
+                    imageRangeThumbnailMap.putAll(imageData.getImageRangeThumbnailMap());
                 }
                 rangeValueStart = rangeValueStart + segmentDuration;
                 if (rangeValueEnd != -1) {
@@ -1286,7 +1285,7 @@ class TrackSelectionHelper {
 
                 imageData = new ThumbnailVodInfo(indexValue, imageTrack, mediaDurationMS, forLoopStartNumber, isCatchup);
                 if (imageData != null) {
-                    imageRangeRectMap.putAll(imageData.getImageRangeRectMap());
+                    imageRangeThumbnailMap.putAll(imageData.getImageRangeThumbnailMap());
                 }
                 rangeValueStart = 1 + (index * segmentDuration);
                 if (rangeValueEnd != -1) {
@@ -1294,7 +1293,8 @@ class TrackSelectionHelper {
                 }
             }
         }
-        return imageRangeRectMap;
+        
+        return new ThumbnailVodInfo(imageRangeThumbnailMap);
     }
 
 

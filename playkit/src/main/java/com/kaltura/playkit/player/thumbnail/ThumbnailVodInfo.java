@@ -11,12 +11,16 @@ import java.util.Map;
 
 public class ThumbnailVodInfo {
 
-    Map<ImageRangeInfo, Rect> imageRangeRectMap;
+    Map<ImageRangeInfo, ThumbnailInfo> imageRangeThumbnailtMap;
 
-    public Map<ImageRangeInfo, Rect> getImageRangeRectMap() {
-        return imageRangeRectMap;
+    public Map<ImageRangeInfo, ThumbnailInfo> getImageRangeThumbnailMap() {
+        return imageRangeThumbnailtMap;
     }
 
+    public ThumbnailVodInfo(Map<ImageRangeInfo,ThumbnailInfo> imageRangeThumbnailMap) {
+        this.imageRangeThumbnailtMap = imageRangeThumbnailMap;
+    }
+    
     public ThumbnailVodInfo(long imageUrlIndex, ImageTrack imageTrack, long mediaDurationMS, long startNumber, boolean isCatchup) {
 
         long imageMultiplier = imageUrlIndex <= 0 ? 0 : imageUrlIndex - 1;
@@ -31,7 +35,7 @@ public class ThumbnailVodInfo {
         long singleImageDuration = (long) Math.ceil(imageTrack.getSegmentDuration() / (imageTrack.getTilesHorizontal() * imageTrack.getTilesVertical()));
 
 
-        imageRangeRectMap = new LinkedHashMap<>();
+        imageRangeThumbnailtMap = new LinkedHashMap<>();
         long rangeStart = startNumber == 1 ? 0 : startNumber;
         long rangeEnd = (((imageMultiplier * imageTrack.getSegmentDuration()) + singleImageDuration) - 1);
         long diff = 0;
@@ -45,21 +49,21 @@ public class ThumbnailVodInfo {
             for (int colIndex = 0; colIndex < imageTrack.getTilesHorizontal(); colIndex++) {
                 //Log.d("GILAD BY POSITION THUMB", "[" + rowIndex + "," + colIndex + "] = [" + rangeStart + "," + rangeEnd + "]");
 
-                ImageRangeInfo imageRangeInfo = new ImageRangeInfo(realImageUrl, rangeStart, rangeEnd);
-                Rect rect =
-                        new Rect((colIndex * widthPerTile),
-                                rowIndex * heightPerTile,
-                                (colIndex * widthPerTile + widthPerTile),
-                                rowIndex * heightPerTile + heightPerTile);
+                ImageRangeInfo imageRangeInfo = new ImageRangeInfo(rangeStart, rangeEnd);
+                ThumbnailInfo thumbnailInfo = new ThumbnailInfo(realImageUrl, colIndex * widthPerTile, rowIndex * heightPerTile, widthPerTile, heightPerTile);
+//                Rect rect =
+//                        new Rect((colIndex * widthPerTile),
+//                                rowIndex * heightPerTile,
+//                                (colIndex * widthPerTile + widthPerTile),
+//                                rowIndex * heightPerTile + heightPerTile);
 
                 if (rangeEnd - diff > mediaDurationMS + imageTrack.getStartNumber()) {
                     continue;
                 }
-                imageRangeRectMap.put(imageRangeInfo, rect);
+                imageRangeThumbnailtMap.put(imageRangeInfo, thumbnailInfo);
                 rangeStart += singleImageDuration;
                 rangeEnd = rangeStart + diff;
             }
         }
-        Log.d("GILAD THUMB", "--------------------------");
     }
 }

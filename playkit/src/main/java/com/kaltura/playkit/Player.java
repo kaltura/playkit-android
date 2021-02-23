@@ -27,6 +27,7 @@ import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
+import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
@@ -531,7 +532,7 @@ public interface Player {
      */
     ThumbnailInfo getThumbnailInfo(long positionMS);
 
-    Map<ImageRangeInfo, Rect> getVodThumbnailInfo();
+    ThumbnailVodInfo getVodThumbnailInfo();
         
     /**
      * Generic getters for playkit controllers.

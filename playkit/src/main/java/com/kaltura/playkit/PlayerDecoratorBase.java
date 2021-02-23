@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit;
 
-import android.graphics.Rect;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,11 +19,10 @@ import androidx.annotation.Nullable;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
-import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 
 import java.util.List;
-import java.util.Map;
 
 public class PlayerDecoratorBase implements Player {
 
@@ -104,7 +102,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public Map<ImageRangeInfo, Rect> getVodThumbnailInfo() {
+    public ThumbnailVodInfo getVodThumbnailInfo() {
         return player.getVodThumbnailInfo();
     }
 

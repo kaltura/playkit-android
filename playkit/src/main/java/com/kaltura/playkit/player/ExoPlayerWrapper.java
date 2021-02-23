@@ -1524,7 +1524,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public Map<ImageRangeInfo, Rect> getVodThumbnailInfo() {
+    public ThumbnailVodInfo getVodThumbnailInfo() {
         log.v("getVodThumbnailInfo");
         if (assertPlayerIsNotNull("getVodThumbnailInfo()")) {
             long playerDuration = player.getDuration();

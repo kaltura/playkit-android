@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit.player;
 
-import android.graphics.Rect;
 
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
@@ -21,13 +20,12 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
-import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -293,7 +291,7 @@ public interface PlayerEngine {
 
     default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
 
-    default Map<ImageRangeInfo, Rect> getVodThumbnailInfo() { return null; }
+    default ThumbnailVodInfo getVodThumbnailInfo() { return null; }
     
     interface EventListener {
         void onEvent(PlayerEvent.Type event);

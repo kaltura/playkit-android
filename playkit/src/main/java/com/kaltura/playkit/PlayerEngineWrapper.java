@@ -13,6 +13,7 @@ import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.player.metadata.PKMetadata;
+import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -202,10 +203,10 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
-    public Map<ImageRangeInfo, Rect> getVodThumbnailInfo() {
+    public ThumbnailVodInfo getVodThumbnailInfo() {
         return playerEngine.getVodThumbnailInfo();
     }
-    
+
     @Override
     public void setProfiler(Profiler profiler) {
         this.playerEngine.setProfiler(profiler);

@@ -13,7 +13,6 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -37,13 +36,12 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
-import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
@@ -675,7 +673,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public Map<ImageRangeInfo, Rect> getVodThumbnailInfo() {
+    public ThumbnailVodInfo getVodThumbnailInfo() {
         log.v("getVodThumbnailInfo");
         if (assertPlayerIsNotNull("getVodThumbnailInfo()")) {
             return player.getVodThumbnailInfo();
