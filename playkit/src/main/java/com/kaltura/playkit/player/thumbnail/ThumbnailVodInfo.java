@@ -1,8 +1,5 @@
 package com.kaltura.playkit.player.thumbnail;
 
-import android.graphics.Rect;
-import android.util.Log;
-
 import com.kaltura.playkit.player.ImageTrack;
 
 import java.util.LinkedHashMap;
@@ -43,8 +40,8 @@ public class ThumbnailVodInfo {
             rangeEnd = rangeStart + rangeEnd;
         }
         diff = rangeEnd - rangeStart;
-        int widthPerTile = imageTrack.getWidth() / imageTrack.getTilesHorizontal();
-        int heightPerTile = imageTrack.getHeight() / imageTrack.getTilesVertical();
+        int widthPerTile = Math.round(imageTrack.getWidth() / imageTrack.getTilesHorizontal());
+        int heightPerTile = Math.round(imageTrack.getHeight() / imageTrack.getTilesVertical());
         for (int rowIndex = 0; rowIndex < imageTrack.getTilesVertical(); rowIndex++) {
             for (int colIndex = 0; colIndex < imageTrack.getTilesHorizontal(); colIndex++) {
                 //Log.d("GILAD BY POSITION THUMB", "[" + rowIndex + "," + colIndex + "] = [" + rangeStart + "," + rangeEnd + "]");

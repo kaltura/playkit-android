@@ -21,15 +21,14 @@ import com.kaltura.playkit.PKAudioCodec;
  *
  */
 public class ImageTrack extends BaseTrack {
-
-
+    
     private String label;
     private long bitrate;
     private String structure;
     private int tilesHorizontal;
     private int tilesVertical;
-    private int width;
-    private int height;
+    private float width;
+    private float height;
     private long segmentDuration;
     private long presentationTimeOffset;
     private long timeScale;
@@ -40,8 +39,8 @@ public class ImageTrack extends BaseTrack {
     ImageTrack(String uniqueId,
                String label,
                long bitrate,
-               int width,
-               int height,
+               float width,
+               float height,
                int tilesHorizontal,
                int tilesVertical,
                long segmentDuration,
@@ -86,11 +85,11 @@ public class ImageTrack extends BaseTrack {
         return tilesVertical;
     }
 
-    public int getWidth() {
+    public float getWidth() {
         return width;
     }
 
-    public int getHeight() {
+    public float getHeight() {
         return height;
     }
 
