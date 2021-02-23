@@ -14,6 +14,7 @@ package com.kaltura.playkit.player;
 
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -40,6 +41,9 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PKVideoCodec;
+import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -47,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1196,7 +1201,7 @@ class TrackSelectionHelper {
                 break;
             }
         }
-        
+
         if (imageTrack == null) {
             return null;
         }
@@ -1212,11 +1217,86 @@ class TrackSelectionHelper {
 
         long imageRealUrlTime = ((seqIdx - 1) * imageTrack.getSegmentDuration());
         String realImageUrl = imageTrack.getImageTemplateUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$",  String.valueOf(imageRealUrlTime));
-        //int imageXColIndex = imageX / imageWidth;
-        //int imageYRowIndex = imageY / imageHeight;
-        //Rect rect = new Rect(imageX, imageY, imageXColIndex * imageWidth + imageWidth, imageYRowIndex * imageHeight + imageHeight);
         return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
     }
+
+    public Map<ImageRangeInfo,Rect> getVodThumbnailInfo(long mediaDurationMS) {
+        if (imageTracks.isEmpty()) {
+            return null;
+        }
+
+        ImageTrack imageTrack = null;
+        for (int index = 0; index < imageTracks.size() ; index++) {
+            if (imageTracks.get(index).getUniqueId().equals(lastSelectedTrackIds[TRACK_TYPE_IMAGE])) {
+                imageTrack = imageTracks.get(index);
+                break;
+            }
+        }
+
+        if (imageTrack == null) {
+            return null;
+        }
+
+        Map<ImageRangeInfo,Rect> imageRangeRectMap = new LinkedHashMap<>();
+
+        boolean isCatchup = false;
+        final long segmentDuration = imageTrack.getSegmentDuration();
+
+        int maxIndex = (int) Math.ceil((mediaDurationMS * 1.0) / segmentDuration);
+        if (imageTrack.getTilesVertical() == 1 && imageTrack.getTilesHorizontal() == 1) {
+            maxIndex = (int) Math.ceil((maxIndex) * ((segmentDuration / 1000.0) / 1));
+        }
+
+        if (maxIndex < imageTrack.getStartNumber()) {
+            isCatchup = true;
+        }
+
+        ThumbnailVodInfo imageData = null;
+        long forLoopStartNumber;
+        long forLoopEndNumber;
+        if (isCatchup) {
+            long rangeValueStart = imageTrack.getStartNumber();
+            long rangeValueEnd = imageTrack.getEndNumber() == -1 ? segmentDuration : imageTrack.getEndNumber();
+
+
+            maxIndex += imageTrack.getStartNumber();
+            rangeValueEnd += imageTrack.getStartNumber();
+
+            for (long index = imageTrack.getStartNumber(); index <= maxIndex; index++) {
+
+                forLoopStartNumber = rangeValueStart;
+                long indexValue = index;
+                imageData = new ThumbnailVodInfo(indexValue, imageTrack, mediaDurationMS, forLoopStartNumber, isCatchup);
+                if (imageData != null) {
+                    imageRangeRectMap.putAll(imageData.getImageRangeRectMap());
+                }
+                rangeValueStart = rangeValueStart + segmentDuration;
+                if (rangeValueEnd != -1) {
+                    rangeValueEnd += segmentDuration;
+                }
+            }
+        } else {
+            long rangeValueStart = imageTrack.getStartNumber();
+            long rangeValueEnd = imageTrack.getEndNumber() == -1 ? segmentDuration : imageTrack.getEndNumber();
+
+            for (long index = imageTrack.getStartNumber(); index <= maxIndex; index++) {
+
+                forLoopStartNumber = rangeValueStart;
+                long indexValue = index;
+
+                imageData = new ThumbnailVodInfo(indexValue, imageTrack, mediaDurationMS, forLoopStartNumber, isCatchup);
+                if (imageData != null) {
+                    imageRangeRectMap.putAll(imageData.getImageRangeRectMap());
+                }
+                rangeValueStart = 1 + (index * segmentDuration);
+                if (rangeValueEnd != -1) {
+                    rangeValueEnd += segmentDuration;
+                }
+            }
+        }
+        return imageRangeRectMap;
+    }
+
 
 
     /**
@@ -1777,4 +1857,9 @@ class TrackSelectionHelper {
             return PKCodecSupport.hasDecoder(codecs, false, allowSoftware);
         }
     }
+
+
+
+
+    
 }

@@ -13,9 +13,9 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.media.MediaCodec;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -29,7 +29,6 @@ import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.MediaItem;
-import com.kaltura.android.exoplayer2.ParserException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
@@ -55,7 +54,6 @@ import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
 import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
-import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParser;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParserForThumbnail;
 import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -77,16 +75,17 @@ import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
+import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.NativeCookieJarBridge;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1511,14 +1510,31 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public ThumbnailInfo getThumbnailInfo(long positionMS) {
-        if(isLive()) {
-            Timeline timeline = player.getCurrentTimeline();
-            if (!timeline.isEmpty()) {
-                positionMS -= timeline.getPeriod(player.getCurrentPeriodIndex(), new Timeline.Period()).getPositionInWindowMs();
+        log.v("getThumbnailInfo positionMS = " + positionMS);
+        if (assertPlayerIsNotNull("getThumbnailInfo()")) {
+            if (isLive()) {
+                Timeline timeline = player.getCurrentTimeline();
+                if (!timeline.isEmpty()) {
+                    positionMS -= timeline.getPeriod(player.getCurrentPeriodIndex(), new Timeline.Period()).getPositionInWindowMs();
+                }
+            }
+            return trackSelectionHelper.getThumbnailInfo(positionMS);
+        }
+        return null;
+    }
+
+    @Override
+    public Map<ImageRangeInfo, Rect> getVodThumbnailInfo() {
+        log.v("getVodThumbnailInfo");
+        if (assertPlayerIsNotNull("getVodThumbnailInfo()")) {
+            long playerDuration = player.getDuration();
+            if (playerDuration > 0) {
+                return trackSelectionHelper.getVodThumbnailInfo(playerDuration);
             }
         }
-        return trackSelectionHelper.getThumbnailInfo(positionMS);
+        return null;
     }
+
 
     private void closeProfilerSession() {
         profiler.onSessionFinished();

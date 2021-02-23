@@ -1,5 +1,7 @@
 package com.kaltura.playkit;
 
+import android.graphics.Rect;
+
 import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
@@ -8,10 +10,12 @@ import com.kaltura.playkit.player.PlayerEngine;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.Profiler;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
-import com.kaltura.playkit.player.ThumbnailInfo;
+import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 
 import java.util.List;
+import java.util.Map;
 
 public class PlayerEngineWrapper implements PlayerEngine {
 
@@ -197,6 +201,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
         return playerEngine.getThumbnailInfo(positionMS);
     }
 
+    @Override
+    public Map<ImageRangeInfo, Rect> getVodThumbnailInfo() {
+        return playerEngine.getVodThumbnailInfo();
+    }
+    
     @Override
     public void setProfiler(Profiler profiler) {
         this.playerEngine.setProfiler(profiler);

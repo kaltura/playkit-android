@@ -1,4 +1,4 @@
-package com.kaltura.playkit.player;
+package com.kaltura.playkit.player.thumbnail;
 
 public class ThumbnailInfo {
     private String url;  // url of the image that contains the thumbnail slice

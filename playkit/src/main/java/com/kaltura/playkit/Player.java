@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit;
 
+import android.graphics.Rect;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -21,13 +23,15 @@ import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
-import com.kaltura.playkit.player.ThumbnailInfo;
+import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public interface Player {
@@ -527,6 +531,8 @@ public interface Player {
      */
     ThumbnailInfo getThumbnailInfo(long positionMS);
 
+    Map<ImageRangeInfo, Rect> getVodThumbnailInfo();
+        
     /**
      * Generic getters for playkit controllers.
      *
