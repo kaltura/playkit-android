@@ -13,7 +13,6 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.media.MediaCodec;
 import android.net.Uri;
 import android.os.Handler;
