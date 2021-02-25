@@ -1564,12 +1564,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public ThumbnailVodInfo getVodThumbnailInfo() {
-        log.v("getVodThumbnailInfo");
-        if (assertPlayerIsNotNull("getVodThumbnailInfo()")) {
+    public ThumbnailVodInfo getThumbnailVodInfo() {
+        log.v("getThumbnailVodInfo");
+        if (assertPlayerIsNotNull("getThumbnailVodInfo()")) {
             long playerDuration = player.getDuration();
             if (playerDuration > 0) {
-                return trackSelectionHelper.getVodThumbnailInfo(playerDuration);
+                return trackSelectionHelper.getThumbnailVodInfo(playerDuration);
             }
         }
         return null;

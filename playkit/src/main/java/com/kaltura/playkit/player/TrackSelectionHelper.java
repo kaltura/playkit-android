@@ -1219,7 +1219,7 @@ class TrackSelectionHelper {
         return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
     }
 
-    public ThumbnailVodInfo getVodThumbnailInfo(long mediaDurationMS) {
+    public ThumbnailVodInfo getThumbnailVodInfo(long mediaDurationMS) {
         if (imageTracks.isEmpty()) {
             return null;
         }

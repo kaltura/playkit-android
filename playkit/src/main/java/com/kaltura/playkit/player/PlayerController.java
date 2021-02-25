@@ -673,10 +673,10 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public ThumbnailVodInfo getVodThumbnailInfo() {
-        log.v("getVodThumbnailInfo");
-        if (assertPlayerIsNotNull("getVodThumbnailInfo()")) {
-            return player.getVodThumbnailInfo();
+    public ThumbnailVodInfo getThumbnailVodInfo() {
+        log.v("getThumbnailVodInfo");
+        if (assertPlayerIsNotNull("getThumbnailVodInfo()")) {
+            return player.getThumbnailVodInfo();
         }
         return null;
     }

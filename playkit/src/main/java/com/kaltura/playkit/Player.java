@@ -528,7 +528,11 @@ public interface Player {
      */
     ThumbnailInfo getThumbnailInfo(long positionMS);
 
-    ThumbnailVodInfo getVodThumbnailInfo();
+    /**
+     * get all the Information for a vod or catchup
+     *
+     */
+    ThumbnailVodInfo getThumbnailVodInfo();
         
     /**
      * Generic getters for playkit controllers.

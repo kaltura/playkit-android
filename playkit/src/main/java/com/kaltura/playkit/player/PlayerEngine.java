@@ -291,7 +291,7 @@ public interface PlayerEngine {
 
     default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
 
-    default ThumbnailVodInfo getVodThumbnailInfo() { return null; }
+    default ThumbnailVodInfo getThumbnailVodInfo() { return null; }
     
     interface EventListener {
         void onEvent(PlayerEvent.Type event);
