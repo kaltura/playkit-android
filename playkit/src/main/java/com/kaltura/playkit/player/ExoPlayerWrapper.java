@@ -61,12 +61,14 @@ import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.ByteArrayDataSink;
 import com.kaltura.android.exoplayer2.upstream.DataSource;
+import com.kaltura.android.exoplayer2.upstream.DataSpec;
 import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
 import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.TeeDataSource;
+import com.kaltura.android.exoplayer2.upstream.TransferListener;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 
 import com.kaltura.playkit.*;
@@ -74,7 +76,6 @@ import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
-import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
@@ -100,7 +101,8 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
 public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
 
-    private ByteArrayDataSink lastDataSink;
+    private ByteArrayDataSink dashLastDataSink;
+    private String dashManifestString;
 
     public interface LoadControlStrategy {
         LoadControl getCustomLoadControl();
@@ -421,19 +423,58 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         PKRequestParams requestParams = sourceConfig.getRequestParams();
-        if (requestParams.headers == null || requestParams.headers.isEmpty()) {
-            //return null;
-        }
+        //if (requestParams.headers == null || requestParams.headers.isEmpty()) {
+        //    return null;
+        //}
 
         final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
-        final DataSource.Factory teedDtaSourceFactory = () -> {
-            lastDataSink = new ByteArrayDataSink();
-            return new TeeDataSource(dataSourceFactory.createDataSource(), lastDataSink);
-        };
+
 
         MediaSource mediaSource;
         switch (format) {
             case dash:
+                final DataSource.Factory teedDtaSourceFactory = () -> {
+                    dashManifestString = null;
+                    dashLastDataSink = new ByteArrayDataSink();
+                    TeeDataSource teeDataSource = new TeeDataSource(dataSourceFactory.createDataSource(), dashLastDataSink);
+                    teeDataSource.addTransferListener(new TransferListener() {
+                        @Override
+                        public void onTransferInitializing(DataSource dataSource, DataSpec dataSpec, boolean b) {
+
+                        }
+
+                        @Override
+                        public void onTransferStart(DataSource dataSource, DataSpec dataSpec, boolean b) {
+
+                        }
+
+                        @Override
+                        public void onBytesTransferred(DataSource dataSource, DataSpec dataSpec, boolean b, int i) {
+
+                        }
+
+                        @Override
+                        public void onTransferEnd(DataSource dataSource, DataSpec dataSpec, boolean b) {
+                            log.d("teeDataSource onTransferEnd");
+                            if (dashManifestString != null) {
+                                return;
+                            }
+                            if (dashLastDataSink == null) {
+                                return;
+                            }
+
+                            byte[] bytes = dashLastDataSink.getData();
+                            try {
+                                dashManifestString = new String(bytes, "UTF-8");
+                                //log.d("teeDataSource manifest  " + dashManifestString);
+                            } catch (IOException e) {
+                                log.e("teeDataSource imageTracks assemble error " + e.getMessage());
+                            }
+                        }
+                    });
+                    return teeDataSource;
+                };
+
                 mediaSource = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), teedDtaSourceFactory)
                         .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
@@ -882,7 +923,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
 
         log.d("onTracksChanged");
-        String dashManifestString = "";
 
         //if onTracksChanged happened when application went background, do not update the tracks.
         if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
@@ -890,15 +930,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
                 CustomDashManifest customDashManifest = null;
-                if (lastDataSink != null && player.getCurrentManifest() instanceof DashManifest) {
-                    byte[] bytes = lastDataSink.getData();
+                if (dashLastDataSink != null && player.getCurrentManifest() instanceof DashManifest) {
+                    byte[] bytes = dashLastDataSink.getData();
                     try {
-                        dashManifestString = new String(bytes, "UTF-8");
                         customDashManifest = new CustomDashManifestParser().parse(player.getMediaItemAt(0).playbackProperties.uri, dashManifestString);
                     } catch (IOException e) {
                         log.e("imageTracks assemble error " + e.getMessage());
                     } finally {
-                        lastDataSink = null;
+                        dashLastDataSink = null;
+                        dashManifestString = null;
                     }
                 }
                 shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(trackSelections, customDashManifest);
