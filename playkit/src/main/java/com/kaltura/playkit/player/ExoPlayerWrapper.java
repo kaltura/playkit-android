@@ -428,7 +428,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
         final DataSource.Factory teedDtaSourceFactory = () -> {
             lastDataSink = new ByteArrayDataSink();
-            return new TeeDataSource(dataSourceFactory.createDataSource(), lastDataSink);            };
+            return new TeeDataSource(dataSourceFactory.createDataSource(), lastDataSink);
+        };
 
         MediaSource mediaSource;
         switch (format) {
