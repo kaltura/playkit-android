@@ -213,6 +213,9 @@ class TrackSelectionHelper {
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
+            if (!tracksInfo.getImageTracks().isEmpty()) {
+                tracksInfoListener.onImageTrackChanged();
+            }
         }
 
         return true;
@@ -346,7 +349,6 @@ class TrackSelectionHelper {
             if (NONE.equals(requestedChangeTrackIds[TRACK_TYPE_IMAGE])) {
                 log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
                 lastSelectedTrackIds[TRACK_TYPE_IMAGE] = imageTracks.get(0).getUniqueId();
-                tracksInfoListener.onImageTrackChanged();
             }
         }
 
