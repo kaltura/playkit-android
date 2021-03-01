@@ -102,11 +102,6 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public ThumbnailVodInfo getThumbnailVodInfo() {
-        return player.getThumbnailVodInfo();
-    }
-
-    @Override
     public void play() {
         player.play();
     }

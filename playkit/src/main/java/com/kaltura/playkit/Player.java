@@ -527,13 +527,7 @@ public interface Player {
      * @param positionMS - relevant image for given player position.
      */
     ThumbnailInfo getThumbnailInfo(long positionMS);
-
-    /**
-     * get all the Information for a vod or catchup
-     *
-     */
-    ThumbnailVodInfo getThumbnailVodInfo();
-        
+    
     /**
      * Generic getters for playkit controllers.
      *

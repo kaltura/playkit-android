@@ -671,16 +671,7 @@ public class PlayerController implements Player {
         }
         return null;
     }
-
-    @Override
-    public ThumbnailVodInfo getThumbnailVodInfo() {
-        log.v("getThumbnailVodInfo");
-        if (assertPlayerIsNotNull("getThumbnailVodInfo()")) {
-            return player.getThumbnailVodInfo();
-        }
-        return null;
-    }
-
+    
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         log.v("updateSubtitleStyle");
