@@ -4,11 +4,15 @@ import com.kaltura.playkit.utils.Consts;
 
 public class PKLowLatencyConfig {
 
-    private long targetOffsetMs = Consts.TIME_UNSET;
+    private long targetOffsetMs;
     private long minOffsetMs = Consts.TIME_UNSET;
     private long maxOffsetMs = Consts.TIME_UNSET;
     private float minPlaybackSpeed = Consts.DEFAULT_FALLBACK_MIN_PLAYBACK_SPEED;
     private float maxPlaybackSpeed = Consts.DEFAULT_FALLBACK_MAX_PLAYBACK_SPEED;
+
+    public PKLowLatencyConfig(long targetOffsetMs) {
+        this.targetOffsetMs = targetOffsetMs;
+    }
 
     public long getTargetOffsetMs() {
         return targetOffsetMs;
