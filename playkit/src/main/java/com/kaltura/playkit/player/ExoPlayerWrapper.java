@@ -519,7 +519,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         .setClipStartPositionMs(0L)
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
 
-        if (playerSettings.getPKLowLatencyConfig() != null) {
+        if (playerSettings.getPKLowLatencyConfig() != null &&
+                (sourceConfig.mediaEntryType == PKMediaEntry.MediaEntryType.Live || sourceConfig.mediaEntryType == PKMediaEntry.MediaEntryType.DvrLive)) {
             builder.setLiveTargetOffsetMs(playerSettings.getPKLowLatencyConfig().getTargetOffsetMs())
                     .setLiveMinOffsetMs(playerSettings.getPKLowLatencyConfig().getMinOffsetMs())
                     .setLiveMaxOffsetMs(playerSettings.getPKLowLatencyConfig().getMaxOffsetMs())
@@ -1583,7 +1584,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
         playerSettings.setPKLowLatencyConfig(pkLowLatencyConfig);
-        if (player != null && player.getCurrentMediaItem() != null && player.getCurrentMediaItem().buildUpon() != null) {
+        if (player != null && player.getCurrentMediaItem() != null) {
             player.setMediaItem(player.getCurrentMediaItem().buildUpon()
                     .setLiveTargetOffsetMs(pkLowLatencyConfig.getTargetOffsetMs())
                     .setLiveMinOffsetMs(pkLowLatencyConfig.getMinOffsetMs())

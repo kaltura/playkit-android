@@ -14,6 +14,17 @@ public class PKLowLatencyConfig {
         this.targetOffsetMs = targetOffsetMs;
     }
 
+    /**
+     * Reset the Low Latency Configuration
+     * Now Player will use the media-defined default values.
+     */
+    public final static PKLowLatencyConfig UNSET =
+            new PKLowLatencyConfig(Consts.TIME_UNSET)
+                    .setMaxOffsetMs(Consts.TIME_UNSET)
+                    .setMinOffsetMs(Consts.TIME_UNSET)
+                    .setMinPlaybackSpeed(Consts.DEFAULT_FALLBACK_MIN_PLAYBACK_SPEED)
+                    .setMaxPlaybackSpeed(Consts.DEFAULT_FALLBACK_MAX_PLAYBACK_SPEED);
+
     public long getTargetOffsetMs() {
         return targetOffsetMs;
     }
@@ -73,7 +84,7 @@ public class PKLowLatencyConfig {
      * when trying to reach the target live offset.
      */
     public PKLowLatencyConfig setMinPlaybackSpeed(float minPlaybackSpeed) {
-        this.minPlaybackSpeed = 
+        this.minPlaybackSpeed =
                 minPlaybackSpeed != Consts.RATE_UNSET ? minPlaybackSpeed : Consts.DEFAULT_FALLBACK_MIN_PLAYBACK_SPEED;
         return this;
     }
