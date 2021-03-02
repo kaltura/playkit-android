@@ -520,7 +520,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
 
         if (playerSettings.getPKLowLatencyConfig() != null &&
-                (sourceConfig.mediaEntryType == PKMediaEntry.MediaEntryType.Live || sourceConfig.mediaEntryType == PKMediaEntry.MediaEntryType.DvrLive)) {
+                (isLiveMediaWithDvr() || isLiveMediaWithoutDvr())) {
             builder.setLiveTargetOffsetMs(playerSettings.getPKLowLatencyConfig().getTargetOffsetMs())
                     .setLiveMinOffsetMs(playerSettings.getPKLowLatencyConfig().getMinOffsetMs())
                     .setLiveMaxOffsetMs(playerSettings.getPKLowLatencyConfig().getMaxOffsetMs())
@@ -1136,6 +1136,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return false;
     }
 
+    private boolean isLiveMediaWithDvr() {
+        if (sourceConfig != null) {
+            return (PKMediaEntry.MediaEntryType.DvrLive == sourceConfig.mediaEntryType);
+        }
+        return false;
+    }
+
     @Override
     public void destroy() {
         log.v("destroy");
@@ -1583,6 +1590,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        if (!isLiveMediaWithDvr() && !isLiveMediaWithoutDvr()) {
+            return;
+        }
+        
+        if (pkLowLatencyConfig == null) {
+            pkLowLatencyConfig = PKLowLatencyConfig.UNSET;
+        }
+
         playerSettings.setPKLowLatencyConfig(pkLowLatencyConfig);
         if (player != null && player.getCurrentMediaItem() != null) {
             player.setMediaItem(player.getCurrentMediaItem().buildUpon()
