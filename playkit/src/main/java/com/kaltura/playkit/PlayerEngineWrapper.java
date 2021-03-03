@@ -8,8 +8,8 @@ import com.kaltura.playkit.player.PlayerEngine;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.Profiler;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
-import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.player.metadata.PKMetadata;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 
 import java.util.List;
