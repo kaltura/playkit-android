@@ -19,7 +19,6 @@ import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
-import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 
 import java.util.List;
 
