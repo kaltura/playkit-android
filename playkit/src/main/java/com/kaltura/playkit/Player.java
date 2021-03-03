@@ -24,7 +24,6 @@ import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
-import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
