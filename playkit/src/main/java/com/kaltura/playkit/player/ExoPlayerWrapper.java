@@ -429,7 +429,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
 
-
         MediaSource mediaSource;
         switch (format) {
             case dash:
