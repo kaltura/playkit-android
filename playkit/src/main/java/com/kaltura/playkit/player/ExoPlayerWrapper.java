@@ -386,13 +386,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
         }
 
-        MediaItem.DrmConfiguration drmConfiguration = Objects.requireNonNull(mediaItem.playbackProperties).drmConfiguration;
-        if (!(sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource) &&
-                drmConfiguration != null &&
-                drmConfiguration.licenseUri != null &&
-                !TextUtils.isEmpty(drmConfiguration.licenseUri.toString())) {
-            drmSessionManager = getDeferredDRMSessionManager();
-            drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
+        if (mediaItem.playbackProperties != null) {
+            MediaItem.DrmConfiguration drmConfiguration = mediaItem.playbackProperties.drmConfiguration;
+            if (!(sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource) &&
+                    drmConfiguration != null &&
+                    drmConfiguration.licenseUri != null &&
+                    !TextUtils.isEmpty(drmConfiguration.licenseUri.toString())) {
+                drmSessionManager = getDeferredDRMSessionManager();
+                drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
+            }
         }
 
         if (drmSessionManager != null) {
