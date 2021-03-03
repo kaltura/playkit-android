@@ -21,6 +21,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import com.google.common.base.Charsets;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
@@ -91,6 +92,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -308,6 +310,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (!isLocalMediaItem(sourceConfig) && !isLocalMediaSource(sourceConfig)) {
             mediaSource = buildInternalExoMediaSource(mediaItem, sourceConfig);
         }
+
         if (mediaItem != null) {
             profiler.onPrepareStarted(sourceConfig);
             if (mediaSource == null) {
@@ -352,6 +355,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private MediaItem buildExoMediaItem(PKMediaSourceConfig sourceConfig) {
         List<PKExternalSubtitle> externalSubtitleList = null;
 
+        if (sourceConfig == null || sourceConfig.mediaSource == null) {
+            return null;
+        }
+
         if (sourceConfig.getExternalSubtitleList() != null) {
             externalSubtitleList = sourceConfig.getExternalSubtitleList().size() > 0 ?
                     sourceConfig.getExternalSubtitleList() : null;
@@ -379,9 +386,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
         }
 
-        MediaItem.DrmConfiguration drmConfiguration = mediaItem.playbackProperties.drmConfiguration;
+        MediaItem.DrmConfiguration drmConfiguration = Objects.requireNonNull(mediaItem.playbackProperties).drmConfiguration;
         if (!(sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource) &&
-
                 drmConfiguration != null &&
                 drmConfiguration.licenseUri != null &&
                 !TextUtils.isEmpty(drmConfiguration.licenseUri.toString())) {
@@ -423,10 +429,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         PKRequestParams requestParams = sourceConfig.getRequestParams();
-        //if (requestParams.headers == null || requestParams.headers.isEmpty()) {
-        //    return null;
-        //}
-
         final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
 
         MediaSource mediaSource;
@@ -438,22 +440,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     TeeDataSource teeDataSource = new TeeDataSource(dataSourceFactory.createDataSource(), dashLastDataSink);
                     teeDataSource.addTransferListener(new TransferListener() {
                         @Override
-                        public void onTransferInitializing(DataSource dataSource, DataSpec dataSpec, boolean b) {
+                        public void onTransferInitializing(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
 
                         }
 
                         @Override
-                        public void onTransferStart(DataSource dataSource, DataSpec dataSpec, boolean b) {
+                        public void onTransferStart(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
 
                         }
 
                         @Override
-                        public void onBytesTransferred(DataSource dataSource, DataSpec dataSpec, boolean b, int i) {
+                        public void onBytesTransferred(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b, int i) {
 
                         }
 
                         @Override
-                        public void onTransferEnd(DataSource dataSource, DataSpec dataSpec, boolean b) {
+                        public void onTransferEnd(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
                             log.d("teeDataSource onTransferEnd");
                             if (dashManifestString != null) {
                                 return;
@@ -463,12 +465,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                             }
 
                             byte[] bytes = dashLastDataSink.getData();
-                            try {
-                                dashManifestString = new String(bytes, "UTF-8");
-                                //log.d("teeDataSource manifest  " + dashManifestString);
-                            } catch (IOException e) {
-                                log.e("teeDataSource imageTracks assemble error " + e.getMessage());
-                            }
+                            dashManifestString = new String(bytes, Charsets.UTF_8);
+                            //log.d("teeDataSource manifest  " + dashManifestString);
                         }
                     });
                     return teeDataSource;
@@ -821,7 +819,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             log.d("onPlayerError BehindLiveWindowException received, re-preparing player");
             MediaItem mediaItem = buildExoMediaItem(sourceConfig);
             if (mediaItem != null) {
-                player.setMediaItems(Collections.singletonList(mediaItem), 0, C.TIME_UNSET);
+                PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
+                if (format == null) {
+                    player.setMediaItems(Collections.singletonList(mediaItem), 0, C.TIME_UNSET);
+                } else {
+                    player.setMediaSources(Collections.singletonList(buildInternalExoMediaSource(mediaItem, sourceConfig)), 0, playerPosition == TIME_UNSET ? 0 : playerPosition);
+                }
                 player.prepare();
             } else {
                 sendPrepareSourceError(sourceConfig);
