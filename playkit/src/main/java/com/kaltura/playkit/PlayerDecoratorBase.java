@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit;
 
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
