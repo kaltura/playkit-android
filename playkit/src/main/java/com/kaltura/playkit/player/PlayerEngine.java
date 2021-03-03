@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit.player;
 
-
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlaybackInfo;
@@ -26,7 +25,6 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 import java.util.List;
-
 
 /**
  * Interface that connect between {@link PlayerController} and actual player engine

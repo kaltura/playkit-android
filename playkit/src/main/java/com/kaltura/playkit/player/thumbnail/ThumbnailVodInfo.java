@@ -46,11 +46,6 @@ public class ThumbnailVodInfo {
             for (int colIndex = 0; colIndex < imageTrack.getTilesHorizontal(); colIndex++) {
                 ImageRangeInfo imageRangeInfo = new ImageRangeInfo(rangeStart, rangeEnd);
                 ThumbnailInfo thumbnailInfo = new ThumbnailInfo(realImageUrl, colIndex * widthPerTile, rowIndex * heightPerTile, widthPerTile, heightPerTile);
-//                Rect rect =
-//                        new Rect((colIndex * widthPerTile),
-//                                rowIndex * heightPerTile,
-//                                (colIndex * widthPerTile + widthPerTile),
-//                                rowIndex * heightPerTile + heightPerTile);
 
                 if (rangeEnd - diff > mediaDurationMS + imageTrack.getStartNumber()) {
                     continue;
