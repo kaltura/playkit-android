@@ -476,7 +476,6 @@ class ExoPlayerView extends BaseExoplayerView {
      * @return List of modified Cues
      */
     public List<Cue> getModifiedSubtitlePosition(List<Cue> cueList, PKSubtitlePosition subtitleViewPosition) {
-
         if (subtitleViewPosition != null && cueList != null && !cueList.isEmpty()) {
             List<Cue> newCueList = new ArrayList<>();
             for (Cue cue : cueList) {
