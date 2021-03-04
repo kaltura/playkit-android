@@ -61,6 +61,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
     private PKSubtitlePosition subtitleViewPosition;
     private boolean isVideoViewVisible;
+    private List<Cue> lastReportedCues;
 
     ExoPlayerView(Context context) {
         this(context, null);
@@ -210,7 +211,7 @@ class ExoPlayerView extends BaseExoplayerView {
         if (oldTextComponent != null) {
             oldTextComponent.removeTextOutput(componentListener);
         }
-
+        lastReportedCues = null;
         contentFrame.removeView(videoSurface);
     }
 
@@ -281,6 +282,15 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @Override
+    public void applySubtitlesChanges() {
+
+        if (subtitleView != null && lastReportedCues != null) {
+            subtitleView.onCues(getModifiedSubtitlePosition(lastReportedCues, subtitleViewPosition));
+            lastReportedCues = null;
+        }
+    }
+
+    @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
         if (videoSurface instanceof SurfaceView) {
@@ -332,6 +342,7 @@ class ExoPlayerView extends BaseExoplayerView {
 
             if (subtitleViewPosition != null) {
                 cues = getModifiedSubtitlePosition(cues, subtitleViewPosition);
+                lastReportedCues = cues;
             }
 
             if (subtitleView != null) {
