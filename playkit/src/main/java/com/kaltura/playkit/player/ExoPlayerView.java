@@ -338,10 +338,9 @@ class ExoPlayerView extends BaseExoplayerView {
 
         @Override
         public void onCues(List<Cue> cues) {
-
+            lastReportedCues = cues;
             if (subtitleViewPosition != null) {
                 cues = getModifiedSubtitlePosition(cues, subtitleViewPosition);
-                lastReportedCues = cues;
             }
 
             if (subtitleView != null) {
