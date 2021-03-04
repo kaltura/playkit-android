@@ -35,6 +35,21 @@ public class ABRSettings {
         return this;
     }
 
+    /**
+     * Sets the initial bitrate estimate in bits per second that should be assumed when a bandwidth
+     * estimate is unavailable.
+     *
+     * <br>
+     * <br>
+     * If App is using {@link com.kaltura.playkit.Player#updateABRSettings(ABRSettings)}
+     * <br>
+     * Then Using {@link ABRSettings#setInitialBitrateEstimate(long)} is unaffected because
+     * initial bitrate is only meant at the start of the playback
+     * <br>
+     *
+     * @param initialBitrateEstimate The initial bitrate estimate in bits per second.
+     * @return
+     */
     public ABRSettings setInitialBitrateEstimate(long initialBitrateEstimate) {
         this.initialBitrateEstimate = initialBitrateEstimate;
         return this;

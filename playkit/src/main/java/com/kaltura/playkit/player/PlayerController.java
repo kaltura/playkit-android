@@ -679,6 +679,14 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+        log.v("updateSurfaceAspectRatioResizeMode");
+        if (assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")) {
+            player.updateABRSettings(abrSettings);
+        }
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         Assert.shouldNeverHappen();
     }

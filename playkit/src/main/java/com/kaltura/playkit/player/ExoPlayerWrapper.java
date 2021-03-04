@@ -211,6 +211,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 .setLoadControl(getUpdatedLoadControl())
                 .setMediaSourceFactory(mediaSourceFactory)
                 .setBandwidthMeter(bandwidthMeter).build();
+
         player.setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus= */ playerSettings.isHandleAudioFocus());
         player.setHandleAudioBecomingNoisy(playerSettings.isHandleAudioBecomingNoisyEnabled());
         player.setWakeMode(playerSettings.getWakeMode().ordinal());
@@ -1563,6 +1564,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             configureSubtitleView();
             sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);
         }
+    }
+
+    @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+        playerSettings.setABRSettings(abrSettings);
+        boolean isABREnabled = playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE;
+        if(isABREnabled) {
+            overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+        }
+        sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
     }
 
     @Override

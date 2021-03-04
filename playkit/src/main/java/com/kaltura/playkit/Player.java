@@ -539,6 +539,16 @@ public interface Player {
     void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
     /**
+     * Update ABRSettings
+     * <br>
+     * Updating {@link ABRSettings#setInitialBitrateEstimate(long)} is unaffected because
+     * initial bitrate is only meant at the start of the playback
+     * <br>
+     * @param abrSettings new ABR Settings
+     */
+    void updateABRSettings(ABRSettings abrSettings);
+
+    /**
      * Add listener by event type as Class object. This generics-based method allows the caller to
      * avoid the otherwise required cast.
      * <p>

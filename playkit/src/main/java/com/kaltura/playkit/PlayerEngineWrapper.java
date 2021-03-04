@@ -1,5 +1,6 @@
 package com.kaltura.playkit;
 
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
@@ -199,6 +200,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         playerEngine.updateSubtitleStyle(subtitleStyleSettings);
+    }
+
+    @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+        playerEngine.updateABRSettings(abrSettings);
     }
 
     @Override
