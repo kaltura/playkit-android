@@ -30,6 +30,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKTracksAvailable;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
@@ -69,6 +70,7 @@ public class PlayerController implements Player {
     private UUID playerSessionId = UUID.randomUUID();
 
     private long targetSeekPosition;
+    private boolean isTracksUpdated;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
@@ -682,6 +684,7 @@ public class PlayerController implements Player {
     public void updateABRSettings(ABRSettings abrSettings) {
         log.v("updateSurfaceAspectRatioResizeMode");
         if (assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")) {
+            isTracksUpdated = true;
             player.updateABRSettings(abrSettings);
         }
     }
@@ -807,7 +810,9 @@ public class PlayerController implements Player {
                         }
                         break;
                     case TRACKS_AVAILABLE:
-                        event = new PlayerEvent.TracksAvailable(player.getPKTracks());
+                        PKTracksAvailable pkTracksAvailable = isTracksUpdated ? PKTracksAvailable.UPDATED: PKTracksAvailable.NEW;
+                        event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailable);
+                        isTracksUpdated = false;
                         break;
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
