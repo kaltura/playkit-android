@@ -24,7 +24,6 @@ public class ImageTrack extends BaseTrack {
     
     private String label;
     private long bitrate;
-    private String structure;
     private int tilesHorizontal;
     private int tilesVertical;
     private float width;
@@ -72,11 +71,7 @@ public class ImageTrack extends BaseTrack {
     public long getBitrate() {
         return bitrate;
     }
-
-    public String getStructure() {
-        return structure;
-    }
-
+    
     public int getTilesHorizontal() {
         return tilesHorizontal;
     }
