@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 
-public class ThumbnailVodInfo {
+class ThumbnailVodInfo {
 
     Map<ImageRangeInfo, ThumbnailInfo> imageRangeThumbnailtMap;
 
