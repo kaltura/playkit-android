@@ -1646,7 +1646,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private void configureSubtitleView() {
-        SubtitleView exoPlayerSubtitleView = null;
+        SubtitleView exoPlayerSubtitleView;
         SubtitleStyleSettings subtitleStyleSettings = playerSettings.getSubtitleStyleSettings();
         if(exoPlayerView != null) {
             if (subtitleStyleSettings.getSubtitlePosition() != null) {
@@ -1655,6 +1655,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             exoPlayerSubtitleView = exoPlayerView.getSubtitleView();
         } else {
             log.e("ExoPlayerView is not available");
+            return;
         }
 
         if (exoPlayerSubtitleView != null) {
@@ -1662,7 +1663,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * subtitleStyleSettings.getTextSizeFraction());
         } else {
             log.e("Subtitle View is not available");
+            return;
         }
+        exoPlayerView.applySubtitlesChanges();
     }
 
     @Override
