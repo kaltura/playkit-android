@@ -90,6 +90,7 @@ class TrackSelectionHelper {
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
+    private List<VideoTrack> originalVideoTracks = new ArrayList<>();
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
 
@@ -831,6 +832,13 @@ class TrackSelectionHelper {
                     PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
                     tracksErrorListener.onTracksOverrideABRError(currentError);
                 }
+            }
+
+            if (originalVideoTracks.isEmpty()) {
+                originalVideoTracks = new ArrayList<>(videoTracks);
+            } else {
+                videoTracks.clear();
+                videoTracks.addAll(originalVideoTracks);
             }
 
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
