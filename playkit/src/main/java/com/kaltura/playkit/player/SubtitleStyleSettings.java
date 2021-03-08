@@ -188,7 +188,7 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    public SubtitleStyleSettings setSystemTypeface(String fontFamilyName, SubtitleTypefaceStyle style ) {
+    public SubtitleStyleSettings setSystemTypeface(String fontFamilyName, SubtitleTypefaceStyle style) {
         if (fontFamilyName == null) {
             subtitleTypeface = Typeface.DEFAULT;
         } else {
