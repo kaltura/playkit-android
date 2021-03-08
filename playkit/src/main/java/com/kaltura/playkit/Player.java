@@ -522,10 +522,11 @@ public interface Player {
 
     /**
      * get the Information for a thumbnailImage by position
+     * if positionMS is not passed current position will be used
      *
-     * @param positionMS - relevant image for given player position.
+     * @param positionMS - relevant image for given player position. (optional)
      */
-    ThumbnailInfo getThumbnailInfo(long positionMS);
+    ThumbnailInfo getThumbnailInfo(long ... positionMS);
     
     /**
      * Generic getters for playkit controllers.

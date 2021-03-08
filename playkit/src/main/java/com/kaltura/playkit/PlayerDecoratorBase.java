@@ -95,7 +95,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) {
         return player.getThumbnailInfo(positionMS);
     }
 

@@ -663,10 +663,14 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) {
         log.v("getThumbnailInfo");
         if (assertPlayerIsNotNull("getThumbnailInfo()")) {
-            return player.getThumbnailInfo(positionMS);
+            if (positionMS.length > 0) {
+                return player.getThumbnailInfo(positionMS[0]);
+            } else {
+                return player.getThumbnailInfo(player.getCurrentPosition());
+            }
         }
         return null;
     }
