@@ -34,7 +34,7 @@ public class SubtitleStyleSettings {
         DEFAULT, DEFAULT_BOLD, MONOSPACE, SERIF, SANS_SERIF
     }
 
-    public enum SubtitleSTypefaceStyle {
+    public enum SubtitleTypefaceStyle {
          NORMAL, BOLD, ITALIC, BOLD_ITALIC
     }
 
