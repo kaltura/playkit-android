@@ -20,7 +20,6 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
-import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -289,8 +288,6 @@ public interface PlayerEngine {
 
     default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
 
-    default ThumbnailVodInfo getThumbnailVodInfo() { return null; }
-    
     interface EventListener {
         void onEvent(PlayerEvent.Type event);
     }

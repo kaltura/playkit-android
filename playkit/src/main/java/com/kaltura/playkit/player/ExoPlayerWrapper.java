@@ -77,7 +77,6 @@ import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
-import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.NativeCookieJarBridge;
@@ -1566,19 +1565,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
         return null;
     }
-
-    @Override
-    public ThumbnailVodInfo getThumbnailVodInfo() {
-        log.v("getThumbnailVodInfo");
-        if (assertPlayerIsNotNull("getThumbnailVodInfo()")) {
-            long playerDuration = player.getDuration();
-            if (playerDuration > 0) {
-                return trackSelectionHelper.getThumbnailVodInfo(playerDuration);
-            }
-        }
-        return null;
-    }
-
 
     private void closeProfilerSession() {
         profiler.onSessionFinished();

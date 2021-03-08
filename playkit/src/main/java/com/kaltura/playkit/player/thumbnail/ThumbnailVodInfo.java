@@ -35,7 +35,7 @@ class ThumbnailVodInfo {
         imageRangeThumbnailtMap = new LinkedHashMap<>();
         long rangeStart = startNumber == 1 ? 0 : startNumber;
         long rangeEnd = (((imageMultiplier * imageTrack.getSegmentDuration()) + singleImageDuration) - 1);
-        long diff = 0;
+        long diff;
         if (rangeStart > rangeEnd) {
             rangeEnd = rangeStart + rangeEnd;
         }

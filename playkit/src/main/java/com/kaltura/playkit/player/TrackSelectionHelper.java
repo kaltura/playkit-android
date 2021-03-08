@@ -42,7 +42,6 @@ import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
-import com.kaltura.playkit.player.thumbnail.ThumbnailVodInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -1220,86 +1219,6 @@ class TrackSelectionHelper {
         String realImageUrl = imageTrack.getImageTemplateUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$",  String.valueOf(imageRealUrlTime));
         return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
     }
-
-    public ThumbnailVodInfo getThumbnailVodInfo(long mediaDurationMS) {
-        if (imageTracks.isEmpty()) {
-            return null;
-        }
-
-        ImageTrack imageTrack = null;
-        for (int index = 0; index < imageTracks.size() ; index++) {
-            if (imageTracks.get(index).getUniqueId().equals(lastSelectedTrackIds[TRACK_TYPE_IMAGE])) {
-                imageTrack = imageTracks.get(index);
-                break;
-            }
-        }
-
-        if (imageTrack == null) {
-            return null;
-        }
-
-        Map<ImageRangeInfo,ThumbnailInfo> imageRangeThumbnailMap = new LinkedHashMap<>();
-
-        boolean isCatchup = false;
-        final long segmentDuration = imageTrack.getSegmentDuration();
-
-        int maxIndex = (int) Math.ceil((mediaDurationMS * 1.0) / segmentDuration);
-        if (imageTrack.getTilesVertical() == 1 && imageTrack.getTilesHorizontal() == 1) {
-            maxIndex = (int) Math.ceil((maxIndex) * ((segmentDuration / 1000.0) / 1));
-        }
-
-        if (maxIndex < imageTrack.getStartNumber()) {
-            isCatchup = true;
-        }
-
-        ThumbnailVodInfo imageData = null;
-        long forLoopStartNumber;
-        long forLoopEndNumber;
-        if (isCatchup) {
-            long rangeValueStart = imageTrack.getStartNumber();
-            long rangeValueEnd = imageTrack.getEndNumber() == -1 ? segmentDuration : imageTrack.getEndNumber();
-
-
-            maxIndex += imageTrack.getStartNumber();
-            rangeValueEnd += imageTrack.getStartNumber();
-
-            for (long index = imageTrack.getStartNumber(); index <= maxIndex; index++) {
-
-                forLoopStartNumber = rangeValueStart;
-                long indexValue = index;
-                imageData = new ThumbnailVodInfo(indexValue, imageTrack, mediaDurationMS, forLoopStartNumber, isCatchup);
-                if (imageData != null) {
-                    imageRangeThumbnailMap.putAll(imageData.getImageRangeThumbnailMap());
-                }
-                rangeValueStart = rangeValueStart + segmentDuration;
-                if (rangeValueEnd != -1) {
-                    rangeValueEnd += segmentDuration;
-                }
-            }
-        } else {
-            long rangeValueStart = imageTrack.getStartNumber();
-            long rangeValueEnd = imageTrack.getEndNumber() == -1 ? segmentDuration : imageTrack.getEndNumber();
-
-            for (long index = imageTrack.getStartNumber(); index <= maxIndex; index++) {
-
-                forLoopStartNumber = rangeValueStart;
-                long indexValue = index;
-
-                imageData = new ThumbnailVodInfo(indexValue, imageTrack, mediaDurationMS, forLoopStartNumber, isCatchup);
-                if (imageData != null) {
-                    imageRangeThumbnailMap.putAll(imageData.getImageRangeThumbnailMap());
-                }
-                rangeValueStart = 1 + (index * segmentDuration);
-                if (rangeValueEnd != -1) {
-                    rangeValueEnd += segmentDuration;
-                }
-            }
-        }
-
-        return new ThumbnailVodInfo(imageRangeThumbnailMap);
-    }
-
-
 
     /**
      * Checks if adaptive track for the specified group was created.
