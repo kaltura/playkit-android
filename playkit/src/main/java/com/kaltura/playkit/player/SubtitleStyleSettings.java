@@ -189,7 +189,7 @@ public class SubtitleStyleSettings {
     }
 
     public SubtitleStyleSettings setSystemTypeface(String fontFamilyName, SubtitleTypefaceStyle style) {
-        if (fontFamilyName == null) {
+        if (fontFamilyName == null || style == null) {
             subtitleTypeface = Typeface.DEFAULT;
         } else {
             subtitleTypeface = Typeface.create(fontFamilyName, style.ordinal());
