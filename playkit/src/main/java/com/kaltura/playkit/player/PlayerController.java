@@ -70,7 +70,7 @@ public class PlayerController implements Player {
     private UUID playerSessionId = UUID.randomUUID();
 
     private long targetSeekPosition;
-    private boolean isTracksUpdated;
+    private boolean isVideoTracksUpdated;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
@@ -682,9 +682,17 @@ public class PlayerController implements Player {
 
     @Override
     public void updateABRSettings(ABRSettings abrSettings) {
-        log.v("updateSurfaceAspectRatioResizeMode");
-        if (assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")) {
-            isTracksUpdated = true;
+        log.v("updateABRSettings");
+        if (abrSettings != null) {
+            if (abrSettings.getMinVideoBitrate().longValue() == playerSettings.getAbrSettings().getMinVideoBitrate().longValue() &&
+                    abrSettings.getMaxVideoBitrate().longValue() == playerSettings.getAbrSettings().getMaxVideoBitrate().longValue()) {
+                log.w("Existing and Incoming ABR Settings are same");
+                return;
+            }
+        }
+
+        if (assertPlayerIsNotNull("updateABRSettings")) {
+            isVideoTracksUpdated = true;
             player.updateABRSettings(abrSettings);
         }
     }
@@ -810,9 +818,9 @@ public class PlayerController implements Player {
                         }
                         break;
                     case TRACKS_AVAILABLE:
-                        PKTracksAvailable pkTracksAvailable = isTracksUpdated ? PKTracksAvailable.UPDATED: PKTracksAvailable.NEW;
+                        PKTracksAvailable pkTracksAvailable = isVideoTracksUpdated ? PKTracksAvailable.UPDATED: PKTracksAvailable.NEW;
                         event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailable);
-                        isTracksUpdated = false;
+                        isVideoTracksUpdated = false;
                         break;
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());

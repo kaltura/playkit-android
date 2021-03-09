@@ -777,7 +777,6 @@ class TrackSelectionHelper {
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
 
-
         SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
