@@ -34,6 +34,10 @@ public class SubtitleStyleSettings {
         DEFAULT, DEFAULT_BOLD, MONOSPACE, SERIF, SANS_SERIF
     }
 
+    public enum SubtitleTypefaceStyle {
+         NORMAL, BOLD, ITALIC, BOLD_ITALIC
+    }
+
     private static final float fraction50 = 0.50f;
     private static final float fraction75 = 0.75f;
     private static final float fraction100 = 1.0f;
@@ -180,6 +184,24 @@ public class SubtitleStyleSettings {
             default:
                 subtitleTypeface = Typeface.DEFAULT;
                 break;
+        }
+        return this;
+    }
+
+    public SubtitleStyleSettings setSystemTypeface(String fontFamilyName, SubtitleTypefaceStyle style) {
+        if (fontFamilyName == null || style == null) {
+            subtitleTypeface = Typeface.DEFAULT;
+        } else {
+            subtitleTypeface = Typeface.create(fontFamilyName, style.ordinal());
+        }
+        return this;
+    }
+
+    public SubtitleStyleSettings setAssetTypeface(Typeface asstTypeface) {
+        if (asstTypeface == null) {
+            subtitleTypeface = Typeface.DEFAULT;
+        } else {
+            subtitleTypeface = asstTypeface;
         }
         return this;
     }
