@@ -90,7 +90,7 @@ class TrackSelectionHelper {
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
-    private List<VideoTrack> originalVideoTracks = new ArrayList<>();
+    private List<VideoTrack> originalVideoTracks;
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
 
@@ -834,7 +834,7 @@ class TrackSelectionHelper {
                 }
             }
 
-            if (originalVideoTracks.isEmpty()) {
+            if (originalVideoTracks == null || originalVideoTracks.isEmpty()) {
                 originalVideoTracks = new ArrayList<>(videoTracks);
             } else {
                 videoTracks.clear();
@@ -1297,6 +1297,9 @@ class TrackSelectionHelper {
         videoTracksCodecsMap.clear();
         audioTracksCodecsMap.clear();
         subtitleListMap.clear();
+        if (originalVideoTracks != null) {
+            originalVideoTracks.clear();
+        }
     }
 
     protected void release() {
@@ -1429,6 +1432,9 @@ class TrackSelectionHelper {
         videoTracks.clear();
         audioTracks.clear();
         textTracks.clear();
+        if (originalVideoTracks != null) {
+            originalVideoTracks.clear();
+        }
     }
 
     /**
