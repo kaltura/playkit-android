@@ -71,6 +71,7 @@ public class PlayerController implements Player {
 
     private long targetSeekPosition;
     private boolean isVideoTracksUpdated;
+    private boolean isVideoTracksReset;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
@@ -698,6 +699,12 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void resetABRSettings() {
+        isVideoTracksReset = true;
+        player.resetABRSettings();
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         Assert.shouldNeverHappen();
     }
@@ -819,8 +826,12 @@ public class PlayerController implements Player {
                         break;
                     case TRACKS_AVAILABLE:
                         PKTracksAvailable pkTracksAvailable = isVideoTracksUpdated ? PKTracksAvailable.UPDATED: PKTracksAvailable.NEW;
+                        if (isVideoTracksReset) {
+                            pkTracksAvailable = PKTracksAvailable.RESET;
+                        }
                         event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailable);
                         isVideoTracksUpdated = false;
+                        isVideoTracksReset = false;
                         break;
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());

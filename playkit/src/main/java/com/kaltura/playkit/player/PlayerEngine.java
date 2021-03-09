@@ -279,6 +279,11 @@ public interface PlayerEngine {
     default void updateABRSettings(ABRSettings abrSettings) {}
 
     /**
+     * Reset the ABR Settings
+     */
+    default void resetABRSettings() {}
+
+    /**
      * Generic getters for playkit controllers.
      *
      * @param type - type of the controller you want to obtain.

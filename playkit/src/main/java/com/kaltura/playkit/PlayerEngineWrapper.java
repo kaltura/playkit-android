@@ -208,6 +208,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void resetABRSettings() {
+        playerEngine.resetABRSettings();
+    }
+
+    @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         playerEngine.updateSurfaceAspectRatioResizeMode(resizeMode);
     }

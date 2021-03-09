@@ -549,6 +549,11 @@ public interface Player {
     void updateABRSettings(ABRSettings abrSettings);
 
     /**
+     * Reset existing ABRSettings
+     */
+    void resetABRSettings();
+
+    /**
      * Add listener by event type as Class object. This generics-based method allows the caller to
      * avoid the otherwise required cast.
      * <p>

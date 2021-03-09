@@ -1576,6 +1576,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
+    public void resetABRSettings() {
+        playerSettings.setABRSettings(ABRSettings.RESET);
+        overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+        sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+    }
+
+    @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         playerSettings.setSurfaceAspectRatioResizeMode(resizeMode);
         configureAspectRatioResizeMode();

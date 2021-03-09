@@ -25,6 +25,11 @@ public class ABRSettings {
      */
     private Long initialBitrateEstimate;
 
+    /**
+     * Reset the ABR Settings.
+     */
+    public final static ABRSettings RESET = new ABRSettings().setMinVideoBitrate(Long.MIN_VALUE).setMaxVideoBitrate(Long.MAX_VALUE);
+
     public ABRSettings setMinVideoBitrate(long minVideoBitrate) {
         this.minVideoBitrate = minVideoBitrate;
         return this;
