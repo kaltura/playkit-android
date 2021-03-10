@@ -685,6 +685,10 @@ public class PlayerController implements Player {
     public void updateABRSettings(ABRSettings abrSettings) {
         log.v("updateABRSettings");
 
+        if (!isVideoTrackPresent()) {
+            return;
+        }
+
         if (abrSettings == null || abrSettings.equals(ABRSettings.RESET)) {
             resetABRSettings();
             return;
@@ -704,8 +708,16 @@ public class PlayerController implements Player {
 
     @Override
     public void resetABRSettings() {
-        isVideoTracksReset = true;
-        player.resetABRSettings();
+        log.v("resetABRSettings");
+
+        if (!isVideoTrackPresent()) {
+            return;
+        }
+
+        if (assertPlayerIsNotNull("resetABRSettings")) {
+            isVideoTracksReset = true;
+            player.resetABRSettings();
+        }
     }
 
     @Override
@@ -721,6 +733,17 @@ public class PlayerController implements Player {
     @Override
     public void removeListeners(@NonNull Object groupId) {
         Assert.shouldNeverHappen();
+    }
+
+    private boolean isVideoTrackPresent() {
+        if (player != null &&
+                player.getPKTracks() != null &&
+                player.getPKTracks().getVideoTracks() != null &&
+                player.getPKTracks().getVideoTracks().size() == 0) {
+            log.w("No video track found for this media");
+            return false;
+        }
+        return true;
     }
 
     private boolean assertPlayerIsNotNull(String methodName) {
