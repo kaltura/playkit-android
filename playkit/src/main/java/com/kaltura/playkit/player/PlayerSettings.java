@@ -426,7 +426,9 @@ public class PlayerSettings implements Player.Settings {
 
     @Override
     public Player.Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
-        this.pkLowLatencyConfig = pkLowLatencyConfig;
+        if (pkLowLatencyConfig != null) {
+            this.pkLowLatencyConfig = pkLowLatencyConfig;
+        }
         return this;
     }
 }
