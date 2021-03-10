@@ -1,6 +1,6 @@
 package com.kaltura.playkit;
 
-public enum PKTracksAvailable {
+public enum PKTracksAvailableStatus {
     NEW,
     UPDATED,
     RESET

@@ -30,7 +30,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PKTracksAvailable;
+import com.kaltura.playkit.PKTracksAvailableStatus;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
@@ -852,11 +852,11 @@ public class PlayerController implements Player {
                         }
                         break;
                     case TRACKS_AVAILABLE:
-                        PKTracksAvailable pkTracksAvailable = isVideoTracksUpdated ? PKTracksAvailable.UPDATED: PKTracksAvailable.NEW;
+                        PKTracksAvailableStatus pkTracksAvailableStatus = isVideoTracksUpdated ? PKTracksAvailableStatus.UPDATED: PKTracksAvailableStatus.NEW;
                         if (isVideoTracksReset) {
-                            pkTracksAvailable = PKTracksAvailable.RESET;
+                            pkTracksAvailableStatus = PKTracksAvailableStatus.RESET;
                         }
-                        event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailable);
+                        event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailableStatus);
                         isVideoTracksUpdated = false;
                         isVideoTracksReset = false;
                         break;
