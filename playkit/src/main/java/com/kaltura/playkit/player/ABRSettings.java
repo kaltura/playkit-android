@@ -1,5 +1,7 @@
 package com.kaltura.playkit.player;
 
+import androidx.annotation.NonNull;
+
 public class ABRSettings {
 
     /**
@@ -30,12 +32,12 @@ public class ABRSettings {
      */
     public final static ABRSettings RESET = new ABRSettings().setMinVideoBitrate(Long.MIN_VALUE).setMaxVideoBitrate(Long.MAX_VALUE);
 
-    public ABRSettings setMinVideoBitrate(long minVideoBitrate) {
+    public ABRSettings setMinVideoBitrate(@NonNull long minVideoBitrate) {
         this.minVideoBitrate = minVideoBitrate;
         return this;
     }
 
-    public ABRSettings setMaxVideoBitrate(long maxVideoBitrate) {
+    public ABRSettings setMaxVideoBitrate(@NonNull long maxVideoBitrate) {
         this.maxVideoBitrate = maxVideoBitrate;
         return this;
     }
@@ -55,7 +57,7 @@ public class ABRSettings {
      * @param initialBitrateEstimate The initial bitrate estimate in bits per second.
      * @return
      */
-    public ABRSettings setInitialBitrateEstimate(long initialBitrateEstimate) {
+    public ABRSettings setInitialBitrateEstimate(@NonNull long initialBitrateEstimate) {
         this.initialBitrateEstimate = initialBitrateEstimate;
         return this;
     }
@@ -72,4 +74,23 @@ public class ABRSettings {
         return initialBitrateEstimate;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ABRSettings that = (ABRSettings) o;
+
+        if (!minVideoBitrate.equals(that.minVideoBitrate)) return false;
+        if (!maxVideoBitrate.equals(that.maxVideoBitrate)) return false;
+        return initialBitrateEstimate.equals(that.initialBitrateEstimate);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = minVideoBitrate.hashCode();
+        result = 31 * result + maxVideoBitrate.hashCode();
+        result = 31 * result + initialBitrateEstimate.hashCode();
+        return result;
+    }
 }

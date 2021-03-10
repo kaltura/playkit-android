@@ -684,12 +684,16 @@ public class PlayerController implements Player {
     @Override
     public void updateABRSettings(ABRSettings abrSettings) {
         log.v("updateABRSettings");
-        if (abrSettings != null) {
-            if (abrSettings.getMinVideoBitrate().longValue() == playerSettings.getAbrSettings().getMinVideoBitrate().longValue() &&
-                    abrSettings.getMaxVideoBitrate().longValue() == playerSettings.getAbrSettings().getMaxVideoBitrate().longValue()) {
-                log.w("Existing and Incoming ABR Settings are same");
-                return;
-            }
+
+        if (abrSettings == null || abrSettings.equals(ABRSettings.RESET)) {
+            resetABRSettings();
+            return;
+        }
+
+        if (abrSettings.getMinVideoBitrate().longValue() == playerSettings.getAbrSettings().getMinVideoBitrate().longValue() &&
+                abrSettings.getMaxVideoBitrate().longValue() == playerSettings.getAbrSettings().getMaxVideoBitrate().longValue()) {
+            log.w("Existing and Incoming ABR Settings are same");
+            return;
         }
 
         if (assertPlayerIsNotNull("updateABRSettings")) {

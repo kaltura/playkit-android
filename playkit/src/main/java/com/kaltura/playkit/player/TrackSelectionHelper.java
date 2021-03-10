@@ -833,8 +833,10 @@ class TrackSelectionHelper {
                 }
             }
 
-            if (originalVideoTracks == null || originalVideoTracks.isEmpty()) {
+            if (originalVideoTracks == null) {
                 originalVideoTracks = new ArrayList<>(videoTracks);
+            } else if (originalVideoTracks.isEmpty()) {
+                originalVideoTracks.addAll(videoTracks);
             } else {
                 videoTracks.clear();
                 videoTracks.addAll(originalVideoTracks);
