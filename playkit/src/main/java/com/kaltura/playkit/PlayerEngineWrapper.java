@@ -3,6 +3,7 @@ package com.kaltura.playkit;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.PlayerEngine;
@@ -215,6 +216,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         playerEngine.updateSurfaceAspectRatioResizeMode(resizeMode);
+    }
+
+    @Override
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        playerEngine.updatePKLowLatencyConfig(pkLowLatencyConfig);
     }
 
     @Override

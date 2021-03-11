@@ -271,6 +271,8 @@ public interface PlayerEngine {
       * @param resizeMode
       */
     default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
+    
+    default void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {}
 
     /**
      * Update the ABR Settings

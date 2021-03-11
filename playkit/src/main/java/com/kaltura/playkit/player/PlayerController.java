@@ -682,6 +682,14 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        log.v("updatePKLowLatencyConfig");
+        if (assertPlayerIsNotNull("updatePKLowLatencyConfig")) {
+            player.updatePKLowLatencyConfig(pkLowLatencyConfig);
+        }
+    }
+
+    @Override
     public void updateABRSettings(ABRSettings abrSettings) {
         log.v("updateABRSettings");
 
