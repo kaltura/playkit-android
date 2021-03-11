@@ -14,7 +14,6 @@ public class PKLowLatencyConfig {
         this.targetOffsetMs = targetOffsetMs;
     }
 
-    
     /**
      * Reset the Low Latency Configuration
      * Now Player will use the media-defined default values.
