@@ -30,6 +30,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKTracksAvailableStatus;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
@@ -69,6 +70,8 @@ public class PlayerController implements Player {
     private UUID playerSessionId = UUID.randomUUID();
 
     private long targetSeekPosition;
+    private boolean isVideoTracksUpdated;
+    private boolean isVideoTracksReset;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
@@ -679,6 +682,45 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+        log.v("updateABRSettings");
+
+        if (!isVideoTrackPresent()) {
+            return;
+        }
+
+        if (abrSettings == null || abrSettings.equals(ABRSettings.RESET)) {
+            resetABRSettings();
+            return;
+        }
+
+        if (abrSettings.getMinVideoBitrate().longValue() == playerSettings.getAbrSettings().getMinVideoBitrate().longValue() &&
+                abrSettings.getMaxVideoBitrate().longValue() == playerSettings.getAbrSettings().getMaxVideoBitrate().longValue()) {
+            log.w("Existing and Incoming ABR Settings are same");
+            return;
+        }
+
+        if (assertPlayerIsNotNull("updateABRSettings")) {
+            isVideoTracksUpdated = true;
+            player.updateABRSettings(abrSettings);
+        }
+    }
+
+    @Override
+    public void resetABRSettings() {
+        log.v("resetABRSettings");
+
+        if (!isVideoTrackPresent()) {
+            return;
+        }
+
+        if (assertPlayerIsNotNull("resetABRSettings")) {
+            isVideoTracksReset = true;
+            player.resetABRSettings();
+        }
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         Assert.shouldNeverHappen();
     }
@@ -691,6 +733,17 @@ public class PlayerController implements Player {
     @Override
     public void removeListeners(@NonNull Object groupId) {
         Assert.shouldNeverHappen();
+    }
+
+    private boolean isVideoTrackPresent() {
+        if (player != null &&
+                player.getPKTracks() != null &&
+                player.getPKTracks().getVideoTracks() != null &&
+                player.getPKTracks().getVideoTracks().size() == 0) {
+            log.w("No video track found for this media");
+            return false;
+        }
+        return true;
     }
 
     private boolean assertPlayerIsNotNull(String methodName) {
@@ -799,7 +852,13 @@ public class PlayerController implements Player {
                         }
                         break;
                     case TRACKS_AVAILABLE:
-                        event = new PlayerEvent.TracksAvailable(player.getPKTracks());
+                        PKTracksAvailableStatus pkTracksAvailableStatus = isVideoTracksUpdated ? PKTracksAvailableStatus.UPDATED: PKTracksAvailableStatus.NEW;
+                        if (isVideoTracksReset) {
+                            pkTracksAvailableStatus = PKTracksAvailableStatus.RESET;
+                        }
+                        event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailableStatus);
+                        isVideoTracksUpdated = false;
+                        isVideoTracksReset = false;
                         break;
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
