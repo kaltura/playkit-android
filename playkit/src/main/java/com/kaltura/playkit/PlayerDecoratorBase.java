@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PlayerView;
@@ -227,6 +228,16 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
         player.updatePKLowLatencyConfig(pkLowLatencyConfig);
+    }
+
+    @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+        player.updateABRSettings(abrSettings);
+    }
+
+    @Override
+    public void resetABRSettings() {
+        player.resetABRSettings();
     }
 
     @Override

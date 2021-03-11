@@ -494,7 +494,7 @@ public interface Player {
      * Seek player to Live Default Position.
      *
      */
-     void seekToLiveDefaultPosition();
+    void seekToLiveDefaultPosition();
 
     /**
      * Get the Player's SessionId. The SessionId is generated each time new media is set.
@@ -551,6 +551,20 @@ public interface Player {
      * Update Low Latency configuration
      */
     void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig);
+
+    /** Update ABRSettings
+     * <br>
+     * Updating {@link ABRSettings#setInitialBitrateEstimate(long)} is unaffected because
+     * initial bitrate is only meant at the start of the playback
+     * <br>
+     * @param abrSettings new ABR Settings
+     */
+    void updateABRSettings(ABRSettings abrSettings);
+
+    /**
+     * Reset existing ABRSettings
+     */
+    void resetABRSettings();
 
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to
