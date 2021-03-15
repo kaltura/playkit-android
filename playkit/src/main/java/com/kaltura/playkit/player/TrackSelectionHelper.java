@@ -100,6 +100,7 @@ class TrackSelectionHelper {
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
+    private List<VideoTrack> originalVideoTracks;
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
     private List<ImageTrack> imageTracks = new ArrayList<>();
@@ -856,7 +857,6 @@ class TrackSelectionHelper {
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
 
-
         SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
@@ -876,7 +876,6 @@ class TrackSelectionHelper {
         requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
-
 
         SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
         overrideTrack(rendererIndex, override, parametersBuilder);
@@ -912,6 +911,15 @@ class TrackSelectionHelper {
                     PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
                     tracksErrorListener.onTracksOverrideABRError(currentError);
                 }
+            }
+
+            if (originalVideoTracks == null) {
+                originalVideoTracks = new ArrayList<>(videoTracks);
+            } else if (originalVideoTracks.isEmpty()) {
+                originalVideoTracks.addAll(videoTracks);
+            } else {
+                videoTracks.clear();
+                videoTracks.addAll(originalVideoTracks);
             }
 
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
@@ -1411,6 +1419,9 @@ class TrackSelectionHelper {
         videoTracksCodecsMap.clear();
         audioTracksCodecsMap.clear();
         subtitleListMap.clear();
+        if (originalVideoTracks != null) {
+            originalVideoTracks.clear();
+        }
     }
 
     protected void release() {
@@ -1551,6 +1562,10 @@ class TrackSelectionHelper {
         audioTracks.clear();
         textTracks.clear();
         imageTracks.clear();
+
+        if (originalVideoTracks != null) {
+            originalVideoTracks.clear();
+        }
     }
 
     /**

@@ -226,6 +226,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 .setLoadControl(getUpdatedLoadControl())
                 .setMediaSourceFactory(mediaSourceFactory)
                 .setBandwidthMeter(bandwidthMeter).build();
+
         player.setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus= */ playerSettings.isHandleAudioFocus());
         player.setHandleAudioBecomingNoisy(playerSettings.isHandleAudioBecomingNoisyEnabled());
         player.setWakeMode(playerSettings.getWakeMode().ordinal());
@@ -574,6 +575,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         .setSubtitles(buildSubtitlesList(externalSubtitleList))
                         .setClipStartPositionMs(0L)
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
+
+        if (playerSettings.getPKLowLatencyConfig() != null &&
+                (isLiveMediaWithDvr() || isLiveMediaWithoutDvr())) {
+            builder.setLiveTargetOffsetMs(playerSettings.getPKLowLatencyConfig().getTargetOffsetMs())
+                    .setLiveMinOffsetMs(playerSettings.getPKLowLatencyConfig().getMinOffsetMs())
+                    .setLiveMaxOffsetMs(playerSettings.getPKLowLatencyConfig().getMaxOffsetMs())
+                    .setLiveMinPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed())
+                    .setLiveMaxPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed());
+        }
 
         if (format == PKMediaFormat.dash && sourceConfig.mediaSource.hasDrmParams()) {
             setMediaItemBuilderDRMParams(sourceConfig, builder);
@@ -1202,6 +1212,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return false;
     }
 
+    private boolean isLiveMediaWithDvr() {
+        if (sourceConfig != null) {
+            return (PKMediaEntry.MediaEntryType.DvrLive == sourceConfig.mediaEntryType);
+        }
+        return false;
+    }
+
     @Override
     public void destroy() {
         log.v("destroy");
@@ -1229,7 +1246,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             }
         }
     }
-
 
     @Override
     public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
@@ -1664,10 +1680,45 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+        playerSettings.setABRSettings(abrSettings);
+        overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+        sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+    }
+
+    @Override
+    public void resetABRSettings() {
+        playerSettings.setABRSettings(ABRSettings.RESET);
+        overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+        sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+    }
+
+    @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         playerSettings.setSurfaceAspectRatioResizeMode(resizeMode);
         configureAspectRatioResizeMode();
         sendEvent(PlayerEvent.Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
+    }
+
+    @Override
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        if (!isLiveMediaWithDvr() && !isLiveMediaWithoutDvr()) {
+            return;
+        }
+        
+        if (pkLowLatencyConfig == null) {
+            pkLowLatencyConfig = PKLowLatencyConfig.UNSET;
+        }
+
+        playerSettings.setPKLowLatencyConfig(pkLowLatencyConfig);
+        if (player != null && player.getCurrentMediaItem() != null) {
+            player.setMediaItem(player.getCurrentMediaItem().buildUpon()
+                    .setLiveTargetOffsetMs(pkLowLatencyConfig.getTargetOffsetMs())
+                    .setLiveMinOffsetMs(pkLowLatencyConfig.getMinOffsetMs())
+                    .setLiveMaxOffsetMs(pkLowLatencyConfig.getMaxOffsetMs())
+                    .setLiveMaxPlaybackSpeed(pkLowLatencyConfig.getMaxPlaybackSpeed())
+                    .setLiveMinPlaybackSpeed(pkLowLatencyConfig.getMinPlaybackSpeed()).build());
+        }
     }
 
     private void configureAspectRatioResizeMode() {

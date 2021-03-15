@@ -32,6 +32,23 @@ public class Consts {
     public static final int POSITION_UNSET = -1;
 
     /**
+     * Represents an unset or unknown rate.
+     */
+    public static final float RATE_UNSET = -Float.MAX_VALUE;
+
+    /**
+     * The default minimum factor by which playback can be sped up that should be used if no minimum
+     * playback speed is defined by the media.
+     */
+    public static final float DEFAULT_FALLBACK_MIN_PLAYBACK_SPEED = 0.97f;
+
+    /**
+     * The default maximum factor by which playback can be sped up that should be used if no maximum
+     * playback speed is defined by the media.
+     */
+    public static final float DEFAULT_FALLBACK_MAX_PLAYBACK_SPEED = 1.03f;
+
+    /**
      * Represents an unset or unknown volume.
      */
     public static final float VOLUME_UNKNOWN = -1;
