@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
@@ -344,6 +345,14 @@ public interface Player {
          * @return - Player Settings
          */
         Settings forceWidevineL3Playback(boolean forceWidevineL3Playback);
+
+        /**
+         * Creates a Low Latency Live playback configuration.
+         *
+         * @param pkLowLatencyConfig - Configuration for Low Latency
+         * @return - Player Settings
+         */
+        Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig);
     }
 
     /**
@@ -485,7 +494,7 @@ public interface Player {
      * Seek player to Live Default Position.
      *
      */
-     void seekToLiveDefaultPosition();
+    void seekToLiveDefaultPosition();
 
     /**
      * Get the Player's SessionId. The SessionId is generated each time new media is set.
@@ -537,6 +546,25 @@ public interface Player {
      * Update video size
      */
     void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
+
+    /**
+     * Update Low Latency configuration
+     */
+    void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig);
+
+    /** Update ABRSettings
+     * <br>
+     * Updating {@link ABRSettings#setInitialBitrateEstimate(long)} is unaffected because
+     * initial bitrate is only meant at the start of the playback
+     * <br>
+     * @param abrSettings new ABR Settings
+     */
+    void updateABRSettings(ABRSettings abrSettings);
+
+    /**
+     * Reset existing ABRSettings
+     */
+    void resetABRSettings();
 
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to
