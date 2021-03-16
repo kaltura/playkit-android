@@ -1610,7 +1610,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (!isLiveMediaWithDvr() && !isLiveMediaWithoutDvr()) {
             return;
         }
-        
+
         if (pkLowLatencyConfig == null) {
             pkLowLatencyConfig = PKLowLatencyConfig.UNSET;
         }
@@ -1618,11 +1618,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         playerSettings.setPKLowLatencyConfig(pkLowLatencyConfig);
         if (player != null && player.getCurrentMediaItem() != null) {
             player.setMediaItem(player.getCurrentMediaItem().buildUpon()
-                    .setLiveTargetOffsetMs(pkLowLatencyConfig.getTargetOffsetMs())
-                    .setLiveMinOffsetMs(pkLowLatencyConfig.getMinOffsetMs())
-                    .setLiveMaxOffsetMs(pkLowLatencyConfig.getMaxOffsetMs())
-                    .setLiveMaxPlaybackSpeed(pkLowLatencyConfig.getMaxPlaybackSpeed())
-                    .setLiveMinPlaybackSpeed(pkLowLatencyConfig.getMinPlaybackSpeed()).build());
+                    .setLiveTargetOffsetMs(playerSettings.getPKLowLatencyConfig().getTargetOffsetMs())
+                    .setLiveMinOffsetMs(playerSettings.getPKLowLatencyConfig().getMinOffsetMs())
+                    .setLiveMaxOffsetMs(playerSettings.getPKLowLatencyConfig().getMaxOffsetMs())
+                    .setLiveMaxPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed())
+                    .setLiveMinPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed()).build());
         }
     }
 
