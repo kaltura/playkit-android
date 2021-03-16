@@ -38,10 +38,12 @@ public class PKLowLatencyConfig {
     }
 
     public float getMinPlaybackSpeed() {
+        this.minPlaybackSpeed = minPlaybackSpeed > 0 ? minPlaybackSpeed : Consts.DEFAULT_FALLBACK_MIN_PLAYBACK_SPEED;
         return minPlaybackSpeed;
     }
 
     public float getMaxPlaybackSpeed() {
+        this.maxPlaybackSpeed = maxPlaybackSpeed > 0 ? maxPlaybackSpeed : Consts.DEFAULT_FALLBACK_MAX_PLAYBACK_SPEED;
         return maxPlaybackSpeed;
     }
 
@@ -84,8 +86,7 @@ public class PKLowLatencyConfig {
      * when trying to reach the target live offset.
      */
     public PKLowLatencyConfig setMinPlaybackSpeed(float minPlaybackSpeed) {
-        this.minPlaybackSpeed =
-                minPlaybackSpeed != Consts.RATE_UNSET ? minPlaybackSpeed : Consts.DEFAULT_FALLBACK_MIN_PLAYBACK_SPEED;
+        this.minPlaybackSpeed = minPlaybackSpeed > 0 ? minPlaybackSpeed : Consts.DEFAULT_FALLBACK_MIN_PLAYBACK_SPEED;
         return this;
     }
 
@@ -96,8 +97,7 @@ public class PKLowLatencyConfig {
      * when trying to reach the target live offset.
      */
     public PKLowLatencyConfig setMaxPlaybackSpeed(float maxPlaybackSpeed) {
-        this.maxPlaybackSpeed =
-                maxPlaybackSpeed != Consts.RATE_UNSET ? maxPlaybackSpeed : Consts.DEFAULT_FALLBACK_MAX_PLAYBACK_SPEED;
+        this.maxPlaybackSpeed = maxPlaybackSpeed > 0 ? maxPlaybackSpeed : Consts.DEFAULT_FALLBACK_MAX_PLAYBACK_SPEED;
         return this;
     }
 }
