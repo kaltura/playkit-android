@@ -40,7 +40,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PKVideoCodec;
-import com.kaltura.playkit.player.thumbnail.ImageRangeInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 
@@ -49,7 +48,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -330,7 +328,7 @@ class TrackSelectionHelper {
                 CustomFormat imageFormat = rawImageTracks.get(trackIndex);
                 CustomFormat.FormatThumbnailInfo formatThumbnailInfo = imageFormat.formatThumbnailInfo;
                 String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, trackIndex);
-                imageTracks.add(trackIndex, new ImageTrack(uniqueId,
+                imageTracks.add(trackIndex, new DashImageTrack(uniqueId,
                         imageFormat.id,
                         imageFormat.bitrate,
                         imageFormat.width,
@@ -338,11 +336,11 @@ class TrackSelectionHelper {
                         formatThumbnailInfo.tilesHorizontal,
                         formatThumbnailInfo.tilesVertical,
                         formatThumbnailInfo.segmentDuration * Consts.MILLISECONDS_MULTIPLIER,
-                        formatThumbnailInfo.startNumber,
-                        formatThumbnailInfo.endNumber,
+                        formatThumbnailInfo.imageTemplateUrl,
                         formatThumbnailInfo.presentationTimeOffset,
                         formatThumbnailInfo.timeScale,
-                        formatThumbnailInfo.imageTemplateUrl
+                        formatThumbnailInfo.startNumber,
+                        formatThumbnailInfo.endNumber
                 ));
             }
 
@@ -1214,17 +1212,17 @@ class TrackSelectionHelper {
             return null;
         }
 
-        long seq = (long)Math.floor(positionMS / imageTrack.getSegmentDuration());
-        double offset = positionMS % imageTrack.getSegmentDuration();
-        int thumbIndex = (int) Math.floor((offset * imageTrack.getTilesHorizontal() * imageTrack.getTilesVertical()) / imageTrack.getSegmentDuration());
-        long seqIdx = seq + imageTrack.getStartNumber();
-        float imageWidth = imageTrack.getWidth() / imageTrack.getTilesHorizontal();
-        float imageHeight = imageTrack.getHeight() / imageTrack.getTilesVertical();
-        float imageX = (float) Math.floor(thumbIndex % imageTrack.getTilesHorizontal()) * imageWidth;
-        float imageY = (float) Math.floor(thumbIndex / imageTrack.getTilesHorizontal()) * imageHeight;
+        long seq = (long)Math.floor(positionMS / imageTrack.getDuration());
+        double offset = positionMS % imageTrack.getDuration();
+        int thumbIndex = (int) Math.floor((offset * imageTrack.getCols() * imageTrack.getRows()) / imageTrack.getDuration());
+        long seqIdx = seq + ((DashImageTrack)imageTrack).getStartNumber();
+        float imageWidth = imageTrack.getWidth() / imageTrack.getCols();
+        float imageHeight = imageTrack.getHeight() / imageTrack.getRows();
+        float imageX = (float) Math.floor(thumbIndex % imageTrack.getCols()) * imageWidth;
+        float imageY = (float) Math.floor(thumbIndex / imageTrack.getCols()) * imageHeight;
 
-        long imageRealUrlTime = ((seqIdx - 1) * imageTrack.getSegmentDuration());
-        String realImageUrl = imageTrack.getImageTemplateUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$",  String.valueOf(imageRealUrlTime));
+        long imageRealUrlTime = ((seqIdx - 1) * imageTrack.getDuration());
+        String realImageUrl = imageTrack.getUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$",  String.valueOf(imageRealUrlTime));
         return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
     }
 
