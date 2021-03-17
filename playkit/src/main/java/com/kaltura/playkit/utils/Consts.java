@@ -66,6 +66,10 @@ public class Consts {
      */
     public static final int TRACK_TYPE_TEXT = 2;
     /**
+     * Identifier for the Image track type.
+     */
+    public static final int TRACK_TYPE_IMAGE = 3;
+    /**
      * Identifier for the unknown track type.
      */
     public static final int TRACK_TYPE_UNKNOWN = -1;

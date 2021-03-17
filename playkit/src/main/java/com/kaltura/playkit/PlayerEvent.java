@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.player.AudioTrack;
+import com.kaltura.playkit.player.ImageTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
@@ -40,6 +41,8 @@ public class PlayerEvent implements PKEvent {
     public static final Class<VideoTrackChanged> videoTrackChanged = VideoTrackChanged.class;
     public static final Class<AudioTrackChanged> audioTrackChanged = AudioTrackChanged.class;
     public static final Class<TextTrackChanged> textTrackChanged = TextTrackChanged.class;
+    public static final Class<ImageTrackChanged> imageTrackChanged = ImageTrackChanged.class;
+
     public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
     public static final Class<SubtitlesStyleChanged> subtitlesStyleChanged = SubtitlesStyleChanged.class;
     public static final Class<VideoFramesDropped> videoFramesDropped = VideoFramesDropped.class;
@@ -209,6 +212,16 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class ImageTrackChanged extends PlayerEvent {
+
+        public final ImageTrack newTrack;
+
+        public ImageTrackChanged(ImageTrack newTrack) {
+            super(Type.IMAGE_TRACK_CHANGED);
+            this.newTrack = newTrack;
+        }
+    }
+
     public static class PlaybackRateChanged extends PlayerEvent {
 
         public final float rate;
@@ -356,6 +369,7 @@ public class PlayerEvent implements PKEvent {
         VIDEO_TRACK_CHANGED,
         AUDIO_TRACK_CHANGED,
         TEXT_TRACK_CHANGED,
+        IMAGE_TRACK_CHANGED,
         PLAYBACK_RATE_CHANGED,
         CONNECTION_ACQUIRED,
         VIDEO_FRAMES_DROPPED,   // Video frames were dropped, see PlayerEvent.VideoFramesDropped

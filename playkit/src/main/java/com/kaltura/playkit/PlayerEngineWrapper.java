@@ -11,6 +11,7 @@ import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.Profiler;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.metadata.PKMetadata;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 
 import java.util.List;
 
@@ -191,6 +192,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public float getPlaybackRate() {
         return playerEngine.getPlaybackRate();
+    }
+
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+        return playerEngine.getThumbnailInfo(positionMS);
     }
 
     @Override

@@ -37,6 +37,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -664,7 +665,19 @@ public class PlayerController implements Player {
         return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
     }
 
-
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) {
+        log.v("getThumbnailInfo");
+        if (assertPlayerIsNotNull("getThumbnailInfo()")) {
+            if (positionMS.length > 0) {
+                return player.getThumbnailInfo(positionMS[0]);
+            } else {
+                return player.getThumbnailInfo(player.getCurrentPosition());
+            }
+        }
+        return null;
+    }
+    
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         log.v("updateSubtitleStyle");
@@ -922,6 +935,13 @@ public class PlayerController implements Player {
                         }
                         event = new PlayerEvent.TextTrackChanged(textTrack);
                         break;
+                    case IMAGE_TRACK_CHANGED:
+                        ImageTrack imageTrack = (ImageTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_IMAGE);
+                        if (imageTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.ImageTrackChanged(imageTrack);
+                        break;    
                     case PLAYBACK_RATE_CHANGED:
                         event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
                         break;

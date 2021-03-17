@@ -20,6 +20,7 @@ import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 
 import java.util.List;
 
@@ -93,6 +94,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public float getPlaybackRate() {
         return player.getPlaybackRate();
+    }
+
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) {
+        return player.getThumbnailInfo(positionMS);
     }
 
     @Override

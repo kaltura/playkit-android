@@ -19,11 +19,11 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 import java.util.List;
-
 
 /**
  * Interface that connect between {@link PlayerController} and actual player engine
@@ -298,6 +298,8 @@ public interface PlayerEngine {
      * Must be called by application when Android onConfigurationChanged triggered by system.
      */
     void onOrientationChanged();
+
+    default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
 
     interface EventListener {
         void onEvent(PlayerEvent.Type event);

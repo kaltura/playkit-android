@@ -24,6 +24,7 @@ import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
@@ -528,6 +529,14 @@ public interface Player {
      */
     float getPlaybackRate();
 
+    /**
+     * get the Information for a thumbnailImage by position
+     * if positionMS is not passed current position will be used
+     *
+     * @param positionMS - relevant image for given player position. (optional)
+     */
+    ThumbnailInfo getThumbnailInfo(long ... positionMS);
+    
     /**
      * Generic getters for playkit controllers.
      *
