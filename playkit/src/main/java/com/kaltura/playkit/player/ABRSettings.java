@@ -27,6 +27,11 @@ public class ABRSettings {
      */
     private Long initialBitrateEstimate;
 
+    private Integer maxVideoHeight = Integer.MAX_VALUE;
+    private Integer minVideoHeight = Integer.MIN_VALUE;
+    private Integer maxVideoWidth = Integer.MAX_VALUE;
+    private Integer minVideoWidth = Integer.MIN_VALUE;
+
     /**
      * Reset the ABR Settings.
      */
@@ -62,6 +67,26 @@ public class ABRSettings {
         return this;
     }
 
+    public ABRSettings setMaxVideoHeight(int maxVideoHeight) {
+        this.maxVideoHeight = maxVideoHeight;
+        return this;
+    }
+
+    public ABRSettings setMinVideoHeight(int minVideoHeight) {
+        this.minVideoHeight = minVideoHeight;
+        return this;
+    }
+
+    public ABRSettings setMaxVideoWidth(int maxVideoWidth) {
+        this.maxVideoWidth = maxVideoWidth;
+        return this;
+    }
+
+    public ABRSettings setMinVideoWidth(int minVideoWidth) {
+        this.minVideoWidth = minVideoWidth;
+        return this;
+    }
+
     public Long getMinVideoBitrate() {
         return minVideoBitrate;
     }
@@ -72,6 +97,22 @@ public class ABRSettings {
 
     public Long getInitialBitrateEstimate() {
         return initialBitrateEstimate;
+    }
+
+    public Integer getMaxVideoHeight() {
+        return maxVideoHeight;
+    }
+
+    public Integer getMinVideoHeight() {
+        return minVideoHeight;
+    }
+
+    public Integer getMaxVideoWidth() {
+        return maxVideoWidth;
+    }
+
+    public Integer getMinVideoWidth() {
+        return minVideoWidth;
     }
 
     @Override

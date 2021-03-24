@@ -1248,20 +1248,20 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+    public void overrideMediaDefaultABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the tracksSelectionHelper");
             return;
         }
 
-        if (minVideoBitrate > maxVideoBitrate || maxVideoBitrate <= 0) {
-            minVideoBitrate = Long.MIN_VALUE;
-            maxVideoBitrate = Long.MAX_VALUE;
+        if (minAbr > maxAbr || maxAbr <= 0) {
+            minAbr = Long.MIN_VALUE;
+            maxAbr = Long.MAX_VALUE;
             String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
             sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
         }
 
-        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
+        trackSelectionHelper.overrideMediaDefaultABR(minAbr, maxAbr, pkAbrFilter);
     }
 
     @Override
@@ -1479,10 +1479,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
-                boolean isABREnabled = playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE;
+                //TODO: ABR FILTERATION
+                PKAbrFilter pkAbrFilter = checkABRPrecedence();
+                boolean isABREnabled = pkAbrFilter != PKAbrFilter.NONE;
 
                 if(isABREnabled) {
-                    overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                    overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate(), pkAbrFilter);
                 } else {
                     overrideMediaVideoCodec();
                 }
@@ -1534,6 +1536,18 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 sendEvent(PlayerEvent.Type.IMAGE_TRACK_CHANGED);
             }
         };
+    }
+
+    private PKAbrFilter checkABRPrecedence() {
+        ABRSettings abrSettings = playerSettings.getAbrSettings();
+        if (abrSettings.getMaxVideoHeight() != Integer.MAX_VALUE || abrSettings.getMinVideoHeight() != Integer.MIN_VALUE) {
+            return PKAbrFilter.HEIGHT;
+        } else if (abrSettings.getMaxVideoWidth() != Integer.MAX_VALUE || abrSettings.getMinVideoWidth() != Integer.MIN_VALUE) {
+            return PKAbrFilter.WIDTH;
+        } else if (playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE || playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE) {
+            return PKAbrFilter.BITRATE;
+        }
+        return PKAbrFilter.NONE;
     }
 
     private void sendInvalidVideoBitrateRangeIfNeeded(String errorMessage) {
@@ -1682,14 +1696,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void updateABRSettings(ABRSettings abrSettings) {
         playerSettings.setABRSettings(abrSettings);
-        overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+        overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate(), PKAbrFilter.BITRATE);
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
     }
 
     @Override
     public void resetABRSettings() {
         playerSettings.setABRSettings(ABRSettings.RESET);
-        overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+        overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate(), PKAbrFilter.BITRATE);
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
     }
 
