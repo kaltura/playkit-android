@@ -166,24 +166,4 @@ public class ABRSettings {
         result = 31 * result + (minVideoWidth != null ? minVideoWidth.hashCode() : 0);
         return result;
     }
-
-    //    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
-//
-//        ABRSettings that = (ABRSettings) o;
-//
-//        if (!minVideoBitrate.equals(that.minVideoBitrate)) return false;
-//        if (!maxVideoBitrate.equals(that.maxVideoBitrate)) return false;
-//        return initialBitrateEstimate.equals(that.initialBitrateEstimate);
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        int result = minVideoBitrate.hashCode();
-//        result = 31 * result + maxVideoBitrate.hashCode();
-//        result = 31 * result + initialBitrateEstimate.hashCode();
-//        return result;
-//    }
 }
