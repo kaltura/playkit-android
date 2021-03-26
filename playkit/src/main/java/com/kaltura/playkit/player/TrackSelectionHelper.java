@@ -904,19 +904,25 @@ class TrackSelectionHelper {
                 long maxValueInStream;
 
                 if (pkAbrFilter == PKAbrFilter.HEIGHT) {
+                    Collections.sort(videoTracks, new VideoTrack.HeightComparator());
                     minValueInStream = videoTracks.get(1).getHeight();
                     maxValueInStream = videoTracks.get(videoTracks.size() - 1).getHeight();
                 } else if (pkAbrFilter == PKAbrFilter.WIDTH) {
+                    Collections.sort(videoTracks, new VideoTrack.WidthComparator());
                     minValueInStream = videoTracks.get(1).getWidth();
                     maxValueInStream = videoTracks.get(videoTracks.size() - 1).getWidth();
+                } else if (pkAbrFilter == PKAbrFilter.PIXEL) {
+                    Collections.sort(videoTracks, new VideoTrack.PixelComparator());
+                    minValueInStream = videoTracks.get(1).getWidth() * videoTracks.get(1).getHeight();
+                    maxValueInStream = videoTracks.get(videoTracks.size() - 1).getWidth() * videoTracks.get(videoTracks.size() - 1).getHeight();
                 } else {
                     minValueInStream = videoTracks.get(1).getBitrate();
                     maxValueInStream = videoTracks.get(videoTracks.size() - 1).getBitrate();
                 }
 
-                if ((minAbr > minValueInStream) || (maxAbr < maxValueInStream)) {
+                if ((minAbr > maxValueInStream) || (maxAbr < minValueInStream)) {
                     isValidABRRange = false;
-                    String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
+                    String errorMessage = "given minVideo ABR or maxVideo ABR is invalid";
                     PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
                     tracksErrorListener.onTracksOverrideABRError(currentError);
                 }
@@ -935,10 +941,13 @@ class TrackSelectionHelper {
             while (videoTrackIterator.hasNext()) {
                 VideoTrack currentVideoTrack = videoTrackIterator.next();
                 long currentAbrSelectedValue;
+
                 if (pkAbrFilter == PKAbrFilter.HEIGHT) {
                     currentAbrSelectedValue = currentVideoTrack.getHeight();
                 } else if (pkAbrFilter == PKAbrFilter.WIDTH) {
                     currentAbrSelectedValue = currentVideoTrack.getWidth();
+                } else if (pkAbrFilter == PKAbrFilter.PIXEL) {
+                    currentAbrSelectedValue = currentVideoTrack.getWidth() * currentVideoTrack.getHeight();
                 } else {
                     currentAbrSelectedValue = currentVideoTrack.getBitrate();
                 }
