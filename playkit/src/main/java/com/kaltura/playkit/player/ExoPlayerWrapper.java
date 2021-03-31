@@ -56,6 +56,7 @@ import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParserForThumbnail;
 import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
+import com.kaltura.android.exoplayer2.text.Cue;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
@@ -91,7 +92,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -147,6 +147,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private int playerWindow;
     private long playerPosition = TIME_UNSET;
+    private List<Cue> lastReportedCue;
 
     private float lastKnownVolume = Consts.DEFAULT_VOLUME;
     private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
@@ -326,6 +327,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (playerSettings.getSubtitleStyleSettings() != null) {
                 configureSubtitleView();
             }
+            setLastReportedCue();
         } else {
             sendPrepareSourceError(sourceConfig);
         }
@@ -1165,6 +1167,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.v("release");
         if (assertPlayerIsNotNull("release()")) {
             savePlayerPosition();
+            saveCurrentSubtitleCue();
             player.release();
             player = null;
             if (bandwidthMeter != null) {
@@ -1399,6 +1402,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
         lastSelectedTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+        lastReportedCue = null;
+
         if (assertTrackSelectionIsNotNull("stop()")) {
             trackSelectionHelper.stop();
         }
@@ -1424,6 +1429,18 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (timeline != null && !timeline.isEmpty()  && playerWindow >= 0 && playerWindow < player.getCurrentTimeline().getWindowCount() && timeline.getWindow(playerWindow, window).isSeekable) {
                 playerPosition = player.getCurrentPosition();
             }
+        }
+    }
+
+    private void saveCurrentSubtitleCue() {
+        if (exoPlayerView != null) {
+            lastReportedCue = exoPlayerView.getLastReportedCue();
+        }
+    }
+
+    private void setLastReportedCue() {
+        if (exoPlayerView != null && lastReportedCue != null) {
+            exoPlayerView.setLastReportedCue(lastReportedCue);
         }
     }
 

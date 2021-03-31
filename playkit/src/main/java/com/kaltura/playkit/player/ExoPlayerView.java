@@ -62,6 +62,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private PKSubtitlePosition subtitleViewPosition;
     private boolean isVideoViewVisible;
     private List<Cue> lastReportedCues;
+    private boolean showLastReportedCue;
 
     ExoPlayerView(Context context) {
         this(context, null);
@@ -289,6 +290,11 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @Override
+    public List<Cue> getLastReportedCue() {
+        return lastReportedCues;
+    }
+
+    @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
         if (videoSurface instanceof SurfaceView) {
@@ -336,8 +342,13 @@ class ExoPlayerView extends BaseExoplayerView {
     private final class ComponentListener implements TextOutput, VideoListener, OnLayoutChangeListener {
 
         @Override
-        public void onCues(List<Cue> cues) {
-            lastReportedCues = cues;
+        public void onCues(@NonNull List<Cue> cues) {
+            if (showLastReportedCue && lastReportedCues != null) {
+                 cues = lastReportedCues;
+            } else {
+                lastReportedCues = cues;
+            }
+
             if (subtitleViewPosition != null) {
                 cues = getModifiedSubtitlePosition(cues, subtitleViewPosition);
             }
@@ -345,6 +356,7 @@ class ExoPlayerView extends BaseExoplayerView {
             if (subtitleView != null) {
                 subtitleView.onCues(cues);
             }
+            showLastReportedCue = false;
         }
 
         @Override
@@ -442,6 +454,12 @@ class ExoPlayerView extends BaseExoplayerView {
     @Override
     public void setSubtitleViewPosition(PKSubtitlePosition subtitleViewPosition) {
         this.subtitleViewPosition = subtitleViewPosition;
+    }
+
+    @Override
+    public void setLastReportedCue(List<Cue> lastReportedCue) {
+        this.lastReportedCues = lastReportedCue;
+        showLastReportedCue = true;
     }
 
     public static @AspectRatioFrameLayout.ResizeMode int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {

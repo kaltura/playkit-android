@@ -16,6 +16,10 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
+import com.kaltura.android.exoplayer2.text.Cue;
+
+import java.util.List;
+
 /**
  * Created by gilad.nadav on 27/12/2016.
  */
@@ -45,6 +49,8 @@ public abstract class PlayerView extends FrameLayout {
     public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
 
     public void setSubtitleViewPosition(PKSubtitlePosition subtitleViewPosition) {}
+    
+    public void setLastReportedCue(List<Cue> lastReportedCue) {}
 
     /**
      * Method call is being handled from update the video view(ExoPlayerWrapper) from client app

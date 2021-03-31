@@ -4,7 +4,10 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
+import com.kaltura.android.exoplayer2.text.Cue;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
+
+import java.util.List;
 
 public abstract class BaseExoplayerView extends PlayerView {
 
@@ -27,4 +30,6 @@ public abstract class BaseExoplayerView extends PlayerView {
     public abstract SubtitleView getSubtitleView();
 
     public abstract void applySubtitlesChanges();
+
+    public abstract List<Cue> getLastReportedCue();
 }
