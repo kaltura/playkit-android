@@ -100,7 +100,7 @@ import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
-public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
+public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener, ExoPlayerView.OnCueUpdateListener {
 
     private ByteArrayDataSink dashLastDataSink;
     private String dashManifestString;
@@ -194,6 +194,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
+        if (exoPlayerView instanceof ExoPlayerView) {
+            ((ExoPlayerView) this.exoPlayerView).addCueUpdatedEventListener(this);
+        }
     }
 
     private LoadControlStrategy getCustomLoadControlStrategy() {
@@ -284,6 +287,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
     }
 
+    @Override
+    public void onCueUpdated(List<Cue> cue) {
+        lastReportedCue = cue;
+    }
+
     private DefaultTrackSelector initializeTrackSelector() {
 
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(context);
@@ -327,7 +335,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (playerSettings.getSubtitleStyleSettings() != null) {
                 configureSubtitleView();
             }
-            setLastReportedCue();
         } else {
             sendPrepareSourceError(sourceConfig);
         }
@@ -1167,7 +1174,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.v("release");
         if (assertPlayerIsNotNull("release()")) {
             savePlayerPosition();
-            saveCurrentSubtitleCue();
+            saveCurrentSubtitleCue(PKLifecycleState.BACKGROUND);
             player.release();
             player = null;
             if (bandwidthMeter != null) {
@@ -1193,6 +1200,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             initializePlayer();
             setVolume(lastKnownVolume);
             setPlaybackRate(lastKnownPlaybackRate);
+            saveCurrentSubtitleCue(PKLifecycleState.FOREGROUND);
         }
 
         if (playerPosition == TIME_UNSET || isLiveMediaWithoutDvr()) {
@@ -1234,6 +1242,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         player = null;
         if (exoPlayerView != null) {
             exoPlayerView.removeAllViews();
+            if (exoPlayerView instanceof ExoPlayerView) {
+                ((ExoPlayerView) exoPlayerView).removeCueUpdatedEventListener();
+            }
         }
         exoPlayerView = null;
         playerPosition = TIME_UNSET;
@@ -1432,15 +1443,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
     }
 
-    private void saveCurrentSubtitleCue() {
+    private void saveCurrentSubtitleCue(PKLifecycleState applicationState) {
         if (exoPlayerView != null) {
-            lastReportedCue = exoPlayerView.getLastReportedCue();
-        }
-    }
-
-    private void setLastReportedCue() {
-        if (exoPlayerView != null && lastReportedCue != null) {
-            exoPlayerView.setLastReportedCue(lastReportedCue);
+            if (applicationState == PKLifecycleState.BACKGROUND) {
+                lastReportedCue = exoPlayerView.getLastReportedCue();
+            } else if (applicationState == PKLifecycleState.FOREGROUND) {
+                exoPlayerView.setLastReportedCue(lastReportedCue);
+            }
+            exoPlayerView.setApplicationState(applicationState);
         }
     }
 

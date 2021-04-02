@@ -35,6 +35,7 @@ import com.kaltura.android.exoplayer2.text.TextOutput;
 import com.kaltura.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.video.VideoListener;
+import com.kaltura.playkit.PKLifecycleState;
 import com.kaltura.playkit.PKLog;
 
 import java.util.ArrayList;
@@ -57,12 +58,13 @@ class ExoPlayerView extends BaseExoplayerView {
     private SimpleExoPlayer player;
     private ComponentListener componentListener;
     private Player.EventListener playerEventListener;
+    private ExoPlayerView.OnCueUpdateListener onCueUpdateListener;
     private int textureViewRotation;
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
     private PKSubtitlePosition subtitleViewPosition;
     private boolean isVideoViewVisible;
     private List<Cue> lastReportedCues;
-    private boolean showLastReportedCue;
+    private PKLifecycleState applicationState = PKLifecycleState.IDLE;
 
     ExoPlayerView(Context context) {
         this(context, null);
@@ -79,6 +81,18 @@ class ExoPlayerView extends BaseExoplayerView {
         initContentFrame();
         initSubtitleLayout();
         initPosterView();
+    }
+
+    public interface OnCueUpdateListener {
+        void onCueUpdated(List<Cue> cue);
+    }
+
+    public void addCueUpdatedEventListener(ExoPlayerView.OnCueUpdateListener onCueUpdateListener) {
+        this.onCueUpdateListener = onCueUpdateListener;
+    }
+
+    public void removeCueUpdatedEventListener() {
+        onCueUpdateListener = null;
     }
 
     @NonNull
@@ -295,6 +309,16 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @Override
+    public void setLastReportedCue(List<Cue> cue) {
+        this.lastReportedCues = cue;
+    }
+
+    @Override
+    public void setApplicationState(PKLifecycleState applicationState) {
+        this.applicationState = applicationState;
+    }
+
+    @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
         if (videoSurface instanceof SurfaceView) {
@@ -343,8 +367,17 @@ class ExoPlayerView extends BaseExoplayerView {
 
         @Override
         public void onCues(@NonNull List<Cue> cues) {
-            if (showLastReportedCue && lastReportedCues != null) {
-                 cues = lastReportedCues;
+            if (applicationState == PKLifecycleState.BACKGROUND) {
+                if (!cues.isEmpty() && onCueUpdateListener != null) {
+                    onCueUpdateListener.onCueUpdated(cues);
+                }
+                return;
+            }
+
+            if (cues.isEmpty() && lastReportedCues != null && !lastReportedCues.isEmpty() && applicationState == PKLifecycleState.FOREGROUND) {
+                cues = new ArrayList<>(lastReportedCues);
+                lastReportedCues = null;
+                applicationState = PKLifecycleState.IDLE;
             } else {
                 lastReportedCues = cues;
             }
@@ -356,7 +389,6 @@ class ExoPlayerView extends BaseExoplayerView {
             if (subtitleView != null) {
                 subtitleView.onCues(cues);
             }
-            showLastReportedCue = false;
         }
 
         @Override
@@ -454,12 +486,6 @@ class ExoPlayerView extends BaseExoplayerView {
     @Override
     public void setSubtitleViewPosition(PKSubtitlePosition subtitleViewPosition) {
         this.subtitleViewPosition = subtitleViewPosition;
-    }
-
-    @Override
-    public void setLastReportedCue(List<Cue> lastReportedCue) {
-        this.lastReportedCues = lastReportedCue;
-        showLastReportedCue = true;
     }
 
     public static @AspectRatioFrameLayout.ResizeMode int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {

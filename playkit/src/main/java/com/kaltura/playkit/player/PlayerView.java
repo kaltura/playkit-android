@@ -50,8 +50,6 @@ public abstract class PlayerView extends FrameLayout {
 
     public void setSubtitleViewPosition(PKSubtitlePosition subtitleViewPosition) {}
     
-    public void setLastReportedCue(List<Cue> lastReportedCue) {}
-
     /**
      * Method call is being handled from update the video view(ExoPlayerWrapper) from client app
      * @param isVisible videoSurface visibility

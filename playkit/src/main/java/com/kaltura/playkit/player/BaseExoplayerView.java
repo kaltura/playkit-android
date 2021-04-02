@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.text.Cue;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
+import com.kaltura.playkit.PKLifecycleState;
 
 import java.util.List;
 
@@ -32,4 +33,8 @@ public abstract class BaseExoplayerView extends PlayerView {
     public abstract void applySubtitlesChanges();
 
     public abstract List<Cue> getLastReportedCue();
+
+    public abstract void setLastReportedCue(List<Cue> cue);
+
+    public abstract void setApplicationState(PKLifecycleState applicationState);
 }
