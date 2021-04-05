@@ -2,7 +2,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 def isReleaseBuild() {
-    return playkitVersion.contains("dev") == false
+    return VERSION_NAME.contains("dev") == false
 }
 
 def getReleaseRepositoryUrl() {
