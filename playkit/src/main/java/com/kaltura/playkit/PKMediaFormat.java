@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import android.net.Uri;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public enum PKMediaFormat {
@@ -52,7 +53,7 @@ public enum PKMediaFormat {
     public static PKMediaFormat valueOfUrl(String sourceURL) {
         PKMediaFormat mediaFormat = null;
         if (sourceURL != null) {
-            if (sourceURL.toLowerCase().startsWith("udp://")) {
+            if (sourceURL.toLowerCase(Locale.ENGLISH).startsWith("udp://")) {
                 return PKMediaFormat.udp;
             }
             String path = Uri.parse(sourceURL).getPath();
