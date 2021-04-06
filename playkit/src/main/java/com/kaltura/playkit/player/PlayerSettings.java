@@ -210,6 +210,11 @@ public class PlayerSettings implements Player.Settings {
     }
 
     public PKRequestConfiguration getPkRequestConfiguration() {
+        if (pkRequestConfiguration == null) {
+            PKRequestConfiguration requestConfiguration = new PKRequestConfiguration();
+            requestConfiguration.setCrossProtocolRedirectEnabled(crossProtocolRedirectEnabled());
+            pkRequestConfiguration = requestConfiguration;
+        }
         return pkRequestConfiguration;
     }
 
@@ -442,10 +447,6 @@ public class PlayerSettings implements Player.Settings {
     public Player.Settings setPKRequestConfig(PKRequestConfiguration pkRequestConfiguration) {
         if (pkRequestConfiguration != null) {
             this.pkRequestConfiguration = pkRequestConfiguration;
-        } else {
-            PKRequestConfiguration requestConfiguration = new PKRequestConfiguration();
-            requestConfiguration.setCrossProtocolRedirectEnabled(crossProtocolRedirectEnabled());
-            this.pkRequestConfiguration = requestConfiguration;
         }
         return this;
     }
