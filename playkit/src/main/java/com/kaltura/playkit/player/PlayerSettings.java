@@ -13,6 +13,7 @@
 package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKRequestConfiguration;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
@@ -49,6 +50,7 @@ public class PlayerSettings implements Player.Settings {
     private ABRSettings abrSettings = new ABRSettings();
     private VRSettings vrSettings;
     private PKLowLatencyConfig pkLowLatencyConfig;
+    private PKRequestConfiguration pkRequestConfiguration;
     /**
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
@@ -207,6 +209,10 @@ public class PlayerSettings implements Player.Settings {
         return pkLowLatencyConfig;
     }
 
+    public PKRequestConfiguration getPkRequestConfiguration() {
+        return pkRequestConfiguration;
+    }
+
     @Override
     public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
         this.vrPlayerEnabled = vrPlayerEnabled;
@@ -272,7 +278,7 @@ public class PlayerSettings implements Player.Settings {
         this.preferredMediaFormat = preferredMediaFormat;
         return this;
     }
-
+    
     @Override
     public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
         this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
@@ -428,6 +434,18 @@ public class PlayerSettings implements Player.Settings {
     public Player.Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
         if (pkLowLatencyConfig != null) {
             this.pkLowLatencyConfig = pkLowLatencyConfig;
+        }
+        return this;
+    }
+
+    @Override
+    public Player.Settings setPKRequestConfig(PKRequestConfiguration pkRequestConfiguration) {
+        if (pkRequestConfiguration != null) {
+            this.pkRequestConfiguration = pkRequestConfiguration;
+        } else {
+            PKRequestConfiguration requestConfiguration = new PKRequestConfiguration();
+            requestConfiguration.setCrossProtocolRedirectEnabled(crossProtocolRedirectEnabled());
+            this.pkRequestConfiguration = requestConfiguration;
         }
         return this;
     }

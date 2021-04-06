@@ -91,12 +91,16 @@ public interface Player {
         Settings useTextureView(boolean useTextureView);
 
         /**
+         * This method is deprecated.
+         * Please use {@link com.kaltura.playkit.PKRequestConfiguration} to set crossProtocolRedirect
+         *
          * Decide if player should do cross protocol redirect or not. By default it will be always set
          * to false.
          *
          * @param crossProtocolRedirectEnabled - true if should do cross protocol redirect.
          * @return - Player Settings.
          */
+        @Deprecated
         Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled);
 
         /**
@@ -354,6 +358,14 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig);
+
+        /**
+         * Creates a request configuration for HttpDataSourceFactory {@link com.kaltura.playkit.player.ExoPlayerWrapper}.
+         *
+         * @param pkRequestConfiguration - Configuration for PKRequestConfiguration
+         * @return - Player Settings
+         */
+        Settings setPKRequestConfig(PKRequestConfiguration pkRequestConfiguration);
     }
 
     /**
