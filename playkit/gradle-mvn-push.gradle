@@ -16,11 +16,11 @@ def getSnapshotRepositoryUrl() {
 }
 
 def getRepositoryUsername() {
-    return hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
+    return System.getenv("NEXUS_USERNAME")
 }
 
 def getRepositoryPassword() {
-    return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
+    return System.getenv("NEXUS_PASSWORD")
 }
 
 afterEvaluate { project ->
@@ -80,7 +80,6 @@ afterEvaluate { project ->
         source = android.sourceSets.main.java.srcDirs
         classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
         exclude '**/PlayKitManager.java'
-        exclude '**/SamplePlugin.java'
     }
 
     afterEvaluate {
