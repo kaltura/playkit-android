@@ -79,8 +79,6 @@ afterEvaluate { project ->
     task androidJavadocs(type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
         classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-        exclude '**/BuildConfig.java'
-        exclude '**/R.java'
         exclude '**/PlayKitManager.java'
         exclude '**/SamplePlugin.java'
     }
@@ -89,7 +87,6 @@ afterEvaluate { project ->
         androidJavadocs.classpath += files(android.libraryVariants.collect { variant ->
             variant.javaCompileProvider.get().classpath.files
         })
-        androidJavadocs.classpath  += file("${project.projectDir.absolutePath}/src/main/java")
     }
 
     task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {

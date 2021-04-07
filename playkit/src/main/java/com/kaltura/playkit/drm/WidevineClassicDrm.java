@@ -309,7 +309,7 @@ public class WidevineClassicDrm {
      * returns whether or not we should acquire rights for this url
      *
      * @param assetUri
-     * @return
+     * @return boolean
      */
     public boolean needToAcquireRights(String assetUri) {
         mDrmManager.acquireDrmInfo(createDrmInfoRequest(assetUri));
