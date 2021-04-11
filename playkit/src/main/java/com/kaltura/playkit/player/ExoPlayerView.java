@@ -95,6 +95,10 @@ class ExoPlayerView extends BaseExoplayerView {
                             }
                         }
                         break;
+                        
+                    case Player.STATE_BUFFERING:
+                    case Player.STATE_ENDED:
+                    case Player.STATE_IDLE:
                     default:
                         break;
                 }

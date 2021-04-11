@@ -7,23 +7,20 @@ public class ABRSettings {
     /**
      * Set minVideoBitrate in ABR
      *
-     * @param minVideoBitrate - minimum video bitrate in ABR
-     * @return - Player Settings.
+     * minVideoBitrate - minimum video bitrate in ABR
      */
     private Long minVideoBitrate = Long.MIN_VALUE;
     /**
      * Set maxVideoBitrate in ABR
      *
-     * @param maxVideoBitrate - maximum video bitrate in ABR
-     * @return - Player Settings.
+     * maxVideoBitrate - maximum video bitrate in ABR
      */
     private Long maxVideoBitrate = Long.MAX_VALUE;
     /**
      * Sets the initial bitrate estimate in bits per second that should be assumed when a bandwidth
      * estimate is unavailable.
      *
-     * @param initialBitrateEstimate The initial bitrate estimate in bits per second.
-     * @return - Player Settings.
+     * initialBitrateEstimate The initial bitrate estimate in bits per second.
      */
     private Long initialBitrateEstimate;
 
@@ -55,7 +52,7 @@ public class ABRSettings {
      * <br>
      *
      * @param initialBitrateEstimate The initial bitrate estimate in bits per second.
-     * @return
+     * @return ABRSettings
      */
     public ABRSettings setInitialBitrateEstimate(@NonNull long initialBitrateEstimate) {
         this.initialBitrateEstimate = initialBitrateEstimate;
