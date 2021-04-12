@@ -27,11 +27,8 @@ afterEvaluate { project ->
     uploadArchives {
         repositories {
             mavenDeployer {
-                if (!hasProperty('VERSION_NAME')) {
-                    return
-                }
-
                 beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
                 pom.groupId = GROUP
                 pom.artifactId = POM_ARTIFACT_ID
                 VERSION_NAME = playkitVersion
