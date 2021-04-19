@@ -19,11 +19,11 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 import java.util.List;
-
 
 /**
  * Interface that connect between {@link PlayerController} and actual player engine
@@ -267,10 +267,23 @@ public interface PlayerEngine {
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
     /**
-      *  update view size 
-      *  @param resizeMode
+      * Update View Size
+      * @param resizeMode
       */
     default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
+    
+    default void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {}
+
+    /**
+     * Update the ABR Settings
+     * @param abrSettings
+     */
+    default void updateABRSettings(ABRSettings abrSettings) {}
+
+    /**
+     * Reset the ABR Settings
+     */
+    default void resetABRSettings() {}
 
     /**
      * Generic getters for playkit controllers.
@@ -285,6 +298,8 @@ public interface PlayerEngine {
      * Must be called by application when Android onConfigurationChanged triggered by system.
      */
     void onOrientationChanged();
+
+    default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
 
     interface EventListener {
         void onEvent(PlayerEvent.Type event);

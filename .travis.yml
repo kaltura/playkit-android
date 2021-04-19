@@ -19,5 +19,6 @@ notifications:
     recipients:
       - noam.tamim@kaltura.com
       - gilad.nadav@kaltura.com
+      - gourav.saxena@kaltura.com
     on_success: change
     on_failure: always

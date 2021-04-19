@@ -15,9 +15,12 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 
 import java.util.List;
 
@@ -91,6 +94,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public float getPlaybackRate() {
         return player.getPlaybackRate();
+    }
+
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) {
+        return player.getThumbnailInfo(positionMS);
     }
 
     @Override
@@ -221,6 +229,21 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         player.updateSurfaceAspectRatioResizeMode(resizeMode);
+    }
+
+    @Override
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        player.updatePKLowLatencyConfig(pkLowLatencyConfig);
+    }
+
+    @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+        player.updateABRSettings(abrSettings);
+    }
+
+    @Override
+    public void resetABRSettings() {
+        player.resetABRSettings();
     }
 
     @Override

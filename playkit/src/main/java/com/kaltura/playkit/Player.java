@@ -18,11 +18,13 @@ import androidx.annotation.Nullable;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
@@ -334,6 +336,24 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
+
+        /**
+         * If the device codec is known to fail if security level L1 is used
+         * then set flag to true, it will force the player to use Widevine L3
+         * Will work only SDK level 18 or above
+         *
+         * @param forceWidevineL3Playback - force the L3 Playback. Default is false
+         * @return - Player Settings
+         */
+        Settings forceWidevineL3Playback(boolean forceWidevineL3Playback);
+
+        /**
+         * Creates a Low Latency Live playback configuration.
+         *
+         * @param pkLowLatencyConfig - Configuration for Low Latency
+         * @return - Player Settings
+         */
+        Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig);
     }
 
     /**
@@ -475,7 +495,7 @@ public interface Player {
      * Seek player to Live Default Position.
      *
      */
-     void seekToLiveDefaultPosition();
+    void seekToLiveDefaultPosition();
 
     /**
      * Get the Player's SessionId. The SessionId is generated each time new media is set.
@@ -510,6 +530,14 @@ public interface Player {
     float getPlaybackRate();
 
     /**
+     * get the Information for a thumbnailImage by position
+     * if positionMS is not passed current position will be used
+     *
+     * @param positionMS - relevant image for given player position. (optional)
+     */
+    ThumbnailInfo getThumbnailInfo(long ... positionMS);
+    
+    /**
      * Generic getters for playkit controllers.
      *
      * @param type - type of the controller you want to obtain.
@@ -527,6 +555,25 @@ public interface Player {
      * Update video size
      */
     void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
+
+    /**
+     * Update Low Latency configuration
+     */
+    void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig);
+
+    /** Update ABRSettings
+     * <br>
+     * Updating {@link ABRSettings#setInitialBitrateEstimate(long)} is unaffected because
+     * initial bitrate is only meant at the start of the playback
+     * <br>
+     * @param abrSettings new ABR Settings
+     */
+    void updateABRSettings(ABRSettings abrSettings);
+
+    /**
+     * Reset existing ABRSettings
+     */
+    void resetABRSettings();
 
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to

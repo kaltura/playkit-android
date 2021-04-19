@@ -30,12 +30,14 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKTracksAvailableStatus;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -69,6 +71,8 @@ public class PlayerController implements Player {
     private UUID playerSessionId = UUID.randomUUID();
 
     private long targetSeekPosition;
+    private boolean isVideoTracksUpdated;
+    private boolean isVideoTracksReset;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
@@ -661,7 +665,19 @@ public class PlayerController implements Player {
         return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
     }
 
-
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) {
+        log.v("getThumbnailInfo");
+        if (assertPlayerIsNotNull("getThumbnailInfo()")) {
+            if (positionMS.length > 0) {
+                return player.getThumbnailInfo(positionMS[0]);
+            } else {
+                return player.getThumbnailInfo(player.getCurrentPosition());
+            }
+        }
+        return null;
+    }
+    
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         log.v("updateSubtitleStyle");
@@ -679,6 +695,53 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        log.v("updatePKLowLatencyConfig");
+        if (assertPlayerIsNotNull("updatePKLowLatencyConfig")) {
+            player.updatePKLowLatencyConfig(pkLowLatencyConfig);
+        }
+    }
+
+    @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+        log.v("updateABRSettings");
+
+        if (!isVideoTrackPresent()) {
+            return;
+        }
+
+        if (abrSettings == null || abrSettings.equals(ABRSettings.RESET)) {
+            resetABRSettings();
+            return;
+        }
+
+        if (abrSettings.getMinVideoBitrate().longValue() == playerSettings.getAbrSettings().getMinVideoBitrate().longValue() &&
+                abrSettings.getMaxVideoBitrate().longValue() == playerSettings.getAbrSettings().getMaxVideoBitrate().longValue()) {
+            log.w("Existing and Incoming ABR Settings are same");
+            return;
+        }
+
+        if (assertPlayerIsNotNull("updateABRSettings")) {
+            isVideoTracksUpdated = true;
+            player.updateABRSettings(abrSettings);
+        }
+    }
+
+    @Override
+    public void resetABRSettings() {
+        log.v("resetABRSettings");
+
+        if (!isVideoTrackPresent()) {
+            return;
+        }
+
+        if (assertPlayerIsNotNull("resetABRSettings")) {
+            isVideoTracksReset = true;
+            player.resetABRSettings();
+        }
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         Assert.shouldNeverHappen();
     }
@@ -691,6 +754,17 @@ public class PlayerController implements Player {
     @Override
     public void removeListeners(@NonNull Object groupId) {
         Assert.shouldNeverHappen();
+    }
+
+    private boolean isVideoTrackPresent() {
+        if (player != null &&
+                player.getPKTracks() != null &&
+                player.getPKTracks().getVideoTracks() != null &&
+                player.getPKTracks().getVideoTracks().size() == 0) {
+            log.w("No video track found for this media");
+            return false;
+        }
+        return true;
     }
 
     private boolean assertPlayerIsNotNull(String methodName) {
@@ -799,7 +873,13 @@ public class PlayerController implements Player {
                         }
                         break;
                     case TRACKS_AVAILABLE:
-                        event = new PlayerEvent.TracksAvailable(player.getPKTracks());
+                        PKTracksAvailableStatus pkTracksAvailableStatus = isVideoTracksUpdated ? PKTracksAvailableStatus.UPDATED: PKTracksAvailableStatus.NEW;
+                        if (isVideoTracksReset) {
+                            pkTracksAvailableStatus = PKTracksAvailableStatus.RESET;
+                        }
+                        event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailableStatus);
+                        isVideoTracksUpdated = false;
+                        isVideoTracksReset = false;
                         break;
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
@@ -855,6 +935,13 @@ public class PlayerController implements Player {
                         }
                         event = new PlayerEvent.TextTrackChanged(textTrack);
                         break;
+                    case IMAGE_TRACK_CHANGED:
+                        ImageTrack imageTrack = (ImageTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_IMAGE);
+                        if (imageTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.ImageTrackChanged(imageTrack);
+                        break;    
                     case PLAYBACK_RATE_CHANGED:
                         event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
                         break;
