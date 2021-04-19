@@ -160,7 +160,8 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 reasonString = "PeriodTransition";
                 break;
             case DISCONTINUITY_REASON_SEEK:
-                reasonString = "SeekProcessed";
+                 log("SeekProcessed").end();
+                reasonString = "Seek";
                 break;
             case DISCONTINUITY_REASON_SEEK_ADJUSTMENT:
                 reasonString = "SeekAdjustment";
