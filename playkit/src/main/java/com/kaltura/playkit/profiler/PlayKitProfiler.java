@@ -1,7 +1,6 @@
 package com.kaltura.playkit.profiler;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -12,7 +11,6 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
@@ -129,13 +127,13 @@ public class PlayKitProfiler {
      * Initialize the static part of the profiler -- load the config and store it,
      * create IO thread and handler. Must be called by the app to enable the profiler.
      */
-    public static void init(Context context, String configToken) {
+    public static void init(Context context, String jspnConfigToken) {
 
         // This only has to happen once.
         if (initialized) {
             return;
         }
-
+        configToken = jspnConfigToken;
         synchronized (PlayKitProfiler.class) {
 
             // Ask again, after sync.
