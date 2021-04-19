@@ -22,12 +22,13 @@ public class TextTrack extends BaseTrack {
 
     private String label;
     private String language;
+    private String mimeType;
 
-
-    TextTrack(String uniqueId, String language, String label, int selectionFlag) {
+    TextTrack(String uniqueId, String language, String label, String mimeType, int selectionFlag) {
         super(uniqueId, selectionFlag, false);
         this.label = label;
         this.language = language;
+        this.mimeType = mimeType;
     }
 
     /**
@@ -37,8 +38,7 @@ public class TextTrack extends BaseTrack {
      * @return - the language of the track.
      */
     @Override
-    public @Nullable
-    String getLanguage() {
+    @Nullable public String getLanguage() {
         return language;
     }
 
@@ -48,9 +48,16 @@ public class TextTrack extends BaseTrack {
      *
      * @return - the label of the track.
      */
-    public @Nullable
-    String getLabel() {
+    @Nullable public String getLabel() {
         return label;
     }
 
+    /**
+     * Getter for the track mimeType.
+     *
+     * @return - the mimeType of the track.
+     */
+    public String getMimeType() {
+        return mimeType;
+    }
 }

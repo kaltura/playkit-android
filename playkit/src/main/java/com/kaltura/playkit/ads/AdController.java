@@ -27,6 +27,8 @@ public interface AdController extends PKController {
 
     void seekTo(long position);
 
+    default void setVolume(float volume) {}
+
     long getAdCurrentPosition();
 
     long getAdDuration();

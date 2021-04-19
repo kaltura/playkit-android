@@ -19,11 +19,11 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 import java.util.List;
-
 
 /**
  * Interface that connect between {@link PlayerController} and actual player engine
@@ -103,6 +103,12 @@ public interface PlayerEngine {
     long getBufferedPosition();
 
     /**
+     * @return - The Current Live Offset of the media,
+     * or {@link Consts#TIME_UNSET} if the offset is unknown or player is null.
+     */
+    long getCurrentLiveOffset();
+
+    /**
      * @return - the volume of the current audio,
      * with 0 as total silence and 1 as maximum volume up.
      */
@@ -124,12 +130,18 @@ public interface PlayerEngine {
     void changeTrack(String uniqueId);
 
     /**
-     * overrideMediaDefaultABR.
+     * Override media for video tracks with ABR
      *
      * @param minVideoBitrate - minVideoBitrate.
-     * @param maxVideoBitrate - minVideoBitrate.
+     * @param maxVideoBitrate - maxVideoBitrate.
      */
     void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate);
+
+    /**
+     * Override codec for video tracks when more than 1 codec is available.
+     *
+     */
+    void overrideMediaVideoCodec();
 
     /**
      * Seek player to the specified position.
@@ -138,6 +150,12 @@ public interface PlayerEngine {
      */
     void seekTo(long position);
 
+    /**
+     * Seek player to Live Default Position.
+     *
+     */
+    default void seekToDefaultPosition() {};
+    
     /**
      * Start players playback from the specified position.
      * Note! The position is passed in seconds.
@@ -249,10 +267,23 @@ public interface PlayerEngine {
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
     /**
-      *  update view size 
-      *  @param resizeMode
+      * Update View Size
+      * @param resizeMode
       */
     default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
+    
+    default void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {}
+
+    /**
+     * Update the ABR Settings
+     * @param abrSettings
+     */
+    default void updateABRSettings(ABRSettings abrSettings) {}
+
+    /**
+     * Reset the ABR Settings
+     */
+    default void resetABRSettings() {}
 
     /**
      * Generic getters for playkit controllers.
@@ -267,6 +298,8 @@ public interface PlayerEngine {
      * Must be called by application when Android onConfigurationChanged triggered by system.
      */
     void onOrientationChanged();
+
+    default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
 
     interface EventListener {
         void onEvent(PlayerEvent.Type event);

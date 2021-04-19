@@ -32,6 +32,23 @@ public class Consts {
     public static final int POSITION_UNSET = -1;
 
     /**
+     * Represents an unset or unknown rate.
+     */
+    public static final float RATE_UNSET = -Float.MAX_VALUE;
+
+    /**
+     * The default minimum factor by which playback can be sped up that should be used if no minimum
+     * playback speed is defined by the media.
+     */
+    public static final float DEFAULT_FALLBACK_MIN_PLAYBACK_SPEED = 0.97f;
+
+    /**
+     * The default maximum factor by which playback can be sped up that should be used if no maximum
+     * playback speed is defined by the media.
+     */
+    public static final float DEFAULT_FALLBACK_MAX_PLAYBACK_SPEED = 1.03f;
+
+    /**
      * Represents an unset or unknown volume.
      */
     public static final float VOLUME_UNKNOWN = -1;
@@ -48,6 +65,10 @@ public class Consts {
      * Identifier for the Text track type.
      */
     public static final int TRACK_TYPE_TEXT = 2;
+    /**
+     * Identifier for the Image track type.
+     */
+    public static final int TRACK_TYPE_IMAGE = 3;
     /**
      * Identifier for the unknown track type.
      */
@@ -103,6 +124,8 @@ public class Consts {
     // won't change the actual behavior in ExoPlayer. It's only provided as reference.
     // 60 is the number of seconds set in ExoPlayer 2.10.3.
     public static final int MIN_OFFLINE_LICENSE_DURATION_TO_PLAY = 60;
+
+    public static final int FORMAT_HANDLED = 4;
 
     public static final String HTTP_METHOD_POST = "POST";
 

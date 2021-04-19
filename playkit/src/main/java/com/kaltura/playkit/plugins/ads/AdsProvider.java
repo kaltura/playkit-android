@@ -26,6 +26,8 @@ public interface AdsProvider {
 
     void pause();
 
+    default void setVolume(float volume) {}
+
     void contentCompleted();
 
     PKAdInfo getAdInfo();
@@ -35,6 +37,8 @@ public interface AdsProvider {
     boolean isAdDisplayed();
 
     boolean isAdPaused();
+
+    default boolean isForceSinglePlayerRequired() {return false;}
 
     boolean isAdRequested();
 

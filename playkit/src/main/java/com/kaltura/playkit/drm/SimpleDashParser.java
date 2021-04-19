@@ -21,7 +21,7 @@ import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.extractor.mp4.FragmentedMp4Extractor;
 import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
-import com.kaltura.android.exoplayer2.source.chunk.ChunkExtractorWrapper;
+import com.kaltura.android.exoplayer2.source.chunk.BundledChunkExtractor;
 import com.kaltura.android.exoplayer2.source.chunk.InitializationChunk;
 import com.kaltura.android.exoplayer2.source.dash.manifest.AdaptationSet;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
@@ -108,13 +108,9 @@ public class SimpleDashParser {
         FileDataSource initChunkSource = new FileDataSource();
         DataSpec initDataSpec = new DataSpec(initFile);
         int trigger = C.SELECTION_REASON_MANUAL;
-        ChunkExtractorWrapper extractorWrapper = new ChunkExtractorWrapper(new FragmentedMp4Extractor(), C.TRACK_TYPE_DEFAULT, format);
+        BundledChunkExtractor extractorWrapper = new BundledChunkExtractor(new FragmentedMp4Extractor(), C.TRACK_TYPE_DEFAULT, format);
         InitializationChunk chunk = new InitializationChunk(initChunkSource, initDataSpec, format, trigger, format, extractorWrapper); // TODO why do we need the 5 -fth argument
-        try {
-            chunk.load();
-        } catch (InterruptedException e) {
-            log.e("Interrupted! " + e.getMessage());
-        }
+        chunk.load();
 
         if (extractorWrapper.getSampleFormats() != null && extractorWrapper.getSampleFormats().length >= 1) {
             drmInitData = extractorWrapper.getSampleFormats()[0].drmInitData;

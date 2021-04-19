@@ -18,14 +18,18 @@ import android.os.Looper;
 
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionEventListener;
+
+import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmSession;
+import com.kaltura.android.exoplayer2.drm.DrmSessionEventListener;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.ExoMediaCrypto;
 import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
+import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
 import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
+import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKDrmParams;
@@ -38,7 +42,6 @@ import com.kaltura.playkit.player.PKPlayerErrorType;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static com.kaltura.playkit.Utils.toBase64;
 
@@ -46,9 +49,13 @@ import static com.kaltura.playkit.Utils.toBase64;
  * @hide
  */
 
-public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCrypto>, DefaultDrmSessionEventListener {
+public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionEventListener {
 
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
+
+    private String WIDEVINE_SECURITY_LEVEL_1 = "L1";
+    private String WIDEVINE_SECURITY_LEVEL_3 = "L3";
+    private String SECURITY_LEVEL_PROPERTY = "securityLevel";
 
     private Handler mainHandler;
     private final DrmCallback drmCallback;
@@ -56,17 +63,23 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
     private LocalAssetsManager.LocalMediaSource localMediaSource = null;
     private DrmSessionManager drmSessionManager;
     private boolean allowClearLead;
+    private boolean forceWidevineL3Playback;
 
-    public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead) {
+    public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead, boolean forceWidevineL3Playback) {
         this.mainHandler = mainHandler;
         this.drmCallback = drmCallback;
         this.drmSessionListener = drmSessionListener;
-        drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
         this.allowClearLead = allowClearLead;
+        this.forceWidevineL3Playback = forceWidevineL3Playback;
+        this.drmSessionManager = getDRMSessionManager(drmCallback);
     }
 
     public interface DrmSessionListener {
         void onError(PKError error);
+    }
+
+    public void setDrmSessionManager(DrmSessionManager drmSessionManager) {
+        this.drmSessionManager = drmSessionManager;
     }
 
     public void setMediaSource(PKMediaSource mediaSource) {
@@ -75,53 +88,43 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
             return;
         }
 
-        drmSessionManager = new DefaultDrmSessionManager.Builder()
-                //.setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
-                //.setMultiSession(true)
-                .setPlayClearSamplesWithoutKeys(allowClearLead)
-                .build(drmCallback);
-
         if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
             localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
         } else {
             drmCallback.setLicenseUrl(getLicenseUrl(mediaSource));
         }
-
-        if (mainHandler != null) {
-            if (drmSessionManager instanceof DefaultDrmSessionManager) {
-                ((DefaultDrmSessionManager) drmSessionManager).addListener(mainHandler, this);
-            }
-        }
     }
 
-    @Override
-    public boolean canAcquireSession(DrmInitData drmInitData) {
-        return drmSessionManager != null && drmSessionManager.canAcquireSession(drmInitData);
+    public void setLicenseUrl(String license) {
+        if (Util.SDK_INT < 18) {
+            drmSessionManager = null;
+            return;
+        }
+
+        if (drmCallback != null) {
+            drmCallback.setLicenseUrl(license);
+        } else {
+            log.d("DrmCallback is null");
+        }
     }
 
     @Nullable
     @Override
-    public DrmSession<ExoMediaCrypto> acquirePlaceholderSession(Looper playbackLooper, int trackType) {
-        if (drmSessionManager != null) {
-            return drmSessionManager.acquirePlaceholderSession(playbackLooper, trackType);
-        }
-        return null;
-    }
-
-    @Override
-    public DrmSession<ExoMediaCrypto> acquireSession(Looper playbackLooper, DrmInitData drmInitData) {
+    public DrmSession acquireSession(Looper playbackLooper, @Nullable EventDispatcher eventDispatcher, Format format) {
         if (drmSessionManager == null) {
             return null;
         }
 
         if (localMediaSource != null) {
             byte[] offlineKey;
-            DrmInitData.SchemeData schemeData = getWidevineInitData(drmInitData);
+            DrmInitData.SchemeData schemeData = getWidevineInitData(format.drmInitData);
             try {
                 if (schemeData != null) {
                     offlineKey = localMediaSource.getStorage().load(toBase64(schemeData.data));
                     if (drmSessionManager instanceof DefaultDrmSessionManager) {
-                        ((DefaultDrmSessionManager) drmSessionManager).setMode(DefaultDrmSessionManager.MODE_PLAYBACK, offlineKey);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                            ((DefaultDrmSessionManager) drmSessionManager).setMode(DefaultDrmSessionManager.MODE_PLAYBACK, offlineKey);
+                        }
                     }
                     localMediaSource = null;
                 }
@@ -131,14 +134,45 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
             }
         }
 
-        return drmSessionManager.acquireSession(playbackLooper, drmInitData);
+        return drmSessionManager.acquireSession(playbackLooper, eventDispatcher, format);
+    }
+
+    private DrmSessionManager getDRMSessionManager(DrmCallback drmCallback) {
+        log.d("getDRMSessionManager forceWidevineL3Playback = " + forceWidevineL3Playback);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            DefaultDrmSessionManager.Builder drmSessionManagerBuilder = new DefaultDrmSessionManager.Builder();
+            drmSessionManagerBuilder.setMultiSession(true) // key rotation
+                    .setPlayClearSamplesWithoutKeys(allowClearLead);
+
+            if (forceWidevineL3Playback) {
+                drmSessionManagerBuilder.setUuidAndExoMediaDrmProvider(
+                        MediaSupport.WIDEVINE_UUID,
+                        uuid -> {
+                            try {
+                                FrameworkMediaDrm frameworkMediaDrm = FrameworkMediaDrm.newInstance(MediaSupport.WIDEVINE_UUID);
+                                frameworkMediaDrm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
+                                return frameworkMediaDrm;
+                            } catch (UnsupportedDrmException e) {
+                                log.e("ForceWidevineL3Playback failed due to " + e.getMessage());
+                                return FrameworkMediaDrm.DEFAULT_PROVIDER.acquireExoMediaDrm(MediaSupport.WIDEVINE_UUID);
+                            }
+                        });
+            } else {
+                drmSessionManagerBuilder.setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER);
+            }
+            drmSessionManager = drmSessionManagerBuilder.build(drmCallback);
+        } else {
+            drmSessionManager = DrmSessionManager.DRM_UNSUPPORTED;
+        }
+
+        return drmSessionManager;
     }
 
     @Nullable
     @Override
-    public Class<? extends ExoMediaCrypto> getExoMediaCryptoType(DrmInitData drmInitData) {
+    public Class<? extends ExoMediaCrypto> getExoMediaCryptoType(Format format) {
         if (drmSessionManager != null) {
-            return drmSessionManager.getExoMediaCryptoType(drmInitData);
+            return drmSessionManager.getExoMediaCryptoType(format);
         }
         return null;
     }
@@ -203,34 +237,34 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
     }
 
     @Override
-    public void onDrmKeysLoaded() {
-        log.d("onDrmKeysLoaded");
-    }
-
-    @Override
-    public void onDrmSessionManagerError(Exception e) {
-        log.d("onDrmSessionManagerError");
-        PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, e.getMessage(), e);
-        drmSessionListener.onError(error);
-    }
-
-    @Override
-    public void onDrmKeysRestored() {
-        log.d("onDrmKeysRestored");
-    }
-
-    @Override
-    public void onDrmKeysRemoved() {
-        log.d("onDrmKeysRemoved");
-    }
-
-    @Override
-    public void onDrmSessionAcquired() {
+    public void onDrmSessionAcquired(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
         log.d("onDrmSessionAcquired");
     }
 
     @Override
-    public void onDrmSessionReleased() {
+    public void onDrmKeysLoaded(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
+        log.d("onDrmKeysLoaded");
+    }
+
+    @Override
+    public void onDrmSessionManagerError(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId, Exception error) {
+        log.d("onDrmSessionManagerError");
+        PKError pkError = new PKError(PKPlayerErrorType.DRM_ERROR, PKError.Severity.Recoverable, error.getMessage(), error);
+        drmSessionListener.onError(pkError);
+    }
+
+    @Override
+    public void onDrmKeysRestored(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
+        log.d("onDrmKeysRestored");
+    }
+
+    @Override
+    public void onDrmKeysRemoved(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
+        log.d("onDrmKeysRemoved");
+    }
+
+    @Override
+    public void onDrmSessionReleased(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
         log.d("onDrmSessionReleased");
     }
 

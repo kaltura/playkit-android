@@ -5,8 +5,7 @@ import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
 
 public class CustomLoadControl extends DefaultLoadControl {
         public CustomLoadControl(DefaultAllocator allocator,
-                                 int minBufferAudioMs,
-                                 int minBufferVideoMs,
+                                 int minBufferMs,
                                  int maxBufferMs,
                                  int bufferForPlaybackMs,
                                  int bufferForPlaybackAfterRebufferMs,
@@ -16,8 +15,7 @@ public class CustomLoadControl extends DefaultLoadControl {
                                  boolean retainBackBufferFromKeyframe)
         {
             super(allocator,
-                    minBufferAudioMs,
-                    minBufferVideoMs,
+                    minBufferMs,
                     maxBufferMs,
                     bufferForPlaybackMs,
                     bufferForPlaybackAfterRebufferMs,

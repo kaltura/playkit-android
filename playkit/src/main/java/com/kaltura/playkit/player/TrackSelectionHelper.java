@@ -22,27 +22,44 @@ import androidx.annotation.Nullable;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.RendererCapabilities;
+import com.kaltura.android.exoplayer2.dashmanifestparser.CustomAdaptationSet;
+import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
+import com.kaltura.android.exoplayer2.dashmanifestparser.CustomFormat;
+import com.kaltura.android.exoplayer2.dashmanifestparser.CustomRepresentation;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
+import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.kaltura.playkit.PKAudioCodec;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
+import com.kaltura.playkit.PKVideoCodec;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
 
+import static com.kaltura.android.exoplayer2.util.MimeTypes.AUDIO_AAC;
+import static com.kaltura.android.exoplayer2.util.MimeTypes.VIDEO_AV1;
+import static com.kaltura.android.exoplayer2.util.MimeTypes.VIDEO_H265;
+import static com.kaltura.android.exoplayer2.util.MimeTypes.VIDEO_VP8;
+import static com.kaltura.android.exoplayer2.util.MimeTypes.VIDEO_VP9;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_IMAGE;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_UNKNOWN;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
@@ -70,6 +87,7 @@ class TrackSelectionHelper {
     private static final String VIDEO_PREFIX = "Video:";
     private static final String AUDIO_PREFIX = "Audio:";
     private static final String TEXT_PREFIX = "Text:";
+    private static final String IMAGE_PREFIX = "Image:";
 
     private static final String CEA_608 = "application/cea-608";
     private static final String LANGUAGE_UNKNOWN = "Unknown";
@@ -80,15 +98,29 @@ class TrackSelectionHelper {
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
+    private List<VideoTrack> originalVideoTracks;
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
+    private List<ImageTrack> imageTracks = new ArrayList<>();
+
+
+    private Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
+    private Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
+    private Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
 
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
 
-    private TracksInfoListener tracksInfoListener;
+    // To know if application passed the external subtitles
+    private boolean hasExternalSubtitles = false;
 
-    private TracksErrorListener tracksErrorListener;;
+    // To know if tracks has external subtitles or not.
+    // Helpful in case if subtitles are removed by ExoPlayer in case of any discrepancy
+    private boolean hasExternalSubtitlesInTracks = false;
+
+    private TracksInfoListener tracksInfoListener;
+    private TracksErrorListener tracksErrorListener;
+
     private PlayerSettings playerSettings;
 
     interface TracksInfoListener {
@@ -102,11 +134,16 @@ class TrackSelectionHelper {
         void onAudioTrackChanged();
 
         void onTextTrackChanged();
+
+        void onImageTrackChanged();
     }
 
     interface TracksErrorListener {
-
         void onTracksOverrideABRError(PKError pkError);
+        void onUnsupportedVideoTracksError(PKError pkError);
+        void onUnsupportedAudioTracksError(PKError pkError);
+        void onUnsupportedAudioVideoTracksError(PKError pkError);
+        void onUnsupportedTracksAvailableError(PKError pkError);
     }
 
     enum TrackType {
@@ -133,18 +170,50 @@ class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    protected boolean prepareTracks(TrackSelectionArray trackSelections) {
+    boolean prepareTracks(TrackSelectionArray trackSelections, CustomDashManifest customDashManifest) {
         trackSelectionArray = trackSelections;
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
             return false;
         }
-        warnAboutUnsupportedRenderTypes();
-        PKTracks tracksInfo = buildTracks();
+
+        if (checkTracksUnavailability(mappedTrackInfo)) {
+            String errorMessage = "No audio, video and text track found";
+            PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Fatal, errorMessage, new IllegalStateException(errorMessage));
+            tracksErrorListener.onUnsupportedTracksAvailableError(currentError);
+            return false;
+        }
+
+        warnAboutUnsupportedRendererTypes();
+
+        List<CustomFormat> rawImageTracks = new ArrayList<>();
+        if (customDashManifest != null) {
+            for (int periodIndex = 0; periodIndex < customDashManifest.getPeriodCount(); periodIndex++) {
+                List<CustomAdaptationSet> adaptationSets = customDashManifest.getPeriod(periodIndex).adaptationSets;
+
+                for (int adaptationSetIndex = 0 ; adaptationSetIndex < adaptationSets.size() ; adaptationSetIndex++) {
+                    if (adaptationSets.get(adaptationSetIndex).type != C.TRACK_TYPE_IMAGE) {
+                        continue;
+                    }
+                    List<CustomRepresentation> representations = adaptationSets.get(adaptationSetIndex).representations;
+                    for (CustomRepresentation representation : representations) {
+                        if (representation.format == null || representation.format.formatThumbnailInfo == null) {
+                            continue;
+                        }
+                        rawImageTracks.add(representation.format);
+                    }
+                }
+            }
+        }
+
+        PKTracks tracksInfo = buildTracks(rawImageTracks);
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
+            if (!tracksInfo.getImageTracks().isEmpty()) {
+                tracksInfoListener.onImageTrackChanged();
+            }
         }
 
         return true;
@@ -154,18 +223,24 @@ class TrackSelectionHelper {
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private PKTracks buildTracks() {
+    private PKTracks buildTracks(List<CustomFormat> rawImageTracks) {
 
         clearTracksLists();
 
         TrackGroupArray trackGroupArray;
         TrackGroup trackGroup;
         Format format;
+        boolean videoTracksAvailable = false;
+
         //run through the all renders.
         for (int rendererIndex = 0; rendererIndex < TRACK_RENDERERS_AMOUNT; rendererIndex++) {
             TrackType trackType = getTrackType(rendererIndex);
             //the trackGroupArray of the current renderer.
             trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
+
+            if (rendererIndex == TRACK_TYPE_TEXT && hasExternalSubtitles) {
+                extractTextTracksToMap(trackGroupArray);
+            }
 
             //run through the all track groups in current renderer.
             for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
@@ -187,24 +262,57 @@ class TrackSelectionHelper {
                                 if (format.bitrate == -1 && format.codecs == null) {
                                     continue;
                                 }
-                                videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false));
+
+                                if (!videoTracksAvailable) {
+                                    videoTracksAvailable = true;
+                                }
+
+                                PKVideoCodec currentVideoTrackCodec = getVideoCodec(format);
+                                VideoTrack currentVideoTrack = new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false, currentVideoTrackCodec, format.codecs);
+
+                                if (!videoTracksCodecsMap.containsKey(currentVideoTrackCodec)) {
+                                    videoTracksCodecsMap.put(currentVideoTrackCodec, new ArrayList<>());
+                                }
+                                if (videoTracksCodecsMap.get(currentVideoTrackCodec) != null) {
+                                    videoTracksCodecsMap.get(currentVideoTrackCodec).add(currentVideoTrack);
+                                }
                                 break;
                             case TRACK_TYPE_AUDIO:
+                                PKAudioCodec currentAudioTrackCodec = null;
+                                AudioTrack currentAudioTrack = null;
+
                                 if (format.language == null && format.codecs == null) {
                                     if (playerSettings != null && playerSettings.mpgaAudioFormatEnabled() && format.id != null && format.id.matches("\\d+/\\d+")) {
-                                        audioTracks.add(new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false));
+                                        currentAudioTrackCodec = PKAudioCodec.AAC;
+                                        currentAudioTrack = new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false, currentAudioTrackCodec, AUDIO_AAC);
+                                        audioTracks.add(currentAudioTrack);
                                     }
                                 } else {
-                                    audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), format.label, format.bitrate, format.channelCount, format.selectionFlags, false));
+                                    currentAudioTrackCodec = getAudioCodec(format);
+                                    currentAudioTrack = new AudioTrack(uniqueId, getLanguageFromFormat(format), format.label, format.bitrate, format.channelCount, format.selectionFlags, false, currentAudioTrackCodec, format.codecs);
+                                    audioTracks.add(currentAudioTrack);
+                                }
+
+                                if (currentAudioTrack != null && currentAudioTrackCodec != null) {
+                                    if (!audioTracksCodecsMap.containsKey(currentAudioTrackCodec)) {
+                                        audioTracksCodecsMap.put(currentAudioTrackCodec, new ArrayList<>());
+                                    }
+                                    if (audioTracksCodecsMap.get(currentAudioTrackCodec) != null) {
+                                        audioTracksCodecsMap.get(currentAudioTrackCodec).add(currentAudioTrack);
+                                    }
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
+                                if (format.language != null && hasExternalSubtitles && discardTextTrackOnPreference(format)) {
+                                    continue;
+                                }
+
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (playerSettings != null && playerSettings.cea608CaptionsEnabled()) {
-                                        textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
+                                        textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.sampleMimeType, format.selectionFlags));
                                     }
                                 } else {
-                                    textTracks.add(new TextTrack(uniqueId, getLanguageFromFormat(format), format.label, format.selectionFlags));
+                                    textTracks.add(new TextTrack(uniqueId, getLanguageFromFormat(format), format.label, format.sampleMimeType, format.selectionFlags));
                                 }
                                 break;
                         }
@@ -215,16 +323,52 @@ class TrackSelectionHelper {
             }
         }
 
+        if (rawImageTracks != null && !rawImageTracks.isEmpty()) {
+            for (int trackIndex = 0; trackIndex < rawImageTracks.size(); trackIndex++) {
+                CustomFormat imageFormat = rawImageTracks.get(trackIndex);
+                CustomFormat.FormatThumbnailInfo formatThumbnailInfo = imageFormat.formatThumbnailInfo;
+                String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, trackIndex);
+                imageTracks.add(trackIndex, new DashImageTrack(uniqueId,
+                        imageFormat.id,
+                        imageFormat.bitrate,
+                        imageFormat.width,
+                        imageFormat.height,
+                        formatThumbnailInfo.tilesHorizontal,
+                        formatThumbnailInfo.tilesVertical,
+                        formatThumbnailInfo.segmentDuration * Consts.MILLISECONDS_MULTIPLIER,
+                        formatThumbnailInfo.imageTemplateUrl,
+                        formatThumbnailInfo.presentationTimeOffset,
+                        formatThumbnailInfo.timeScale,
+                        formatThumbnailInfo.startNumber,
+                        formatThumbnailInfo.endNumber
+                ));
+            }
+
+            if (NONE.equals(requestedChangeTrackIds[TRACK_TYPE_IMAGE])) {
+                log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
+                lastSelectedTrackIds[TRACK_TYPE_IMAGE] = imageTracks.get(0).getUniqueId();
+            }
+        }
+
         //add disable option to the text tracks.
         maybeAddDisabledTextTrack();
+        videoTracks = filterVideoTracks();
         //Leave only adaptive audio tracks for user selection.
         ArrayList<AudioTrack> filteredAudioTracks = filterAdaptiveAudioTracks();
 
         int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks, lastSelectedTrackIds[TRACK_TYPE_VIDEO]);
         int defaultAudioTrackIndex = getDefaultTrackIndex(filteredAudioTracks, lastSelectedTrackIds[TRACK_TYPE_AUDIO]);
         int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[TRACK_TYPE_TEXT]);
+        int defaultImageTrackIndex = getDefaultTrackIndex(imageTracks, lastSelectedTrackIds[TRACK_TYPE_IMAGE]);
 
-        return new PKTracks(videoTracks, filteredAudioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
+        Collections.sort(videoTracks);
+        return new PKTracks(videoTracks, filteredAudioTracks, textTracks, imageTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex, defaultImageTrackIndex);
+    }
+
+    private boolean checkTracksUnavailability(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
+        return mappedTrackInfo.getTrackGroups(TRACK_TYPE_VIDEO).length == 0 &&
+                mappedTrackInfo.getTrackGroups(TRACK_TYPE_AUDIO).length == 0 &&
+                mappedTrackInfo.getTrackGroups(TRACK_TYPE_TEXT).length == 0;
     }
 
     @NonNull
@@ -254,10 +398,130 @@ class TrackSelectionHelper {
         return format.language;
     }
 
+    private boolean isExternalSubtitle(String language, String sampleMimeType) {
+        return language != null && (language.contains("-" + sampleMimeType) || language.contains("-" + "Unknown"));
+    }
+
+    private String getExternalSubtitleLanguage(Format format) {
+        if (format.language != null) {
+            return format.language.substring(0, format.language.indexOf("-"));
+        } else {
+            return null;
+        }
+    }
+
+    private boolean discardTextTrackOnPreference(Format format) {
+        PKSubtitlePreference subtitlePreference = playerSettings.getSubtitlePreference();
+        if (subtitlePreference == PKSubtitlePreference.OFF) {
+            return false;
+        }
+
+        String languageName = format.language;
+        boolean isExternalSubtitle = isExternalSubtitle(format.language, format.sampleMimeType);
+
+        if (isExternalSubtitle) {
+            languageName = getExternalSubtitleLanguage(format);
+            Map<String, List<Format>> languageNameMap = subtitleListMap.get(languageName);
+            if (subtitlePreference == PKSubtitlePreference.INTERNAL && languageNameMap != null && !languageNameMap.containsKey(languageName)) {
+                // If there is no internal subtitle and the preference is PKSubtitlePreference.Internal from App
+                // then we are not discarding this text track.
+                return false;
+            }
+        }
+
+        if (subtitleListMap.containsKey(languageName) && subtitleListMap.get(languageName).size() > 1) {
+            if ((subtitlePreference == PKSubtitlePreference.INTERNAL && isExternalSubtitle) ||
+                    (subtitlePreference == PKSubtitlePreference.EXTERNAL && !isExternalSubtitle)) {
+                return true;
+            } else if ((subtitlePreference == PKSubtitlePreference.EXTERNAL && isExternalSubtitle) ||
+                    (subtitlePreference == PKSubtitlePreference.INTERNAL && !isExternalSubtitle)) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private List<VideoTrack> filterVideoTracks() {
+
+        if (videoTracksCodecsMap == null || videoTracksCodecsMap.isEmpty()) {
+            return videoTracks;
+        }
+
+        boolean atLeastOneCodecSupportedInHardware = videoCodecsSupportedInHardware(); // if no hardware decoders play with the software
+
+        VideoCodecSettings preferredVideoCodecSettings = playerSettings.getPreferredVideoCodecSettings();
+        if (preferredVideoCodecSettings.getAllowMixedCodecAdaptiveness()) {
+            populateAllCodecTracks(atLeastOneCodecSupportedInHardware);
+            return videoTracks;
+        }
+
+        for (PKVideoCodec videoCodecForPlayback : preferredVideoCodecSettings.getCodecPriorityList()) {
+            if (!videoTracksCodecsMap.containsKey(videoCodecForPlayback)) {
+                continue;
+            }
+
+            if (videoTracksCodecsMap.get(videoCodecForPlayback) != null && videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
+                continue;
+            }
+
+            VideoTrack candidateVideoTrack = videoTracksCodecsMap.get(videoCodecForPlayback).get(0);
+            if (candidateVideoTrack.getCodecName() != null &&
+                    isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
+                return videoTracksCodecsMap.get(videoCodecForPlayback);
+            } else if ((!atLeastOneCodecSupportedInHardware  || preferredVideoCodecSettings.isAllowSoftwareDecoder()) &&
+                    (candidateVideoTrack.getCodecName() != null && isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, true))) {
+                return videoTracksCodecsMap.get(videoCodecForPlayback);
+            }
+        }
+
+        List<PKVideoCodec> videoCodecList = new ArrayList<>(Arrays.asList(PKVideoCodec.HEVC, PKVideoCodec.AV1, PKVideoCodec.VP9, PKVideoCodec.VP8, PKVideoCodec.AVC));
+
+        for (PKVideoCodec pkVideoCodec : videoCodecList) {
+            if (videoTracksCodecsMap.containsKey(pkVideoCodec)) {
+                return videoTracksCodecsMap.get(pkVideoCodec);
+            }
+        }
+        return videoTracks;
+    }
+
+    private boolean videoCodecsSupportedInHardware() {
+        for (PKVideoCodec videoCodecForPlayback : playerSettings.getPreferredVideoCodecSettings().getCodecPriorityList()) {
+            if (!videoTracksCodecsMap.containsKey(videoCodecForPlayback)) {
+                continue;
+            }
+
+            if (videoTracksCodecsMap.get(videoCodecForPlayback) != null && videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
+                continue;
+            }
+
+            VideoTrack candidateVideoTrack = videoTracksCodecsMap.get(videoCodecForPlayback).get(0);
+            if (candidateVideoTrack.getCodecName() != null &&
+                    isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void populateAllCodecTracks(boolean atleastOneCodecSupportedInHardware) {
+        for (Map.Entry<PKVideoCodec, List<VideoTrack>> multipleCodecEntry  : videoTracksCodecsMap.entrySet()) {
+            for (VideoTrack codecVideoTrack : multipleCodecEntry.getValue()) {
+                if (codecVideoTrack.getCodecName() != null &&
+                        isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
+                    videoTracks.add(codecVideoTrack);
+                } else if ((!atleastOneCodecSupportedInHardware || playerSettings.getPreferredVideoCodecSettings().isAllowSoftwareDecoder()) &&
+                        (codecVideoTrack.getCodecName() != null && isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, true))) {
+                    videoTracks.add(codecVideoTrack);
+                }
+            }
+        }
+    }
+
     /**
      * Filter audioTracks, so that if it contain any sort of adaptive streams
      * PKTracks will expose only adaptive option
      * and hide all the bitrate variants.
+     * if app prefers to allow audio track selection by codec type it will return all available tracks by codec by audio groups
      */
     private ArrayList<AudioTrack> filterAdaptiveAudioTracks() {
         ArrayList<AudioTrack> filteredAudioTracks = new ArrayList<>();
@@ -279,6 +543,19 @@ class TrackSelectionHelper {
             }
         }
 
+        AudioCodecSettings preferredAudioCodecSettings = playerSettings.getPreferredAudioCodecSettings();
+        if (preferredAudioCodecSettings.getAllowMixedCodecs()) {
+            return filteredAudioTracks;
+        }
+
+        List<PKAudioCodec> audioCodecList = new ArrayList<>(Arrays.asList(PKAudioCodec.E_AC3, PKAudioCodec.AC3, PKAudioCodec.OPUS, PKAudioCodec.AAC));
+
+        for (PKAudioCodec pkAudioCodec : audioCodecList) {
+            if (audioTracksCodecsMap.containsKey(pkAudioCodec)) {
+                return new ArrayList<>(audioTracksCodecsMap.get(pkAudioCodec));
+            }
+        }
+
         return filteredAudioTracks;
     }
 
@@ -292,8 +569,9 @@ class TrackSelectionHelper {
         if (textTracks.isEmpty()) {
             return;
         }
+
         String uniqueId = getUniqueId(TRACK_TYPE_TEXT, 0, TRACK_DISABLED);
-        textTracks.add(0, new TextTrack(uniqueId, NONE, NONE, -1));
+        textTracks.add(0, new TextTrack(uniqueId, NONE, NONE, NONE, -1));
     }
 
     /**
@@ -312,16 +590,85 @@ class TrackSelectionHelper {
             return defaultTrackIndex;
         }
 
+        if (trackList.get(0) instanceof ImageTrack) {
+            return restoreLastSelectedTrack(trackList, lastSelectedTrackId, getUpdatedDefaultTrackIndex(trackList, defaultTrackIndex));
+        }
+
         for (int i = 0; i < trackList.size(); i++) {
             if (trackList.get(i) != null) {
                 int selectionFlag = trackList.get(i).getSelectionFlag();
                 if (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
-                    defaultTrackIndex = i;
+                    if (trackList.get(i) instanceof TextTrack && hasExternalSubtitlesInTracks && playerSettings.getSubtitlePreference() != PKSubtitlePreference.OFF) {
+                        PKSubtitlePreference pkSubtitlePreference = playerSettings.getSubtitlePreference();
+                        ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_TEXT));
+
+                        // TrackSelection is giving the default tracks for video, audio and text.
+                        // If trackSelection contains a text which is an external text track, it means that either internal text track
+                        // does not contain any track or there is no default track in internal text track. If there is no internal text track then
+                        // forcing the preference to be External.
+                        if (trackSelection != null && trackSelection.getSelectedFormat() != null &&
+                                isExternalSubtitle(trackSelection.getSelectedFormat().language, trackSelection.getSelectedFormat().sampleMimeType)) {
+                            pkSubtitlePreference = PKSubtitlePreference.EXTERNAL;
+                        }
+
+                        TextTrack textTrack = (TextTrack) trackList.get(i);
+                        boolean isExternalSubtitle = isExternalSubtitle(textTrack.getLanguage(), textTrack.getMimeType());
+                        if (isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.EXTERNAL) {
+                            defaultTrackIndex = i;
+                            break;
+                        } else if (!isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.INTERNAL) {
+                            defaultTrackIndex = i;
+                            break;
+                        }
+                    } else {
+                        defaultTrackIndex = i;
+                        break;
+                    }
                 }
             }
         }
 
         return restoreLastSelectedTrack(trackList, lastSelectedTrackId, getUpdatedDefaultTrackIndex(trackList, defaultTrackIndex));
+    }
+
+    /**
+     * Creates a map which contains text language map
+     * which inside holds with list of available formats for that specific language
+     *
+     * @param trackGroupArray TrackGroupArray this includes Internal and External Text Formats
+     */
+    private void extractTextTracksToMap(TrackGroupArray trackGroupArray) {
+        for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
+            TrackGroup trackGroup = trackGroupArray.get(groupIndex);
+
+            for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
+                Format format = trackGroup.getFormat(trackIndex);
+
+                String languageName = format.language;
+                if (isExternalSubtitle(format.language, format.sampleMimeType)) {
+                    languageName = getExternalSubtitleLanguage(format);
+                    hasExternalSubtitlesInTracks = true;
+                }
+
+                if (subtitleListMap.containsKey(languageName)) {
+                    Map<String, List<Format>> baseTrackHashMap = subtitleListMap.get(languageName);
+                    if (baseTrackHashMap.containsKey(format.language)) {
+                        List<Format> langaugeList = baseTrackHashMap.get(format.language);
+                        langaugeList.add(format);
+                    } else {
+                        List<Format> langaugeList = new ArrayList<>();
+                        langaugeList.add(format);
+                        baseTrackHashMap.put(format.language, langaugeList);
+                    }
+                } else {
+                    Map<String, List<Format>> baseTrackHashMap = new HashMap<>();
+                    List<Format> langaugeList = new ArrayList<>();
+                    langaugeList.add(format);
+                    baseTrackHashMap.put(format.language, langaugeList);
+                    subtitleListMap.put(languageName, baseTrackHashMap);
+                }
+            }
+        }
     }
 
     private int getUpdatedDefaultTrackIndex(List<? extends BaseTrack> trackList, int defaultTrackIndex) {
@@ -334,8 +681,8 @@ class TrackSelectionHelper {
                 trackType = TRACK_TYPE_TEXT;
             }
 
-            if (trackType != TRACK_TYPE_UNKNOWN && trackSelectionArray != null && trackType < trackSelectionArray.length) {
-                TrackSelection trackSelection = trackSelectionArray.get(trackType);
+            if (trackType == TRACK_TYPE_AUDIO && trackSelectionArray != null && trackType < trackSelectionArray.length) {
+                ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(trackType));
                 if (trackSelection != null && trackSelection.getSelectedFormat() != null) {
                     defaultTrackIndex = findDefaultTrackIndex(trackSelection.getSelectedFormat().language, trackList, defaultTrackIndex);
                 }
@@ -395,13 +742,17 @@ class TrackSelectionHelper {
         if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
                 case TRACK_TYPE_VIDEO:
-                    videoTracks.add(new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true));
+                    PKVideoCodec currentVideoTrackCodec = getVideoCodec(format);
+                    VideoTrack adaptiveVideoTrack = new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true, currentVideoTrackCodec, format.codecs);
+                    if (!videoTracksCodecsMap.containsKey(currentVideoTrackCodec)) {
+                        videoTracksCodecsMap.put(currentVideoTrackCodec, new ArrayList<>());
+                    }
+                    videoTracksCodecsMap.get(currentVideoTrackCodec).add(adaptiveVideoTrack);
                     break;
                 case TRACK_TYPE_AUDIO:
-                    audioTracks.add(new AudioTrack(uniqueId, format.language, format.label, 0, format.channelCount, format.selectionFlags, true));
-                    break;
+                    audioTracks.add(new AudioTrack(uniqueId, format.language, format.label, 0, format.channelCount, format.selectionFlags, true, getAudioCodec(format), format.codecs));                    break;
                 case TRACK_TYPE_TEXT:
-                    textTracks.add(new TextTrack(uniqueId, format.language, format.label, format.selectionFlags));
+                    textTracks.add(new TextTrack(uniqueId, format.language, format.label, format.sampleMimeType, format.selectionFlags));
                     break;
             }
         }
@@ -432,6 +783,8 @@ class TrackSelectionHelper {
                 return AUDIO_PREFIX;
             case TRACK_TYPE_TEXT:
                 return TEXT_PREFIX;
+            case TRACK_TYPE_IMAGE:
+                return IMAGE_PREFIX;
             default:
                 return "";
         }
@@ -468,19 +821,28 @@ class TrackSelectionHelper {
 
         requestedChangeTrackIds[rendererIndex] = uniqueId;
 
+        if (uniqueId.contains(IMAGE_PREFIX)) {
+            log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
+            lastSelectedTrackIds[TRACK_TYPE_IMAGE] = requestedChangeTrackIds[TRACK_TYPE_IMAGE];
+            tracksInfoListener.onImageTrackChanged();
+            return;
+        }
+
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
         if (rendererIndex == TRACK_TYPE_TEXT) {
             //Disable text track renderer if needed.
             parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, uniqueTrackId[TRACK_INDEX] == TRACK_DISABLED);
         }
 
+
         SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+    protected void overrideMediaVideoCodec() {
 
-        List<String> uniqueIds = getABRUniqueIds(minVideoBitrate, maxVideoBitrate);
+        List<String> uniqueIds = getVideoTracksUniqueIds();
+
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
             return;
@@ -493,37 +855,78 @@ class TrackSelectionHelper {
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
 
+        SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
+        overrideTrack(rendererIndex, override, parametersBuilder);
+    }
+
+    protected void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+
+        List<String> uniqueIds = getCodecUniqueIdsWithABR(minVideoBitrate, maxVideoBitrate);
+
+        mappedTrackInfo = selector.getCurrentMappedTrackInfo();
+        if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
+            return;
+        }
+
+        int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
+        int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+
+        requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
+
+        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
 
         SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    private List<String> getABRUniqueIds(long minVideoBitrate, long maxVideoBitrate) {
+    private List<String> getVideoTracksUniqueIds() {
         List<String> uniqueIds = new ArrayList<>();
-        boolean isValidABRRange = true;
         if (videoTracks != null) {
             Collections.sort(videoTracks);
+            for (VideoTrack currentVideoTrack : videoTracks) {
+                uniqueIds.add(currentVideoTrack.getUniqueId());
+            }
+        }
+        return uniqueIds;
+    }
+
+    private List<String> getCodecUniqueIdsWithABR(long minVideoBitrate, long maxVideoBitrate) {
+        List<String> uniqueIds = new ArrayList<>();
+
+        boolean isValidABRRange = true;
+
+        if (videoTracks != null && !videoTracks.isEmpty()) {
+
+            Collections.sort(videoTracks);
             if (videoTracks.size() >= 2) {
+
                 long minBitrateInStream = videoTracks.get(1).getBitrate();
                 long maxBitrateInStream = videoTracks.get(videoTracks.size() - 1).getBitrate();
 
-                if ((minVideoBitrate == Long.MIN_VALUE && maxVideoBitrate < minBitrateInStream) ||
-                        (maxVideoBitrate == Long.MAX_VALUE && minVideoBitrate > maxBitrateInStream) ||
-                        (minVideoBitrate > minBitrateInStream && maxVideoBitrate <  minBitrateInStream) ||
-                        (minVideoBitrate > maxBitrateInStream && maxVideoBitrate < maxBitrateInStream)) {
+                if ((minVideoBitrate > maxBitrateInStream) || (maxVideoBitrate < minBitrateInStream)) {
                     isValidABRRange = false;
                     String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
                     PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
                     tracksErrorListener.onTracksOverrideABRError(currentError);
                 }
             }
+
+            if (originalVideoTracks == null) {
+                originalVideoTracks = new ArrayList<>(videoTracks);
+            } else if (originalVideoTracks.isEmpty()) {
+                originalVideoTracks.addAll(videoTracks);
+            } else {
+                videoTracks.clear();
+                videoTracks.addAll(originalVideoTracks);
+            }
+
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
             while (videoTrackIterator.hasNext()) {
                 VideoTrack currentVideoTrack = videoTrackIterator.next();
-                if (currentVideoTrack.isAdaptive() || (currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate)) {
+                if ((currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate)) {
                     uniqueIds.add(currentVideoTrack.getUniqueId());
                 } else {
-                    if (!isValidABRRange) {
+                    if (currentVideoTrack.isAdaptive() || !isValidABRRange) {
                         uniqueIds.add(currentVideoTrack.getUniqueId());
                     } else {
                         videoTrackIterator.remove();
@@ -663,8 +1066,6 @@ class TrackSelectionHelper {
 
                         if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
                             adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
-                        } else {
-                            return null; // incase of back to auto need to clear the selection override so return null.
                         }
                     }
                     break;
@@ -683,7 +1084,11 @@ class TrackSelectionHelper {
                             TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(TRACK_TYPE_AUDIO).get(audioGroupIndex);
                             if (trackGroup != null) {
                                 for (int ind = 0 ; ind < trackGroup.length ; ind++) {
-                                    adaptiveTrackIndexesList.add(ind);
+                                    if (audioTrack.getCodecType() != null &&
+                                            audioTrack.getCodecType().equals(getAudioCodec(trackGroup.getFormat(ind)))) {
+                                        adaptiveTrackIndexesList.add(ind);
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -762,9 +1167,7 @@ class TrackSelectionHelper {
             //clear all the selections if the override is null.
             parametersBuilder.clearSelectionOverrides(rendererIndex);
         }
-        updateTrackSelectorParameter(playerSettings, parametersBuilder);
         selector.setParameters(parametersBuilder);
-
     }
 
     public void updateTrackSelectorParameter(PlayerSettings playerSettings, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
@@ -773,7 +1176,7 @@ class TrackSelectionHelper {
         }
 
         if (playerSettings.isTunneledAudioPlayback() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            parametersBuilder.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
+            parametersBuilder.setTunnelingEnabled(playerSettings.isTunneledAudioPlayback());
         }
         if (playerSettings.getMaxVideoSize() != null) {
             parametersBuilder.setMaxVideoSize(playerSettings.getMaxVideoSize().getMaxVideoWidth(), playerSettings.getMaxVideoSize().getMaxVideoHeight());
@@ -787,6 +1190,40 @@ class TrackSelectionHelper {
         if (playerSettings.getMaxAudioChannelCount() > 0) {
             parametersBuilder.setMaxAudioChannelCount(playerSettings.getMaxAudioChannelCount());
         }
+        if (playerSettings.getPreferredVideoCodecSettings().getAllowMixedCodecAdaptiveness()) {
+            parametersBuilder.setAllowVideoMixedMimeTypeAdaptiveness(true);
+        }
+    }
+
+    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+        if (imageTracks.isEmpty()) {
+            return null;
+        }
+
+        ImageTrack imageTrack = null;
+        for (int index = 0; index < imageTracks.size() ; index++) {
+            if (imageTracks.get(index).getUniqueId().equals(lastSelectedTrackIds[TRACK_TYPE_IMAGE])) {
+                imageTrack = imageTracks.get(index);
+                break;
+            }
+        }
+
+        if (imageTrack == null) {
+            return null;
+        }
+
+        long seq = (long)Math.floor(positionMS / imageTrack.getDuration());
+        double offset = positionMS % imageTrack.getDuration();
+        int thumbIndex = (int) Math.floor((offset * imageTrack.getCols() * imageTrack.getRows()) / imageTrack.getDuration());
+        long seqIdx = seq + ((DashImageTrack)imageTrack).getStartNumber();
+        float imageWidth = imageTrack.getWidth() / imageTrack.getCols();
+        float imageHeight = imageTrack.getHeight() / imageTrack.getRows();
+        float imageX = (float) Math.floor(thumbIndex % imageTrack.getCols()) * imageWidth;
+        float imageY = (float) Math.floor(thumbIndex / imageTrack.getCols()) * imageHeight;
+
+        long imageRealUrlTime = ((seqIdx - 1) * imageTrack.getDuration());
+        String realImageUrl = imageTrack.getUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$",  String.valueOf(imageRealUrlTime));
+        return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
     }
 
     /**
@@ -801,7 +1238,11 @@ class TrackSelectionHelper {
         List<? extends BaseTrack> trackList = new ArrayList<>();
         switch (rendererIndex) {
             case TRACK_TYPE_VIDEO:
-                trackList = videoTracks;
+                List<VideoTrack> allVideoTracks = new ArrayList<>();
+                for (Map.Entry<PKVideoCodec,List<VideoTrack>> videoTrackEntry : videoTracksCodecsMap.entrySet()) {
+                    allVideoTracks.addAll(videoTrackEntry.getValue());
+                }
+                trackList = allVideoTracks;
                 break;
             case TRACK_TYPE_AUDIO:
                 trackList = audioTracks;
@@ -846,7 +1287,7 @@ class TrackSelectionHelper {
 
     private boolean isFormatSupported(int rendererCount, int groupIndex, int trackIndex) {
         return mappedTrackInfo.getTrackSupport(rendererCount, groupIndex, trackIndex)
-                == RendererCapabilities.FORMAT_HANDLED;
+                == Consts.FORMAT_HANDLED;
     }
 
     private boolean isAdaptive(int rendererIndex, int groupIndex) {
@@ -872,6 +1313,7 @@ class TrackSelectionHelper {
         if (uniqueId.contains(VIDEO_PREFIX)
                 || uniqueId.contains(AUDIO_PREFIX)
                 || uniqueId.contains(TEXT_PREFIX)
+                || uniqueId.contains(IMAGE_PREFIX)
                 && uniqueId.contains(",")) {
 
             int[] parsedUniqueId = parseUniqueId(uniqueId);
@@ -896,6 +1338,10 @@ class TrackSelectionHelper {
         int groupIndex = parsedUniqueId[GROUP_INDEX];
         int trackIndex = parsedUniqueId[TRACK_INDEX];
 
+        if (rendererIndex == TRACK_TYPE_IMAGE) {
+            return trackIndex >= TRACK_ADAPTIVE;
+        }
+
         if (rendererIndex == TRACK_TYPE_TEXT) {
             return trackIndex != TRACK_ADAPTIVE
                     && trackIndex >= TRACK_DISABLED
@@ -907,26 +1353,49 @@ class TrackSelectionHelper {
     }
 
     private boolean isGroupIndexValid(int[] parsedUniqueId) {
+        if (parsedUniqueId[GROUP_INDEX] == TRACK_TYPE_IMAGE) {
+            return true;
+        }
+
         return parsedUniqueId[GROUP_INDEX] >= 0
                 && parsedUniqueId[GROUP_INDEX] < mappedTrackInfo.getTrackGroups(parsedUniqueId[RENDERER_INDEX]).length;
     }
 
     private boolean isRendererTypeValid(int rendererIndex) {
-        return rendererIndex >= TRACK_TYPE_VIDEO && rendererIndex <= TRACK_TYPE_TEXT;
+        return rendererIndex >= TRACK_TYPE_VIDEO && rendererIndex <= TRACK_TYPE_IMAGE;
     }
 
     /**
      * Notify to log, that video/audio renderer has only unsupported tracks.
      */
-    private void warnAboutUnsupportedRenderTypes() {
+    private void warnAboutUnsupportedRendererTypes() {
+        boolean videoTrackUnsupported = false;
+        boolean audioTrackUnsupported = false;
+        String errorMessage;
+
         if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_VIDEO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-            log.w("Warning! All the video tracks are unsupported by this device.");
+            videoTrackUnsupported = true;
         }
         if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_AUDIO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-            log.w("Warning! All the audio tracks are unsupported by this device.");
+            audioTrackUnsupported = true;
         }
+
+        if (videoTrackUnsupported && audioTrackUnsupported) {
+            errorMessage = "Warning! All the video and audio tracks are unsupported by this device.";
+            tracksErrorListener.onUnsupportedAudioVideoTracksError(getUnsupportedTrackError(errorMessage));
+        } else if (videoTrackUnsupported) {
+            errorMessage = "Warning! All the video tracks are unsupported by this device.";
+            tracksErrorListener.onUnsupportedVideoTracksError(getUnsupportedTrackError(errorMessage));
+        } else if (audioTrackUnsupported) {
+            errorMessage = "Warning! All the audio tracks are unsupported by this device.";
+            tracksErrorListener.onUnsupportedAudioTracksError(getUnsupportedTrackError(errorMessage));
+        }
+    }
+
+    private PKError getUnsupportedTrackError(String errorMessage) {
+        return new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalStateException(errorMessage));
     }
 
     protected void setTracksInfoListener(TracksInfoListener tracksInfoListener) {
@@ -941,6 +1410,16 @@ class TrackSelectionHelper {
         videoTracks.clear();
         audioTracks.clear();
         textTracks.clear();
+        imageTracks.clear();
+        for (Map.Entry<PKVideoCodec,List<VideoTrack>> videoTrackEntry : videoTracksCodecsMap.entrySet()) {
+            videoTrackEntry.getValue().clear();
+        }
+        videoTracksCodecsMap.clear();
+        audioTracksCodecsMap.clear();
+        subtitleListMap.clear();
+        if (originalVideoTracks != null) {
+            originalVideoTracks.clear();
+        }
     }
 
     protected void release() {
@@ -959,7 +1438,7 @@ class TrackSelectionHelper {
 
     protected long getCurrentVideoBitrate() {
         if (trackSelectionArray != null) {
-            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_VIDEO));
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().bitrate;
             }
@@ -969,7 +1448,7 @@ class TrackSelectionHelper {
 
     protected long getCurrentAudioBitrate() {
         if (trackSelectionArray != null) {
-            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_AUDIO);
+            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_AUDIO));
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().bitrate;
             }
@@ -979,7 +1458,7 @@ class TrackSelectionHelper {
 
     protected long getCurrentVideoWidth() {
         if (trackSelectionArray != null) {
-            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_VIDEO));
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().width;
             }
@@ -989,12 +1468,19 @@ class TrackSelectionHelper {
 
     protected long getCurrentVideoHeight() {
         if (trackSelectionArray != null) {
-            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_VIDEO));
             if (trackSelection != null) {
                 return trackSelection.getSelectedFormat().height;
             }
         }
         return -1;
+    }
+
+    private ExoTrackSelection getTrackSelection(TrackSelection trackSelection) {
+        if (trackSelection instanceof ExoTrackSelection) {
+            return (ExoTrackSelection) trackSelection;
+        }
+        return null;
     }
 
     protected void notifyAboutTrackChange(TrackSelectionArray trackSelections) {
@@ -1005,19 +1491,19 @@ class TrackSelectionHelper {
         }
 
         if (shouldNotifyAboutTrackChanged(TRACK_TYPE_VIDEO)) {
-            log.i("Video track changed to: " + requestedChangeTrackIds[TRACK_TYPE_VIDEO]);
+            log.d("Video track changed to: " + requestedChangeTrackIds[TRACK_TYPE_VIDEO]);
             lastSelectedTrackIds[TRACK_TYPE_VIDEO] = requestedChangeTrackIds[TRACK_TYPE_VIDEO];
             tracksInfoListener.onVideoTrackChanged();
         }
 
         if (shouldNotifyAboutTrackChanged(TRACK_TYPE_AUDIO)) {
-            log.i("Audio track changed to: " + requestedChangeTrackIds[TRACK_TYPE_AUDIO]);
+            log.d("Audio track changed to: " + requestedChangeTrackIds[TRACK_TYPE_AUDIO]);
             lastSelectedTrackIds[TRACK_TYPE_AUDIO] = requestedChangeTrackIds[TRACK_TYPE_AUDIO];
             tracksInfoListener.onAudioTrackChanged();
         }
 
         if (shouldNotifyAboutTrackChanged(TRACK_TYPE_TEXT)) {
-            log.i("Text track changed to: " + requestedChangeTrackIds[TRACK_TYPE_TEXT]);
+            log.d("Text track changed to: " + requestedChangeTrackIds[TRACK_TYPE_TEXT]);
             lastSelectedTrackIds[TRACK_TYPE_TEXT] = requestedChangeTrackIds[TRACK_TYPE_TEXT];
             tracksInfoListener.onTextTrackChanged();
         }
@@ -1051,6 +1537,13 @@ class TrackSelectionHelper {
                     }
                 }
                 break;
+            case TRACK_TYPE_IMAGE:
+                for (ImageTrack track : imageTracks) {
+                    if (track.getUniqueId().equals(lastSelectedTrackIds[renderType])) {
+                        return track;
+                    }
+                }
+                break;
         }
 
         log.w("For some reason we could not found lastSelectedTrack of the specified render type = " + renderType);
@@ -1059,13 +1552,18 @@ class TrackSelectionHelper {
 
     // clean previous selection
     protected void stop() {
-        lastSelectedTrackIds = new String[]{NONE, NONE, NONE};
-        requestedChangeTrackIds = new String[]{NONE, NONE, NONE};
+        lastSelectedTrackIds = new String[]{NONE, NONE, NONE, NONE};
+        requestedChangeTrackIds = new String[]{NONE, NONE, NONE, NONE};
         trackSelectionArray = null;
         mappedTrackInfo = null;
         videoTracks.clear();
         audioTracks.clear();
         textTracks.clear();
+        imageTracks.clear();
+
+        if (originalVideoTracks != null) {
+            originalVideoTracks.clear();
+        }
     }
 
     /**
@@ -1100,7 +1598,13 @@ class TrackSelectionHelper {
             return null;
         }
         String preferredTrackUniqueId = null;
-        String preferredTextISO3Lang = playerSettings.getPreferredTextTrackConfig().getTrackLanguage();
+        PKTrackConfig preferredTextTrackConfig = playerSettings.getPreferredTextTrackConfig();
+
+        if (preferredTextTrackConfig == null) {
+            return preferredTrackUniqueId;
+        }
+
+        String preferredTextISO3Lang = preferredTextTrackConfig.getTrackLanguage();
         if (preferredTextISO3Lang != null) {
             for (TextTrack track : textTracks) {
                 String trackLang = track.getLanguage();
@@ -1131,15 +1635,16 @@ class TrackSelectionHelper {
                 preferredTrackUniqueId = maybeSetFirstTextTrackAsAutoSelection();
             }
         }
-
         return preferredTrackUniqueId;
     }
 
     @Nullable
     private String maybeSetFirstTextTrackAsAutoSelection() {
+
         String preferredTrackUniqueId = null;
         //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
-        if (playerSettings != null && playerSettings.getPreferredTextTrackConfig() != null && playerSettings.getPreferredTextTrackConfig().getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null) {
+        PKTrackConfig preferredTextTrackConfig = playerSettings.getPreferredTextTrackConfig();
+        if (preferredTextTrackConfig != null && preferredTextTrackConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null) {
             for (TextTrack track : textTracks) {
                 if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
                     preferredTrackUniqueId = track.getUniqueId();
@@ -1159,7 +1664,13 @@ class TrackSelectionHelper {
             return null;
         }
         String preferredTrackUniqueId = null;
-        String preferredAudioISO3Lang = playerSettings.getPreferredAudioTrackConfig().getTrackLanguage();
+        PKTrackConfig preferredAudioTrackConfig = playerSettings.getPreferredAudioTrackConfig();
+
+        if (preferredAudioTrackConfig == null) {
+            return preferredTrackUniqueId;
+        }
+
+        String preferredAudioISO3Lang = preferredAudioTrackConfig.getTrackLanguage();
         for (AudioTrack track : audioTracks) {
             String trackLang = track.getLanguage();
             if (trackLang == null) {
@@ -1176,8 +1687,50 @@ class TrackSelectionHelper {
                 log.e(ex.getMessage());
             }
         }
-
         return preferredTrackUniqueId;
+    }
+
+    private PKVideoCodec getVideoCodec(Format format) {
+        String codec = format.codecs;
+        if (codec != null) {
+            if (codec.startsWith("hev1") || codec.startsWith("hvc1")) {
+                return PKVideoCodec.HEVC;
+            }  else if (codec.startsWith("vp9") || codec.startsWith("vp09")) {
+                return PKVideoCodec.VP9;
+            } else if (codec.startsWith("vp8") || codec.startsWith("vp08")) {
+                return PKVideoCodec.VP8;
+            } else if (codec.startsWith("av01")) {
+                return PKVideoCodec.AV1;
+            }
+        }
+
+        if (VIDEO_H265.equals(format.sampleMimeType)) {
+            return PKVideoCodec.HEVC;
+        } else if (VIDEO_VP8.equals(format.sampleMimeType)) {
+            return PKVideoCodec.VP8;
+        } else if (VIDEO_VP9.equals(format.sampleMimeType)) {
+            return PKVideoCodec.VP9;
+        } else if (VIDEO_AV1.equals(format.sampleMimeType)) {
+            return PKVideoCodec.AV1;
+        }
+
+        return PKVideoCodec.AVC; //VIDEO_H264
+    }
+
+    private PKAudioCodec getAudioCodec(Format format) {
+        String codec = format.codecs;
+        if (codec != null) {
+            if (codec.startsWith("mp4a")) {
+                return PKAudioCodec.AAC;
+            } else if (codec.startsWith("ac-3") || codec.startsWith("dac3")) {
+                return PKAudioCodec.AC3;
+            } else if (codec.startsWith("ec-3") || codec.startsWith("dec3")) {
+                return PKAudioCodec.E_AC3;
+            } else if (codec.startsWith("opus")) {
+                return PKAudioCodec.OPUS;
+            }
+        }
+        return PKAudioCodec.AAC;
     }
 
     private boolean isValidPreferredAudioConfig() {
@@ -1207,31 +1760,40 @@ class TrackSelectionHelper {
         this.playerSettings = settings;
     }
 
-    public static boolean isFormatSupported(@NonNull Format format, @Nullable TrackType type) {
+    protected void hasExternalSubtitles(boolean hasExternalSubtitles) {
+        this.hasExternalSubtitles = hasExternalSubtitles;
+    }
+
+    public static boolean isCodecSupported(@NonNull String codecs, @Nullable TrackType type, boolean allowSoftware) {
 
         if (type == TrackType.TEXT) {
             return true;    // always supported
         }
 
-        if (format.codecs == null) {
+        if (codecs == null) {
             log.w("isFormatSupported: codecs==null, assuming supported");
             return true;
         }
 
         if (type == null) {
             // type==null: HLS muxed track with a <video,audio> tuple
-            final String[] split = TextUtils.split(format.codecs, ",");
+            final String[] split = TextUtils.split(codecs, ",");
             boolean result = true;
             switch (split.length) {
                 case 0: return false;
-                case 2: result = PKCodecSupport.hasDecoder(split[1], false, true);
+                case 2: result = PKCodecSupport.hasDecoder(split[1], false, allowSoftware);
                     // fallthrough
-                case 1: result &= PKCodecSupport.hasDecoder(split[0], false, true);
+                case 1: result &= PKCodecSupport.hasDecoder(split[0], false, allowSoftware);
             }
             return result;
 
         } else {
-            return PKCodecSupport.hasDecoder(format.codecs, false, true);
+            return PKCodecSupport.hasDecoder(codecs, false, allowSoftware);
         }
     }
+
+
+
+
+
 }

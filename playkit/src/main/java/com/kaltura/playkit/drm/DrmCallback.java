@@ -5,11 +5,11 @@ import android.net.Uri;
 import com.kaltura.android.exoplayer2.drm.ExoMediaDrm;
 import com.kaltura.android.exoplayer2.drm.HttpMediaDrmCallback;
 import com.kaltura.android.exoplayer2.drm.MediaDrmCallback;
+import com.kaltura.android.exoplayer2.drm.MediaDrmCallbackException;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKRequestParams;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -22,12 +22,12 @@ public class DrmCallback implements MediaDrmCallback {
     private HttpMediaDrmCallback callback;
 
     @Override
-    public byte[] executeProvisionRequest(UUID uuid, ExoMediaDrm.ProvisionRequest request) throws IOException {
+    public byte[] executeProvisionRequest(UUID uuid, ExoMediaDrm.ProvisionRequest request) throws MediaDrmCallbackException {
         return callback.executeProvisionRequest(uuid, request);
     }
 
     @Override
-    public byte[] executeKeyRequest(UUID uuid, ExoMediaDrm.KeyRequest request) throws Exception {
+    public byte[] executeKeyRequest(UUID uuid, ExoMediaDrm.KeyRequest request) throws MediaDrmCallbackException {
         return callback.executeKeyRequest(uuid, request);
     }
 

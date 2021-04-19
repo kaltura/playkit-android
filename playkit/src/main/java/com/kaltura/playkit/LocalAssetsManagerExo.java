@@ -3,6 +3,8 @@ package com.kaltura.playkit;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.playkit.drm.WidevineModularAdapter;
 
@@ -18,6 +20,10 @@ public class LocalAssetsManagerExo {
 
     public LocalAssetsManagerExo(Context context) {
         this.helper = new LocalAssetsManagerHelper(context);
+    }
+
+    public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+        helper.setLicenseRequestAdapter(licenseRequestAdapter);
     }
 
     private static LocalAssetsManager.AssetStatus assetStatusFromWidevineMap(Map<String, String> map) {
@@ -42,9 +48,9 @@ public class LocalAssetsManagerExo {
         }
     }
 
-    public void registerWidevineDashAsset(String assetId, String licenseUri, byte[] drmInitData) throws LocalAssetsManager.RegisterException {
+    public void registerWidevineDashAsset(String assetId, String licenseUri, byte[] drmInitData, boolean forceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
         final WidevineModularAdapter widevine = new WidevineModularAdapter(helper.context, helper.localDataStore);
-        widevine.registerAsset(drmInitData, "video/mp4", licenseUri, helper.licenseRequestParamAdapter);
+        widevine.registerAsset(drmInitData, "video/mp4", licenseUri, forceWidevineL3Playback, helper.licenseRequestParamAdapter);
         helper.saveMediaFormat(assetId, PKMediaFormat.dash, PKDrmParams.Scheme.WidevineCENC);
     }
 
@@ -53,6 +59,15 @@ public class LocalAssetsManagerExo {
         if (drmInitData != null) {
             helper.localDataStore.remove(toBase64(drmInitData));
         }
+    }
+
+    /**
+     * @param assetId        - the id of the asset.
+     * @param exoMediaItem - the actual url of the video that should be played.
+     * @return - the {@link PKMediaSource} that should be passed to the player.
+     */
+    public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final MediaItem exoMediaItem) {
+        return new LocalExoMediaItem(helper.localDataStore, exoMediaItem, assetId, helper.getLocalAssetScheme(assetId));
     }
 
     /**
@@ -68,8 +83,11 @@ public class LocalAssetsManagerExo {
         return new LocalAssetsManager.LocalMediaSource(helper.localDataStore, localAssetPath, assetId, helper.getLocalAssetScheme(assetId));
     }
 
+    public PKMediaSource getLocalMediaItem(@NonNull final String assetId, @NonNull final String localAssetPath) {
+        return new LocalAssetsManager.LocalMediaSource(helper.localDataStore, localAssetPath, assetId, helper.getLocalAssetScheme(assetId));
+    }
 
-    public LocalAssetsManager.AssetStatus getDrmStatus(String assetId, byte[] drmInitData) {
+    public LocalAssetsManager.AssetStatus getDrmStatus(String assetId, byte[] drmInitData, boolean forceWidevineL3Playback) {
         final PKDrmParams.Scheme scheme = helper.getLocalAssetScheme(assetId);
         if (scheme != PKDrmParams.Scheme.WidevineCENC) {
             return LocalAssetsManager.AssetStatus.invalid;
@@ -77,10 +95,29 @@ public class LocalAssetsManagerExo {
 
         final WidevineModularAdapter adapter = new WidevineModularAdapter(helper.context, helper.localDataStore);
         try {
-            Map<String, String> map = adapter.checkAssetStatus(drmInitData);
+            Map<String, String> map = adapter.checkAssetStatus(drmInitData, forceWidevineL3Playback);
             return assetStatusFromWidevineMap(map);
         } catch (LocalAssetsManager.RegisterException e) {
             return LocalAssetsManager.AssetStatus.invalid;
+        }
+    }
+
+    public static class LocalExoMediaItem extends LocalAssetsManager.LocalMediaSource {
+        private MediaItem exoMediaItem;
+
+        /**
+         * @param localDataStore - the storage from where drm keySetId is stored.
+         * @param assetId        - the id of the media.
+         * @param scheme
+         */
+        LocalExoMediaItem(LocalDataStore localDataStore, @NonNull MediaItem exoMediaItem, String assetId, PKDrmParams.Scheme scheme) {
+            super(localDataStore, null, assetId, scheme);
+
+            this.exoMediaItem = exoMediaItem;
+        }
+
+        public MediaItem getExoMediaItem() {
+            return exoMediaItem;
         }
     }
 

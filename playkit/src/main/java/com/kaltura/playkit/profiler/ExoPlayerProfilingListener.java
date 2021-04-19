@@ -6,18 +6,21 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.PlaybackParameters;
+import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
+import com.kaltura.android.exoplayer2.source.LoadEventInfo;
+import com.kaltura.android.exoplayer2.source.MediaLoadData;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.Format;
-import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
-import com.kaltura.android.exoplayer2.source.MediaSourceEventListener;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
+import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.Utils;
@@ -47,9 +50,12 @@ import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_INTERNA
 import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_PERIOD_TRANSITION;
 import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK;
 import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT;
+
 import static com.kaltura.playkit.profiler.PlayKitProfiler.MSEC_MULTIPLIER_FLOAT;
 
 class ExoPlayerProfilingListener implements AnalyticsListener {
+
+    private boolean shouldPlay;
 
     @NonNull
     private final PlayKitProfiler profiler;
@@ -115,7 +121,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onPlayerStateChanged(EventTime eventTime, boolean playWhenReady, int playbackState) {
+    public void onPlaybackStateChanged(EventTime eventTime,  int playbackState) {
         String state;
         switch (playbackState) {
             case Player.STATE_IDLE:
@@ -133,11 +139,17 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             default: return;
         }
 
-        log("PlayerStateChanged").add("state", state).add("shouldPlay", playWhenReady).end();
+        log("PlayerStateChanged").add("state", state).add("shouldPlay", shouldPlay).end();
+    }
+
+    @Override
+    public void onPlayWhenReadyChanged(EventTime eventTime, boolean playWhenReady, int reason) {
+        shouldPlay = playWhenReady;
     }
 
     @Override
     public void onTimelineChanged(EventTime eventTime, int reason) {
+
     }
 
     @Override
@@ -148,7 +160,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 reasonString = "PeriodTransition";
                 break;
             case DISCONTINUITY_REASON_SEEK:
-                reasonString = "Seek";
+                reasonString = "SeekProcessed";
                 break;
             case DISCONTINUITY_REASON_SEEK_ADJUSTMENT:
                 reasonString = "SeekAdjustment";
@@ -171,11 +183,6 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     @Override
     public void onSeekStarted(EventTime eventTime) {
         log("SeekStarted").end();
-    }
-
-    @Override
-    public void onSeekProcessed(EventTime eventTime) {
-        log("SeekProcessed").end();
     }
 
     @Override
@@ -216,7 +223,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onLoadingChanged(EventTime eventTime, boolean isLoading) {
+    public void onIsLoadingChanged(EventTime eventTime, boolean isLoading) {
         log("LoadingChanged")
                 .add("isLoading", isLoading)
                 .end();
@@ -234,9 +241,6 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 break;
             case ExoPlaybackException.TYPE_UNEXPECTED:
                 type = "UnexpectedError";
-                break;
-            case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
-                type = "OutOfMemoryError";
                 break;
             case ExoPlaybackException.TYPE_REMOTE:
                 type = "remoteComponentError";
@@ -278,7 +282,10 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
         JsonArray jTrackSelections = new JsonArray(trackSelections.length);
         for (int i = 0; i < trackSelections.length; i++) {
-            final TrackSelection trackSelection = trackSelections.get(i);
+            ExoTrackSelection trackSelection = null;
+            if (trackSelections.get(i) instanceof ExoTrackSelection) {
+                trackSelection = (ExoTrackSelection) trackSelections.get(i);
+            }
             final Format selectedFormat = trackSelection == null ? null : trackSelection.getSelectedFormat();
             jTrackSelections.add(toJSON(selectedFormat));
         }
@@ -308,8 +315,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         return jsonObject;
     }
 
-    private void logLoadingEvent(String event, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData, @Nullable IOException error, @Nullable Boolean wasCanceled) {
-        String dataTypeString = dataTypeString(mediaLoadData.dataType);
+    private void logLoadingEvent(String event, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, @Nullable IOException error, @Nullable Boolean wasCanceled) {        String dataTypeString = dataTypeString(mediaLoadData.dataType);
         String trackTypeString = trackTypeString(mediaLoadData.trackType);
 
         if (dataTypeString == null) {
@@ -332,32 +338,31 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         if (wasCanceled != null) {
             e.add("canceled", wasCanceled);
         }
-
         e.end();
     }
 
     @Override
-    public void onLoadStarted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onLoadStarted(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
         profiler.maybeLogServerInfo(loadEventInfo.uri);
     }
 
     @Override
-    public void onLoadCompleted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onLoadCompleted(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
         logLoadingEvent("LoadCompleted", loadEventInfo, mediaLoadData, null, null);
     }
 
     @Override
-    public void onLoadCanceled(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onLoadCanceled(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
         logLoadingEvent("LoadCanceled", loadEventInfo, mediaLoadData, null, null);
     }
 
     @Override
-    public void onLoadError(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
+    public void onLoadError(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
         logLoadingEvent("LoadError", loadEventInfo, mediaLoadData, error, wasCanceled);
     }
 
     @Override
-    public void onDownstreamFormatChanged(EventTime eventTime, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onDownstreamFormatChanged(EventTime eventTime, MediaLoadData mediaLoadData) {
         String trackTypeString = trackTypeString(mediaLoadData.trackType);
         if (trackTypeString == null) {
             return;
@@ -371,7 +376,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onUpstreamDiscarded(EventTime eventTime, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onUpstreamDiscarded(EventTime eventTime, MediaLoadData mediaLoadData) {
         String trackTypeString = trackTypeString(mediaLoadData.trackType);
         if (trackTypeString == null) {
             return;
@@ -381,21 +386,6 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 .add("start", mediaLoadData.mediaStartTimeMs / MSEC_MULTIPLIER_FLOAT)
                 .add("end", mediaLoadData.mediaEndTimeMs / MSEC_MULTIPLIER_FLOAT)
                 .end();
-    }
-
-    @Override
-    public void onMediaPeriodCreated(EventTime eventTime) {
-
-    }
-
-    @Override
-    public void onMediaPeriodReleased(EventTime eventTime) {
-
-    }
-
-    @Override
-    public void onReadingStarted(EventTime eventTime) {
-
     }
 
     @Override
@@ -413,12 +403,17 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onDecoderEnabled(EventTime eventTime, int trackType, DecoderCounters decoderCounters) {
+    public void onAudioEnabled(EventTime eventTime, DecoderCounters counters) {
 
     }
 
     @Override
-    public void onDecoderInitialized(EventTime eventTime, int trackType, String decoderName, long initializationDurationMs) {
+    public void onVideoEnabled(EventTime eventTime, DecoderCounters counters) {
+
+    }
+
+    @Override
+    public void onVideoDecoderInitialized(EventTime eventTime, String decoderName, long initializationDurationMs) {
         log("DecoderInitialized")
                 .add("name", decoderName)
                 .add("duration", initializationDurationMs / MSEC_MULTIPLIER_FLOAT)
@@ -426,7 +421,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onDecoderInputFormatChanged(EventTime eventTime, int trackType, Format format) {
+    public void onVideoInputFormatChanged(EventTime eventTime, Format format, DecoderReuseEvaluation decoderReuseEvaluation) {
         log("DecoderInputFormatChanged")
                 .add("id", format.id)
                 .add("codecs", format.codecs)
@@ -435,12 +430,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onDecoderDisabled(EventTime eventTime, int trackType, DecoderCounters decoderCounters) {
-
-    }
-
-    @Override
-    public void onAudioSessionId(EventTime eventTime, int audioSessionId) {
+    public void onVideoDisabled(EventTime eventTime, DecoderCounters decoderCounters) {
 
     }
 

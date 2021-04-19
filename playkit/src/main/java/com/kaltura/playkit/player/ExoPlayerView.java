@@ -61,6 +61,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
     private PKSubtitlePosition subtitleViewPosition;
     private boolean isVideoViewVisible;
+    private List<Cue> lastReportedCues;
 
     ExoPlayerView(Context context) {
         this(context, null);
@@ -83,18 +84,31 @@ class ExoPlayerView extends BaseExoplayerView {
     private Player.EventListener getPlayerEventListener() {
         return new Player.EventListener() {
             @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            public void onPlaybackStateChanged(int playbackState) {
                 switch (playbackState) {
 
                     case Player.STATE_READY:
-                        if (playWhenReady) {
-                            log.d("ExoPlayerView READY. playWhenReady => " + playWhenReady);
-                            shutterView.setVisibility(INVISIBLE);
+                        if (player != null && player.getPlayWhenReady()) {
+                            log.d("ExoPlayerView READY. playWhenReady => true");
+                            if (shutterView != null) {
+                                shutterView.setVisibility(INVISIBLE);
+                            }
                         }
                         break;
+                        
+                    case Player.STATE_BUFFERING:
+                    case Player.STATE_ENDED:
+                    case Player.STATE_IDLE:
                     default:
                         break;
+                }
+            }
 
+            @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+                log.d("ExoPlayerView onIsPlayingChanged isPlaying = " + isPlaying);
+                if (isPlaying && shutterView != null) {
+                    shutterView.setVisibility(INVISIBLE);
                 }
             }
         };
@@ -201,7 +215,7 @@ class ExoPlayerView extends BaseExoplayerView {
         if (oldTextComponent != null) {
             oldTextComponent.removeTextOutput(componentListener);
         }
-
+        lastReportedCues = null;
         contentFrame.removeView(videoSurface);
     }
 
@@ -270,7 +284,14 @@ class ExoPlayerView extends BaseExoplayerView {
     public SubtitleView getSubtitleView() {
         return subtitleView;
     }
-    
+
+    @Override
+    public void applySubtitlesChanges() {
+        if (subtitleView != null && lastReportedCues != null) {
+            subtitleView.onCues(getModifiedSubtitlePosition(lastReportedCues, subtitleViewPosition));
+        }
+    }
+
     @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
@@ -320,7 +341,7 @@ class ExoPlayerView extends BaseExoplayerView {
 
         @Override
         public void onCues(List<Cue> cues) {
-
+            lastReportedCues = cues;
             if (subtitleViewPosition != null) {
                 cues = getModifiedSubtitlePosition(cues, subtitleViewPosition);
             }
@@ -459,7 +480,7 @@ class ExoPlayerView extends BaseExoplayerView {
      * @return List of modified Cues
      */
     public List<Cue> getModifiedSubtitlePosition(List<Cue> cueList, PKSubtitlePosition subtitleViewPosition) {
-        if (cueList != null && !cueList.isEmpty()) {
+        if (subtitleViewPosition != null && cueList != null && !cueList.isEmpty()) {
             List<Cue> newCueList = new ArrayList<>();
             for (Cue cue : cueList) {
                 if ((cue.line !=  Cue.DIMEN_UNSET || cue.position != Cue.DIMEN_UNSET)
@@ -469,14 +490,14 @@ class ExoPlayerView extends BaseExoplayerView {
                 }
                 CharSequence text = cue.text;
                 if (text != null) {
-                    Cue newCue = new Cue(text,
-                            subtitleViewPosition.getSubtitleHorizontalPosition(),
-                            subtitleViewPosition.getVerticalPositionPercentage(), // line and line type are dependent
-                            subtitleViewPosition.getLineType(),
-                            cue.lineAnchor,
-                            cue.position,
-                            cue.positionAnchor,
-                            subtitleViewPosition.getHorizontalPositionPercentage());
+                    Cue newCue = new Cue.Builder().
+                            setText(text).
+                            setTextAlignment(subtitleViewPosition.getSubtitleHorizontalPosition()).
+                            setLine(subtitleViewPosition.getVerticalPositionPercentage(), subtitleViewPosition.getLineType()).
+                            setLineAnchor(cue.lineAnchor).
+                            setPosition(cue.position).
+                            setPositionAnchor(cue.positionAnchor).
+                            setSize(subtitleViewPosition.getHorizontalPositionPercentage()).build();
                     newCueList.add(newCue);
                 }
             }

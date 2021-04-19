@@ -38,17 +38,16 @@ public class PKHttpClientManager {
 
     private static String httpProviderId;
 
-    private static final OkHttpClient okClient = new OkHttpClient.Builder()
-            .followRedirects(false)     // Only warm up explicitly specified URLs
-            .connectionPool(new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES))
-            .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-            .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-            .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
-            .build();
+    private static ConnectionPool okConnectionPool = new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES);
 
     // Called by the player
     public static OkHttpClient.Builder newClientBuilder() {
-        return okClient.newBuilder().followRedirects(true);
+            return new OkHttpClient.Builder()
+                    .connectionPool(okConnectionPool)
+                    .followRedirects(true)
+                    .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                    .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                    .protocols(Collections.singletonList(Protocol.HTTP_1_1));
     }
 
     // Called by the player
@@ -78,8 +77,9 @@ public class PKHttpClientManager {
         final ExecutorService service = Executors.newCachedThreadPool();
 
         List<Callable<Void>> calls = new ArrayList<>(urls.length);
+        OkHttpClient okHttpClient = newClientBuilder().followRedirects(false).build();
         for (String url : urls) {
-            final Callable<Void> callable = useSystem() ? getSystemCallable(url) : getOkCallable(url);
+            final Callable<Void> callable = useSystem() ? getSystemCallable(url) : getOkCallable(okHttpClient, url);
 
             for (int i = 0; i < WARMUP_TIMES; i++) {
                 calls.add(callable);
@@ -110,9 +110,9 @@ public class PKHttpClientManager {
         };
     }
 
-    private static Callable<Void> getOkCallable(String url) {
+    private static Callable<Void> getOkCallable(OkHttpClient  okHttpClient, String url) {
         return () -> {
-            final Call call = PKHttpClientManager.okClient.newCall(
+            final Call call = okHttpClient.newCall(
                     new Request.Builder()
                             .url(url)
                             .header("user-agent", PKHttpClientManager.warmUpUserAgent)
