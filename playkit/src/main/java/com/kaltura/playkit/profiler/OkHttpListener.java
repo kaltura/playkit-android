@@ -2,9 +2,9 @@ package com.kaltura.playkit.profiler;
 
 import android.os.Build;
 import android.os.SystemClock;
-import android.text.TextUtils;
 
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.player.Profiler.Event;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -24,9 +24,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.TlsVersion;
 
-import static com.kaltura.playkit.profiler.PlayKitProfiler.field;
-import static com.kaltura.playkit.profiler.PlayKitProfiler.timeField;
-
 class OkHttpListener extends EventListener {
 
     private static final PKLog log = PKLog.get("OkHttpListener");
@@ -42,23 +39,19 @@ class OkHttpListener extends EventListener {
     OkHttpListener(PlayKitProfiler playKitProfiler, Call call) {
         profiler = playKitProfiler;
         final Request request = call.request();
-        if (request != null) {
-            HttpUrl httpUrl = request.url();
-            if (httpUrl != null) {
-                hostName = httpUrl.host();
-                url = httpUrl.toString();
-            } else {
-                hostName = null;
-                url = null;
-            }
-        } else {
-            url = null;
-            hostName = null;
-        }
+        HttpUrl httpUrl = request.url();
+        hostName = httpUrl.host();
+        url = httpUrl.toString();
     }
 
-    private void log(String event, String... strings) {
-        profiler.log("net_" + event, field("id", id), timeField("callTime", relTime()), TextUtils.join("\t", strings));
+//    private void log(String event, String... strings) {
+//        profiler.log(event).add("id", id).addTime("callTime", relTime()), TextUtils.join("\t", strings));
+//    }
+
+    private Event logStart(String event) {
+        return (Event) profiler.logStart("net_" + event)
+                .add("id", id)
+                .addTime("callTime", relTime());
     }
 
     private long relTime() {
@@ -67,37 +60,39 @@ class OkHttpListener extends EventListener {
 
     @Override
     public void callStart(Call call) {
-        log.d("callStart " + id);
-        log("callStart",
-                field("url", url), field("hostName", hostName),
-                field("method", call.request().method()));
+        logStart("callStart")
+                .add("url", url)
+                .add("hostName", hostName)
+                .add("method", call.request().method()).end();
     }
 
     @Override
     public void dnsStart(Call call, String domainName) {
-        log("dnsStart", field("hostName", domainName));
+        logStart("dnsStart")
+                .add("hostName", domainName).end();
     }
 
     @Override
     public void dnsEnd(Call call, String domainName, List<InetAddress> inetAddressList) {
         if (!inetAddressList.isEmpty()) {
             final InetAddress address = inetAddressList.get(0);
-            log("dnsEnd",
-                    field("hostName", domainName),
-                    field("hostIp", address.getHostAddress()),
-                    field("canonicalHostName", address.getCanonicalHostName()));
+            logStart("dnsEnd")
+                    .add("hostName", domainName)
+                    .add("hostIp", address.getHostAddress())
+                    .add("canonicalHostName", address.getCanonicalHostName()).end();
         } else {
-            log("dnsEnd", field("hostName", domainName));
+            logStart("dnsEnd")
+                    .add("hostName", domainName).end();
         }
     }
 
     @Override
     public void connectStart(Call call, InetSocketAddress inetSocketAddress, Proxy proxy) {
-        log("connectStart",
-                field("hostName", host(inetSocketAddress)),
-                field("hostIp", inetSocketAddress.getAddress().getHostAddress()),
-                field("port", inetSocketAddress.getPort()),
-                field("proxy", String.valueOf(proxy)));
+        logStart("connectStart")
+                .add("hostName", host(inetSocketAddress))
+                .add("hostIp", inetSocketAddress.getAddress().getHostAddress())
+                .add("port", inetSocketAddress.getPort())
+                .add("proxy", String.valueOf(proxy)).end();
     }
 
     private static String host(InetSocketAddress inetSocketAddress) {
@@ -118,7 +113,7 @@ class OkHttpListener extends EventListener {
 
     @Override
     public void secureConnectStart(Call call) {
-        log("secureConnectStart");
+        logStart("secureConnectStart").end();
     }
 
     @Override
@@ -126,78 +121,87 @@ class OkHttpListener extends EventListener {
         final CipherSuite cipherSuite = handshake.cipherSuite();
         final TlsVersion tlsVersion = handshake.tlsVersion();
 
-        log("secureConnectEnd",
-                field("cipherSuite", "" + cipherSuite),
-                field("tlsVersion", tlsVersion == null ? null : tlsVersion.javaName()));
+        logStart("secureConnectEnd")
+                .add("cipherSuite", "" + cipherSuite)
+                .add("tlsVersion", tlsVersion.javaName())
+                .end();
     }
 
     @Override
     public void connectEnd(Call call, InetSocketAddress inetSocketAddress, Proxy proxy, Protocol protocol) {
-        log("connectEnd", field("protocol", "" + protocol));
+        logStart("connectEnd")
+                .add("protocol", "" + protocol)
+                .end();
     }
 
     @Override
     public void connectFailed(Call call, InetSocketAddress inetSocketAddress, Proxy proxy, Protocol protocol, IOException ioe) {
-        log("connectFailed", field("error", ioe.toString()));
+        logStart("connectFailed")
+                .add("error", ioe.toString())
+                .end();
     }
 
     @Override
     public void connectionAcquired(Call call, Connection connection) {
-        log("connectionAcquired");
+        logStart("connectionAcquired").end();
     }
 
     @Override
     public void connectionReleased(Call call, Connection connection) {
-        log("connectionReleased");
+        logStart("connectionReleased").end();
     }
 
     @Override
     public void requestHeadersStart(Call call) {
-        log("requestHeadersStart");
+        logStart("requestHeadersStart").end();
     }
 
     @Override
     public void requestHeadersEnd(Call call, Request request) {
-        log("requestHeadersEnd");
+        logStart("requestHeadersEnd").end();
     }
 
     @Override
     public void requestBodyStart(Call call) {
-        log("requestBodyStart");
+        logStart("requestBodyStart").end();
     }
 
     @Override
     public void requestBodyEnd(Call call, long byteCount) {
-        log("requestBodyEnd");
+        logStart("requestBodyEnd").end();
     }
 
     @Override
     public void responseHeadersStart(Call call) {
-        log("responseHeadersStart");
+        logStart("responseHeadersStart").end();
     }
 
     @Override
     public void responseHeadersEnd(Call call, Response response) {
-        log("responseHeadersEnd");
+        logStart("responseHeadersEnd").end();
     }
 
     @Override
     public void responseBodyStart(Call call) {
-        log("responseBodyStart");
+        logStart("responseBodyStart").end();
     }
 
     @Override
     public void responseBodyEnd(Call call, long byteCount) {
-        log("responseBodyEnd", field("byteCount", byteCount));
+        logStart("responseBodyEnd")
+                .add("byteCount", byteCount)
+                .end();
     }
 
     @Override
     public void callEnd(Call call) {
-        log("callEnd");
+        logStart("callEnd").end();
     }
 
     @Override
     public void callFailed(Call call, IOException ioe) {
-        log("callFailed", field("error", ioe.toString()));
+        logStart("callFailed")
+                .add("error", ioe)
+                .end();
     }
 }

@@ -6,6 +6,7 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
 import com.kaltura.android.exoplayer2.source.LoadEventInfo;
 import com.kaltura.android.exoplayer2.source.MediaLoadData;
@@ -22,6 +23,8 @@ import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.player.Profiler.Event;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -49,10 +52,6 @@ import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK;
 import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT;
 
 import static com.kaltura.playkit.profiler.PlayKitProfiler.MSEC_MULTIPLIER_FLOAT;
-import static com.kaltura.playkit.profiler.PlayKitProfiler.field;
-import static com.kaltura.playkit.profiler.PlayKitProfiler.joinFields;
-import static com.kaltura.playkit.profiler.PlayKitProfiler.nullable;
-import static com.kaltura.playkit.profiler.PlayKitProfiler.timeField;
 
 class ExoPlayerProfilingListener implements AnalyticsListener {
 
@@ -65,8 +64,8 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         this.profiler = profiler;
     }
 
-    public void log(String event, String... strings) {
-        profiler.logWithPlaybackInfo(event, strings);
+    private Event log(String event) {
+        return profiler.logWithPlaybackInfo(event);
     }
 
     private String trackSelectionReasonString(int trackSelectionReason) {
@@ -80,13 +79,17 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         }
     }
 
-    private String trackFormatString(@Nullable Format trackFormat) {
+    private JsonObject trackFormatMap(@Nullable Format trackFormat) {
         if (trackFormat == null) {
             return null;
         }
 
-        return joinFields(nullable("id", trackFormat.id), "bitrate=" + trackFormat.bitrate,
-                nullable("codecs", trackFormat.codecs), nullable("language", trackFormat.language));
+        return new Utils.GsonObject()
+                .add("id", trackFormat.id)
+                .add("bitrate", trackFormat.bitrate)
+                .add("codecs", trackFormat.codecs)
+                .add("language", trackFormat.language)
+                .jsonObject();
     }
 
     private String trackTypeString(int trackType) {
@@ -113,6 +116,11 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
+    public void onIsPlayingChanged(EventTime eventTime, boolean isPlaying) {
+        profiler.logWithPlaybackInfo("IsPlayingChanged").add("isPlaying", isPlaying).end();
+    }
+
+    @Override
     public void onPlaybackStateChanged(EventTime eventTime,  int playbackState) {
         String state;
         switch (playbackState) {
@@ -131,7 +139,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             default: return;
         }
 
-        log("PlayerStateChanged", field("state", state), field("shouldPlay", shouldPlay));
+        log("PlayerStateChanged").add("state", state).add("shouldPlay", shouldPlay).end();
     }
 
     @Override
@@ -152,6 +160,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 reasonString = "PeriodTransition";
                 break;
             case DISCONTINUITY_REASON_SEEK:
+                 log("SeekProcessed").end();
                 reasonString = "Seek";
                 break;
             case DISCONTINUITY_REASON_SEEK_ADJUSTMENT:
@@ -167,12 +176,22 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 reasonString = "Unknown:" + reason;
         }
 
-        log("PositionDiscontinuity", field("reason", reasonString));
+        log("PositionDiscontinuity")
+                .add("reason", reasonString)
+                .end();
     }
 
     @Override
     public void onSeekStarted(EventTime eventTime) {
-        log("SeekStarted");
+        log("SeekStarted").end();
+    }
+
+    @Override
+    public void onPlaybackParametersChanged(EventTime eventTime, PlaybackParameters playbackParameters) {
+        log("PlaybackParametersChanged")
+                .add("speed", playbackParameters.speed)
+                .add("pitch", playbackParameters.pitch)
+                .end();
     }
 
     @Override
@@ -192,12 +211,23 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 strMode = "Unknown(" + repeatMode + ")";
                 break;
         }
-        log("RepeatModeChanged", field("repeatMode", strMode));
+        log("RepeatModeChanged")
+                .add("repeatMode", strMode)
+                .end();
     }
 
     @Override
     public void onShuffleModeChanged(EventTime eventTime, boolean shuffleModeEnabled) {
-        log("ShuffleModeChanged", field("shuffleModeEnabled", shuffleModeEnabled));
+        log("ShuffleModeChanged")
+                .add("shuffleModeEnabled", shuffleModeEnabled)
+                .end();
+    }
+
+    @Override
+    public void onIsLoadingChanged(EventTime eventTime, boolean isLoading) {
+        log("LoadingChanged")
+                .add("isLoading", isLoading)
+                .end();
     }
 
     @Override
@@ -218,7 +248,10 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 break;
         }
 
-        log("PlayerError", field("type", type), "cause={" + error.getCause() + "}");
+        log("PlayerError")
+                .add("type", type)
+                .add("cause", error.getCause())
+                .end();
     }
 
     @Override
@@ -258,9 +291,10 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             jTrackSelections.add(toJSON(selectedFormat));
         }
 
-        log("TracksChanged",
-                field("available", jTrackGroups.toString()),
-                field("selected", jTrackSelections.toString()));
+        log("TracksChanged")
+                .add("available", jTrackGroups)
+                .add("selected", jTrackSelections)
+                .end();
     }
 
     private JsonObject toJSON(@Nullable Format format) {
@@ -282,26 +316,34 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         return jsonObject;
     }
 
-    private void logLoadingEvent(String event, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, IOException error, Boolean wasCanceled) {
-        String dataTypeString = dataTypeString(mediaLoadData.dataType);
+    private void logLoadingEvent(String event, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, @Nullable IOException error, @Nullable Boolean wasCanceled) {        String dataTypeString = dataTypeString(mediaLoadData.dataType);
         String trackTypeString = trackTypeString(mediaLoadData.trackType);
 
         if (dataTypeString == null) {
             return;
         }
 
-        log(event,
-                timeField("time", loadEventInfo.elapsedRealtimeMs - profiler.sessionStartTime), field("uri", loadEventInfo.dataSpec.uri.toString()),
-                field("dataType", dataTypeString), field("trackType", trackTypeString),
-                trackFormatString(mediaLoadData.trackFormat), field("reason", trackSelectionReasonString(mediaLoadData.trackSelectionReason)),
-                timeField("rangeStart", mediaLoadData.mediaStartTimeMs), timeField("rangeEnd", mediaLoadData.mediaEndTimeMs),
-                timeField("loadTime", loadEventInfo.loadDurationMs), field("bytes", loadEventInfo.bytesLoaded),
-                field("error", error != null ? "{" + error.getMessage() + "}" : null), wasCanceled == null ? null : field("canceled", wasCanceled));
+        final Utils.GsonObject e = log(event)
+                .addTime("time", loadEventInfo.elapsedRealtimeMs - profiler.sessionStartTime)
+                .add("uri", loadEventInfo.dataSpec.uri.toString())
+                .add("dataType", dataTypeString)
+                .add("trackType", trackTypeString)
+                .addAll(trackFormatMap(mediaLoadData.trackFormat))
+                .add("reason", trackSelectionReasonString(mediaLoadData.trackSelectionReason))
+                .addTime("rangeStart", mediaLoadData.mediaStartTimeMs)
+                .addTime("rangeEnd", mediaLoadData.mediaEndTimeMs)
+                .addTime("loadTime", loadEventInfo.loadDurationMs)
+                .add("bytes", loadEventInfo.bytesLoaded)
+                .add("error", error != null ? error.getMessage() : null);
+
+        if (wasCanceled != null) {
+            e.add("canceled", wasCanceled);
+        }
+        e.end();
     }
 
     @Override
     public void onLoadStarted(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
-        logLoadingEvent("LoadStarted", loadEventInfo, mediaLoadData, null, null);
         profiler.maybeLogServerInfo(loadEventInfo.uri);
     }
 
@@ -327,7 +369,11 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             return;
         }
 
-        log("DownstreamFormatChanged", field("trackType", trackTypeString), trackFormatString(mediaLoadData.trackFormat), field("reason", trackSelectionReasonString(mediaLoadData.trackSelectionReason)));
+        log("DownstreamFormatChanged")
+                .add("trackType", trackTypeString)
+                .addAll(trackFormatMap(mediaLoadData.trackFormat))
+                .add("reason", trackSelectionReasonString(mediaLoadData.trackSelectionReason))
+                .end();
     }
 
     @Override
@@ -336,16 +382,20 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         if (trackTypeString == null) {
             return;
         }
-        log("UpstreamDiscarded", field("trackType", trackTypeString), field("start", mediaLoadData.mediaStartTimeMs / MSEC_MULTIPLIER_FLOAT), field("end", mediaLoadData.mediaEndTimeMs / MSEC_MULTIPLIER_FLOAT));
+        log("UpstreamDiscarded")
+                .add("trackType", trackTypeString)
+                .add("start", mediaLoadData.mediaStartTimeMs / MSEC_MULTIPLIER_FLOAT)
+                .add("end", mediaLoadData.mediaEndTimeMs / MSEC_MULTIPLIER_FLOAT)
+                .end();
     }
 
     @Override
     public void onBandwidthEstimate(EventTime eventTime, int totalLoadTimeMs, long totalBytesLoaded, long bitrateEstimate) {
-        log("BandwidthSample",
-                field("bandwidth", bitrateEstimate),
-                timeField("totalLoadTime", totalLoadTimeMs),
-                field("totalBytesLoaded", totalBytesLoaded)
-        );
+        log("BandwidthSample")
+                .add("bandwidth", bitrateEstimate)
+                .addTime("totalLoadTime", totalLoadTimeMs)
+                .add("totalBytesLoaded", totalBytesLoaded)
+                .end();
     }
 
     @Override
@@ -365,12 +415,19 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onVideoDecoderInitialized(EventTime eventTime, String decoderName, long initializationDurationMs) {
-        log("DecoderInitialized", field("name", decoderName), field("duration", initializationDurationMs / MSEC_MULTIPLIER_FLOAT));
+        log("DecoderInitialized")
+                .add("name", decoderName)
+                .add("duration", initializationDurationMs / MSEC_MULTIPLIER_FLOAT)
+                .end();
     }
 
     @Override
     public void onVideoInputFormatChanged(EventTime eventTime, Format format, DecoderReuseEvaluation decoderReuseEvaluation) {
-        log("DecoderInputFormatChanged", field("id", format.id), field("codecs", format.codecs), field("bitrate", format.bitrate));
+        log("DecoderInputFormatChanged")
+                .add("id", format.id)
+                .add("codecs", format.codecs)
+                .add("bitrate", format.bitrate)
+                .end();
     }
 
     @Override
@@ -385,37 +442,46 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onDroppedVideoFrames(EventTime eventTime, int droppedFrames, long elapsedMs) {
-        log("DroppedFrames", field("count", droppedFrames), field("time", elapsedMs / MSEC_MULTIPLIER_FLOAT));
+        log("DroppedFrames")
+                .add("count", droppedFrames)
+                .add("time", elapsedMs / MSEC_MULTIPLIER_FLOAT)
+                .end();
     }
 
     @Override
     public void onVideoSizeChanged(EventTime eventTime, int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
-        log("VideoSizeChanged", field("width", width), field("height", height));
+        log("VideoSizeChanged")
+                .add("width", width)
+                .add("height", height)
+                .end();
     }
 
     @Override
     public void onRenderedFirstFrame(EventTime eventTime, Surface surface) {
-        log("RenderedFirstFrame");
+        log("RenderedFirstFrame").end();
     }
 
     @Override
     public void onSurfaceSizeChanged(EventTime eventTime, int width, int height) {
-        log("ViewportSizeChange", field("width", width), field("height", height));
+        log("ViewportSizeChange")
+                .add("width", width)
+                .add("height", height).end();
     }
 
     @Override
     public void onVolumeChanged(EventTime eventTime, float volume) {
-        log("VolumeChanged", field("volume", volume));
+        log("VolumeChanged")
+                .add("volume", volume).end();
     }
 
     @Override
     public void onDrmSessionAcquired(EventTime eventTime) {
-        log("DrmSessionAcquired");
+        log("DrmSessionAcquired").end();
     }
 
     @Override
     public void onDrmSessionReleased(EventTime eventTime) {
-        log("DrmSessionReleased");
+        log("DrmSessionReleased").end();
     }
 
     @Override

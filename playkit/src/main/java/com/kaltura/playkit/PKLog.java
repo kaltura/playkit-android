@@ -63,7 +63,7 @@ public class PKLog {
 
     @NonNull
     public final String tag;
-    private int level = VERBOSE;
+    private int level;
 
     public enum Level {
         verbose(VERBOSE), debug(DEBUG), info(INFO), warn(WARN), error(ERROR), off(Integer.MAX_VALUE);
@@ -103,6 +103,9 @@ public class PKLog {
         return new PKLog(tag);
     }
 
+    public boolean isLoggable(Level level) {
+        return Log.isLoggable(tag, level.value);
+    }
 
     // VERBOSE
 

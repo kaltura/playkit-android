@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.profiler.PlayKitProfiler;
 
 import okhttp3.EventListener;
 
@@ -28,4 +30,20 @@ public abstract class Profiler {
 
     public void onApplicationPaused() {/*NOOP*/}
     public void onApplicationResumed() {/*NOOP*/}
+
+    public static class Event extends Utils.GsonObject {
+
+        private final PlayKitProfiler profiler;
+
+        public Event(PlayKitProfiler profiler, String name) {
+            this.profiler = profiler;
+            add("_ts", profiler.timestamp());
+            add("_name", name);
+        }
+
+        @Override
+        public void end() {
+            profiler.append(jsonObject());
+        }
+    }
 }
