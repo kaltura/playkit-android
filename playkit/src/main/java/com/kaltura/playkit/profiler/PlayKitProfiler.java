@@ -76,7 +76,7 @@ public class PlayKitProfiler {
     private static final float DEFAULT_SEND_PERCENTAGE = devMode ? SEND_PERCENTAGE_DEV : 0; // Start disabled
 
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
-    private static final String CONFIG_BASE_URL = "https://s3.amazonaws.com/player-profiler/config/";
+    private static final String CONFIG_BASE_URL = "https://s3.amazonaws.com/player-profiler/configs/";
     private static final int MAX_CONFIG_SIZE = 10240;
 
     static final float MSEC_MULTIPLIER_FLOAT = 1000f;
