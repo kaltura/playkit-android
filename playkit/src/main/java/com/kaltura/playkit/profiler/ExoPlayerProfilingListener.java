@@ -6,6 +6,7 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
 import com.kaltura.android.exoplayer2.source.LoadEventInfo;
 import com.kaltura.android.exoplayer2.source.MediaLoadData;
@@ -113,6 +114,12 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
+    public void onIsPlayingChanged(EventTime eventTime, boolean isPlaying) {
+        log("IsPlayingChanged",
+                field("isPlaying", isPlaying));
+    }
+
+    @Override
     public void onPlaybackStateChanged(EventTime eventTime,  int playbackState) {
         String state;
         switch (playbackState) {
@@ -152,6 +159,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 reasonString = "PeriodTransition";
                 break;
             case DISCONTINUITY_REASON_SEEK:
+                log("SeekProcessed");
                 reasonString = "Seek";
                 break;
             case DISCONTINUITY_REASON_SEEK_ADJUSTMENT:
@@ -173,6 +181,13 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     @Override
     public void onSeekStarted(EventTime eventTime) {
         log("SeekStarted");
+    }
+
+    @Override
+    public void onPlaybackParametersChanged(EventTime eventTime, PlaybackParameters playbackParameters) {
+        log("PlaybackParametersChanged",
+                field("speed", playbackParameters.speed),
+                field("pitch", playbackParameters.pitch));
     }
 
     @Override
