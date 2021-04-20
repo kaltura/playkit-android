@@ -38,8 +38,6 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -320,7 +318,7 @@ public class PlayKitProfiler {
     private static void parseConfig(byte[] bytes) {
         try {
             final ConfigFile configFile = new Gson().fromJson(new String(bytes), ConfigFile.class);
-            postURL = configFile.putLogURL;
+            postURL = configFile.postURL;
             sendPercentage = configFile.sendPercentage;
         } catch (JsonParseException e) {
             pkLog.e("Failed to parse config", e);
@@ -651,7 +649,7 @@ public class PlayKitProfiler {
     };
 
     private static class ConfigFile {
-        String putLogURL;
+        String postURL;
         float sendPercentage;
     }
 }
