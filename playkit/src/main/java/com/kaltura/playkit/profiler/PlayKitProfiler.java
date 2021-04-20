@@ -125,13 +125,13 @@ public class PlayKitProfiler {
      * Initialize the static part of the profiler -- load the config and store it,
      * create IO thread and handler. Must be called by the app to enable the profiler.
      */
-    public static void init(Context context, String jspnConfigToken) {
+    public static void init(Context context, String jsonConfigToken) {
 
         // This only has to happen once.
         if (initialized) {
             return;
         }
-        configToken = jspnConfigToken;
+        configToken = jsonConfigToken;
         synchronized (PlayKitProfiler.class) {
 
             // Ask again, after sync.
