@@ -467,6 +467,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                             }
 
                             byte[] bytes = dashLastDataSink.getData();
+                            if (bytes == null) {
+                                return;
+                            }
+                            
                             dashManifestString = new String(bytes, Charsets.UTF_8);
                             //log.d("teeDataSource manifest  " + dashManifestString);
                         }
