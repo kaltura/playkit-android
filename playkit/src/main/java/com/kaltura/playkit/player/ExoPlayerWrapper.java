@@ -91,7 +91,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -467,6 +466,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                             }
 
                             byte[] bytes = dashLastDataSink.getData();
+                            if (bytes == null) {
+                                return;
+                            }
+                            
                             dashManifestString = new String(bytes, Charsets.UTF_8);
                             //log.d("teeDataSource manifest  " + dashManifestString);
                         }

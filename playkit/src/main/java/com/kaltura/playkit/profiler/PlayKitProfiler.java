@@ -1,7 +1,6 @@
 package com.kaltura.playkit.profiler;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -12,7 +11,6 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
@@ -40,8 +38,6 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -67,7 +63,7 @@ public class PlayKitProfiler {
 
     // Dev mode: shorter logs, write to local file, always enable
     private static final boolean devMode = false;
-    private static final int SEND_INTERVAL_DEV = 10;    // in seconds
+    private static final int SEND_INTERVAL_DEV = 60;    // in seconds
     private static final int SEND_PERCENTAGE_DEV = 100; // always
 
     private static final int SEND_INTERVAL_PROD = 120;  // 2 minutes
@@ -76,8 +72,7 @@ public class PlayKitProfiler {
     private static final float DEFAULT_SEND_PERCENTAGE = devMode ? SEND_PERCENTAGE_DEV : 0; // Start disabled
 
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
-    private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json";
-    private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
+    private static final String CONFIG_BASE_URL = "https://s3.amazonaws.com/player-profiler/configs/";
     private static final int MAX_CONFIG_SIZE = 10240;
 
     static final float MSEC_MULTIPLIER_FLOAT = 1000f;
@@ -87,7 +82,8 @@ public class PlayKitProfiler {
     private static final Map<String, String> experiments = new LinkedHashMap<>();
     private static final int PERCENTAGE_MULTIPLIER = 100;
     // Configuration
-    private static String postURL = DEFAULT_POST_URL;
+    private static String configToken;
+    private static String postURL;
     private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
     // Static setup
     private static Handler ioHandler;
@@ -129,13 +125,13 @@ public class PlayKitProfiler {
      * Initialize the static part of the profiler -- load the config and store it,
      * create IO thread and handler. Must be called by the app to enable the profiler.
      */
-    public static void init(Context context) {
+    public static void init(Context context, String jsonConfigToken) {
 
         // This only has to happen once.
         if (initialized) {
             return;
         }
-
+        configToken = jsonConfigToken;
         synchronized (PlayKitProfiler.class) {
 
             // Ask again, after sync.
@@ -144,9 +140,6 @@ public class PlayKitProfiler {
             }
 
             final Context appContext = context.getApplicationContext();
-
-            // Load cached config. Will load from network later, in a handler thread.
-            loadCachedConfig(appContext);
 
             HandlerThread handlerThread = new HandlerThread("ProfilerIO", Process.THREAD_PRIORITY_BACKGROUND);
             handlerThread.start();
@@ -171,24 +164,6 @@ public class PlayKitProfiler {
             ProfilerFactory.setFactory(() ->
                     Math.random() < sendPercentage / PERCENTAGE_MULTIPLIER ? new PlayKitProfiler().profilerImp : null);
         }
-    }
-
-    private static String getNetworkType(Context context) {
-
-        final ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (manager == null) {
-            return "Unknown";
-        }
-
-        switch (manager.getActiveNetworkInfo().getType()) {
-            case ConnectivityManager.TYPE_MOBILE:
-                return "Mobile";
-            case ConnectivityManager.TYPE_WIFI:
-                return "Wifi";
-            case ConnectivityManager.TYPE_ETHERNET:
-                return "Ethernet";
-        }
-        return null;
     }
 
     /**
@@ -326,7 +301,7 @@ public class PlayKitProfiler {
 
         // Download
         try {
-            bytes = Utils.executeGet(CONFIG_URL, null);
+            bytes = Utils.executeGet(CONFIG_BASE_URL + configToken + ".json", null);
 
             if (bytes == null || bytes.length == 0) {
                 pkLog.w("Nothing returned from executeGet");
@@ -337,51 +312,13 @@ public class PlayKitProfiler {
 
         } catch (IOException e) {
             pkLog.w("Failed to download config", e);
-            return;
         }
-
-        // Save to cache
-        final File cachedConfigFile = getCachedConfigFile(context);
-        if (cachedConfigFile.getParentFile().canWrite()) {
-            FileOutputStream outputStream = null;
-            try {
-                outputStream = new FileOutputStream(cachedConfigFile);
-                outputStream.write(bytes);
-            } catch (IOException e) {
-                pkLog.e("Failed to save config to cache", e);
-            } finally {
-                Utils.safeClose(outputStream);
-            }
-        }
-    }
-
-    private static void loadCachedConfig(Context context) {
-        final File configFile = getCachedConfigFile(context);
-
-        if (configFile.canRead()) {
-            FileInputStream inputStream = null;
-            try {
-                inputStream = new FileInputStream(configFile);
-                parseConfig(Utils.fullyReadInputStream(inputStream, MAX_CONFIG_SIZE).toByteArray());
-
-            } catch (IOException e) {
-                pkLog.e("Failed to read cached config file", e);
-
-            } finally {
-                Utils.safeClose(inputStream);
-            }
-        }
-    }
-
-    @NonNull
-    private static File getCachedConfigFile(Context context) {
-        return new File(context.getFilesDir(), CONFIG_CACHE_FILENAME);
     }
 
     private static void parseConfig(byte[] bytes) {
         try {
             final ConfigFile configFile = new Gson().fromJson(new String(bytes), ConfigFile.class);
-            postURL = configFile.putLogURL;
+            postURL = configFile.postURL;
             sendPercentage = configFile.sendPercentage;
         } catch (JsonParseException e) {
             pkLog.e("Failed to parse config", e);
@@ -712,7 +649,7 @@ public class PlayKitProfiler {
     };
 
     private static class ConfigFile {
-        String putLogURL;
+        String postURL;
         float sendPercentage;
     }
 }
