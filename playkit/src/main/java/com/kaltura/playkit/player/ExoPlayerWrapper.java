@@ -651,7 +651,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
-        final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
+
+        final PKRequestConfiguration pkRequestConfiguration = playerSettings.getPkRequestConfiguration();
+        final int connectTimeout = pkRequestConfiguration.getConnectTimeoutMs();
+        final int readTimeout = pkRequestConfiguration.getReadTimeoutMs();
+        final boolean crossProtocolRedirectEnabled = pkRequestConfiguration.getCrossProtocolRedirectEnabled();
 
         if (CookieHandler.getDefault() == null) {
             CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
@@ -663,8 +667,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     .cookieJar(NativeCookieJarBridge.sharedCookieJar)
                     .followRedirects(true)
                     .followSslRedirects(crossProtocolRedirectEnabled)
-                    .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                    .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+                    .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+                    .readTimeout(readTimeout, TimeUnit.MILLISECONDS);
             builder.eventListener(analyticsAggregator);
             if (profiler != Profiler.NOOP) {
                 final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
@@ -676,8 +680,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         } else {
 
             httpDataSourceFactory = new DefaultHttpDataSource.Factory().setUserAgent(userAgent)
-                    .setConnectTimeoutMs(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS)
-                    .setReadTimeoutMs(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS)
+                    .setConnectTimeoutMs(connectTimeout)
+                    .setReadTimeoutMs(readTimeout)
                     .setAllowCrossProtocolRedirects(crossProtocolRedirectEnabled);
         }
 
