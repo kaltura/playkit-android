@@ -306,7 +306,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         MediaSource mediaSource = null;
         MediaItem mediaItem = buildExoMediaItem(sourceConfig);
-        if (!isLocalMediaItem(sourceConfig) && !isLocalMediaSource(sourceConfig)) {
+        if (mediaItem != null && !isLocalMediaItem(sourceConfig) && !isLocalMediaSource(sourceConfig)) {
             mediaSource = buildInternalExoMediaSource(mediaItem, sourceConfig);
         }
 
@@ -383,6 +383,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 drmSessionManager.setMediaSource(sourceConfig.mediaSource);
             }
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
+        }
+
+        if (mediaItem == null) {
+            return mediaItem;
         }
 
         if (mediaItem.playbackProperties != null) {
@@ -566,8 +570,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
         PKRequestParams requestParams = sourceConfig.getRequestParams();
 
-        if (format == null) {
-            throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
+        if (format == null || TextUtils.isEmpty(requestParams.url.toString())) {
+            return null;
+           // throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url); // workaround for FEC-11189
         }
 
         Uri uri = requestParams.url;

@@ -14,6 +14,7 @@ package com.kaltura.playkit;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -62,7 +63,7 @@ public class PKMediaSource implements Parcelable {
     }
 
     public PKMediaFormat getMediaFormat() {
-        if (mediaFormat == null && url != null) {
+        if (mediaFormat == null && !TextUtils.isEmpty(url)) {
             this.mediaFormat = PKMediaFormat.valueOfUrl(url);
         }
         return mediaFormat;
