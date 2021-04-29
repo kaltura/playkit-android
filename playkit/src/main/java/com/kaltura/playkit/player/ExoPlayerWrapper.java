@@ -571,8 +571,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         PKRequestParams requestParams = sourceConfig.getRequestParams();
 
         if (format == null || TextUtils.isEmpty(requestParams.url.toString())) {
-            return null;
-           // throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url); // workaround for FEC-11189
+            return null; // No MediaItem will be created and returning null will send SOURCE_ERROR with Fatal severity
         }
 
         Uri uri = requestParams.url;
