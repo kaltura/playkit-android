@@ -281,8 +281,8 @@ class TrackSelectionHelper {
                                 PKAudioCodec currentAudioTrackCodec = null;
                                 AudioTrack currentAudioTrack = null;
 
-                                if (format.language == null && format.codecs == null) {
-                                    if (playerSettings != null && playerSettings.mpgaAudioFormatEnabled() && format.id != null && format.id.matches("\\d+/\\d+")) {
+                                if (format.language == null && format.id != null && format.id.matches("\\d+/\\d+")) {
+                                    if (playerSettings != null && playerSettings.mpgaAudioFormatEnabled()) {
                                         currentAudioTrackCodec = PKAudioCodec.AAC;
                                         currentAudioTrack = new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false, currentAudioTrackCodec, AUDIO_AAC);
                                         audioTracks.add(currentAudioTrack);
