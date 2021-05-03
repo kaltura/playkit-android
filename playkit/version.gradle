@@ -8,21 +8,3 @@ if (playkitVersion == 'dev') {
     def commit = proc.text.trim()
     ext.playkitVersion = 'dev.' + commit
 }
-
-// Publish to Bintray
-try {
-    apply plugin: 'bintray-release'
-
-    publish {
-        // If project name is "profiler", publish as "playkit-profiler"
-        artifactId = project.name == 'playkit' ? 'playkit' : 'playkit-' + project.name
-        desc = 'PlayKit: Kaltura Player SDK'
-        repoName = 'android'
-        userOrg = 'kaltura'
-        groupId = 'com.kaltura.playkit'
-        publishVersion = playkitVersion
-        autoPublish = true
-    }
-} catch (UnknownPluginException ignored) {
-    // Ignore - it's ok not to have this plugin - it's only used for bintray uploads.
-}

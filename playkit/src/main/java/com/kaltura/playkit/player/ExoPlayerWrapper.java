@@ -306,7 +306,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         MediaSource mediaSource = null;
         MediaItem mediaItem = buildExoMediaItem(sourceConfig);
-        if (!isLocalMediaItem(sourceConfig) && !isLocalMediaSource(sourceConfig)) {
+        if (mediaItem != null && !isLocalMediaItem(sourceConfig) && !isLocalMediaSource(sourceConfig)) {
             mediaSource = buildInternalExoMediaSource(mediaItem, sourceConfig);
         }
 
@@ -383,6 +383,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 drmSessionManager.setMediaSource(sourceConfig.mediaSource);
             }
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
+        }
+
+        if (mediaItem == null) {
+            return mediaItem;
         }
 
         if (mediaItem.playbackProperties != null) {
@@ -466,6 +470,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                             }
 
                             byte[] bytes = dashLastDataSink.getData();
+                            if (bytes == null) {
+                                return;
+                            }
+                            
                             dashManifestString = new String(bytes, Charsets.UTF_8);
                             //log.d("teeDataSource manifest  " + dashManifestString);
                         }
@@ -562,8 +570,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
         PKRequestParams requestParams = sourceConfig.getRequestParams();
 
-        if (format == null) {
-            throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
+        if (format == null || TextUtils.isEmpty(requestParams.url.toString())) {
+            return null; // No MediaItem will be created and returning null will send SOURCE_ERROR with Fatal severity
         }
 
         Uri uri = requestParams.url;
@@ -647,7 +655,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
-        final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
+
+        final PKRequestConfiguration pkRequestConfiguration = playerSettings.getPkRequestConfiguration();
+        final int connectTimeout = pkRequestConfiguration.getConnectTimeoutMs();
+        final int readTimeout = pkRequestConfiguration.getReadTimeoutMs();
+        final boolean crossProtocolRedirectEnabled = pkRequestConfiguration.getCrossProtocolRedirectEnabled();
 
         if (CookieHandler.getDefault() == null) {
             CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
@@ -659,8 +671,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     .cookieJar(NativeCookieJarBridge.sharedCookieJar)
                     .followRedirects(true)
                     .followSslRedirects(crossProtocolRedirectEnabled)
-                    .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                    .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+                    .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+                    .readTimeout(readTimeout, TimeUnit.MILLISECONDS);
             builder.eventListener(analyticsAggregator);
             if (profiler != Profiler.NOOP) {
                 final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
@@ -672,8 +684,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         } else {
 
             httpDataSourceFactory = new DefaultHttpDataSource.Factory().setUserAgent(userAgent)
-                    .setConnectTimeoutMs(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS)
-                    .setReadTimeoutMs(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS)
+                    .setConnectTimeoutMs(connectTimeout)
+                    .setReadTimeoutMs(readTimeout)
                     .setAllowCrossProtocolRedirects(crossProtocolRedirectEnabled);
         }
 
@@ -942,7 +954,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
                 CustomDashManifest customDashManifest = null;
-                if (dashLastDataSink != null && player.getCurrentManifest() instanceof DashManifest) {
+                if (!TextUtils.isEmpty(dashManifestString) && dashLastDataSink != null && player.getCurrentManifest() instanceof DashManifest) {
                     byte[] bytes = dashLastDataSink.getData();
                     try {
                         customDashManifest = new CustomDashManifestParser().parse(player.getMediaItemAt(0).playbackProperties.uri, dashManifestString);
