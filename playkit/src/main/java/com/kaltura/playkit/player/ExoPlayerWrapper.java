@@ -27,6 +27,7 @@ import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.kaltura.android.exoplayer2.ExoTimeoutException;
 import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
@@ -473,7 +474,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                             if (bytes == null) {
                                 return;
                             }
-                            
+
                             dashManifestString = new String(bytes, Charsets.UTF_8);
                             //log.d("teeDataSource manifest  " + dashManifestString);
                         }
@@ -863,7 +864,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 errorMessage = getSourceErrorMessage(error, errorMessage);
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
-                errorMessage = getDecoderInitializationErrorMessage(error, errorMessage);
+                errorMessage = getRendererExceptionDetails(error, errorMessage);
                 if (errorMessage != null && errorMessage.startsWith("DRM_ERROR:")) {
                     errorType = PKPlayerErrorType.DRM_ERROR;
                 } else {
@@ -892,7 +893,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
     }
 
-    private String getDecoderInitializationErrorMessage(ExoPlaybackException error, String errorMessage) {
+    private String getRendererExceptionDetails(ExoPlaybackException error, String errorMessage) {
         Exception cause = error.getRendererException();
         if (cause instanceof MediaCodecRenderer.DecoderInitializationException) {
             // Special case for decoder initialization failures.
@@ -913,6 +914,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             MediaCodec.CryptoException mediaCodecCryptoException = (MediaCodec.CryptoException) cause;
             errorMessage = mediaCodecCryptoException.getMessage() != null ? mediaCodecCryptoException.getMessage() : "MediaCodec.CryptoException occurred";
             errorMessage = "DRM_ERROR:" + errorMessage;
+        } else if (cause instanceof ExoTimeoutException) {
+            ExoTimeoutException exoTimeoutException = (ExoTimeoutException) cause;
+            errorMessage = exoTimeoutException.getMessage() != null ? exoTimeoutException.getMessage() : "Exo timeout exception";
         }
         return errorMessage;
     }
