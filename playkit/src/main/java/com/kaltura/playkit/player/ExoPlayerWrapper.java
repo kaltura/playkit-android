@@ -867,6 +867,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 errorMessage = getRendererExceptionDetails(error, errorMessage);
                 if (errorMessage != null && errorMessage.startsWith("DRM_ERROR:")) {
                     errorType = PKPlayerErrorType.DRM_ERROR;
+                } else if (errorMessage != null && errorMessage.startsWith("EXO_TIMEOUT_EXCEPTION:")) {
+                    errorType = PKPlayerErrorType.TIMEOUT;
                 } else {
                     errorType = PKPlayerErrorType.RENDERER_ERROR;
                 }
@@ -884,7 +886,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
 
         log.e(errorStr);
-        currentError = new PKError(errorType, errorStr, error);
+        if (errorType == PKPlayerErrorType.TIMEOUT) {
+            currentError = new PKError(PKPlayerErrorType.TIMEOUT, PKError.Severity.Recoverable, errorStr, error);
+        } else {
+            currentError = new PKError(errorType, errorStr, error);
+        }
         if (eventListener != null) {
             log.e("Error-Event sent, type = " + error.type);
             eventListener.onEvent(PlayerEvent.Type.ERROR);
@@ -917,6 +923,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         } else if (cause instanceof ExoTimeoutException) {
             ExoTimeoutException exoTimeoutException = (ExoTimeoutException) cause;
             errorMessage = exoTimeoutException.getMessage() != null ? exoTimeoutException.getMessage() : "Exo timeout exception";
+            errorMessage = "EXO_TIMEOUT_EXCEPTION:" + errorMessage;
         }
         return errorMessage;
     }
