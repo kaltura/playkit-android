@@ -130,4 +130,6 @@ public class Consts {
     public static final String HTTP_METHOD_POST = "POST";
 
     public static final String HTTP_METHOD_GET = "GET";
+
+    public static final String EXO_TIMEOUT_OPERATION_RELEASE = "Player release timed out.";
 }

@@ -27,6 +27,7 @@ import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.kaltura.android.exoplayer2.ExoTimeoutException;
 import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
@@ -473,7 +474,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                             if (bytes == null) {
                                 return;
                             }
-                            
+
                             dashManifestString = new String(bytes, Charsets.UTF_8);
                             //log.d("teeDataSource manifest  " + dashManifestString);
                         }
@@ -863,11 +864,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 errorMessage = getSourceErrorMessage(error, errorMessage);
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
-                errorMessage = getDecoderInitializationErrorMessage(error, errorMessage);
-                if (errorMessage != null && errorMessage.startsWith("DRM_ERROR:")) {
-                    errorType = PKPlayerErrorType.DRM_ERROR;
-                } else {
-                    errorType = PKPlayerErrorType.RENDERER_ERROR;
+                errorMessage = getRendererExceptionDetails(error, errorMessage);
+                errorType = PKPlayerErrorType.RENDERER_ERROR;
+                if (errorMessage != null) {
+                    if (errorMessage.startsWith("DRM_ERROR:")) {
+                        errorType = PKPlayerErrorType.DRM_ERROR;
+                    } else if (errorMessage.startsWith("EXO_TIMEOUT_EXCEPTION:")) {
+                        errorType = PKPlayerErrorType.TIMEOUT;
+                    }
                 }
                 break;
             case ExoPlaybackException.TYPE_REMOTE:
@@ -881,9 +885,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
-
         log.e(errorStr);
-        currentError = new PKError(errorType, errorStr, error);
+
+        if (errorType == PKPlayerErrorType.TIMEOUT && errorMessage.contains(Consts.EXO_TIMEOUT_OPERATION_RELEASE)) {
+            // ExoPlayer is being stopped internally in other EXO_TIMEOUT_EXCEPTION types
+            currentError = new PKError(PKPlayerErrorType.TIMEOUT, PKError.Severity.Recoverable, errorStr, error);
+        } else {
+            currentError = new PKError(errorType, errorStr, error);
+        }
         if (eventListener != null) {
             log.e("Error-Event sent, type = " + error.type);
             eventListener.onEvent(PlayerEvent.Type.ERROR);
@@ -892,7 +901,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
     }
 
-    private String getDecoderInitializationErrorMessage(ExoPlaybackException error, String errorMessage) {
+    private String getRendererExceptionDetails(ExoPlaybackException error, String errorMessage) {
         Exception cause = error.getRendererException();
         if (cause instanceof MediaCodecRenderer.DecoderInitializationException) {
             // Special case for decoder initialization failures.
@@ -913,6 +922,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             MediaCodec.CryptoException mediaCodecCryptoException = (MediaCodec.CryptoException) cause;
             errorMessage = mediaCodecCryptoException.getMessage() != null ? mediaCodecCryptoException.getMessage() : "MediaCodec.CryptoException occurred";
             errorMessage = "DRM_ERROR:" + errorMessage;
+        } else if (cause instanceof ExoTimeoutException) {
+            ExoTimeoutException exoTimeoutException = (ExoTimeoutException) cause;
+            errorMessage = exoTimeoutException.getMessage() != null ? exoTimeoutException.getMessage() : "Exo timeout exception";
+            errorMessage = "EXO_TIMEOUT_EXCEPTION:" + errorMessage;
         }
         return errorMessage;
     }
