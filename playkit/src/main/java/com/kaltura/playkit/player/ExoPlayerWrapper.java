@@ -884,9 +884,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
-
         log.e(errorStr);
-        if (errorType == PKPlayerErrorType.TIMEOUT) {
+
+        if (errorType == PKPlayerErrorType.TIMEOUT && errorMessage.contains(Consts.EXO_TIMEOUT_OPERATION_RELEASE)) {
+            // ExoPlayer is being stopped internally in other EXO_TIMEOUT_EXCEPTION types
             currentError = new PKError(PKPlayerErrorType.TIMEOUT, PKError.Severity.Recoverable, errorStr, error);
         } else {
             currentError = new PKError(errorType, errorStr, error);
