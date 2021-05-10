@@ -865,12 +865,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
                 errorMessage = getRendererExceptionDetails(error, errorMessage);
-                if (errorMessage != null && errorMessage.startsWith("DRM_ERROR:")) {
-                    errorType = PKPlayerErrorType.DRM_ERROR;
-                } else if (errorMessage != null && errorMessage.startsWith("EXO_TIMEOUT_EXCEPTION:")) {
-                    errorType = PKPlayerErrorType.TIMEOUT;
-                } else {
-                    errorType = PKPlayerErrorType.RENDERER_ERROR;
+                errorType = PKPlayerErrorType.RENDERER_ERROR;
+                if (errorMessage != null) {
+                    if (errorMessage.startsWith("DRM_ERROR:")) {
+                        errorType = PKPlayerErrorType.DRM_ERROR;
+                    } else if (errorMessage.startsWith("EXO_TIMEOUT_EXCEPTION:")) {
+                        errorType = PKPlayerErrorType.TIMEOUT;
+                    }
                 }
                 break;
             case ExoPlaybackException.TYPE_REMOTE:
