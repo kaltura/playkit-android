@@ -967,10 +967,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
                 CustomDashManifest customDashManifest = null;
-                if (!TextUtils.isEmpty(dashManifestString) && dashLastDataSink != null && player.getCurrentManifest() instanceof DashManifest) {
-                    byte[] bytes = dashLastDataSink.getData();
+                MediaItem.PlaybackProperties playbackProperties = player.getMediaItemAt(0).playbackProperties;
+                if (!TextUtils.isEmpty(dashManifestString) && dashLastDataSink != null
+                        && player.getCurrentManifest() instanceof DashManifest && playbackProperties != null ) {
+                    // byte[] bytes = dashLastDataSink.getData();
                     try {
-                        customDashManifest = new CustomDashManifestParser().parse(player.getMediaItemAt(0).playbackProperties.uri, dashManifestString);
+                        customDashManifest = new CustomDashManifestParser().parse(playbackProperties.uri, dashManifestString);
                     } catch (IOException e) {
                         log.e("imageTracks assemble error " + e.getMessage());
                     } finally {
