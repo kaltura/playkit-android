@@ -65,8 +65,6 @@ internal class ExoPlayerWrapperTest {
                         adaptationSets[3].representations[0].format),
                 TrackGroup(adaptationSets[1].representations[0].format))
 
-        verify(exoPlayerWrapper?.onTracksChanged(trackGroupArray, emptyTrackSelectionArray))
-
-       // assertThrows(NullPointerException::class.java, ThrowingRunnable { exoPlayerWrapper?.onTracksChanged(trackGroupArray, emptyTrackSelectionArray) })
+        assertThrows(NullPointerException::class.java, ThrowingRunnable { exoPlayerWrapper?.onTracksChanged(trackGroupArray, emptyTrackSelectionArray) })
     }
 }
