@@ -2,8 +2,13 @@ package com.kaltura.testhelper
 
 import android.content.Context
 import android.net.Uri
+import com.kaltura.android.exoplayer2.Format
+import com.kaltura.android.exoplayer2.source.TrackGroup
+import com.kaltura.android.exoplayer2.source.TrackGroupArray
+import com.kaltura.android.exoplayer2.source.dash.manifest.AdaptationSet
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParser
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import kotlin.jvm.Throws
@@ -19,5 +24,24 @@ open class TestUtils {
         fun getInputStream(context: Context, fileName: String): InputStream {
             return context.resources.assets.open(fileName)
         }
+
+        @Throws(IOException::class)
+        fun manifestParsingSetup(context: Context, fileName: String): TrackGroupArray {
+            val dashManifest: DashManifest = parseLocalManifest(context, fileName)
+            val adaptationSets: List<AdaptationSet> = dashManifest.getPeriod(0).adaptationSets
+
+            val trackGroups: ArrayList<TrackGroup> = arrayListOf()
+
+            for ((adaptationIndex, adaptationValue) in adaptationSets.withIndex()) {
+                val format: ArrayList<Format> = arrayListOf()
+                for ((representationIndex, representationValue) in adaptationValue.representations.withIndex()) {
+                    format.add(adaptationSets[adaptationIndex].representations[representationIndex].format)
+                }
+                trackGroups.add(TrackGroup(*format.toTypedArray()))
+            }
+
+            return TrackGroupArray(*trackGroups.toTypedArray())
+        }
+
     }
 }
