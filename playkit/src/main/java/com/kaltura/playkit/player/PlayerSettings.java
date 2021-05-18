@@ -13,9 +13,11 @@
 package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKRequestConfiguration;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
+import com.kaltura.playkit.PKWakeMode;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.player.vr.VRSettings;
 
@@ -35,23 +37,26 @@ public class PlayerSettings implements Player.Settings {
     private AudioCodecSettings preferredAudioCodecSettings = new AudioCodecSettings();
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisyEnabled;
+    private PKWakeMode wakeMode = PKWakeMode.NONE;
     private boolean handleAudioFocus;
     private PKSubtitlePreference subtitlePreference = PKSubtitlePreference.INTERNAL;
     private Integer maxVideoBitrate;
     private Integer maxAudioBitrate;
     private int maxAudioChannelCount = -1;
-    private MulticastSettings multicastSettings = new MulticastSettings();
 
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
     private VRSettings vrSettings;
+    private PKLowLatencyConfig pkLowLatencyConfig;
+    private PKRequestConfiguration pkRequestConfiguration;
     /**
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
      */
     private boolean forceSinglePlayerEngine = false;
+    private boolean forceWidevineL3Playback = false;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -170,6 +175,10 @@ public class PlayerSettings implements Player.Settings {
         return handleAudioBecomingNoisyEnabled;
     }
 
+    public PKWakeMode getWakeMode() {
+        return wakeMode;
+    }
+
     public boolean isHandleAudioFocus() {
         return handleAudioFocus;
     }
@@ -192,7 +201,22 @@ public class PlayerSettings implements Player.Settings {
         return maxAudioChannelCount;
     }
 
-    public MulticastSettings getMulticastSettings() { return multicastSettings; }
+    public boolean isForceWidevineL3Playback() {
+        return forceWidevineL3Playback;
+    }
+
+    public PKLowLatencyConfig getPKLowLatencyConfig() {
+        return pkLowLatencyConfig;
+    }
+
+    public PKRequestConfiguration getPkRequestConfiguration() {
+        if (pkRequestConfiguration == null) {
+            PKRequestConfiguration requestConfiguration = new PKRequestConfiguration();
+            requestConfiguration.setCrossProtocolRedirectEnabled(crossProtocolRedirectEnabled());
+            pkRequestConfiguration = requestConfiguration;
+        }
+        return pkRequestConfiguration;
+    }
 
     @Override
     public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
@@ -259,8 +283,7 @@ public class PlayerSettings implements Player.Settings {
         this.preferredMediaFormat = preferredMediaFormat;
         return this;
     }
-
-
+    
     @Override
     public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
         this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
@@ -359,6 +382,14 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
+    public Player.Settings setWakeMode(PKWakeMode wakeMode) {
+        if (wakeMode != null) {
+            this.wakeMode = wakeMode;
+        }
+        return this;
+    }
+
+    @Override
     public Player.Settings setHandleAudioFocus(boolean handleAudioFocus) {
         this.handleAudioFocus = handleAudioFocus;
         return this;
@@ -399,10 +430,25 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setMulticastSettings(MulticastSettings multicastSettings) {
-        this.multicastSettings = multicastSettings;
+    public Player.Settings forceWidevineL3Playback(boolean forceWidevineL3Playback) {
+        this.forceWidevineL3Playback = forceWidevineL3Playback;
         return this;
     }
 
+    @Override
+    public Player.Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        if (pkLowLatencyConfig != null) {
+            this.pkLowLatencyConfig = pkLowLatencyConfig;
+        }
+        return this;
+    }
 
+    @Override
+    public Player.Settings setPKRequestConfig(PKRequestConfiguration pkRequestConfiguration) {
+        if (pkRequestConfiguration != null) {
+            this.pkRequestConfiguration = pkRequestConfiguration;
+        }
+        return this;
+    }
 }
+

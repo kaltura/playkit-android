@@ -21,7 +21,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
@@ -31,15 +30,18 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKTracksAvailableStatus;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
@@ -69,6 +71,8 @@ public class PlayerController implements Player {
     private UUID playerSessionId = UUID.randomUUID();
 
     private long targetSeekPosition;
+    private boolean isVideoTracksUpdated;
+    private boolean isVideoTracksReset;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
@@ -81,7 +85,7 @@ public class PlayerController implements Player {
     private PlayerEngine.EventListener eventTrigger = initEventListener();
     private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
     private PlayerEngineWrapper playerEngineWrapper;
-    private Cache downloadCache;
+
 
     public PlayerController(Context context) {
         this.context = context;
@@ -160,11 +164,6 @@ public class PlayerController implements Player {
         } else {
             log.w("Error in " + visibilityFunction + " playerView is null");
         }
-    }
-
-    @Override
-    public void setDownloadCache(Cache downloadCache) {
-        this.downloadCache = downloadCache;
     }
 
     @Override
@@ -263,9 +262,6 @@ public class PlayerController implements Player {
         //Initialize new PlayerEngine.
         try {
             player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings, rootPlayerView);
-            if (downloadCache != null) {
-                player.setDownloadCache(downloadCache);
-            }
             if (playerEngineWrapper != null) {
                 playerEngineWrapper.setPlayerEngine(player);
                 player = playerEngineWrapper;
@@ -276,9 +272,7 @@ public class PlayerController implements Player {
             if (incomingPlayerType == PlayerEngineType.VRPlayer) {
                 incomingPlayerType = PlayerEngineType.Exoplayer;
                 player = new ExoPlayerWrapper(context, playerSettings, rootPlayerView);
-                if (downloadCache != null) {
-                    player.setDownloadCache(downloadCache);
-                }
+
             } else {
                 return;
             }
@@ -407,11 +401,27 @@ public class PlayerController implements Player {
         return Consts.POSITION_UNSET;
     }
 
+    public long getCurrentLiveOffset() {
+        log.v("getCurrentLiveOffset");
+        if (assertPlayerIsNotNull("getCurrentLiveOffset()")) {
+            return player.getCurrentLiveOffset();
+        }
+        return Consts.POSITION_UNSET;
+    }
+
     public void seekTo(long position) {
         log.v("seek to " + position);
         if (assertPlayerIsNotNull("seekTo()")) {
             targetSeekPosition = position;
             player.seekTo(position);
+        }
+    }
+
+    @Override
+    public void seekToLiveDefaultPosition() {
+        log.v("seekToLiveDefaultPosition");
+        if (assertPlayerIsNotNull("seekToLiveDefaultPosition()") && player.isLive()) {
+            player.seekToDefaultPosition();
         }
     }
 
@@ -535,6 +545,13 @@ public class PlayerController implements Player {
         Assert.shouldNeverHappen();
     }
 
+    @NonNull
+    @Override
+    public <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass) {
+        Assert.shouldNeverHappen();
+        return null;
+    }
+
     @Override
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         Assert.shouldNeverHappen();
@@ -648,7 +665,19 @@ public class PlayerController implements Player {
         return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
     }
 
-
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) {
+        log.v("getThumbnailInfo");
+        if (assertPlayerIsNotNull("getThumbnailInfo()")) {
+            if (positionMS.length > 0) {
+                return player.getThumbnailInfo(positionMS[0]);
+            } else {
+                return player.getThumbnailInfo(player.getCurrentPosition());
+            }
+        }
+        return null;
+    }
+    
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         log.v("updateSubtitleStyle");
@@ -666,6 +695,53 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        log.v("updatePKLowLatencyConfig");
+        if (assertPlayerIsNotNull("updatePKLowLatencyConfig")) {
+            player.updatePKLowLatencyConfig(pkLowLatencyConfig);
+        }
+    }
+
+    @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+        log.v("updateABRSettings");
+
+        if (!isVideoTrackPresent()) {
+            return;
+        }
+
+        if (abrSettings == null || abrSettings.equals(ABRSettings.RESET)) {
+            resetABRSettings();
+            return;
+        }
+
+        if (abrSettings.getMinVideoBitrate().longValue() == playerSettings.getAbrSettings().getMinVideoBitrate().longValue() &&
+                abrSettings.getMaxVideoBitrate().longValue() == playerSettings.getAbrSettings().getMaxVideoBitrate().longValue()) {
+            log.w("Existing and Incoming ABR Settings are same");
+            return;
+        }
+
+        if (assertPlayerIsNotNull("updateABRSettings")) {
+            isVideoTracksUpdated = true;
+            player.updateABRSettings(abrSettings);
+        }
+    }
+
+    @Override
+    public void resetABRSettings() {
+        log.v("resetABRSettings");
+
+        if (!isVideoTrackPresent()) {
+            return;
+        }
+
+        if (assertPlayerIsNotNull("resetABRSettings")) {
+            isVideoTracksReset = true;
+            player.resetABRSettings();
+        }
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         Assert.shouldNeverHappen();
     }
@@ -678,6 +754,17 @@ public class PlayerController implements Player {
     @Override
     public void removeListeners(@NonNull Object groupId) {
         Assert.shouldNeverHappen();
+    }
+
+    private boolean isVideoTrackPresent() {
+        if (player != null &&
+                player.getPKTracks() != null &&
+                player.getPKTracks().getVideoTracks() != null &&
+                player.getPKTracks().getVideoTracks().size() == 0) {
+            log.w("No video track found for this media");
+            return false;
+        }
+        return true;
     }
 
     private boolean assertPlayerIsNotNull(String methodName) {
@@ -778,13 +865,21 @@ public class PlayerController implements Player {
                                         mediaConfig.getStartPosition() > 0) {
                                     startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                                 }
+                            } else if (isLiveMediaWithDvr() && mediaConfig.getStartPosition() == null) {
+                                player.seekToDefaultPosition();
                             }
                             isNewEntry = false;
                             isPlayerStopped = false;
                         }
                         break;
                     case TRACKS_AVAILABLE:
-                        event = new PlayerEvent.TracksAvailable(player.getPKTracks());
+                        PKTracksAvailableStatus pkTracksAvailableStatus = isVideoTracksUpdated ? PKTracksAvailableStatus.UPDATED: PKTracksAvailableStatus.NEW;
+                        if (isVideoTracksReset) {
+                            pkTracksAvailableStatus = PKTracksAvailableStatus.RESET;
+                        }
+                        event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailableStatus);
+                        isVideoTracksUpdated = false;
+                        isVideoTracksReset = false;
                         break;
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
@@ -802,7 +897,7 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.Error(player.getCurrentError());
-                        if (player.getCurrentError().isFatal()){
+                        if (player.getCurrentError().isFatal()) {
                             cancelUpdateProgress();
                         }
                         break;
@@ -840,6 +935,13 @@ public class PlayerController implements Player {
                         }
                         event = new PlayerEvent.TextTrackChanged(textTrack);
                         break;
+                    case IMAGE_TRACK_CHANGED:
+                        ImageTrack imageTrack = (ImageTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_IMAGE);
+                        if (imageTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.ImageTrackChanged(imageTrack);
+                        break;    
                     case PLAYBACK_RATE_CHANGED:
                         event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
                         break;

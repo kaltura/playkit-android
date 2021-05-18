@@ -15,18 +15,20 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
-import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
+
+import java.util.List;
 
 @SuppressWarnings("unused")
 public interface Player {
@@ -89,12 +91,16 @@ public interface Player {
         Settings useTextureView(boolean useTextureView);
 
         /**
+         * This method is deprecated.
+         * Please use {@link com.kaltura.playkit.PKRequestConfiguration} to set crossProtocolRedirect
+         *
          * Decide if player should do cross protocol redirect or not. By default it will be always set
          * to false.
          *
          * @param crossProtocolRedirectEnabled - true if should do cross protocol redirect.
          * @return - Player Settings.
          */
+        @Deprecated
         Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled);
 
         /**
@@ -112,6 +118,7 @@ public interface Player {
          * @return - Player Settings.
          */
         Settings enableDecoderFallback(boolean enableDecoderFallback);
+
         /**
          * Decide if player should use secure rendering on the surface.
          * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
@@ -179,7 +186,7 @@ public interface Player {
         Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
         /**
-         *  Set the Player's ABR settings
+         * Set the Player's ABR settings
          *
          * @param abrSettings ABR settings
          * @return - Player Settings
@@ -187,7 +194,7 @@ public interface Player {
         Settings setABRSettings(ABRSettings abrSettings);
 
         /**
-         *  Set the Player's AspectRatio resize Mode
+         * Set the Player's AspectRatio resize Mode
          *
          * @param resizeMode Resize mode
          * @return - Player Settings
@@ -197,7 +204,7 @@ public interface Player {
         /**
          * Do not prepare the content player when the Ad starts(if exists); instead content player will be prepared
          * when content_resume_requested is called.
-         *
+         * <p>
          * Default value is set to 'false'.
          *
          * @param forceSinglePlayerEngine Do not prepare the content player while Ad is playing
@@ -207,6 +214,7 @@ public interface Player {
 
         /**
          * Set the flag which handles the video view
+         *
          * @param hide video surface visibility
          * @return - Player Settings
          */
@@ -214,6 +222,7 @@ public interface Player {
 
         /**
          * Set VR Settings on the player
+         *
          * @param vrSettings vr configuration
          * @return - Player Settings
          */
@@ -221,18 +230,21 @@ public interface Player {
 
         /**
          * Set Preferred codec for video track
+         *
          * @param videoCodecSettings Use {@link VideoCodecSettings}
          */
         Settings setPreferredVideoCodecSettings(VideoCodecSettings videoCodecSettings);
 
         /**
          * Set Preferred codec for audio track
+         *
          * @param audioCodecSettings Use {@link AudioCodecSettings}
          */
         Settings setPreferredAudioCodecSettings(AudioCodecSettings audioCodecSettings);
 
         /**
          * Set custom load control strategy
+         *
          * @param loadControlStrategy object implementing LoadControlStrategy interface
          * @return - Player Settings
          */
@@ -240,6 +252,7 @@ public interface Player {
 
         /**
          * Set Tunneled Audio Playback
+         *
          * @param isTunneledAudioPlayback audio tunnelling enabled
          * @return - Player Settings
          */
@@ -255,6 +268,24 @@ public interface Player {
         Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled);
 
         /**
+         * Set WakeLock Mode  - Sets whether the player should not handle wakeLock or should handle a wake lock only or both wakeLock & wifiLock when the screen is off
+         *
+         * <p>It should be used together with a foreground {@link android.app.Service} for use cases where
+         * playback occurs and the screen is off (e.g. background audio playback). It is not useful when
+         * the screen will be kept on during playback (e.g. foreground video playback).
+         *
+         * <p>When enabled, the locks ({@link android.os.PowerManager.WakeLock} / {@link
+         * android.net.wifi.WifiManager.WifiLock}) will be held whenever the player is in the
+         * STATE_READY STATE_BUFFERINGstates with {@code playWhenReady = true}. The locks
+         * held depends on the specified {@link PKWakeMode}.
+         * default - NONE - not handling wake lock
+         *
+         * @param wakeMode
+         * @return - Player Settings
+         */
+        Settings setWakeMode(PKWakeMode wakeMode);
+
+        /**
          * Set HandleAudioFocus - Support for automatic audio focus handling
          *
          * @param handleAudioFocus
@@ -267,8 +298,8 @@ public interface Player {
          * in both Internal and External subtitles) - Default is true (Internal is preferred)
          *
          * @param subtitlePreference PKSubtitlePreference.INTERNAL, Internal will be present and External subtitle will be discarded
-         *                    PKSubtitlePreference.EXTERNAL, External will be present and Internal subtitle will be discarded
-         *                   PKSubtitlePreference.OFF, Both internal and external subtitles will be there
+         *                           PKSubtitlePreference.EXTERNAL, External will be present and Internal subtitle will be discarded
+         *                           PKSubtitlePreference.OFF, Both internal and external subtitles will be there
          * @return - Player Settings
          */
         Settings setSubtitlePreference(PKSubtitlePreference subtitlePreference);
@@ -311,12 +342,30 @@ public interface Player {
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
 
         /**
-         * Sets the multicastSettings for udp streams.
+         * If the device codec is known to fail if security level L1 is used
+         * then set flag to true, it will force the player to use Widevine L3
+         * Will work only SDK level 18 or above
          *
-         * @param multicastSettings - maxPacketSize default = 3000 & socketTimeoutMillis default = 100000
+         * @param forceWidevineL3Playback - force the L3 Playback. Default is false
          * @return - Player Settings
          */
-        Settings setMulticastSettings(MulticastSettings multicastSettings);
+        Settings forceWidevineL3Playback(boolean forceWidevineL3Playback);
+
+        /**
+         * Creates a Low Latency Live playback configuration.
+         *
+         * @param pkLowLatencyConfig - Configuration for Low Latency
+         * @return - Player Settings
+         */
+        Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig);
+
+        /**
+         * Creates a request configuration for HttpDataSourceFactory {@link com.kaltura.playkit.player.ExoPlayerWrapper}.
+         *
+         * @param pkRequestConfiguration - Configuration for PKRequestConfiguration
+         * @return - Player Settings
+         */
+        Settings setPKRequestConfig(PKRequestConfiguration pkRequestConfiguration);
     }
 
     /**
@@ -334,8 +383,6 @@ public interface Player {
     void prepare(@NonNull PKMediaConfig playerConfig);
 
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
-
-    void setDownloadCache(Cache downloadCache);
 
     /**
      * Player lifecycle method. Should be used when the application went to onPause();
@@ -401,6 +448,7 @@ public interface Player {
     /**
      * The current program time in milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.
      * This value is derived from the attribute availabilityStartTime in DASH or the tag EXT-X-PROGRAM-DATE-TIME in HLS.
+     *
      * @return The current program time in milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.
      */
     long getCurrentProgramTime();
@@ -416,6 +464,12 @@ public interface Player {
      * or {@link Consts#POSITION_UNSET} if the position is unknown or player engine is null.
      */
     long getBufferedPosition();
+
+    /**
+     * @return - The Current Live Offset of the media,
+     * or {@link Consts#TIME_UNSET} if the offset is unknown or player engine is null.
+     */
+    long getCurrentLiveOffset();
 
     /**
      * Change the volume of the current audio track.
@@ -450,6 +504,12 @@ public interface Player {
     void seekTo(long position);
 
     /**
+     * Seek player to Live Default Position.
+     *
+     */
+    void seekToLiveDefaultPosition();
+
+    /**
      * Get the Player's SessionId. The SessionId is generated each time new media is set.
      *
      * @return Player's SessionId, as a String object.
@@ -458,6 +518,7 @@ public interface Player {
 
     /**
      * Checks if the stream is live or not
+     *
      * @return flag for live
      */
     boolean isLive();
@@ -481,6 +542,14 @@ public interface Player {
     float getPlaybackRate();
 
     /**
+     * get the Information for a thumbnailImage by position
+     * if positionMS is not passed current position will be used
+     *
+     * @param positionMS - relevant image for given player position. (optional)
+     */
+    ThumbnailInfo getThumbnailInfo(long ... positionMS);
+    
+    /**
      * Generic getters for playkit controllers.
      *
      * @param type - type of the controller you want to obtain.
@@ -500,32 +569,53 @@ public interface Player {
     void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
     /**
+     * Update Low Latency configuration
+     */
+    void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig);
+
+    /** Update ABRSettings
+     * <br>
+     * Updating {@link ABRSettings#setInitialBitrateEstimate(long)} is unaffected because
+     * initial bitrate is only meant at the start of the playback
+     * <br>
+     * @param abrSettings new ABR Settings
+     */
+    void updateABRSettings(ABRSettings abrSettings);
+
+    /**
+     * Reset existing ABRSettings
+     */
+    void resetABRSettings();
+
+    /**
      * Add listener by event type as Class object. This generics-based method allows the caller to
      * avoid the otherwise required cast.
-     *
+     * <p>
      * Sample usage:
      * <pre>
      *   player.addListener(this, PlayerEvent.stateChanged,
      *      event -> Log.d(TAG, "Player state change: " + event.oldState + " => " + event.newState));
      * </pre>
-     * @param groupId listener group id for calling {@link #removeListeners(Object)}
-     * @param type A typed {@link Class} object. The class type must extend PKEvent.
+     *
+     * @param groupId  listener group id for calling {@link #removeListeners(Object)}
+     * @param type     A typed {@link Class} object. The class type must extend PKEvent.
      * @param listener a typed {@link PKEvent.Listener}. Must match the type given as the first parameter.
-     * @param <E> Event type.
+     * @param <E>      Event type.
      */
     <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener);
 
     /**
      * Add listener by event type as enum, for use with events that don't have payloads.
-     *
+     * <p>
      * Sample usage:
      * <pre>
      *   player.addListener(this, PlayerEvent.canPlay, event -> {
      *       Log.d(TAG, "Player can play");
      *   });
      * </pre>
-     * @param groupId listener group id for calling {@link #removeListeners(Object)}
-     * @param type event type
+     *
+     * @param groupId  listener group id for calling {@link #removeListeners(Object)}
+     * @param type     event type
      * @param listener listener
      */
     void addListener(Object groupId, Enum type, PKEvent.Listener listener);
@@ -539,10 +629,17 @@ public interface Player {
 
     /**
      * Remove event listener, regardless of event type.
-
+     *
      * @param listener - event listener
      */
     void removeListener(@NonNull PKEvent.Listener listener);
+
+    /**
+     * Get loaded plugins of type.
+     *
+     * @param pluginClass - PluginType class.
+     */
+    @NonNull <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass);
 
     /**
      * Add event listener to the player.
@@ -583,4 +680,3 @@ public interface Player {
     @Deprecated
     void removeStateChangeListener(@NonNull PKEvent.Listener listener);
 }
-

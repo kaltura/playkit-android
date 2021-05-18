@@ -84,6 +84,25 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
+    public void seekToLiveDefaultPosition() {
+        if (adsProvider.isAdDisplayed()) {
+            log.d("seekToLiveDefaultPosition is not enabled during AD playback");
+            return;
+        }
+        super.seekToLiveDefaultPosition();
+    }
+
+    @Override
+    public void setVolume(float volume) {
+        if (adsProvider.isAdDisplayed()) {
+            adsProvider.setVolume(volume);
+            return;
+        }
+
+        super.setVolume(volume);
+    }
+
+    @Override
     public void play() {
         log.d("PLAY IMA decorator");
         if (adsProvider != null) {

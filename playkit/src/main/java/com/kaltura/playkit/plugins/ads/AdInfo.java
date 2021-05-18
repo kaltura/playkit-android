@@ -25,11 +25,18 @@ public class AdInfo implements PKAdInfo {
     private long adPlayHead;
 
     private String adTitle;
+    private String streamId;
     private boolean isAdSkippable;
     private long skipTimeOffset;
-    private String adContnentType;
+    private String adContentType;
     private String adId;
     private String adSystem;
+    private String creativeId;
+    private String creativeAdId;
+    private String advertiserName;
+    private String dealId;
+    private String surveyUrl;
+    private String traffickingParams;
     private int adHeight;
     private int adWidth;
     private int mediaBitrate;
@@ -41,8 +48,10 @@ public class AdInfo implements PKAdInfo {
     private long adPodTimeOffset;
 
     public AdInfo(String adDescription, long adDuration, long adPlayHead, String adTitle,
-                  boolean isAdSkippable, long skipTimeOffset, String adContnentType,
-                  String adId, String adSystem, int adHeight, int adWidth, int mediaBitrate,
+                  boolean isAdSkippable, long skipTimeOffset, String adContentType,
+                  String adId, String adSystem, String creativeId, String creativeAdId,
+                  String advertiserName, String dealId, String surveyUrl,
+                  String traffickingParams, int adHeight, int adWidth, int mediaBitrate,
                   int totalAdsInPod, int adIndexInPod, int currentPodIndex, int podCount,
                   boolean isBumper, long adPodTimeOffset) {
 
@@ -52,9 +61,15 @@ public class AdInfo implements PKAdInfo {
         this.adTitle = adTitle;
         this.isAdSkippable = isAdSkippable;
         this.skipTimeOffset = skipTimeOffset;
-        this.adContnentType = adContnentType;
+        this.adContentType = adContentType;
         this.adId = adId;
         this.adSystem = adSystem;
+        this.creativeId = creativeId;
+        this.creativeAdId = creativeAdId;
+        this.advertiserName = advertiserName;
+        this.dealId = dealId;
+        this.surveyUrl = surveyUrl;
+        this.traffickingParams = traffickingParams;
         this.adHeight = adHeight;
         this.adWidth = adWidth;
         this.mediaBitrate = mediaBitrate;
@@ -66,10 +81,9 @@ public class AdInfo implements PKAdInfo {
         this.adPodTimeOffset = adPodTimeOffset;
     }
 
-
     @Override
     public String getAdContentType() {
-        return adContnentType;
+        return adContentType;
     }
 
     @Override
@@ -139,6 +153,30 @@ public class AdInfo implements PKAdInfo {
         return adSystem;
     }
 
+    public String getCreativeId() {
+        return creativeId;
+    }
+
+    public String getCreativeAdId() {
+        return creativeAdId;
+    }
+
+    public String getAdvertiserName() {
+        return advertiserName;
+    }
+
+    public String getDealId() {
+        return dealId;
+    }
+
+    public String getSurveyUrl() {
+        return surveyUrl;
+    }
+
+    public String getTraffickingParams() {
+        return traffickingParams;
+    }
+
     @Override
     public boolean isAdSkippable() {
         return isAdSkippable;
@@ -157,6 +195,10 @@ public class AdInfo implements PKAdInfo {
     @Override
     public long getAdPodTimeOffset() {
         return adPodTimeOffset;
+    }
+
+    public String getStreamId() {
+        return streamId;
     }
 
     public void setAdPlayHead(long adPlayHead) {
@@ -182,6 +224,10 @@ public class AdInfo implements PKAdInfo {
         }
     }
 
+    public void setStreamId(String streamId) {
+        this.streamId = streamId;
+    }
+
     public long getSkipTimeOffset() {
         return skipTimeOffset;
     }
@@ -200,7 +246,7 @@ public class AdInfo implements PKAdInfo {
         } else {
             adType = "Pre-Roll";
         }
-        return "AdType=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " isBumper=" + isBumper + " contentType= " + adContnentType + " adBitrate=" + mediaBitrate +
+        return "AdType=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " isBumper=" + isBumper + " contentType= " + adContentType + " adBitrate=" + mediaBitrate +
                " adWidth=" + adWidth + " adHeight=" + adHeight + " adCount=" + adIndexInPod + "/" + totalAdsInPod + " podCount=" + podIndex + "/" + podCount;
     }
 }

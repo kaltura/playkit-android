@@ -15,17 +15,16 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
+
+import java.util.List;
 
 public class PlayerDecoratorBase implements Player {
-
-    @Override
-    public void setDownloadCache(Cache downloadCache) {
-        player.setDownloadCache(downloadCache);
-    }
 
     @Override
     public Settings getSettings() {
@@ -63,6 +62,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public void seekToLiveDefaultPosition() {
+        player.seekToLiveDefaultPosition();
+    }
+
+    @Override
     public <T extends PKController> T getController(Class<T> type) {
         return player.getController(type);
     }
@@ -93,6 +97,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) {
+        return player.getThumbnailInfo(positionMS);
+    }
+
+    @Override
     public void play() {
         player.play();
     }
@@ -120,6 +129,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public long getBufferedPosition() {
         return player.getBufferedPosition();
+    }
+
+    @Override
+    public long getCurrentLiveOffset() {
+        return player.getCurrentLiveOffset();
     }
 
     @Override
@@ -164,6 +178,12 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void removeListener(@NonNull PKEvent.Listener listener) {
         player.removeListeners(listener);
+    }
+
+    @NonNull
+    @Override
+    public  <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass) {
+        return player.getLoadedPluginsByType(pluginClass);
     }
 
     void setPlayer(Player player) {
@@ -212,6 +232,21 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        player.updatePKLowLatencyConfig(pkLowLatencyConfig);
+    }
+
+    @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+        player.updateABRSettings(abrSettings);
+    }
+
+    @Override
+    public void resetABRSettings() {
+        player.resetABRSettings();
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         player.addListener(groupId, type, listener);
     }
@@ -226,3 +261,4 @@ public class PlayerDecoratorBase implements Player {
         player.removeListeners(groupId);
     }
 }
+

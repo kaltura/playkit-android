@@ -1,8 +1,9 @@
 package com.kaltura.playkit;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.PlayerEngine;
@@ -10,6 +11,7 @@ import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.Profiler;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.metadata.PKMetadata;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 
 import java.util.List;
 
@@ -68,6 +70,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public long getCurrentLiveOffset() {
+        return playerEngine.getCurrentLiveOffset();
+    }
+
+    @Override
     public float getVolume() {
         return playerEngine.getVolume();
     }
@@ -97,6 +104,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
         playerEngine.seekTo(position);
     }
 
+    @Override
+    public void seekToDefaultPosition() {
+        playerEngine.seekToDefaultPosition();
+    }
+    
     @Override
     public void startFrom(long position) {
         playerEngine.startFrom(position);
@@ -183,6 +195,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+        return playerEngine.getThumbnailInfo(positionMS);
+    }
+
+    @Override
     public void setProfiler(Profiler profiler) {
         this.playerEngine.setProfiler(profiler);
     }
@@ -193,8 +210,23 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+        playerEngine.updateABRSettings(abrSettings);
+    }
+
+    @Override
+    public void resetABRSettings() {
+        playerEngine.resetABRSettings();
+    }
+
+    @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         playerEngine.updateSurfaceAspectRatioResizeMode(resizeMode);
+    }
+
+    @Override
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        playerEngine.updatePKLowLatencyConfig(pkLowLatencyConfig);
     }
 
     @Override
@@ -205,11 +237,6 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public void onOrientationChanged() {
         playerEngine.onOrientationChanged();
-    }
-
-    @Override
-    public void setDownloadCache(Cache downloadCache) {
-        playerEngine.setDownloadCache(downloadCache);
     }
 
     public void setPlayerEngine(PlayerEngine playerEngine) {
