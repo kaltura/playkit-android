@@ -47,6 +47,14 @@ public class DefaultAdControllerImpl implements AdController {
     }
 
     @Override
+    public void setVolume(float volume) {
+        //control playback volume [0..1.0]
+        if (adsProvider.isAdDisplayed()) {
+            adsProvider.setVolume(volume);
+        }
+    }
+
+    @Override
     public long getAdCurrentPosition() {
         if (adsProvider != null && isAdDisplayed()) {
             return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();

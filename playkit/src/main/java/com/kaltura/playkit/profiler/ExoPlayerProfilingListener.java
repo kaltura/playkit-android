@@ -6,6 +6,8 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.PlaybackParameters;
+import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
 import com.kaltura.android.exoplayer2.source.LoadEventInfo;
 import com.kaltura.android.exoplayer2.source.MediaLoadData;
 import com.google.gson.JsonArray;
@@ -18,6 +20,7 @@ import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
+import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 
@@ -111,6 +114,12 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
+    public void onIsPlayingChanged(EventTime eventTime, boolean isPlaying) {
+        log("IsPlayingChanged",
+                field("isPlaying", isPlaying));
+    }
+
+    @Override
     public void onPlaybackStateChanged(EventTime eventTime,  int playbackState) {
         String state;
         switch (playbackState) {
@@ -150,16 +159,17 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 reasonString = "PeriodTransition";
                 break;
             case DISCONTINUITY_REASON_SEEK:
-                reasonString = "PeriodTransition";
+                log("SeekProcessed");
+                reasonString = "Seek";
                 break;
             case DISCONTINUITY_REASON_SEEK_ADJUSTMENT:
-                reasonString = "PeriodTransition";
+                reasonString = "SeekAdjustment";
                 break;
             case DISCONTINUITY_REASON_AD_INSERTION:
-                reasonString = "PeriodTransition";
+                reasonString = "AdInsertion";
                 break;
             case DISCONTINUITY_REASON_INTERNAL:
-                reasonString = "PeriodTransition";
+                reasonString = "Internal";
                 break;
             default:
                 reasonString = "Unknown:" + reason;
@@ -171,6 +181,13 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     @Override
     public void onSeekStarted(EventTime eventTime) {
         log("SeekStarted");
+    }
+
+    @Override
+    public void onPlaybackParametersChanged(EventTime eventTime, PlaybackParameters playbackParameters) {
+        log("PlaybackParametersChanged",
+                field("speed", playbackParameters.speed),
+                field("pitch", playbackParameters.pitch));
     }
 
     @Override
@@ -211,9 +228,6 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             case ExoPlaybackException.TYPE_UNEXPECTED:
                 type = "UnexpectedError";
                 break;
-            case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
-                type = "OutOfMemoryError";
-                break;
             case ExoPlaybackException.TYPE_REMOTE:
                 type = "remoteComponentError";
                 break;
@@ -251,7 +265,10 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
         JsonArray jTrackSelections = new JsonArray(trackSelections.length);
         for (int i = 0; i < trackSelections.length; i++) {
-            final TrackSelection trackSelection = trackSelections.get(i);
+            ExoTrackSelection trackSelection = null;
+            if (trackSelections.get(i) instanceof ExoTrackSelection) {
+                trackSelection = (ExoTrackSelection) trackSelections.get(i);
+            }
             final Format selectedFormat = trackSelection == null ? null : trackSelection.getSelectedFormat();
             jTrackSelections.add(toJSON(selectedFormat));
         }
@@ -367,17 +384,12 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onVideoInputFormatChanged(EventTime eventTime, Format format) {
+    public void onVideoInputFormatChanged(EventTime eventTime, Format format, DecoderReuseEvaluation decoderReuseEvaluation) {
         log("DecoderInputFormatChanged", field("id", format.id), field("codecs", format.codecs), field("bitrate", format.bitrate));
     }
 
     @Override
     public void onVideoDisabled(EventTime eventTime, DecoderCounters decoderCounters) {
-
-    }
-
-    @Override
-    public void onAudioSessionId(EventTime eventTime, int audioSessionId) {
 
     }
 

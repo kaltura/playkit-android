@@ -32,17 +32,12 @@ public class ExternalTextTrackLoadErrorPolicy extends DefaultLoadErrorHandlingPo
 
     @Override
     public long getRetryDelayMsFor(LoadErrorInfo loadErrorInfo) {
-        if (loadErrorInfo == null) {
-            return Consts.TIME_UNSET;
-        }
-
         IOException exception = loadErrorInfo.exception;
         Uri pathSegment = getPathSegmentUri(exception);
         if (pathSegment == null || !(exception instanceof HttpDataSource.HttpDataSourceException)) {
             return super.getRetryDelayMsFor(loadErrorInfo);
         }
-
-
+        
         String lastPathSegment = pathSegment.getLastPathSegment();
         if (lastPathSegment != null && (lastPathSegment.endsWith(PKSubtitleFormat.vtt.pathExt) || lastPathSegment.endsWith(PKSubtitleFormat.srt.pathExt))) {
             PKError currentError = new PKError(PKPlayerErrorType.SOURCE_ERROR, PKError.Severity.Recoverable, "TextTrack is invalid url=" + pathSegment, exception);

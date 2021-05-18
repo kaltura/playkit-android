@@ -18,7 +18,6 @@ import android.graphics.Matrix;
 import android.graphics.RectF;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import android.os.Build;
 import android.util.AttributeSet;
@@ -62,6 +61,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
     private PKSubtitlePosition subtitleViewPosition;
     private boolean isVideoViewVisible;
+    private List<Cue> lastReportedCues;
 
     ExoPlayerView(Context context) {
         this(context, null);
@@ -95,6 +95,10 @@ class ExoPlayerView extends BaseExoplayerView {
                             }
                         }
                         break;
+                        
+                    case Player.STATE_BUFFERING:
+                    case Player.STATE_ENDED:
+                    case Player.STATE_IDLE:
                     default:
                         break;
                 }
@@ -211,7 +215,7 @@ class ExoPlayerView extends BaseExoplayerView {
         if (oldTextComponent != null) {
             oldTextComponent.removeTextOutput(componentListener);
         }
-
+        lastReportedCues = null;
         contentFrame.removeView(videoSurface);
     }
 
@@ -282,6 +286,13 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @Override
+    public void applySubtitlesChanges() {
+        if (subtitleView != null && lastReportedCues != null) {
+            subtitleView.onCues(getModifiedSubtitlePosition(lastReportedCues, subtitleViewPosition));
+        }
+    }
+
+    @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
         if (videoSurface instanceof SurfaceView) {
@@ -330,7 +341,7 @@ class ExoPlayerView extends BaseExoplayerView {
 
         @Override
         public void onCues(List<Cue> cues) {
-
+            lastReportedCues = cues;
             if (subtitleViewPosition != null) {
                 cues = getModifiedSubtitlePosition(cues, subtitleViewPosition);
             }
@@ -469,7 +480,7 @@ class ExoPlayerView extends BaseExoplayerView {
      * @return List of modified Cues
      */
     public List<Cue> getModifiedSubtitlePosition(List<Cue> cueList, PKSubtitlePosition subtitleViewPosition) {
-        if (cueList != null && !cueList.isEmpty()) {
+        if (subtitleViewPosition != null && cueList != null && !cueList.isEmpty()) {
             List<Cue> newCueList = new ArrayList<>();
             for (Cue cue : cueList) {
                 if ((cue.line !=  Cue.DIMEN_UNSET || cue.position != Cue.DIMEN_UNSET)

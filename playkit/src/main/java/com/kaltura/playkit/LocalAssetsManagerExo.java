@@ -48,9 +48,9 @@ public class LocalAssetsManagerExo {
         }
     }
 
-    public void registerWidevineDashAsset(String assetId, String licenseUri, byte[] drmInitData) throws LocalAssetsManager.RegisterException {
+    public void registerWidevineDashAsset(String assetId, String licenseUri, byte[] drmInitData, boolean forceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
         final WidevineModularAdapter widevine = new WidevineModularAdapter(helper.context, helper.localDataStore);
-        widevine.registerAsset(drmInitData, "video/mp4", licenseUri, helper.licenseRequestParamAdapter);
+        widevine.registerAsset(drmInitData, "video/mp4", licenseUri, forceWidevineL3Playback, helper.licenseRequestParamAdapter);
         helper.saveMediaFormat(assetId, PKMediaFormat.dash, PKDrmParams.Scheme.WidevineCENC);
     }
 
@@ -87,7 +87,7 @@ public class LocalAssetsManagerExo {
         return new LocalAssetsManager.LocalMediaSource(helper.localDataStore, localAssetPath, assetId, helper.getLocalAssetScheme(assetId));
     }
 
-    public LocalAssetsManager.AssetStatus getDrmStatus(String assetId, byte[] drmInitData) {
+    public LocalAssetsManager.AssetStatus getDrmStatus(String assetId, byte[] drmInitData, boolean forceWidevineL3Playback) {
         final PKDrmParams.Scheme scheme = helper.getLocalAssetScheme(assetId);
         if (scheme != PKDrmParams.Scheme.WidevineCENC) {
             return LocalAssetsManager.AssetStatus.invalid;
@@ -95,7 +95,7 @@ public class LocalAssetsManagerExo {
 
         final WidevineModularAdapter adapter = new WidevineModularAdapter(helper.context, helper.localDataStore);
         try {
-            Map<String, String> map = adapter.checkAssetStatus(drmInitData);
+            Map<String, String> map = adapter.checkAssetStatus(drmInitData, forceWidevineL3Playback);
             return assetStatusFromWidevineMap(map);
         } catch (LocalAssetsManager.RegisterException e) {
             return LocalAssetsManager.AssetStatus.invalid;
