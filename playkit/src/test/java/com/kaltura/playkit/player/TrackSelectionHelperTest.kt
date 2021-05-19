@@ -54,7 +54,7 @@ internal class TrackSelectionHelperTest {
         playerSettings = PlayerSettings()
         `when`(bandwidthMeter.bitrateEstimate).thenReturn(100000L)
 
-        trackGroupArray = TestUtils.manifestParsingSetup(
+        trackGroupArray = TestUtils.getTrackGroupArrayFromDashManifest(
                 ApplicationProvider.getApplicationContext(),
                 "testdata/mpd/sample_mpd_clear_h264_tears")
 

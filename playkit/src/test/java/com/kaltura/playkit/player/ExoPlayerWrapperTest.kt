@@ -6,8 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaltura.android.exoplayer2.source.TrackGroupArray
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray
-import com.kaltura.playkit.PKRequestConfiguration
-import com.kaltura.playkit.PKWakeMode
+import com.kaltura.playkit.*
 import com.kaltura.testhelper.TestUtils
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -24,27 +23,23 @@ internal class ExoPlayerWrapperTest {
     private var exoPlayerView: BaseExoplayerView? = null
     private var rootPlayerView: PlayerView? = null
     private var eventListener: PlayerEngine.EventListener? = null
+    private val playerSettings: PlayerSettings = PlayerSettings()
 
-    private lateinit var exoPlayerWrapper: ExoPlayerWrapper
+    private lateinit var realExoPlayerWrapper: ExoPlayerWrapper
+    private lateinit var mockExoPlayerWrapper: ExoPlayerWrapper
     private lateinit var trackSelectionHelper: TrackSelectionHelper
     private lateinit var context: Context
-    private lateinit var playerSettings: PlayerSettings
     private lateinit var emptyTrackSelectionArray: TrackSelectionArray
     private lateinit var trackGroupArray: TrackGroupArray
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        playerSettings = mock(PlayerSettings::class.java, RETURNS_DEEP_STUBS)
         exoPlayerView = mock(BaseExoplayerView::class.java)
         rootPlayerView = mock(PlayerView::class.java)
         eventListener = mock(PlayerEngine.EventListener::class.java)
         trackSelectionHelper = mock(TrackSelectionHelper::class.java)
-
-        `when`(playerSettings.abrSettings?.initialBitrateEstimate).thenReturn(0)
-        `when`(playerSettings.pkRequestConfiguration).thenReturn(PKRequestConfiguration())
-        `when`(playerSettings.wakeMode).thenReturn(PKWakeMode.NONE)
-        `when`(playerSettings.aspectRatioResizeMode).thenReturn(PKAspectRatioResizeMode.fit)
+        mockExoPlayerWrapper = mock(ExoPlayerWrapper::class.java)
 
         prepareClassInstances()
 
@@ -53,14 +48,21 @@ internal class ExoPlayerWrapperTest {
 
     @Test
     @Throws(NullPointerException::class)
-    fun onTrackChanged_TrackSelectionHelperException() {
-        assertThrows(NullPointerException::class.java, ThrowingRunnable { exoPlayerWrapper.onTracksChanged(trackGroupArray, emptyTrackSelectionArray) })
+    fun onTrackChanged_TrackSelectionHelper_Exception() {
+        assertThrows(NullPointerException::class.java, ThrowingRunnable { realExoPlayerWrapper.onTracksChanged(trackGroupArray, emptyTrackSelectionArray) })
+    }
+
+    @Test
+    fun load_flow() {
+        val pkMediaSourceConfig = createMediaSourceConfig()
+        mockExoPlayerWrapper.load(pkMediaSourceConfig)
+        verify(mockExoPlayerWrapper).load(pkMediaSourceConfig)
     }
 
     @Test
     fun onTrackChanged_TrackSelectionHelper_Working() {
-        exoPlayerWrapper.load(mock(PKMediaSourceConfig::class.java))
-        val spiedExoPlayerWrapper = spy(exoPlayerWrapper)
+        realExoPlayerWrapper.load(mock(PKMediaSourceConfig::class.java))
+        val spiedExoPlayerWrapper = spy(realExoPlayerWrapper)
         //exoPlayerWrapper.onTracksChanged(trackGroupArray, emptyTrackSelectionArray)
         `when`(spiedExoPlayerWrapper.onTracksChanged(trackGroupArray, emptyTrackSelectionArray)).then(Answers.RETURNS_SMART_NULLS)
         //doNothing().`when`(spiedExoPlayerWrapper).onTracksChanged(trackGroupArray, emptyTrackSelectionArray)
@@ -69,9 +71,28 @@ internal class ExoPlayerWrapperTest {
 
     private fun prepareClassInstances() {
         emptyTrackSelectionArray = TrackSelectionArray()
-        trackGroupArray = TestUtils.manifestParsingSetup(ApplicationProvider.getApplicationContext(),
+        trackGroupArray = TestUtils.getTrackGroupArrayFromDashManifest(ApplicationProvider.getApplicationContext(),
                 "testdata/mpd/sample_mpd_switching_property")
-        exoPlayerWrapper = ExoPlayerWrapper(context, exoPlayerView, playerSettings, rootPlayerView)
-        exoPlayerWrapper.setEventListener(eventListener)
+        realExoPlayerWrapper = ExoPlayerWrapper(context, exoPlayerView, playerSettings, rootPlayerView)
+        realExoPlayerWrapper.setEventListener(eventListener)
+    }
+
+    private fun createMediaSourceConfig(): PKMediaSourceConfig {
+        val mediaSourceList: ArrayList<PKMediaSource> = arrayListOf()
+        val mediaSource = PKMediaSource()
+        val mediaEntry = PKMediaEntry()
+        val mediaConfig = PKMediaConfig()
+
+        mediaSource.url = "https://testMedia/playlist.m3u8"
+        mediaSource.mediaFormat = null
+
+        mediaEntry.duration = 0
+
+        mediaSourceList.add(mediaSource)
+        mediaEntry.sources = mediaSourceList
+
+        mediaConfig.mediaEntry = mediaEntry
+
+        return PKMediaSourceConfig(mediaConfig, mediaSource, playerSettings)
     }
 }

@@ -8,14 +8,13 @@ import com.kaltura.android.exoplayer2.source.TrackGroupArray
 import com.kaltura.android.exoplayer2.source.dash.manifest.AdaptationSet
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParser
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import kotlin.jvm.Throws
 
 open class TestUtils {
     companion object {
-        fun parseLocalManifest(context: Context, fileName: String): DashManifest {
+        fun parseLocalDashManifest(context: Context, fileName: String): DashManifest {
             val inputStream: InputStream = getInputStream(context, fileName)
             return DashManifestParser().parse(Uri.EMPTY, inputStream)
         }
@@ -26,8 +25,8 @@ open class TestUtils {
         }
 
         @Throws(IOException::class)
-        fun manifestParsingSetup(context: Context, fileName: String): TrackGroupArray {
-            val dashManifest: DashManifest = parseLocalManifest(context, fileName)
+        fun getTrackGroupArrayFromDashManifest(context: Context, fileName: String): TrackGroupArray {
+            val dashManifest: DashManifest = parseLocalDashManifest(context, fileName)
             val adaptationSets: List<AdaptationSet> = dashManifest.getPeriod(0).adaptationSets
 
             val trackGroups: ArrayList<TrackGroup> = arrayListOf()
@@ -41,6 +40,11 @@ open class TestUtils {
             }
 
             return TrackGroupArray(*trackGroups.toTypedArray())
+        }
+
+        @Throws(IOException::class)
+        fun getTrackGroupArrayFromHLSManifest(context: Context, fileName: String) {
+            //TODO: Parsing for HLS Manifest
         }
 
     }
