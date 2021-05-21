@@ -8,6 +8,7 @@ import android.util.Pair;
 import android.util.Xml;
 import androidx.annotation.Nullable;
 
+import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
@@ -547,7 +548,7 @@ public class CustomDashManifestParser extends DefaultHandler {
 
         String schemeIdUri = xpp.getAttributeValue(null, "schemeIdUri");
         if (schemeIdUri != null) {
-            switch (Util.toLowerInvariant(schemeIdUri)) {
+            switch (Ascii.toLowerCase(schemeIdUri)) {
                 case "urn:mpeg:dash:mp4protection:2011":
                     schemeType = xpp.getAttributeValue(null, "value");
                     String defaultKid = XmlPullParserUtil.getAttributeValueIgnorePrefix(xpp, "default_KID");
@@ -1872,7 +1873,7 @@ public class CustomDashManifestParser extends DefaultHandler {
      *     not be parsed.
      */
     protected static int parseDolbyChannelConfiguration(XmlPullParser xpp) {
-        String value = Util.toLowerInvariant(xpp.getAttributeValue(null, "value"));
+        String value = xpp.getAttributeValue(null, "value");
         if (value == null) {
             return Format.NO_VALUE;
         }

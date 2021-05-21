@@ -16,9 +16,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.RectF;
-
-import androidx.annotation.NonNull;
-
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -28,6 +25,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+
+import com.kaltura.android.exoplayer2.ExoPlayer;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.text.Cue;
@@ -95,7 +95,7 @@ class ExoPlayerView extends BaseExoplayerView {
                             }
                         }
                         break;
-                        
+
                     case Player.STATE_BUFFERING:
                     case Player.STATE_ENDED:
                     case Player.STATE_IDLE:
@@ -158,8 +158,8 @@ class ExoPlayerView extends BaseExoplayerView {
         resetViews();
         createVideoSurface(useTextureView);
 
-        Player.VideoComponent newVideoComponent = player.getVideoComponent();
-        Player.TextComponent newTextComponent = player.getTextComponent();
+        ExoPlayer.VideoComponent newVideoComponent = player.getVideoComponent();
+        ExoPlayer.TextComponent newTextComponent = player.getTextComponent();
         player.addListener(playerEventListener);
 
         //Decide which type of videoSurface should be set.
@@ -194,8 +194,8 @@ class ExoPlayerView extends BaseExoplayerView {
      * Clear all the listeners and detach Surface from view hierarchy.
      */
     private void removeVideoSurface() {
-        Player.VideoComponent oldVideoComponent = player.getVideoComponent();
-        Player.TextComponent oldTextComponent = player.getTextComponent();
+        ExoPlayer.VideoComponent oldVideoComponent = player.getVideoComponent();
+        ExoPlayer.TextComponent oldTextComponent = player.getTextComponent();
         if (playerEventListener != null) {
             player.removeListener(playerEventListener);
         }

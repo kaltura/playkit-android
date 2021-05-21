@@ -248,7 +248,7 @@ public abstract class CustomSegmentBase {
                 long duration = segmentTimeline.get((int) (sequenceNumber - startNumber)).duration;
                 return (duration * C.MICROS_PER_SECOND) / timescale;
             } else {
-                int segmentCount = getSegmentCount(periodDurationUs);
+                long segmentCount = getSegmentCount(periodDurationUs);
                 return segmentCount != INDEX_UNBOUNDED
                         && sequenceNumber == (getFirstSegmentNum() + segmentCount - 1)
                         ? (periodDurationUs - getSegmentTimeUs(sequenceNumber))
@@ -298,8 +298,8 @@ public abstract class CustomSegmentBase {
         }
 
         /** See {@link DashSegmentIndex#getAvailableSegmentCount(long, long)}. */
-        public int getAvailableSegmentCount(long periodDurationUs, long nowUnixTimeUs) {
-            int segmentCount = getSegmentCount(periodDurationUs);
+        public long getAvailableSegmentCount(long periodDurationUs, long nowUnixTimeUs) {
+            long segmentCount = getSegmentCount(periodDurationUs);
             if (segmentCount != INDEX_UNBOUNDED) {
                 return segmentCount;
             }
@@ -332,7 +332,7 @@ public abstract class CustomSegmentBase {
         }
 
         /** See {@link DashSegmentIndex#getSegmentCount(long)}. */
-        public abstract int getSegmentCount(long periodDurationUs);
+        public abstract long getSegmentCount(long periodDurationUs);
     }
 
     /** A {@link MultiSegmentBase} that uses a SegmentList to define its segments. */
@@ -390,7 +390,7 @@ public abstract class CustomSegmentBase {
         }
 
         @Override
-        public int getSegmentCount(long periodDurationUs) {
+        public long getSegmentCount(long periodDurationUs) {
             return mediaSegments.size();
         }
 
@@ -503,7 +503,7 @@ public abstract class CustomSegmentBase {
         }
 
         @Override
-        public int getSegmentCount(long periodDurationUs) {
+        public long getSegmentCount(long periodDurationUs) {
             if (segmentTimeline != null) {
                 return segmentTimeline.size();
             } else if (endNumber != C.INDEX_UNSET) {

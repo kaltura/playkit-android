@@ -6,23 +6,25 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.PlaybackParameters;
-import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
-import com.kaltura.android.exoplayer2.source.LoadEventInfo;
-import com.kaltura.android.exoplayer2.source.MediaLoadData;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
+import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
+import com.kaltura.android.exoplayer2.drm.DrmSession;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
+import com.kaltura.android.exoplayer2.source.LoadEventInfo;
+import com.kaltura.android.exoplayer2.source.MediaLoadData;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.kaltura.android.exoplayer2.video.VideoSize;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -43,12 +45,12 @@ import static com.kaltura.android.exoplayer2.C.TRACK_TYPE_AUDIO;
 import static com.kaltura.android.exoplayer2.C.TRACK_TYPE_DEFAULT;
 import static com.kaltura.android.exoplayer2.C.TRACK_TYPE_TEXT;
 import static com.kaltura.android.exoplayer2.C.TRACK_TYPE_VIDEO;
-import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_AD_INSERTION;
+import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_AUTO_TRANSITION;
 import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_INTERNAL;
-import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_PERIOD_TRANSITION;
+import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_REMOVE;
 import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK;
 import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT;
-
+import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_SKIP;
 import static com.kaltura.playkit.profiler.PlayKitProfiler.MSEC_MULTIPLIER_FLOAT;
 import static com.kaltura.playkit.profiler.PlayKitProfiler.field;
 import static com.kaltura.playkit.profiler.PlayKitProfiler.joinFields;
@@ -152,11 +154,12 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onPositionDiscontinuity(EventTime eventTime, int reason) {
+    public void onPositionDiscontinuity(EventTime eventTime, Player.PositionInfo oldPosition,
+                                        Player.PositionInfo newPosition, int reason) {
         String reasonString;
         switch (reason) {
-            case DISCONTINUITY_REASON_PERIOD_TRANSITION:
-                reasonString = "PeriodTransition";
+            case DISCONTINUITY_REASON_AUTO_TRANSITION:
+                reasonString = "AutoTransition";
                 break;
             case DISCONTINUITY_REASON_SEEK:
                 log("SeekProcessed");
@@ -165,8 +168,11 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             case DISCONTINUITY_REASON_SEEK_ADJUSTMENT:
                 reasonString = "SeekAdjustment";
                 break;
-            case DISCONTINUITY_REASON_AD_INSERTION:
-                reasonString = "AdInsertion";
+            case DISCONTINUITY_REASON_SKIP:
+                reasonString = "Skip";
+                break;
+            case DISCONTINUITY_REASON_REMOVE:
+                reasonString = "Remove";
                 break;
             case DISCONTINUITY_REASON_INTERNAL:
                 reasonString = "Internal";
@@ -379,7 +385,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onVideoDecoderInitialized(EventTime eventTime, String decoderName, long initializationDurationMs) {
+    public void onVideoDecoderInitialized(EventTime eventTime, String decoderName, long initializedTimestampMs, long initializationDurationMs) {
         log("DecoderInitialized", field("name", decoderName), field("duration", initializationDurationMs / MSEC_MULTIPLIER_FLOAT));
     }
 
@@ -404,12 +410,12 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onVideoSizeChanged(EventTime eventTime, int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
-        log("VideoSizeChanged", field("width", width), field("height", height));
+    public void onVideoSizeChanged(EventTime eventTime, VideoSize videoSize) {
+        log("VideoSizeChanged", field("width", videoSize.width), field("height", videoSize.height));
     }
 
     @Override
-    public void onRenderedFirstFrame(EventTime eventTime, Surface surface) {
+    public void onRenderedFirstFrame(EventTime eventTime, Object output, long renderTimeMs) {
         log("RenderedFirstFrame");
     }
 
@@ -424,7 +430,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onDrmSessionAcquired(EventTime eventTime) {
+    public void onDrmSessionAcquired(EventTime eventTime, @DrmSession.State int state) {
         log("DrmSessionAcquired");
     }
 
