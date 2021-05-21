@@ -100,7 +100,7 @@ import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
-public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
+public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, MetadataOutput, BandwidthMeter.EventListener {
 
     private ByteArrayDataSink dashLastDataSink;
     private String dashManifestString;
@@ -197,7 +197,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private LoadControlStrategy getCustomLoadControlStrategy() {
         Object loadControlStrategyObj = playerSettings.getCustomLoadControlStrategy();
-        if (loadControlStrategyObj != null && loadControlStrategyObj instanceof LoadControlStrategy) {
+        if (loadControlStrategyObj instanceof LoadControlStrategy) {
             return ((LoadControlStrategy) loadControlStrategyObj);
         } else {
             return null;
@@ -952,7 +952,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void onPositionDiscontinuity(int reason) {
+    public void onPositionDiscontinuity(Player.PositionInfo oldPosition, Player.PositionInfo newPosition, @Player.DiscontinuityReason int reason) {
         log.d("onPositionDiscontinuity reason = " + reason);
     }
 

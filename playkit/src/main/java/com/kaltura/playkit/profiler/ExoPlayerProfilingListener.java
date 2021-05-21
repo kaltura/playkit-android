@@ -1,8 +1,6 @@
 package com.kaltura.playkit.profiler;
 
 
-import android.view.Surface;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -182,11 +180,6 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         }
 
         log("PositionDiscontinuity", field("reason", reasonString));
-    }
-
-    @Override
-    public void onSeekStarted(EventTime eventTime) {
-        log("SeekStarted");
     }
 
     @Override

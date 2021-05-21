@@ -34,7 +34,7 @@ import com.kaltura.android.exoplayer2.text.Cue;
 import com.kaltura.android.exoplayer2.text.TextOutput;
 import com.kaltura.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
-import com.kaltura.android.exoplayer2.video.VideoListener;
+import com.kaltura.android.exoplayer2.video.VideoSize;
 import com.kaltura.playkit.PKLog;
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ class ExoPlayerView extends BaseExoplayerView {
 
     private SimpleExoPlayer player;
     private ComponentListener componentListener;
-    private Player.EventListener playerEventListener;
+    private Player.Listener playerEventListener;
     private int textureViewRotation;
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
     private PKSubtitlePosition subtitleViewPosition;
@@ -81,8 +81,8 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @NonNull
-    private Player.EventListener getPlayerEventListener() {
-        return new Player.EventListener() {
+    private Player.Listener getPlayerEventListener() {
+        return new Player.Listener() {
             @Override
             public void onPlaybackStateChanged(int playbackState) {
                 switch (playbackState) {
@@ -173,11 +173,7 @@ class ExoPlayerView extends BaseExoplayerView {
                 newVideoComponent.setVideoSurfaceView((SurfaceView) videoSurface);
             }
             //Set listeners
-            newVideoComponent.addVideoListener(componentListener);
-        }
-
-        if (newTextComponent != null) {
-            newTextComponent.addTextOutput(componentListener);
+            player.addListener(componentListener);
         }
 
         contentFrame.addView(videoSurface, 0);
@@ -209,11 +205,11 @@ class ExoPlayerView extends BaseExoplayerView {
             }
 
             //Clear listeners.
-            oldVideoComponent.removeVideoListener(componentListener);
+            player.removeVideoListener(componentListener);
         }
 
         if (oldTextComponent != null) {
-            oldTextComponent.removeTextOutput(componentListener);
+            player.removeTextOutput(componentListener);
         }
         lastReportedCues = null;
         contentFrame.removeView(videoSurface);
@@ -337,7 +333,7 @@ class ExoPlayerView extends BaseExoplayerView {
     /**
      * Local listener implementation.
      */
-    private final class ComponentListener implements TextOutput, VideoListener, OnLayoutChangeListener {
+    private final class ComponentListener implements TextOutput, Player.Listener, OnLayoutChangeListener {
 
         @Override
         public void onCues(List<Cue> cues) {
@@ -352,17 +348,17 @@ class ExoPlayerView extends BaseExoplayerView {
         }
 
         @Override
-        public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
+        public void onVideoSizeChanged(VideoSize videoSize) {
             if (contentFrame == null) {
                 return;
             }
 
             float videoAspectRatio =
-                    (height == 0 || width == 0) ? 1 : (width * pixelWidthHeightRatio) / height;
+                    (videoSize.height == 0 || videoSize.width == 0) ? 1 : (videoSize.width * videoSize.pixelWidthHeightRatio) / videoSize.height;
 
             if (videoSurface instanceof TextureView) {
                 // Try to apply rotation transformation when our surface is a TextureView.
-                if (unappliedRotationDegrees == 90 || unappliedRotationDegrees == 270) {
+                if (videoSize.unappliedRotationDegrees == 90 || videoSize.unappliedRotationDegrees == 270) {
                     // We will apply a rotation 90/270 degree to the output texture of the TextureView.
                     // In this case, the output video's width and height will be swapped.
                     videoAspectRatio = 1 / videoAspectRatio;
@@ -370,7 +366,7 @@ class ExoPlayerView extends BaseExoplayerView {
                 if (textureViewRotation != 0) {
                     videoSurface.removeOnLayoutChangeListener(this);
                 }
-                textureViewRotation = unappliedRotationDegrees;
+                textureViewRotation = videoSize.unappliedRotationDegrees;
                 if (textureViewRotation != 0) {
                     // The texture view's dimensions might be changed after layout step.
                     // So add an OnLayoutChangeListener to apply rotation after layout step.
