@@ -969,7 +969,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 CustomDashManifest customDashManifest = null;
                 MediaItem.PlaybackProperties playbackProperties = player.getMediaItemAt(0).playbackProperties;
                 if (!TextUtils.isEmpty(dashManifestString) && dashLastDataSink != null
-                        && player.getCurrentManifest() instanceof DashManifest && playbackProperties != null ) {
+                        && player.getCurrentManifest() instanceof DashManifest && playbackProperties != null) {
                     // byte[] bytes = dashLastDataSink.getData();
                     try {
                         customDashManifest = new CustomDashManifestParser().parse(playbackProperties.uri, dashManifestString);
