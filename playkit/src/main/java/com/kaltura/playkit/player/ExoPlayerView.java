@@ -159,7 +159,6 @@ class ExoPlayerView extends BaseExoplayerView {
         createVideoSurface(useTextureView);
 
         ExoPlayer.VideoComponent newVideoComponent = player.getVideoComponent();
-        ExoPlayer.TextComponent newTextComponent = player.getTextComponent();
         player.addListener(playerEventListener);
 
         //Decide which type of videoSurface should be set.

@@ -215,6 +215,21 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
+    public void onAudioCodecError(EventTime eventTime, Exception audioCodecError) {
+        log("PlayerError", field("type", "audioCodecError"), "cause={" + audioCodecError.getCause() + "}");
+    }
+
+    @Override
+    public void onAudioSinkError(EventTime eventTime, Exception audioSinkError) {
+        log("PlayerError", field("type", "audioSinkError"), "cause={" + audioSinkError.getCause() + "}");
+    }
+
+    @Override
+    public void onVideoCodecError(EventTime eventTime, Exception videoCodecError) {
+        log("PlayerError", field("type", "videoCodecError"), "cause={" + videoCodecError.getCause() + "}");
+    }
+
+    @Override
     public void onPlayerError(EventTime eventTime, ExoPlaybackException error) {
         String type = null;
         switch (error.type) {
