@@ -8,8 +8,10 @@ import com.kaltura.android.exoplayer2.source.TrackGroupArray
 import com.kaltura.android.exoplayer2.source.dash.manifest.AdaptationSet
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParser
+import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
+import java.io.InputStreamReader
 import kotlin.jvm.Throws
 
 open class TestUtils {
@@ -17,6 +19,14 @@ open class TestUtils {
         fun parseLocalDashManifest(context: Context, fileName: String): DashManifest {
             val inputStream: InputStream = getInputStream(context, fileName)
             return DashManifestParser().parse(Uri.EMPTY, inputStream)
+        }
+
+        fun getManifestString(context: Context, fileName: String) : String {
+            val inputStream = getInputStream(context, fileName)
+            val bufferedReader = BufferedReader(InputStreamReader(inputStream))
+            val manifestString = StringBuilder()
+            bufferedReader.useLines { lines -> lines.forEach { manifestString.append(it)} }
+            return manifestString.toString()
         }
 
         @Throws(IOException::class)
