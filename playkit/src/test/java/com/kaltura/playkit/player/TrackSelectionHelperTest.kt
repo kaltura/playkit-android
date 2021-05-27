@@ -27,12 +27,13 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.*
 import kotlin.collections.ArrayList
 
-
 @RunWith(AndroidJUnit4::class)
 internal class TrackSelectionHelperTest {
 
-    private val initialAssetPath: String = "testdata/mpd/"
-    private var trackSelectionHelper: TrackSelectionHelper? = null
+    private val initialDashAssetPath: String = "testdata/mpd/"
+    private val dashFilePrefix: String = "sample_dash"
+    private val initialHlsAssetPath: String = "testdata/m3u8/"
+    private val hlsFilePrefix: String = "sample_hls"
 
     private lateinit var actualSelector: TrackSelector
     private var mockedSelector: DefaultTrackSelector = mock(DefaultTrackSelector::class.java)
@@ -66,9 +67,19 @@ internal class TrackSelectionHelperTest {
 
     private fun buildActualTrackSelector(fileName: String): TrackSelector {
         val timeline = FakeTimeline()
-        trackGroupArray = TestUtils.getTrackGroupArrayFromDashManifest(
-                ApplicationProvider.getApplicationContext(),
-                fileName)
+        val filePath: String
+
+        if (fileName.startsWith(dashFilePrefix)) {
+            filePath = "${initialDashAssetPath}${fileName}"
+            trackGroupArray = TestUtils.getTrackGroupArrayFromDashManifest(
+                    ApplicationProvider.getApplicationContext(),
+                    filePath)
+        } else {
+            filePath = "${initialHlsAssetPath}${fileName}"
+            trackGroupArray = TestUtils.getTrackGroupArrayFromHlsManifest(
+                    ApplicationProvider.getApplicationContext(),
+                    filePath)
+        }
 
         actualSelector = DefaultTrackSelector(ApplicationProvider.getApplicationContext() as Context)
         actualSelector.init(invalidationListener, bandwidthMeter)
@@ -84,48 +95,62 @@ internal class TrackSelectionHelperTest {
     }
 
     private fun getTrackSelectionHelper(selector: TrackSelector): TrackSelectionHelper {
-        trackSelectionHelper = TrackSelectionHelper(
+        val trackSelectionHelper = TrackSelectionHelper(
                 ApplicationProvider.getApplicationContext(),
                 selector as DefaultTrackSelector,
                 lastSelectedTrackIds)
-        trackSelectionHelper?.applyPlayerSettings(playerSettings)
+        trackSelectionHelper.applyPlayerSettings(playerSettings)
 
-        return trackSelectionHelper!!
+        return trackSelectionHelper
     }
 
     @Test
     fun buildTracks_mappedTrackInfo() {
-        trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("${initialAssetPath}sample_mpd_clear_h264_tears"))
-        trackSelectionHelper?.prepareTracks(TrackSelectionArray(), null)?.let {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
+        trackSelectionHelper.prepareTracks(TrackSelectionArray(), null).let {
+            assertTrue(it)
+        }
+
+        val trackSelectionHelperHls = getTrackSelectionHelper(buildActualTrackSelector("sample_hls_harold"))
+        trackSelectionHelperHls.prepareTracks(TrackSelectionArray(), null).let {
             assertTrue(it)
         }
     }
 
     @Test
     fun buildTracks_mappedTrackInfo_instream_subtitles() {
-        val selector: TrackSelector = buildActualTrackSelector("${initialAssetPath}sample_mpd_with_subtitle")
-        trackSelectionHelper = getTrackSelectionHelper(selector)
+        // Dash
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_with_subtitle"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
         spyTrackSelectionHelper?.prepareTracks(TrackSelectionArray(), null)
         verify(spyTrackSelectionHelper)?.buildTracks(ArrayList<CustomFormat>())
 
         val pkTracks: PKTracks? = spyTrackSelectionHelper?.buildTracks(null)
         assertEquals(6, pkTracks?.textTracks?.size)
+
+        // HLS
+        val trackSelectionHelperHls = getTrackSelectionHelper(buildActualTrackSelector("sample_hls_harold"))
+        val spyTrackSelectionHelperHls = spy(trackSelectionHelperHls)
+        spyTrackSelectionHelperHls?.prepareTracks(TrackSelectionArray(), null)
+        verify(spyTrackSelectionHelperHls)?.buildTracks(ArrayList<CustomFormat>())
+
+        val pkTracksHls: PKTracks? = spyTrackSelectionHelperHls?.buildTracks(null)
+        assertEquals(9, pkTracksHls?.textTracks?.size)
     }
 
     @Test
     fun buildTracks_mappedTrackInfo_is_null() {
-        trackSelectionHelper = getTrackSelectionHelper(mockedSelector)
-        trackSelectionHelper?.prepareTracks(TrackSelectionArray(), null)?.let {
+        val trackSelectionHelper = getTrackSelectionHelper(mockedSelector)
+        trackSelectionHelper.prepareTracks(TrackSelectionArray(), null).let {
             assertFalse(it)
         }
     }
 
     @Test
     fun buildTracks_mappedTrackInfo_checkTracksUnavailability_false() {
-        trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("${initialAssetPath}sample_mpd_no_tracks"))
-        trackSelectionHelper?.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
-        trackSelectionHelper?.prepareTracks(TrackSelectionArray(), null)?.let {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_no_tracks"))
+        trackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
+        trackSelectionHelper.prepareTracks(TrackSelectionArray(), null).let {
             assertFalse(it)
         }
     }
@@ -136,12 +161,12 @@ internal class TrackSelectionHelperTest {
 
     @Test
     fun buildTracks_rawImageTracks() {
-        val dashManifestString: String = TestUtils.getManifestString(ApplicationProvider.getApplicationContext() as Context, "${initialAssetPath}sample_mpd_custom_manifest_image_tracks")
+        val dashManifestString: String = TestUtils.getManifestString(ApplicationProvider.getApplicationContext() as Context, "${initialDashAssetPath}sample_dash_custom_manifest_image_tracks")
         val customDashManifest: CustomDashManifest = CustomDashManifestParser().parse(Uri.parse("http://dash.edgesuite.net/akamai/bbb_30fps/bbb_with_multiple_tiled_thumbnails.mpd"),
                 dashManifestString)
 
-        trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("${initialAssetPath}sample_mpd_custom_manifest_without_image_tracks"))
-        trackSelectionHelper?.prepareTracks(TrackSelectionArray(), customDashManifest)?.let {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_custom_manifest_without_image_tracks"))
+        trackSelectionHelper.prepareTracks(TrackSelectionArray(), customDashManifest).let {
             assertTrue(it)
         }
     }
@@ -149,21 +174,21 @@ internal class TrackSelectionHelperTest {
     @Test
     fun getExternalSubtitleLanguage() {
         val format = Format.Builder().setLanguage("eng-application/mp4").build();
-        trackSelectionHelper = getTrackSelectionHelper(mockedSelector)
-        assertEquals("en", trackSelectionHelper?.getExternalSubtitleLanguage(format))
+        val trackSelectionHelper = getTrackSelectionHelper(mockedSelector)
+        assertEquals("en", trackSelectionHelper.getExternalSubtitleLanguage(format))
 
         val isExternalSubtitleformat = format.buildUpon().setLanguage("eng-application/mp4").setSampleMimeType("application/mp4").build()
-        assertEquals(true, trackSelectionHelper?.isExternalSubtitle(isExternalSubtitleformat.language, isExternalSubtitleformat.sampleMimeType))
+        assertEquals(true, trackSelectionHelper.isExternalSubtitle(isExternalSubtitleformat.language, isExternalSubtitleformat.sampleMimeType))
 
         val nullFormat = format.buildUpon().setLanguage(null).build()
-        assertNull(trackSelectionHelper?.getExternalSubtitleLanguage(nullFormat))
+        assertNull(trackSelectionHelper.getExternalSubtitleLanguage(nullFormat))
     }
 
     @Test(expected = StringIndexOutOfBoundsException::class)
     fun getExternalSubtitleLanguage_null_exception() {
         val format = Format.Builder().build();
-        trackSelectionHelper = getTrackSelectionHelper(mockedSelector)
+        val trackSelectionHelper = getTrackSelectionHelper(mockedSelector)
         val nullExternalSubtitleformat = format.buildUpon().setLanguage("engapplication/mp4").setSampleMimeType("application/mp4").build()
-        trackSelectionHelper?.getExternalSubtitleLanguage(nullExternalSubtitleformat)
+        trackSelectionHelper.getExternalSubtitleLanguage(nullExternalSubtitleformat)
     }
 }

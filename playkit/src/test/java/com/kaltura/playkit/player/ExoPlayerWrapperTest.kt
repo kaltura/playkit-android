@@ -72,7 +72,7 @@ internal class ExoPlayerWrapperTest {
     private fun prepareClassInstances() {
         emptyTrackSelectionArray = TrackSelectionArray()
         trackGroupArray = TestUtils.getTrackGroupArrayFromDashManifest(ApplicationProvider.getApplicationContext(),
-                "testdata/mpd/sample_mpd_switching_property")
+                "testdata/mpd/sample_dash_switching_property")
         realExoPlayerWrapper = ExoPlayerWrapper(context, exoPlayerView, playerSettings, rootPlayerView)
         realExoPlayerWrapper.setEventListener(eventListener)
     }
