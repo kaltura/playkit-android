@@ -515,7 +515,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(multicastSettings.getMaxPacketSize(), multicastSettings.getSocketTimeoutMillis());
                     ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[]{
                             new TsExtractor(multicastSettings.getExtractorMode().mode,
-                                    new TimestampAdjuster(0), new DefaultTsPayloadReaderFactory())
+                                    new TimestampAdjuster(multicastSettings.getFirstSampleTimestampUs()), new DefaultTsPayloadReaderFactory())
                     };
                     mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
                             .createMediaSource(mediaItem);
