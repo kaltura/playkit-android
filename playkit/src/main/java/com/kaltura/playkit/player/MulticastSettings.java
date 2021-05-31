@@ -2,7 +2,7 @@ package com.kaltura.playkit.player;
 
 public class MulticastSettings {
 
-    // whether mulicast playback will use exo default config or using app user config
+    // whether mulicast playback will use exo default config or app config
     private boolean useExoDefaultSettings = true;
     // maxPacketSize The maximum datagram packet size, in bytes.
     private int maxPacketSize = 3000;
