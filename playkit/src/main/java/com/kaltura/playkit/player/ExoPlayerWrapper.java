@@ -96,6 +96,7 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 
+import static com.kaltura.playkit.PKAbrFilter.*;
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
@@ -1503,13 +1504,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
-                //TODO: ABR FILTERATION
                 HashMap<String, Object> abrPrecedence = checkABRPriority();
-                PKAbrFilter pkAbrFilter = (PKAbrFilter) abrPrecedence.get("abrType");
+                PKAbrFilter pkAbrFilter = (PKAbrFilter) abrPrecedence.get(KEY_ABR_TYPE);
                 boolean isABREnabled = pkAbrFilter != PKAbrFilter.NONE;
 
                 if(isABREnabled) {
-                    overrideMediaDefaultABR((long) abrPrecedence.get("abrMin"), (long) abrPrecedence.get("abrMax"), pkAbrFilter);
+                    overrideMediaDefaultABR((long) abrPrecedence.get(KEY_ABR_MIN), (long) abrPrecedence.get(KEY_ABR_MAX), pkAbrFilter);
                 } else {
                     overrideMediaVideoCodec();
                 }
@@ -1565,12 +1565,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private HashMap<String, Object> checkABRPriority() {
         HashMap<String, Object> abrPriorityMap = new HashMap<>();
-        String abrType = "abrType";
-        String abrMin = "abrMin";
-        String abrMax = "abrMax";
-        abrPriorityMap.put(abrType, PKAbrFilter.NONE);
-        abrPriorityMap.put(abrMin, Long.MIN_VALUE);
-        abrPriorityMap.put(abrMax, Long.MAX_VALUE);
+        abrPriorityMap.put(KEY_ABR_TYPE, PKAbrFilter.NONE);
+        abrPriorityMap.put(KEY_ABR_MIN, Long.MIN_VALUE);
+        abrPriorityMap.put(KEY_ABR_MAX, Long.MAX_VALUE);
 
         ABRSettings abrSettings = playerSettings.getAbrSettings();
         Long minVideoHeight = abrSettings.getMinVideoHeight();
@@ -1582,23 +1579,21 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         if ((maxVideoHeight != Long.MAX_VALUE || minVideoHeight != Long.MIN_VALUE) &&
                 (maxVideoWidth != Long.MAX_VALUE || minVideoWidth != Long.MIN_VALUE)) {
-             abrPriorityMap.put(abrType, PKAbrFilter.PIXEL);
-             abrPriorityMap.put(abrMin, minVideoWidth * minVideoHeight);
-             abrPriorityMap.put(abrMax, maxVideoWidth * maxVideoHeight);
+            abrPriorityMap.put(KEY_ABR_TYPE, PKAbrFilter.PIXEL);
+            abrPriorityMap.put(KEY_ABR_MIN, minVideoWidth * minVideoHeight);
+            abrPriorityMap.put(KEY_ABR_MAX, maxVideoWidth * maxVideoHeight);
         } else if (maxVideoHeight != Long.MAX_VALUE || minVideoHeight != Long.MIN_VALUE) {
-            abrPriorityMap.put(abrType, PKAbrFilter.HEIGHT);
-            abrPriorityMap.put(abrMin, minVideoHeight);
-            abrPriorityMap.put(abrMax, maxVideoHeight);
+            abrPriorityMap.put(KEY_ABR_TYPE, PKAbrFilter.HEIGHT);
+            abrPriorityMap.put(KEY_ABR_MIN, minVideoHeight);
+            abrPriorityMap.put(KEY_ABR_MAX, maxVideoHeight);
         } else if (maxVideoWidth != Long.MAX_VALUE || minVideoWidth != Long.MIN_VALUE) {
-            abrPriorityMap.put(abrType, PKAbrFilter.WIDTH);
-            abrPriorityMap.put(abrMin, minVideoWidth);
-            abrPriorityMap.put(abrMax, maxVideoWidth);
-        } else {
-            if (maxVideoBitrate != Long.MAX_VALUE || minVideoBitrate != Long.MIN_VALUE) {
-                abrPriorityMap.put(abrType, PKAbrFilter.BITRATE);
-                abrPriorityMap.put(abrMin, minVideoBitrate);
-                abrPriorityMap.put(abrMax, maxVideoBitrate);
-            }
+            abrPriorityMap.put(KEY_ABR_TYPE, PKAbrFilter.WIDTH);
+            abrPriorityMap.put(KEY_ABR_MIN, minVideoWidth);
+            abrPriorityMap.put(KEY_ABR_MAX, maxVideoWidth);
+        } else if (maxVideoBitrate != Long.MAX_VALUE || minVideoBitrate != Long.MIN_VALUE) {
+            abrPriorityMap.put(KEY_ABR_TYPE, PKAbrFilter.BITRATE);
+            abrPriorityMap.put(KEY_ABR_MIN, minVideoBitrate);
+            abrPriorityMap.put(KEY_ABR_MAX, maxVideoBitrate);
         }
 
         return abrPriorityMap;
@@ -1751,8 +1746,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void updateABRSettings(ABRSettings abrSettings) {
         playerSettings.setABRSettings(abrSettings);
         HashMap<String, Object> abrPrecedence = checkABRPriority();
-        PKAbrFilter pkAbrFilter = (PKAbrFilter) abrPrecedence.get("abrType");
-        overrideMediaDefaultABR((long) abrPrecedence.get("abrMin"), (long) abrPrecedence.get("abrMax"), pkAbrFilter);
+        PKAbrFilter pkAbrFilter = (PKAbrFilter) abrPrecedence.get(KEY_ABR_TYPE);
+        overrideMediaDefaultABR((long) abrPrecedence.get(KEY_ABR_MIN), (long) abrPrecedence.get(KEY_ABR_MAX), pkAbrFilter);
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
     }
 

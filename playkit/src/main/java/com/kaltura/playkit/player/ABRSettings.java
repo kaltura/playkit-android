@@ -2,7 +2,7 @@ package com.kaltura.playkit.player;
 
 public class ABRSettings {
 
-    private Long initialBitrateEstimate;
+    private Long initialBitrateEstimate = null;
     private Long maxVideoBitrate = Long.MAX_VALUE;
     private Long minVideoBitrate = Long.MIN_VALUE;
     private Long maxVideoHeight = Long.MAX_VALUE;
@@ -14,7 +14,6 @@ public class ABRSettings {
      * Reset the ABR Settings.
      */
     public final static ABRSettings RESET = new ABRSettings()
-            .setInitialBitrateEstimate(0)
             .setMinVideoBitrate(Long.MIN_VALUE)
             .setMaxVideoBitrate(Long.MAX_VALUE)
             .setMinVideoHeight(Long.MIN_VALUE)
@@ -26,18 +25,20 @@ public class ABRSettings {
      * Sets the initial bitrate estimate in bits per second that should be assumed when a bandwidth
      * estimate is unavailable.
      *
+     * To reset it, set it to null.
+     *
      * <br>
      * <br>
      * If App is using {@link com.kaltura.playkit.Player#updateABRSettings(ABRSettings)}
      * <br>
-     * Then Using {@link ABRSettings#setInitialBitrateEstimate(long)} is unaffected because
+     * Then Using {@link ABRSettings#setInitialBitrateEstimate(Long)} is unaffected because
      * initial bitrate is only meant at the start of the playback
      * <br>
      *
      * @param initialBitrateEstimate The initial bitrate estimate in bits per second.
      * @return ABRSettings
      */
-    public ABRSettings setInitialBitrateEstimate(long initialBitrateEstimate) {
+    public ABRSettings setInitialBitrateEstimate(Long initialBitrateEstimate) {
         this.initialBitrateEstimate = initialBitrateEstimate;
         return this;
     }
