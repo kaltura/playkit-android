@@ -1877,7 +1877,7 @@ public class CustomDashManifestParser extends DefaultHandler {
         if (value == null) {
             return Format.NO_VALUE;
         }
-        switch (value) {
+        switch (Ascii.toLowerCase(value)) {
             case "4000":
                 return 1;
             case "a000":
