@@ -502,21 +502,24 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-            //case udp:
                 mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(mediaItem);
                 break;
 
             case udp:
-                int MODE_SINGLE_PMT = 1;
-                DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(300000, 100000);
-                ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[] {
-                        new TsExtractor(MODE_SINGLE_PMT,
-                                new TimestampAdjuster(0), new DefaultTsPayloadReaderFactory())
-                };
-
-                mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
-                        .createMediaSource(mediaItem);
+                MulticastSettings multicastSettings = playerSettings.getMulticastSettings();
+                if (multicastSettings.getUseExoDefaultSettings()) {
+                    mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                            .createMediaSource(mediaItem);
+                } else {
+                    DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(multicastSettings.getMaxPacketSize(), multicastSettings.getSocketTimeoutMillis());
+                    ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[]{
+                            new TsExtractor(multicastSettings.getExtractorMode().mode,
+                                    new TimestampAdjuster(0), new DefaultTsPayloadReaderFactory())
+                    };
+                    mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
+                            .createMediaSource(mediaItem);
+                }
                 break;
 
             default:
