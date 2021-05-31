@@ -507,7 +507,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 break;
 
             case udp:
-                MulticastSettings multicastSettings = playerSettings.getMulticastSettings();
+                MulticastSettings multicastSettings = (playerSettings != null) ? playerSettings.getMulticastSettings() : new MulticastSettings();
                 if (multicastSettings.getUseExoDefaultSettings()) {
                     mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                             .createMediaSource(mediaItem);
