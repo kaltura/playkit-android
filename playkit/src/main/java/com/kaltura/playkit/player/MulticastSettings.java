@@ -9,7 +9,7 @@ public class MulticastSettings {
     private int socketTimeoutMillis = 10000;
 
     private ExtractorMode extractorMode = ExtractorMode.MODE_MULTI_PMT;
-    
+
     enum ExtractorMode {
         MODE_MULTI_PMT(0),
         MODE_SINGLE_PMT(1),
@@ -29,6 +29,11 @@ public class MulticastSettings {
 
     public int getMaxPacketSize() {
         return maxPacketSize;
+    }
+
+    public MulticastSettings setUseExoDefaultSettings(boolean useExoDefaultSettings) {
+        this.useExoDefaultSettings = useExoDefaultSettings;
+        return this;
     }
 
     public MulticastSettings setMaxPacketSize(int maxPacketSize) {
