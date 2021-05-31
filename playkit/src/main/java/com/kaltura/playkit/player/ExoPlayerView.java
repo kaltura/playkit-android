@@ -347,7 +347,7 @@ class ExoPlayerView extends BaseExoplayerView {
         }
 
         @Override
-        public void onVideoSizeChanged(VideoSize videoSize) {
+        public void onVideoSizeChanged(@NonNull VideoSize videoSize) {
             if (contentFrame == null) {
                 return;
             }
