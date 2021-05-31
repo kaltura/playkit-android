@@ -895,6 +895,15 @@ class TrackSelectionHelper {
 
         if (videoTracks != null && !videoTracks.isEmpty()) {
 
+            if (originalVideoTracks == null) {
+                originalVideoTracks = new ArrayList<>(videoTracks);
+            } else if (originalVideoTracks.isEmpty()) {
+                originalVideoTracks.addAll(videoTracks);
+            } else {
+                videoTracks.clear();
+                videoTracks.addAll(originalVideoTracks);
+            }
+
             Collections.sort(videoTracks);
             if (videoTracks.size() >= 2) {
 
@@ -907,15 +916,6 @@ class TrackSelectionHelper {
                     PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
                     tracksErrorListener.onTracksOverrideABRError(currentError);
                 }
-            }
-
-            if (originalVideoTracks == null) {
-                originalVideoTracks = new ArrayList<>(videoTracks);
-            } else if (originalVideoTracks.isEmpty()) {
-                originalVideoTracks.addAll(videoTracks);
-            } else {
-                videoTracks.clear();
-                videoTracks.addAll(originalVideoTracks);
             }
 
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
