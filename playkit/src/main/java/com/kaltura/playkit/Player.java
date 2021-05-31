@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMaxVideoSize;
@@ -340,6 +341,14 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
+
+        /**
+         * Sets the multicastSettings for udp streams.
+         *
+         * @param multicastSettings - maxPacketSize default = 3000 & socketTimeoutMillis default = 10000
+         * @return - Player Settings
+         */
+        Settings setMulticastSettings(MulticastSettings multicastSettings);
 
         /**
          * If the device codec is known to fail if security level L1 is used
