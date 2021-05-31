@@ -10,6 +10,8 @@ public class MulticastSettings {
 
     private ExtractorMode extractorMode = ExtractorMode.MODE_MULTI_PMT;
 
+    private long firstSampleTimestampUs;
+    
     enum ExtractorMode {
         MODE_MULTI_PMT(0),
         MODE_SINGLE_PMT(1),
@@ -61,6 +63,15 @@ public class MulticastSettings {
             this.extractorMode = extractorMode;
         }
         this.useExoDefaultSettings = false;
+        return this;
+    }
+
+    public long getFirstSampleTimestampUs() {
+        return firstSampleTimestampUs;
+    }
+
+    public MulticastSettings setFirstSampleTimestampUs(long firstSampleTimestampUs) {
+        this.firstSampleTimestampUs = firstSampleTimestampUs;
         return this;
     }
 }
