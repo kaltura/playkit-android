@@ -345,7 +345,7 @@ public interface Player {
         /**
          * Sets the multicastSettings for udp streams.
          *
-         * @param multicastSettings - maxPacketSize default = 3000 & socketTimeoutMillis default = 100000
+         * @param multicastSettings - maxPacketSize default = 3000 & socketTimeoutMillis default = 10000
          * @return - Player Settings
          */
         Settings setMulticastSettings(MulticastSettings multicastSettings);
