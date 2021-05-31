@@ -14,7 +14,7 @@ public class AudioCodecSettings {
     }
 
     public AudioCodecSettings(List<PKAudioCodec> codecPriorityList, boolean allowMixedCodecs) {
-        if (codecPriorityList != null || codecPriorityList.isEmpty()) {
+        if (codecPriorityList != null && !codecPriorityList.isEmpty()) {
             this.codecPriorityList = codecPriorityList;
         } else {
             getDefaultCodecsPriorityList();

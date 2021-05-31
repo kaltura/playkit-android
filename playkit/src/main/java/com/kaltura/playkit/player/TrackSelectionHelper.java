@@ -549,10 +549,8 @@ class TrackSelectionHelper {
             return filteredAudioTracks;
         }
 
-        List<PKAudioCodec> audioCodecList = new ArrayList<>(Arrays.asList(PKAudioCodec.E_AC3, PKAudioCodec.AC3, PKAudioCodec.OPUS, PKAudioCodec.AAC));
-
-        for (PKAudioCodec pkAudioCodec : audioCodecList) {
-            if (audioTracksCodecsMap.containsKey(pkAudioCodec)) {
+        for (PKAudioCodec pkAudioCodec : preferredAudioCodecSettings.getCodecPriorityList()) {
+            if (audioTracksCodecsMap.containsKey(pkAudioCodec) && audioTracksCodecsMap.get(pkAudioCodec) != null) {
                 return new ArrayList<>(audioTracksCodecsMap.get(pkAudioCodec));
             }
         }
