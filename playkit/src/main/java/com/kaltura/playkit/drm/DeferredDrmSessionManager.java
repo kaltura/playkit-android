@@ -237,7 +237,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     }
 
     @Override
-    public void onDrmSessionAcquired(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
+    public void onDrmSessionAcquired(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId, @DrmSession.State int state) {
         log.d("onDrmSessionAcquired");
     }
 
