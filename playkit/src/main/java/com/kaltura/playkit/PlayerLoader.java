@@ -51,6 +51,8 @@ class PlayerLoader extends PlayerDecoratorBase {
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
     private boolean isKavaImpressionFired;
+    private String kavaPluginKey = "kava";
+    private String kavaPartnerIdKey = "kavaPartnerId";
 
     PlayerLoader(Context context, MessageBus messageBus) {
         this.context = context;
@@ -221,22 +223,22 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         if (pkMediaConfig.getMediaEntry() != null &&
                 pkMediaConfig.getMediaEntry().getMetadata() != null &&
-                pkMediaConfig.getMediaEntry().getMetadata().containsKey("kavaPartnerId")) {
+                pkMediaConfig.getMediaEntry().getMetadata().containsKey(kavaPartnerIdKey)) {
 
-            String partnerId = pkMediaConfig.getMediaEntry().getMetadata().get("kavaPartnerId");
+            String partnerId = pkMediaConfig.getMediaEntry().getMetadata().get(kavaPartnerIdKey);
             impressionResponse[0] = !TextUtils.isEmpty(partnerId) ? Integer.parseInt(partnerId) : 0;
             if (impressionResponse[0] <= 0) {
                 impressionResponse[1] = 1; // PartnerId is coming <= 0 from BE
             }
         }
 
-        if (!loadedPlugins.containsKey("kava") && impressionResponse[0] > 0) {
+        if (!loadedPlugins.containsKey(kavaPluginKey) && impressionResponse[0] > 0) {
             impressionResponse[1] = 1; // Kava doesn't exist but partner uses BE
-        } else if (!loadedPlugins.containsKey("kava") && impressionResponse[0] <= 0) {
+        } else if (!loadedPlugins.containsKey(kavaPluginKey) && impressionResponse[0] <= 0) {
             impressionResponse[1] = 1; // Neither Kava exists nor partner uses BE
-        } else if (!loadedPlugins.containsKey("kava")) {
+        } else if (!loadedPlugins.containsKey(kavaPluginKey)) {
             impressionResponse[1] = 1; // Kava doesn't exist
-        } else if (loadedPlugins.containsKey("kava") && impressionResponse[0] <= 0) {
+        } else if (loadedPlugins.containsKey(kavaPluginKey) && impressionResponse[0] <= 0) {
             impressionResponse[1] = 1; //  Kava exists but partner does not use BE
         }
 
