@@ -40,6 +40,9 @@ import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifestParse
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManagerProvider;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
+import com.kaltura.android.exoplayer2.extractor.ExtractorsFactory;
+import com.kaltura.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory;
+import com.kaltura.android.exoplayer2.extractor.ts.TsExtractor;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
@@ -71,6 +74,8 @@ import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.TeeDataSource;
 import com.kaltura.android.exoplayer2.upstream.TransferListener;
+import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
+import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 
 import com.kaltura.playkit.*;
@@ -100,7 +105,7 @@ import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
-public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
+public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, MetadataOutput, BandwidthMeter.EventListener {
 
     private ByteArrayDataSink dashLastDataSink;
     private String dashManifestString;
@@ -197,7 +202,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private LoadControlStrategy getCustomLoadControlStrategy() {
         Object loadControlStrategyObj = playerSettings.getCustomLoadControlStrategy();
-        if (loadControlStrategyObj != null && loadControlStrategyObj instanceof LoadControlStrategy) {
+        if (loadControlStrategyObj instanceof LoadControlStrategy) {
             return ((LoadControlStrategy) loadControlStrategyObj);
         } else {
             return null;
@@ -499,6 +504,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             case mp3:
                 mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(mediaItem);
+                break;
+
+            case udp:
+                MulticastSettings multicastSettings = (playerSettings != null) ? playerSettings.getMulticastSettings() : new MulticastSettings();
+                if (multicastSettings.getUseExoDefaultSettings()) {
+                    mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                            .createMediaSource(mediaItem);
+                } else {
+                    DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(multicastSettings.getMaxPacketSize(), multicastSettings.getSocketTimeoutMillis());
+                    ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[]{
+                            new TsExtractor(multicastSettings.getExtractorMode().mode,
+                                    new TimestampAdjuster(multicastSettings.getFirstSampleTimestampUs()), new DefaultTsPayloadReaderFactory())
+                    };
+                    mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
+                            .createMediaSource(mediaItem);
+                }
                 break;
 
             default:
@@ -952,7 +973,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void onPositionDiscontinuity(int reason) {
+    public void onPositionDiscontinuity(Player.PositionInfo oldPosition, Player.PositionInfo newPosition, @Player.DiscontinuityReason int reason) {
         log.d("onPositionDiscontinuity reason = " + reason);
     }
 
