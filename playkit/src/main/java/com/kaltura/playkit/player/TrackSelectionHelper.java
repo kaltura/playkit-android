@@ -104,9 +104,9 @@ class TrackSelectionHelper {
     private List<ImageTrack> imageTracks = new ArrayList<>();
 
 
-    private Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
-    private Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
-    private Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
+    protected Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
+    protected Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
+    protected Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
 
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;

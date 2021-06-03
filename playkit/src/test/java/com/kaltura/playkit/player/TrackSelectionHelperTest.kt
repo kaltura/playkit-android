@@ -17,6 +17,7 @@ import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray
 import com.kaltura.android.exoplayer2.trackselection.TrackSelector
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectorResult
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter
+import com.kaltura.playkit.PKSubtitlePreference
 import com.kaltura.testhelper.FakeRendererCapabilities
 import com.kaltura.testhelper.FakeTimeline
 import com.kaltura.testhelper.TestUtils
@@ -25,7 +26,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.*
+import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 @RunWith(AndroidJUnit4::class)
 internal class TrackSelectionHelperTest {
@@ -173,7 +176,7 @@ internal class TrackSelectionHelperTest {
 
     @Test
     fun getExternalSubtitleLanguage() {
-        val format = Format.Builder().setLanguage("eng-application/mp4").build();
+        val format = Format.Builder().setLanguage("eng-application/mp4").build()
         val trackSelectionHelper = getTrackSelectionHelper(mockedSelector)
         assertEquals("en", trackSelectionHelper.getExternalSubtitleLanguage(format))
 
@@ -186,9 +189,27 @@ internal class TrackSelectionHelperTest {
 
     @Test(expected = StringIndexOutOfBoundsException::class)
     fun getExternalSubtitleLanguage_null_exception() {
-        val format = Format.Builder().build();
+        val format = Format.Builder().build()
         val trackSelectionHelper = getTrackSelectionHelper(mockedSelector)
         val nullExternalSubtitleformat = format.buildUpon().setLanguage("engapplication/mp4").setSampleMimeType("application/mp4").build()
         trackSelectionHelper.getExternalSubtitleLanguage(nullExternalSubtitleformat)
     }
+
+    @Test
+    fun discardTextTrackOnPreference() {
+        val format = Format.Builder().build()
+        val trackSelectionHelper = getTrackSelectionHelper(mockedSelector)
+        playerSettings.setSubtitlePreference(PKSubtitlePreference.OFF);
+        assertFalse(trackSelectionHelper.discardTextTrackOnPreference(format))
+        
+        playerSettings.setSubtitlePreference(PKSubtitlePreference.EXTERNAL)
+        val japaneseFormat = format.buildUpon().setLanguage("ja-text/vtt").setSampleMimeType("text/vtt").build()
+        val japaneseFormat1 = format.buildUpon().setLanguage("ja2-text/vtt").setSampleMimeType("text/vtt").build()
+        var formatMap: HashMap<String, List<Format>> = HashMap()
+        formatMap.put("ja", Arrays.asList(japaneseFormat, japaneseFormat1))
+        trackSelectionHelper.subtitleListMap.put("ja", formatMap)
+
+        assertFalse(trackSelectionHelper.discardTextTrackOnPreference(japaneseFormat))
+    }
+    
 }
