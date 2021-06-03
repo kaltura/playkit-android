@@ -18,6 +18,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
@@ -51,8 +52,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
     private boolean isKavaImpressionFired;
-    private String kavaPluginKey = "kava";
-    private String kavaPartnerIdKey = "kavaPartnerId";
+    private final String kavaPluginKey = "kava";
 
     PlayerLoader(Context context, MessageBus messageBus) {
         this.context = context;
@@ -164,15 +164,21 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         super.prepare(mediaConfig);
 
-        if (loadedPlugins != null && !isKavaImpressionFired) {
-            int[] info = getKavaImpressionInfo(mediaConfig);
-            int partnerId = info[0] > 0 ? info[0] : NetworkUtils.DEFAULT_KAVA_PARTNER_ID;
-            boolean fireKavaImpression = info[1] != 0;
+        if (loadedPlugins != null && !loadedPlugins.containsKey(kavaPluginKey) &&
+                !isKavaImpressionFired && !PKDeviceCapabilities.isKalturaPlayerAvailable()) {
 
-            if (fireKavaImpression){
-                NetworkUtils.sendKavaImpression(context, partnerId);
-                isKavaImpressionFired = true;
+            Pair<Integer, String> metaData = getKavaImpressionInfo(mediaConfig);
+
+            int partnerId = metaData.first == null ? 0 : metaData.first;
+            String entryId = TextUtils.isEmpty(metaData.second) ? "" : metaData.second;
+
+            if (partnerId <= 0) {
+                partnerId = NetworkUtils.DEFAULT_KAVA_PARTNER_ID;
+                entryId = NetworkUtils.DEFAULT_KAVA_ENTRY_ID;
             }
+
+            NetworkUtils.sendKavaImpression(context, partnerId, entryId);
+            isKavaImpressionFired = true;
         }
 
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
@@ -215,34 +221,24 @@ class PlayerLoader extends PlayerDecoratorBase {
         setPlayer(currentLayer);
     }
 
-    private int[] getKavaImpressionInfo(PKMediaConfig pkMediaConfig) {
-        // 0th element denotes partnerId
-        // 1st element denotes if we need to send the Kava impression or not.
-        // 0 = don't send 1 = send it
-        int[] impressionResponse = new int[] {-1,0};
+    private Pair<Integer, String> getKavaImpressionInfo(PKMediaConfig pkMediaConfig) {
+        final String kavaPartnerIdKey = "kavaPartnerId";
+        final String kavaEntryIdKey = "entryId";
+        int kavaPartnerId = 0;
+        String kavaEntryId = null;
 
-        if (pkMediaConfig.getMediaEntry() != null &&
-                pkMediaConfig.getMediaEntry().getMetadata() != null &&
-                pkMediaConfig.getMediaEntry().getMetadata().containsKey(kavaPartnerIdKey)) {
+        if (pkMediaConfig.getMediaEntry() != null && pkMediaConfig.getMediaEntry().getMetadata() != null) {
+            if (pkMediaConfig.getMediaEntry().getMetadata().containsKey(kavaPartnerIdKey)) {
+                String partnerId = pkMediaConfig.getMediaEntry().getMetadata().get(kavaPartnerIdKey);
+                kavaPartnerId = Integer.parseInt(partnerId != null && TextUtils.isDigitsOnly(partnerId) && !TextUtils.isEmpty(partnerId) ? partnerId : "0");
+            }
 
-            String partnerId = pkMediaConfig.getMediaEntry().getMetadata().get(kavaPartnerIdKey);
-            impressionResponse[0] = !TextUtils.isEmpty(partnerId) ? Integer.parseInt(partnerId) : 0;
-            if (impressionResponse[0] <= 0) {
-                impressionResponse[1] = 1; // PartnerId is coming <= 0 from BE
+            if (pkMediaConfig.getMediaEntry().getMetadata().containsKey(kavaEntryIdKey)) {
+                kavaEntryId = pkMediaConfig.getMediaEntry().getMetadata().get(kavaEntryIdKey);
             }
         }
 
-        if (!loadedPlugins.containsKey(kavaPluginKey) && impressionResponse[0] > 0) {
-            impressionResponse[1] = 1; // Kava doesn't exist but partner uses BE
-        } else if (!loadedPlugins.containsKey(kavaPluginKey) && impressionResponse[0] <= 0) {
-            impressionResponse[1] = 1; // Neither Kava exists nor partner uses BE
-        } else if (!loadedPlugins.containsKey(kavaPluginKey)) {
-            impressionResponse[1] = 1; // Kava doesn't exist
-        } else if (loadedPlugins.containsKey(kavaPluginKey) && impressionResponse[0] <= 0) {
-            impressionResponse[1] = 1; //  Kava exists but partner does not use BE
-        }
-
-        return impressionResponse;
+        return Pair.create(kavaPartnerId, kavaEntryId);
     }
 
     private PKPlugin loadPlugin(String name, Player player, Object config, MessageBus messageBus, Context context) {

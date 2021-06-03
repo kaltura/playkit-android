@@ -29,7 +29,7 @@ public class NetworkUtils {
     private static final PKLog log = PKLog.get("NetworkUtils");
     private static final OkHttpClient client = new OkHttpClient();
     private static final String DEFAULT_BASE_URL = "https://analytics.kaltura.com/api_v3/index.php";
-    private static final String DEFAULT_KAVA_ENTRY_ID = "1_3bwzbc9o";
+    public static final String DEFAULT_KAVA_ENTRY_ID = "1_3bwzbc9o";
     public static final int DEFAULT_KAVA_PARTNER_ID = 2504201;
 
     public static void requestOvpConfigByPartnerId(Context context, String baseUrl, int partnerId, String apiPrefix, NetworkUtilsCallback callback) {
@@ -73,19 +73,19 @@ public class NetworkUtils {
         return builder.build().toString();
     }
 
-    public static void sendKavaImpression(Context context, int partnerId) {
-        String kavaImpressionUrl = buildKavaImpressionUrl(context, partnerId > 0 ? partnerId : DEFAULT_KAVA_PARTNER_ID);
+    public static void sendKavaImpression(Context context, int partnerId, String entryId) {
+        String kavaImpressionUrl = buildKavaImpressionUrl(context, partnerId, entryId);
         log.d("kavaImpressionUrl = " + kavaImpressionUrl);
         executeGETRequest(context, "sendKavaImpression", kavaImpressionUrl, null);
     }
 
-    private static String buildKavaImpressionUrl(Context context, int partnerId) {
+    private static String buildKavaImpressionUrl(Context context, int partnerId, String entryId) {
         Uri.Builder builtUri = Uri.parse(DEFAULT_BASE_URL).buildUpon();
         builtUri.appendQueryParameter("service", "analytics")
                 .appendQueryParameter("action", "trackEvent")
                 .appendQueryParameter("eventType", "1")
                 .appendQueryParameter("partnerId", String.valueOf(partnerId))
-                .appendQueryParameter("entryId", DEFAULT_KAVA_ENTRY_ID)
+                .appendQueryParameter("entryId", entryId)
                 .appendQueryParameter("sessionId", generateSessionId())
                 .appendQueryParameter("eventIndex", "1")
                 .appendQueryParameter("referrer", toBase64(context.getPackageName().getBytes()))
