@@ -164,26 +164,16 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         super.prepare(mediaConfig);
 
-        if (loadedPlugins != null && !loadedPlugins.containsKey(kavaPluginKey) &&
-                !isKavaImpressionFired && !PKDeviceCapabilities.isKalturaPlayerAvailable()) {
-
-            Pair<Integer, String> metaData = getKavaImpressionInfo(mediaConfig);
-
-            int partnerId = metaData.first == null ? 0 : metaData.first;
-            String entryId = TextUtils.isEmpty(metaData.second) ? "" : metaData.second;
-
-            if (partnerId <= 0) {
-                partnerId = NetworkUtils.DEFAULT_KAVA_PARTNER_ID;
-                entryId = NetworkUtils.DEFAULT_KAVA_ENTRY_ID;
-            }
-
-            NetworkUtils.sendKavaImpression(context, partnerId, entryId);
-            isKavaImpressionFired = true;
-        }
-
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
             loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
         }
+
+        if (loadedPlugins != null && !loadedPlugins.containsKey(kavaPluginKey) &&
+                !isKavaImpressionFired && !PKDeviceCapabilities.isKalturaPlayerAvailable()) {
+            fireKavaImpression(mediaConfig);
+            isKavaImpressionFired = true;
+        }
+
 //        messageBus.post(new Runnable() {
 //            @Override
 //            public void run() {
@@ -221,6 +211,29 @@ class PlayerLoader extends PlayerDecoratorBase {
         setPlayer(currentLayer);
     }
 
+    /**
+     * Fire Kava impression
+     * @param pkMediaConfig mediaConfig
+     */
+    private void fireKavaImpression(PKMediaConfig pkMediaConfig) {
+        Pair<Integer, String> metaData = getKavaImpressionInfo(pkMediaConfig);
+
+        int partnerId = metaData.first == null ? 0 : metaData.first;
+        String entryId = TextUtils.isEmpty(metaData.second) ? "" : metaData.second;
+
+        if (partnerId <= 0) {
+            partnerId = NetworkUtils.DEFAULT_KAVA_PARTNER_ID;
+            entryId = NetworkUtils.DEFAULT_KAVA_ENTRY_ID;
+        }
+
+        NetworkUtils.sendKavaImpression(context, partnerId, entryId);
+    }
+
+    /**
+     * Get EntryId and PartnerId from Metadata
+     * @param pkMediaConfig mediaConfig
+     * @return Pair of Entry and partner Ids
+     */
     private Pair<Integer, String> getKavaImpressionInfo(PKMediaConfig pkMediaConfig) {
         final String kavaPartnerIdKey = "kavaPartnerId";
         final String kavaEntryIdKey = "entryId";
