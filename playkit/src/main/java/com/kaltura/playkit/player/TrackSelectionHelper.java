@@ -936,21 +936,32 @@ class TrackSelectionHelper {
             }
 
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
+            int currentIndex = 0;
             while (videoTrackIterator.hasNext()) {
                 VideoTrack currentVideoTrack = videoTrackIterator.next();
                 long currentAbrSelectedValue;
+                long nextAbrSelectedValue;
+                // Get the next track from the originalVideoTrack list
+                int nextIndex = (currentIndex == originalVideoTracks.size() - 1) ? -1 : currentIndex + 1;
 
                 if (pkAbrFilter == PKAbrFilter.HEIGHT) {
                     currentAbrSelectedValue = currentVideoTrack.getHeight();
+                    nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getHeight() : -1;
                 } else if (pkAbrFilter == PKAbrFilter.WIDTH) {
                     currentAbrSelectedValue = currentVideoTrack.getWidth();
+                    nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getWidth() : -1;
                 } else if (pkAbrFilter == PKAbrFilter.PIXEL) {
                     currentAbrSelectedValue = currentVideoTrack.getWidth() * currentVideoTrack.getHeight();
+                    nextAbrSelectedValue = nextIndex != -1 ?
+                            originalVideoTracks.get(nextIndex).getWidth() * originalVideoTracks.get(nextIndex).getHeight() :
+                            -1;
                 } else {
                     currentAbrSelectedValue = currentVideoTrack.getBitrate();
+                    nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getBitrate() : -1;
                 }
 
-                if ((currentAbrSelectedValue >= minAbr && currentAbrSelectedValue <= maxAbr)) {
+                if ((currentAbrSelectedValue >= minAbr && currentAbrSelectedValue <= maxAbr) ||
+                        (nextAbrSelectedValue != -1 && minAbr > currentAbrSelectedValue && maxAbr < nextAbrSelectedValue)) {
                     uniqueIds.add(currentVideoTrack.getUniqueId());
                 } else {
                     if (currentVideoTrack.isAdaptive() || !isValidABRRange) {
@@ -959,11 +970,13 @@ class TrackSelectionHelper {
                         videoTrackIterator.remove();
                     }
                 }
+
+                currentIndex++;
             }
         }
         return uniqueIds;
     }
-
+    
     private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
         if (uniqueIds == null || uniqueIds[0] == null) {
             throw new IllegalArgumentException("Track selection with uniqueId = null");
