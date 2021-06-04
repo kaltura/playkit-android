@@ -1305,6 +1305,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (minAbr > maxAbr || maxAbr <= 0) {
             minAbr = Long.MIN_VALUE;
             maxAbr = Long.MAX_VALUE;
+            pkAbrFilter = PKAbrFilter.NONE;
             String errorMessage = "Either given min ABR value is greater than max ABR or max ABR is <= 0";
             sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
         }

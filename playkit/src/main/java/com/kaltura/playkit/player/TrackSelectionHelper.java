@@ -929,6 +929,9 @@ class TrackSelectionHelper {
 
                 if ((minAbr > maxValueInStream) || (maxAbr < minValueInStream)) {
                     isValidABRRange = false;
+                    minAbr = Long.MIN_VALUE;
+                    maxAbr = Long.MAX_VALUE;
+                    pkAbrFilter = PKAbrFilter.NONE;
                     String errorMessage = "given minVideo ABR or maxVideo ABR is invalid";
                     PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
                     tracksErrorListener.onTracksOverrideABRError(currentError);
@@ -937,12 +940,13 @@ class TrackSelectionHelper {
 
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
             int currentIndex = 0;
+            int originalVideoTrackSize = originalVideoTracks.size();
             while (videoTrackIterator.hasNext()) {
                 VideoTrack currentVideoTrack = videoTrackIterator.next();
                 long currentAbrSelectedValue;
                 long nextAbrSelectedValue;
                 // Get the next track from the originalVideoTrack list
-                int nextIndex = (currentIndex == originalVideoTracks.size() - 1) ? -1 : currentIndex + 1;
+                int nextIndex = (currentIndex == originalVideoTrackSize - 1) ? -1 : currentIndex + 1;
 
                 if (pkAbrFilter == PKAbrFilter.HEIGHT) {
                     currentAbrSelectedValue = currentVideoTrack.getHeight();
@@ -976,7 +980,7 @@ class TrackSelectionHelper {
         }
         return uniqueIds;
     }
-    
+
     private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
         if (uniqueIds == null || uniqueIds[0] == null) {
             throw new IllegalArgumentException("Track selection with uniqueId = null");
