@@ -18,6 +18,7 @@ import com.kaltura.android.exoplayer2.trackselection.TrackSelector
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectorResult
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter
 import com.kaltura.playkit.PKSubtitlePreference
+import com.kaltura.playkit.PKVideoCodec
 import com.kaltura.testhelper.FakeRendererCapabilities
 import com.kaltura.testhelper.FakeTimeline
 import com.kaltura.testhelper.TestUtils
@@ -201,15 +202,48 @@ internal class TrackSelectionHelperTest {
         val trackSelectionHelper = getTrackSelectionHelper(mockedSelector)
         playerSettings.setSubtitlePreference(PKSubtitlePreference.OFF);
         assertFalse(trackSelectionHelper.discardTextTrackOnPreference(format))
-        
+
         playerSettings.setSubtitlePreference(PKSubtitlePreference.EXTERNAL)
         val japaneseFormat = format.buildUpon().setLanguage("ja-text/vtt").setSampleMimeType("text/vtt").build()
-        val japaneseFormat1 = format.buildUpon().setLanguage("ja2-text/vtt").setSampleMimeType("text/vtt").build()
-        var formatMap: HashMap<String, List<Format>> = HashMap()
-        formatMap.put("ja", Arrays.asList(japaneseFormat, japaneseFormat1))
-        trackSelectionHelper.subtitleListMap.put("ja", formatMap)
+        val japaneseInternalFormat = format.buildUpon().setLanguage("ja").setSampleMimeType("text/vtt").build()
+        val englishFormat = format.buildUpon().setLanguage("en-text/vtt").setSampleMimeType("text/vtt").build()
+        val formatMapJa: HashMap<String, List<Format>> = HashMap()
+        val formatMapEn: HashMap<String, List<Format>> = HashMap()
+        formatMapJa.put("ja", listOf(japaneseFormat))
+        formatMapJa.put("ja-text/vtt", listOf(japaneseInternalFormat))
+        formatMapEn.put("en", listOf(englishFormat))
+        trackSelectionHelper.subtitleListMap.put("ja", formatMapJa)
+        trackSelectionHelper.subtitleListMap.put("en", formatMapEn)
 
         assertFalse(trackSelectionHelper.discardTextTrackOnPreference(japaneseFormat))
     }
-    
+
+    @Test
+    fun filterVideoTracks_hevc() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_hevc_and_avc_mix"))
+        // HEVC only track
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        `when`(spyTrackSelectionHelper.videoCodecsSupportedInHardware()).thenReturn(true)
+        `when`(spyTrackSelectionHelper.isCodecSupported(anyString(), eq(TrackSelectionHelper.TrackType.VIDEO), anyBoolean())).thenReturn(true)
+        playerSettings.preferredVideoCodecSettings.allowMixedCodecAdaptiveness = false
+        spyTrackSelectionHelper.prepareTracks(TrackSelectionArray(), null)
+        val videoTrack = spyTrackSelectionHelper.filterVideoTracks()
+        assertEquals(4, videoTrack.size)
+        assertEquals("HEVC Track Found: ", PKVideoCodec.HEVC, videoTrack.get(0).codecType)
+    }
+
+    @Test
+    fun filterVideoTracks_avc() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_hevc_and_avc_mix"))
+        // AVC only track
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        `when`(spyTrackSelectionHelper.videoCodecsSupportedInHardware()).thenReturn(true)
+        `when`(spyTrackSelectionHelper.isCodecSupported(anyString(), eq(TrackSelectionHelper.TrackType.VIDEO), anyBoolean())).thenReturn(true)
+        playerSettings.preferredVideoCodecSettings = VideoCodecSettings().setCodecPriorityList(listOf(PKVideoCodec.AVC, PKVideoCodec.HEVC))
+        spyTrackSelectionHelper.prepareTracks(TrackSelectionArray(), null)
+        val videoTrack = spyTrackSelectionHelper.filterVideoTracks()
+        assertEquals(5, videoTrack.size)
+        assertEquals("AVC Track Found: ", PKVideoCodec.AVC, videoTrack.get(0).codecType)
+    }
+
 }

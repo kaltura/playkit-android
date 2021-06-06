@@ -1763,7 +1763,7 @@ class TrackSelectionHelper {
         this.hasExternalSubtitles = hasExternalSubtitles;
     }
 
-    public static boolean isCodecSupported(@NonNull String codecs, @Nullable TrackType type, boolean allowSoftware) {
+    protected boolean isCodecSupported(@NonNull String codecs, @Nullable TrackType type, boolean allowSoftware) {
 
         if (type == TrackType.TEXT) {
             return true;    // always supported
@@ -1790,9 +1790,4 @@ class TrackSelectionHelper {
             return PKCodecSupport.hasDecoder(codecs, false, allowSoftware);
         }
     }
-
-
-
-
-
 }
