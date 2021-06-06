@@ -371,7 +371,7 @@ public interface Player {
         /**
          * Creates a request configuration for HttpDataSourceFactory {@link com.kaltura.playkit.player.ExoPlayerWrapper}.
          *
-         * @param pkRequestConfig - Configuration for PKRequestConfiguration
+         * @param pkRequestConfig - Configuration for PKRequestConfig
          * @return - Player Settings
          */
         Settings setPKRequestConfig(PKRequestConfig pkRequestConfig);
