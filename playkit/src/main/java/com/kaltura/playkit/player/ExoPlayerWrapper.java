@@ -679,10 +679,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
 
-        final PKRequestConfiguration pkRequestConfiguration = playerSettings.getPkRequestConfiguration();
-        final int connectTimeout = pkRequestConfiguration.getConnectTimeoutMs();
-        final int readTimeout = pkRequestConfiguration.getReadTimeoutMs();
-        final boolean crossProtocolRedirectEnabled = pkRequestConfiguration.getCrossProtocolRedirectEnabled();
+        final PKRequestConfig pkRequestConfig = playerSettings.getPKRequestConfig();
+        final int connectTimeout = pkRequestConfig.getConnectTimeoutMs();
+        final int readTimeout = pkRequestConfig.getReadTimeoutMs();
+        final boolean crossProtocolRedirectEnabled = pkRequestConfig.getCrossProtocolRedirectEnabled();
 
         if (CookieHandler.getDefault() == null) {
             CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
