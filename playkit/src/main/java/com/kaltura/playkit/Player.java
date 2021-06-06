@@ -93,7 +93,7 @@ public interface Player {
 
         /**
          * This method is deprecated.
-         * Please use {@link com.kaltura.playkit.PKRequestConfiguration} to set crossProtocolRedirect
+         * Please use {@link com.kaltura.playkit.PKRequestConfig} to set crossProtocolRedirect
          *
          * Decide if player should do cross protocol redirect or not. By default it will be always set
          * to false.
@@ -371,10 +371,10 @@ public interface Player {
         /**
          * Creates a request configuration for HttpDataSourceFactory {@link com.kaltura.playkit.player.ExoPlayerWrapper}.
          *
-         * @param pkRequestConfiguration - Configuration for PKRequestConfiguration
+         * @param pkRequestConfig - Configuration for PKRequestConfiguration
          * @return - Player Settings
          */
-        Settings setPKRequestConfig(PKRequestConfiguration pkRequestConfiguration);
+        Settings setPKRequestConfig(PKRequestConfig pkRequestConfig);
     }
 
     /**
