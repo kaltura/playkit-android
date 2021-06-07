@@ -910,21 +910,27 @@ class TrackSelectionHelper {
                 long minValueInStream;
                 long maxValueInStream;
 
-                if (pkAbrFilter == PKAbrFilter.HEIGHT) {
-                    Collections.sort(videoTracks, new VideoTrack.HeightComparator());
-                    minValueInStream = videoTracks.get(1).getHeight();
-                    maxValueInStream = videoTracks.get(videoTracks.size() - 1).getHeight();
-                } else if (pkAbrFilter == PKAbrFilter.WIDTH) {
-                    Collections.sort(videoTracks, new VideoTrack.WidthComparator());
-                    minValueInStream = videoTracks.get(1).getWidth();
-                    maxValueInStream = videoTracks.get(videoTracks.size() - 1).getWidth();
-                } else if (pkAbrFilter == PKAbrFilter.PIXEL) {
-                    Collections.sort(videoTracks, new VideoTrack.PixelComparator());
-                    minValueInStream = videoTracks.get(1).getWidth() * videoTracks.get(1).getHeight();
-                    maxValueInStream = videoTracks.get(videoTracks.size() - 1).getWidth() * videoTracks.get(videoTracks.size() - 1).getHeight();
-                } else {
-                    minValueInStream = videoTracks.get(1).getBitrate();
-                    maxValueInStream = videoTracks.get(videoTracks.size() - 1).getBitrate();
+                switch (pkAbrFilter) {
+                    case HEIGHT:
+                        Collections.sort(videoTracks, new VideoTrack.HeightComparator());
+                        minValueInStream = videoTracks.get(1).getHeight();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getHeight();
+                        break;
+                    case WIDTH:
+                        Collections.sort(videoTracks, new VideoTrack.WidthComparator());
+                        minValueInStream = videoTracks.get(1).getWidth();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getWidth();
+                        break;
+                    case PIXEL:
+                        Collections.sort(videoTracks, new VideoTrack.PixelComparator());
+                        minValueInStream = videoTracks.get(1).getWidth() * videoTracks.get(1).getHeight();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getWidth() * videoTracks.get(videoTracks.size() - 1).getHeight();
+                        break;
+                    case NONE:
+                    default:
+                        minValueInStream = videoTracks.get(1).getBitrate();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getBitrate();
+                        break;
                 }
 
                 if ((minAbr > maxValueInStream) || (maxAbr < minValueInStream)) {
