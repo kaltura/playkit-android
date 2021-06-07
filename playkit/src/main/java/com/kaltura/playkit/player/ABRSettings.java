@@ -50,6 +50,9 @@ public class ABRSettings {
      * @return - ABRSettings
      */
     public ABRSettings setMinVideoBitrate(long minVideoBitrate) {
+        if (minVideoBitrate < 0) {
+            minVideoBitrate = Long.MIN_VALUE;
+        }
         this.minVideoBitrate = minVideoBitrate;
         return this;
     }
@@ -61,6 +64,9 @@ public class ABRSettings {
      * @return - ABRSettings
      */
     public ABRSettings setMaxVideoBitrate(long maxVideoBitrate) {
+        if (maxVideoBitrate < 0) {
+            maxVideoBitrate = Long.MAX_VALUE;
+        }
         this.maxVideoBitrate = maxVideoBitrate;
         return this;
     }
@@ -72,6 +78,9 @@ public class ABRSettings {
      * @return - ABRSettings
      */
     public ABRSettings setMaxVideoHeight(long maxVideoHeight) {
+        if (maxVideoHeight < 0) {
+            maxVideoHeight = Long.MAX_VALUE;
+        }
         this.maxVideoHeight = maxVideoHeight;
         return this;
     }
@@ -83,6 +92,9 @@ public class ABRSettings {
      * @return - ABRSettings
      */
     public ABRSettings setMinVideoHeight(long minVideoHeight) {
+        if (minVideoHeight < 0) {
+            minVideoHeight = Long.MIN_VALUE;
+        }
         this.minVideoHeight = minVideoHeight;
         return this;
     }
@@ -94,6 +106,9 @@ public class ABRSettings {
      * @return - ABRSettings
      */
     public ABRSettings setMaxVideoWidth(long maxVideoWidth) {
+        if (maxVideoWidth < 0) {
+            maxVideoWidth = Long.MAX_VALUE;
+        }
         this.maxVideoWidth = maxVideoWidth;
         return this;
     }
@@ -105,6 +120,9 @@ public class ABRSettings {
      * @return - ABRSettings
      */
     public ABRSettings setMinVideoWidth(long minVideoWidth) {
+        if (minVideoWidth < 0) {
+            minVideoWidth = Long.MIN_VALUE;
+        }
         this.minVideoWidth = minVideoWidth;
         return this;
     }

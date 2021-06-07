@@ -1609,8 +1609,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         Long minVideoBitrate = abrSettings.getMinVideoBitrate();
         Long maxVideoBitrate = abrSettings.getMaxVideoBitrate();
 
-        if ((maxVideoHeight != Long.MAX_VALUE || minVideoHeight != Long.MIN_VALUE) &&
-                (maxVideoWidth != Long.MAX_VALUE || minVideoWidth != Long.MIN_VALUE)) {
+        if ((maxVideoHeight != Long.MAX_VALUE && minVideoHeight != Long.MIN_VALUE) &&
+                (maxVideoWidth != Long.MAX_VALUE && minVideoWidth != Long.MIN_VALUE)) {
             abrPriorityMap.put(PKAbrFilter.PIXEL, new Pair<>(minVideoWidth * minVideoHeight, maxVideoWidth * maxVideoHeight));
         } else if (maxVideoHeight != Long.MAX_VALUE || minVideoHeight != Long.MIN_VALUE) {
             abrPriorityMap.put(PKAbrFilter.HEIGHT, new Pair<>(minVideoHeight, maxVideoHeight));
