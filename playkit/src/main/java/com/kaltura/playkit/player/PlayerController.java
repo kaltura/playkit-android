@@ -715,8 +715,7 @@ public class PlayerController implements Player {
             return;
         }
 
-        if (abrSettings.getMinVideoBitrate().longValue() == playerSettings.getAbrSettings().getMinVideoBitrate().longValue() &&
-                abrSettings.getMaxVideoBitrate().longValue() == playerSettings.getAbrSettings().getMaxVideoBitrate().longValue()) {
+        if (abrSettings.equals(playerSettings.getAbrSettings())) {
             log.w("Existing and Incoming ABR Settings are same");
             return;
         }
