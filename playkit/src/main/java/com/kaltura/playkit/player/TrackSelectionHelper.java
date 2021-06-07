@@ -504,7 +504,7 @@ class TrackSelectionHelper {
         return false;
     }
 
-    protected void populateAllCodecTracks(boolean atleastOneCodecSupportedInHardware) {
+    void populateAllCodecTracks(boolean atleastOneCodecSupportedInHardware) {
         for (Map.Entry<PKVideoCodec, List<VideoTrack>> multipleCodecEntry  : videoTracksCodecsMap.entrySet()) {
             for (VideoTrack codecVideoTrack : multipleCodecEntry.getValue()) {
                 if (codecVideoTrack.getCodecName() != null &&

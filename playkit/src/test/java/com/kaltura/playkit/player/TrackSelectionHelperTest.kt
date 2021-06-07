@@ -17,6 +17,7 @@ import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray
 import com.kaltura.android.exoplayer2.trackselection.TrackSelector
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectorResult
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter
+import com.kaltura.playkit.PKAudioCodec
 import com.kaltura.playkit.PKSubtitlePreference
 import com.kaltura.playkit.PKVideoCodec
 import com.kaltura.testhelper.FakeRendererCapabilities
@@ -246,4 +247,18 @@ internal class TrackSelectionHelperTest {
         assertEquals("AVC Track Found: ", PKVideoCodec.AVC, videoTrack.get(0).codecType)
     }
 
+    @Test
+    fun filterAdaptiveAudioTracks_ec3() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_audio_only"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper.prepareTracks(TrackSelectionArray(), null)
+        playerSettings.preferredAudioCodecSettings = AudioCodecSettings().setCodecPriorityList(listOf(PKAudioCodec.E_AC3, PKAudioCodec.AAC))
+        val audioTrack = spyTrackSelectionHelper.filterAdaptiveAudioTracks()
+        assertEquals(2, audioTrack.size)
+    }
+
+    @Test
+    fun extractTextTracksToMap() {
+
+    }
 }

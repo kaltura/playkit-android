@@ -16,8 +16,8 @@
         maxFrameRate="25">
         <SegmentTemplate
             timescale="1000"
-            media="https://kalhlspd-a.akamaihd.net/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_,3nudljkx,8sk0np7s,ntkon8wy,j2lglql3,2lps5mcy,lf6l8e4n,xyjf6mch,/forceproxy/true/name/a.mp4.urlset/fragment-$Number$-$RepresentationID$.m4s?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
-            initialization="https://kalhlspd-a.akamaihd.net/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_,3nudljkx,8sk0np7s,ntkon8wy,j2lglql3,2lps5mcy,lf6l8e4n,xyjf6mch,/forceproxy/true/name/a.mp4.urlset/init-$RepresentationID$.mp4?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
+            media="https://demo-a.net.name/a.mp4.urlset/fragment-$Number$-$RepresentationID$.m4s?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
+            initialization="https://demo-a.net.name/a.mp4.urlset/init-$RepresentationID$.mp4?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
             startNumber="1">
             <SegmentTimeline>
                 <S d="4000" r="23"/>
@@ -66,8 +66,8 @@
         maxFrameRate="25">
         <SegmentTemplate
             timescale="1000"
-            media="https://kalhlspd-a.akamaihd.net/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_,3nudljkx,8sk0np7s,ntkon8wy,j2lglql3,2lps5mcy,lf6l8e4n,xyjf6mch,/forceproxy/true/name/a.mp4.urlset/fragment-$Number$-$RepresentationID$.m4s?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
-            initialization="https://kalhlspd-a.akamaihd.net/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_,3nudljkx,8sk0np7s,ntkon8wy,j2lglql3,2lps5mcy,lf6l8e4n,xyjf6mch,/forceproxy/true/name/a.mp4.urlset/init-$RepresentationID$.mp4?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
+            media="https://demo-a.net.name/a.mp4.urlset/fragment-$Number$-$RepresentationID$.m4s?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
+            initialization="https://demo-a.net.name/a.mp4.urlset/init-$RepresentationID$.mp4?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
             startNumber="1">
             <SegmentTimeline>
                 <S d="4000" r="23"/>
@@ -127,8 +127,8 @@
           value="1"/>
         <SegmentTemplate
             timescale="1000"
-            media="https://kalhlspd-a.akamaihd.net/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_,3nudljkx,8sk0np7s,ntkon8wy,j2lglql3,2lps5mcy,lf6l8e4n,xyjf6mch,/forceproxy/true/name/a.mp4.urlset/fragment-$Number$-$RepresentationID$.m4s?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
-            initialization="https://kalhlspd-a.akamaihd.net/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_,3nudljkx,8sk0np7s,ntkon8wy,j2lglql3,2lps5mcy,lf6l8e4n,xyjf6mch,/forceproxy/true/name/a.mp4.urlset/init-$RepresentationID$.mp4?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
+            media="https://demo-a.net.name/a.mp4.urlset/fragment-$Number$-$RepresentationID$.m4s?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
+            initialization="https://demo-a.net.name/a.mp4.urlset/init-$RepresentationID$.mp4?__hdnea__=st=1622899124~exp=1622985524~acl=/s/dash/p/2215841/sp/221584100/serveFlavor/entryId/1_zhpdyrr2/v/1/ev/9/flavorId/1_*~hmac=b378bbcd5d60f1ac7e0e864706f91bc123caca7f51378a82a2f2e461c678c804"
             startNumber="1">
             <SegmentTimeline>
                 <S d="4000" r="23"/>
