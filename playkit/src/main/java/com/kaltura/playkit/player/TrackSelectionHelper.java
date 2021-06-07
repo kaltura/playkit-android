@@ -954,20 +954,26 @@ class TrackSelectionHelper {
                 // Get the next track from the originalVideoTrack list
                 int nextIndex = (currentIndex == originalVideoTrackSize - 1) ? -1 : currentIndex + 1;
 
-                if (pkAbrFilter == PKAbrFilter.HEIGHT) {
-                    currentAbrSelectedValue = currentVideoTrack.getHeight();
-                    nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getHeight() : -1;
-                } else if (pkAbrFilter == PKAbrFilter.WIDTH) {
-                    currentAbrSelectedValue = currentVideoTrack.getWidth();
-                    nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getWidth() : -1;
-                } else if (pkAbrFilter == PKAbrFilter.PIXEL) {
-                    currentAbrSelectedValue = currentVideoTrack.getWidth() * currentVideoTrack.getHeight();
-                    nextAbrSelectedValue = nextIndex != -1 ?
-                            originalVideoTracks.get(nextIndex).getWidth() * originalVideoTracks.get(nextIndex).getHeight() :
-                            -1;
-                } else {
-                    currentAbrSelectedValue = currentVideoTrack.getBitrate();
-                    nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getBitrate() : -1;
+                switch (pkAbrFilter) {
+                    case HEIGHT:
+                        currentAbrSelectedValue = currentVideoTrack.getHeight();
+                        nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getHeight() : -1;
+                        break;
+                    case WIDTH:
+                        currentAbrSelectedValue = currentVideoTrack.getWidth();
+                        nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getWidth() : -1;
+                        break;
+                    case PIXEL:
+                        currentAbrSelectedValue = currentVideoTrack.getWidth() * currentVideoTrack.getHeight();
+                        nextAbrSelectedValue = nextIndex != -1 ?
+                                originalVideoTracks.get(nextIndex).getWidth() * originalVideoTracks.get(nextIndex).getHeight() :
+                                -1;
+                        break;
+                    case NONE:
+                    default:
+                        currentAbrSelectedValue = currentVideoTrack.getBitrate();
+                        nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getBitrate() : -1;
+                        break;
                 }
 
                 if ((currentAbrSelectedValue >= minAbr && currentAbrSelectedValue <= maxAbr) ||
