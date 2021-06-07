@@ -17,6 +17,8 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKVideoCodec;
 
+import java.util.Comparator;
+
 
 /**
  * Video track data holder.
@@ -92,6 +94,33 @@ public class VideoTrack extends BaseTrack implements Comparable<VideoTrack> {
 
     @Override
     public int compareTo(@NonNull VideoTrack track) {
-        return Integer.compare((int)this.getBitrate(), (int)track.getBitrate());
+        return Long.compare((long)this.getBitrate(), (long)track.getBitrate());
+    }
+
+    public static class HeightComparator implements Comparator<VideoTrack> {
+        @Override
+        public int compare(VideoTrack videoTrack1, VideoTrack videoTrack2) {
+            Integer track1 = videoTrack1.getHeight();
+            Integer track2 = videoTrack2.getHeight();
+            return track1.compareTo(track2);
+        }
+    }
+
+    public static class WidthComparator implements Comparator<VideoTrack> {
+        @Override
+        public int compare(VideoTrack videoTrack1, VideoTrack videoTrack2) {
+            Integer track1 = videoTrack1.getWidth();
+            Integer track2 = videoTrack2.getWidth();
+            return track1.compareTo(track2);
+        }
+    }
+
+    public static class PixelComparator implements Comparator<VideoTrack> {
+        @Override
+        public int compare(VideoTrack videoTrack1, VideoTrack videoTrack2) {
+            Integer track1 = videoTrack1.getWidth() * videoTrack1.getHeight();
+            Integer track2 = videoTrack2.getWidth() * videoTrack2.getHeight();
+            return track1.compareTo(track2);
+        }
     }
 }

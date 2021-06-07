@@ -34,6 +34,7 @@ import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.kaltura.playkit.PKAbrFilter;
 import com.kaltura.playkit.PKAudioCodec;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -857,9 +858,9 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    protected void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+    protected void overrideMediaDefaultABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
 
-        List<String> uniqueIds = getCodecUniqueIdsWithABR(minVideoBitrate, maxVideoBitrate);
+        List<String> uniqueIds = getCodecUniqueIdsWithABR(minAbr, maxAbr, pkAbrFilter);
 
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
@@ -888,7 +889,7 @@ class TrackSelectionHelper {
         return uniqueIds;
     }
 
-    private List<String> getCodecUniqueIdsWithABR(long minVideoBitrate, long maxVideoBitrate) {
+    private List<String> getCodecUniqueIdsWithABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
         List<String> uniqueIds = new ArrayList<>();
 
         boolean isValidABRRange = true;
@@ -906,22 +907,77 @@ class TrackSelectionHelper {
 
             Collections.sort(videoTracks);
             if (videoTracks.size() >= 2) {
+                long minValueInStream;
+                long maxValueInStream;
 
-                long minBitrateInStream = videoTracks.get(1).getBitrate();
-                long maxBitrateInStream = videoTracks.get(videoTracks.size() - 1).getBitrate();
+                switch (pkAbrFilter) {
+                    case HEIGHT:
+                        Collections.sort(videoTracks, new VideoTrack.HeightComparator());
+                        minValueInStream = videoTracks.get(1).getHeight();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getHeight();
+                        break;
+                    case WIDTH:
+                        Collections.sort(videoTracks, new VideoTrack.WidthComparator());
+                        minValueInStream = videoTracks.get(1).getWidth();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getWidth();
+                        break;
+                    case PIXEL:
+                        Collections.sort(videoTracks, new VideoTrack.PixelComparator());
+                        minValueInStream = videoTracks.get(1).getWidth() * videoTracks.get(1).getHeight();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getWidth() * videoTracks.get(videoTracks.size() - 1).getHeight();
+                        break;
+                    case NONE:
+                    default:
+                        minValueInStream = videoTracks.get(1).getBitrate();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getBitrate();
+                        break;
+                }
 
-                if ((minVideoBitrate > maxBitrateInStream) || (maxVideoBitrate < minBitrateInStream)) {
+                if ((minAbr > maxValueInStream) || (maxAbr < minValueInStream)) {
                     isValidABRRange = false;
-                    String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
+                    minAbr = Long.MIN_VALUE;
+                    maxAbr = Long.MAX_VALUE;
+                    pkAbrFilter = PKAbrFilter.NONE;
+                    String errorMessage = "given minVideo ABR or maxVideo ABR is invalid";
                     PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
                     tracksErrorListener.onTracksOverrideABRError(currentError);
                 }
             }
 
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
+            int currentIndex = 0;
+            int originalVideoTrackSize = originalVideoTracks.size();
             while (videoTrackIterator.hasNext()) {
                 VideoTrack currentVideoTrack = videoTrackIterator.next();
-                if ((currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate)) {
+                long currentAbrSelectedValue;
+                long nextAbrSelectedValue;
+                // Get the next track from the originalVideoTrack list
+                int nextIndex = (currentIndex == originalVideoTrackSize - 1) ? -1 : currentIndex + 1;
+
+                switch (pkAbrFilter) {
+                    case HEIGHT:
+                        currentAbrSelectedValue = currentVideoTrack.getHeight();
+                        nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getHeight() : -1;
+                        break;
+                    case WIDTH:
+                        currentAbrSelectedValue = currentVideoTrack.getWidth();
+                        nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getWidth() : -1;
+                        break;
+                    case PIXEL:
+                        currentAbrSelectedValue = currentVideoTrack.getWidth() * currentVideoTrack.getHeight();
+                        nextAbrSelectedValue = nextIndex != -1 ?
+                                originalVideoTracks.get(nextIndex).getWidth() * originalVideoTracks.get(nextIndex).getHeight() :
+                                -1;
+                        break;
+                    case NONE:
+                    default:
+                        currentAbrSelectedValue = currentVideoTrack.getBitrate();
+                        nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getBitrate() : -1;
+                        break;
+                }
+
+                if ((currentAbrSelectedValue >= minAbr && currentAbrSelectedValue <= maxAbr) ||
+                        (nextAbrSelectedValue != -1 && minAbr > currentAbrSelectedValue && maxAbr < nextAbrSelectedValue)) {
                     uniqueIds.add(currentVideoTrack.getUniqueId());
                 } else {
                     if (currentVideoTrack.isAdaptive() || !isValidABRRange) {
@@ -930,6 +986,8 @@ class TrackSelectionHelper {
                         videoTrackIterator.remove();
                     }
                 }
+
+                currentIndex++;
             }
         }
         return uniqueIds;
