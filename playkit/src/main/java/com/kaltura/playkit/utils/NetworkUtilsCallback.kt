@@ -1,5 +1,5 @@
 package com.kaltura.playkit.utils
 
 interface NetworkUtilsCallback {
-    fun finished(json: String?, error: Any?)
+    fun finished(json: String?, errorMessage: String?)
 }
