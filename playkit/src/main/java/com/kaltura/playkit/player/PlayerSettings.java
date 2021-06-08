@@ -13,7 +13,7 @@
 package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PKRequestConfiguration;
+import com.kaltura.playkit.PKRequestConfig;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
@@ -44,13 +44,14 @@ public class PlayerSettings implements Player.Settings {
     private Integer maxAudioBitrate;
     private int maxAudioChannelCount = -1;
 
+    private MulticastSettings multicastSettings = new MulticastSettings();
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
     private VRSettings vrSettings;
     private PKLowLatencyConfig pkLowLatencyConfig;
-    private PKRequestConfiguration pkRequestConfiguration;
+    private PKRequestConfig pkRequestConfig;
     /**
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
@@ -121,6 +122,10 @@ public class PlayerSettings implements Player.Settings {
 
     public PKTrackConfig getPreferredAudioTrackConfig() {
         return preferredAudioTrackConfig;
+    }
+
+    public MulticastSettings getMulticastSettings() {
+        return multicastSettings;
     }
 
     public PKMediaFormat getPreferredMediaFormat() {
@@ -209,13 +214,13 @@ public class PlayerSettings implements Player.Settings {
         return pkLowLatencyConfig;
     }
 
-    public PKRequestConfiguration getPkRequestConfiguration() {
-        if (pkRequestConfiguration == null) {
-            PKRequestConfiguration requestConfiguration = new PKRequestConfiguration();
+    public PKRequestConfig getPKRequestConfig() {
+        if (pkRequestConfig == null) {
+            PKRequestConfig requestConfiguration = new PKRequestConfig();
             requestConfiguration.setCrossProtocolRedirectEnabled(crossProtocolRedirectEnabled());
-            pkRequestConfiguration = requestConfiguration;
+            pkRequestConfig = requestConfiguration;
         }
-        return pkRequestConfiguration;
+        return pkRequestConfig;
     }
 
     @Override
@@ -423,9 +428,18 @@ public class PlayerSettings implements Player.Settings {
         return this;
     }
 
+    
     @Override
     public Player.Settings setMaxAudioChannelCount(int maxAudioChannelCount) {
         this.maxAudioChannelCount = maxAudioChannelCount;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMulticastSettings(MulticastSettings multicastSettings) {
+        if (multicastSettings != null) {
+            this.multicastSettings = multicastSettings;
+        }
         return this;
     }
 
@@ -444,9 +458,9 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setPKRequestConfig(PKRequestConfiguration pkRequestConfiguration) {
-        if (pkRequestConfiguration != null) {
-            this.pkRequestConfiguration = pkRequestConfiguration;
+    public Player.Settings setPKRequestConfig(PKRequestConfig pkRequestConfig) {
+        if (pkRequestConfig != null) {
+            this.pkRequestConfig = pkRequestConfig;
         }
         return this;
     }
