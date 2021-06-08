@@ -584,7 +584,7 @@ public interface Player {
 
     /** Update ABRSettings
      * <br>
-     * Updating {@link ABRSettings#setInitialBitrateEstimate(long)} is unaffected because
+     * Updating {@link ABRSettings#setInitialBitrateEstimate(Long)} is unaffected because
      * initial bitrate is only meant at the start of the playback
      * <br>
      * @param abrSettings new ABR Settings

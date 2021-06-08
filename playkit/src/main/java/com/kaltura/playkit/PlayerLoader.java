@@ -14,13 +14,16 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
+import com.kaltura.playkit.utils.NetworkUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -48,6 +51,8 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
+    private boolean isKavaImpressionFired;
+    private final String kavaPluginKey = "kava";
 
     PlayerLoader(Context context, MessageBus messageBus) {
         this.context = context;
@@ -124,6 +129,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         stop();
         releasePlugins();
         releasePlayer();
+        isKavaImpressionFired = false;
     }
 
     @Override
@@ -161,6 +167,13 @@ class PlayerLoader extends PlayerDecoratorBase {
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
             loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
         }
+
+        if (!isKavaImpressionFired && !PKDeviceCapabilities.isKalturaPlayerAvailable() &&
+                loadedPlugins != null && !loadedPlugins.containsKey(kavaPluginKey)) {
+            fireKavaImpression(mediaConfig);
+            isKavaImpressionFired = true;
+        }
+
 //        messageBus.post(new Runnable() {
 //            @Override
 //            public void run() {
@@ -196,6 +209,49 @@ class PlayerLoader extends PlayerDecoratorBase {
         }
 
         setPlayer(currentLayer);
+    }
+
+    /**
+     * Fire Kava impression
+     * @param pkMediaConfig mediaConfig
+     */
+    private void fireKavaImpression(PKMediaConfig pkMediaConfig) {
+        Pair<Integer, String> metaData = getKavaImpressionInfo(pkMediaConfig);
+
+        int partnerId = metaData.first == null ? 0 : metaData.first;
+        String entryId = TextUtils.isEmpty(metaData.second) ? "" : metaData.second;
+
+        if (partnerId <= 0) {
+            partnerId = NetworkUtils.DEFAULT_KAVA_PARTNER_ID;
+            entryId = NetworkUtils.DEFAULT_KAVA_ENTRY_ID;
+        }
+
+        NetworkUtils.sendKavaImpression(context, partnerId, entryId);
+    }
+
+    /**
+     * Get EntryId and PartnerId from Metadata
+     * @param pkMediaConfig mediaConfig
+     * @return Pair of Entry and partner Ids
+     */
+    private Pair<Integer, String> getKavaImpressionInfo(PKMediaConfig pkMediaConfig) {
+        final String kavaPartnerIdKey = "kavaPartnerId";
+        final String kavaEntryIdKey = "entryId";
+        int kavaPartnerId = 0;
+        String kavaEntryId = null;
+
+        if (pkMediaConfig.getMediaEntry() != null && pkMediaConfig.getMediaEntry().getMetadata() != null) {
+            if (pkMediaConfig.getMediaEntry().getMetadata().containsKey(kavaPartnerIdKey)) {
+                String partnerId = pkMediaConfig.getMediaEntry().getMetadata().get(kavaPartnerIdKey);
+                kavaPartnerId = Integer.parseInt(partnerId != null && TextUtils.isDigitsOnly(partnerId) && !TextUtils.isEmpty(partnerId) ? partnerId : "0");
+            }
+
+            if (pkMediaConfig.getMediaEntry().getMetadata().containsKey(kavaEntryIdKey)) {
+                kavaEntryId = pkMediaConfig.getMediaEntry().getMetadata().get(kavaEntryIdKey);
+            }
+        }
+
+        return Pair.create(kavaPartnerId, kavaEntryId);
     }
 
     private PKPlugin loadPlugin(String name, Player player, Object config, MessageBus messageBus, Context context) {
