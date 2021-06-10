@@ -12,14 +12,9 @@ import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifestParse
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomFormat
 import com.kaltura.android.exoplayer2.source.MediaSource
 import com.kaltura.android.exoplayer2.source.TrackGroupArray
-import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray
-import com.kaltura.android.exoplayer2.trackselection.TrackSelector
-import com.kaltura.android.exoplayer2.trackselection.TrackSelectorResult
+import com.kaltura.android.exoplayer2.trackselection.*
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter
-import com.kaltura.playkit.PKAudioCodec
-import com.kaltura.playkit.PKSubtitlePreference
-import com.kaltura.playkit.PKVideoCodec
+import com.kaltura.playkit.*
 import com.kaltura.testhelper.FakeRendererCapabilities
 import com.kaltura.testhelper.FakeTimeline
 import com.kaltura.testhelper.TestUtils
@@ -28,7 +23,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.*
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
@@ -41,6 +35,7 @@ internal class TrackSelectionHelperTest {
     private val hlsFilePrefix: String = "sample_hls"
 
     private lateinit var actualSelector: TrackSelector
+    private lateinit var actualTrackSelectionArray: TrackSelectionArray
     private var mockedSelector: DefaultTrackSelector = mock(DefaultTrackSelector::class.java)
 
     private val lastSelectedTrackIds = arrayOf(TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE)
@@ -93,6 +88,13 @@ internal class TrackSelectionHelperTest {
                 trackGroupArray,
                 MediaSource.MediaPeriodId(timeline.getUidOfPeriod(0)),
                 FakeTimeline())
+
+        var exoTrackSelectionArray = ArrayList<ExoTrackSelection>()
+        for (exoTrackSelection: ExoTrackSelection in trackSelectorResult.selections) {
+            exoTrackSelectionArray.add(exoTrackSelection)
+        }
+
+        actualTrackSelectionArray = TrackSelectionArray(*exoTrackSelectionArray.toTypedArray())
 
         actualSelector.onSelectionActivated(trackSelectorResult.info)
 
@@ -258,7 +260,66 @@ internal class TrackSelectionHelperTest {
     }
 
     @Test
+    fun getDefaultTrackIndex() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_with_external_subtitle"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.hasExternalSubtitlesInTracks = true
+        playerSettings.subtitlePreference = PKSubtitlePreference.EXTERNAL
+        assertEquals(2, spyTrackSelectionHelper?.getDefaultTrackIndex(spyTrackSelectionHelper.textTracks, TrackSelectionHelper.NONE))
+    }
+
+    @Test
     fun extractTextTracksToMap() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_with_external_subtitle"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper.hasExternalSubtitles = true
+        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        assertEquals(4, spyTrackSelectionHelper.subtitleListMap.size)
+        assertEquals(2, spyTrackSelectionHelper.subtitleListMap["en"]?.size)
+    }
+
+    @Test
+    fun getVideoTracksUniqueIds() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_with_external_subtitle"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        assertEquals(1, spyTrackSelectionHelper.videoTracks.size)
+    }
+
+    @Test
+    fun getCodecUniqueIdsWithABR() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
+        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+
+        assertEquals(4, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(769255, 7203938, PKAbrFilter.BITRATE).size)
+        assertEquals(2, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(0, 769255, PKAbrFilter.BITRATE).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(0, 769254, PKAbrFilter.BITRATE).size)
+        assertEquals(2, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(769256, 1774250, PKAbrFilter.BITRATE).size)
+        assertEquals(4, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(1774254, 18316946, PKAbrFilter.BITRATE).size)
+        assertNotEquals(4, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(18316946, 183169469, PKAbrFilter.BITRATE).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(-1, 2000000000, PKAbrFilter.BITRATE).size)
+
+        // DO NOT TEST THIS CASE BECAUSE maxAbr > minAbr check is on ExoPlayerWrapper level. This cases will be invalid on TrackSelectionHelper level.
+        //assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(1774250, 769256, PKAbrFilter.BITRATE).size)
+
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(142, 380, PKAbrFilter.HEIGHT).size)
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(380, 570, PKAbrFilter.HEIGHT).size)
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(570, 856, PKAbrFilter.HEIGHT).size)
+        assertEquals(2, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(150, 350, PKAbrFilter.HEIGHT).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(0, 140, PKAbrFilter.HEIGHT).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(900, 10000, PKAbrFilter.HEIGHT).size)
+
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(320, 854, PKAbrFilter.WIDTH).size)
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(854, 1280, PKAbrFilter.WIDTH).size)
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(1280, 1920, PKAbrFilter.WIDTH).size)
+        assertEquals(2, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(310, 350, PKAbrFilter.WIDTH).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(0, 310, PKAbrFilter.WIDTH).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(2000, 10000, PKAbrFilter.WIDTH).size)
+
+        assertEquals(4, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(45440, 729600, PKAbrFilter.PIXEL).size)
 
     }
 }

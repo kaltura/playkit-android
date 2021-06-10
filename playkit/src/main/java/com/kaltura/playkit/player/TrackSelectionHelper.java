@@ -96,14 +96,13 @@ class TrackSelectionHelper {
     private final Context context;
     private final DefaultTrackSelector selector;
     private TrackSelectionArray trackSelectionArray;
-    private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
+    MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
 
-    private List<VideoTrack> videoTracks = new ArrayList<>();
+    List<VideoTrack> videoTracks = new ArrayList<>();
     private List<VideoTrack> originalVideoTracks;
-    private List<AudioTrack> audioTracks = new ArrayList<>();
-    private List<TextTrack> textTracks = new ArrayList<>();
-    private List<ImageTrack> imageTracks = new ArrayList<>();
-
+    List<AudioTrack> audioTracks = new ArrayList<>();
+    List<TextTrack> textTracks = new ArrayList<>();
+    List<ImageTrack> imageTracks = new ArrayList<>();
 
     Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
     Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
@@ -113,11 +112,11 @@ class TrackSelectionHelper {
     private String[] requestedChangeTrackIds;
 
     // To know if application passed the external subtitles
-    private boolean hasExternalSubtitles = false;
+    boolean hasExternalSubtitles = false;
 
     // To know if tracks has external subtitles or not.
     // Helpful in case if subtitles are removed by ExoPlayer in case of any discrepancy
-    private boolean hasExternalSubtitlesInTracks = false;
+    boolean hasExternalSubtitlesInTracks = false;
 
     private TracksInfoListener tracksInfoListener;
     private TracksErrorListener tracksErrorListener;
@@ -564,7 +563,6 @@ class TrackSelectionHelper {
      * Selecting this track, will disable the text renderer.
      */
     void maybeAddDisabledTextTrack() {
-
         if (textTracks.isEmpty()) {
             return;
         }
@@ -774,7 +772,7 @@ class TrackSelectionHelper {
                 + getUniqueIdPostfix(rendererIndex, trackIndex);
     }
 
-    private String getUniqueIdPrefix(int rendererIndex) {
+    String getUniqueIdPrefix(int rendererIndex) {
         switch (rendererIndex) {
             case TRACK_TYPE_VIDEO:
                 return VIDEO_PREFIX;
@@ -789,7 +787,7 @@ class TrackSelectionHelper {
         }
     }
 
-    private String getUniqueIdPostfix(int rendererIndex, int trackIndex) {
+    String getUniqueIdPostfix(int rendererIndex, int trackIndex) {
         switch (rendererIndex) {
             case TRACK_ADAPTIVE:
                 return ADAPTIVE;
@@ -878,7 +876,7 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    private List<String> getVideoTracksUniqueIds() {
+    List<String> getVideoTracksUniqueIds() {
         List<String> uniqueIds = new ArrayList<>();
         if (videoTracks != null) {
             Collections.sort(videoTracks);
@@ -889,7 +887,7 @@ class TrackSelectionHelper {
         return uniqueIds;
     }
 
-    private List<String> getCodecUniqueIdsWithABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
+    List<String> getCodecUniqueIdsWithABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
         List<String> uniqueIds = new ArrayList<>();
 
         boolean isValidABRRange = true;
@@ -993,7 +991,7 @@ class TrackSelectionHelper {
         return uniqueIds;
     }
 
-    private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
+    SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
         if (uniqueIds == null || uniqueIds[0] == null) {
             throw new IllegalArgumentException("Track selection with uniqueId = null");
         }
@@ -1017,7 +1015,7 @@ class TrackSelectionHelper {
     }
 
     @NonNull
-    private SelectionOverride overrideMediaDefaultABR(int[][] uniqueIds, int rendererIndex, int groupIndex) {
+    SelectionOverride overrideMediaDefaultABR(int[][] uniqueIds, int rendererIndex, int groupIndex) {
         SelectionOverride override;
         int[] adaptiveTrackIndexes;
         List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
@@ -1033,7 +1031,7 @@ class TrackSelectionHelper {
         return override;
     }
 
-    private void createAdaptiveTrackIndexList(int[][] uniqueIds, int groupIndex, List<Integer> adaptiveTrackIndexesList) {
+    void createAdaptiveTrackIndexList(int[][] uniqueIds, int groupIndex, List<Integer> adaptiveTrackIndexesList) {
         int trackIndex;
         int trackGroupIndex;
 
@@ -1050,7 +1048,7 @@ class TrackSelectionHelper {
     }
 
 
-    private int[][] validateAndBuildUniqueIds(List<String> uniqueIds) {
+    int[][] validateAndBuildUniqueIds(List<String> uniqueIds) {
         int [][] idsList = new int [uniqueIds.size()][TRACK_RENDERERS_AMOUNT];
         for (int index = 0 ; index < idsList.length ; index++) {
             int[] uniqueTrackId = validateUniqueId(uniqueIds.get(index));
@@ -1063,7 +1061,7 @@ class TrackSelectionHelper {
      * @param uniqueId - the uniqueId to convert.
      * @return - int[] that consist from indexes that are readable to Exoplayer.
      */
-    private int[] parseUniqueId(String uniqueId) {
+    int[] parseUniqueId(String uniqueId) {
         int[] parsedUniqueId = new int[3];
         String splitUniqueId = removePrefix(uniqueId);
         String[] strArray = splitUniqueId.split(",");
@@ -1092,7 +1090,7 @@ class TrackSelectionHelper {
      * @param uniqueId - the unique id of the track that will override the existing one.
      * @return - the {@link SelectionOverride} which will override the existing selection.
      */
-    private SelectionOverride retrieveOverrideSelection(int[] uniqueId) {
+    SelectionOverride retrieveOverrideSelection(int[] uniqueId) {
 
         SelectionOverride override;
 
@@ -1162,7 +1160,7 @@ class TrackSelectionHelper {
     }
 
     @NonNull
-    private SelectionOverride overrideAutoABRTracks(int rendererIndex, int groupIndex) {
+    SelectionOverride overrideAutoABRTracks(int rendererIndex, int groupIndex) {
         SelectionOverride override;List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
         int[] adaptiveTrackIndexes;
 
@@ -1214,7 +1212,7 @@ class TrackSelectionHelper {
      * @param rendererIndex - renderer index on which we want to apply the change.
      * @param override      - the new selection with which we want to override the currently active track.
      */
-    private void overrideTrack(int rendererIndex, SelectionOverride override, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
+    void overrideTrack(int rendererIndex, SelectionOverride override, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
         if (override != null) {
             //actually change track.
             TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
@@ -1226,7 +1224,7 @@ class TrackSelectionHelper {
         selector.setParameters(parametersBuilder);
     }
 
-    public void updateTrackSelectorParameter(PlayerSettings playerSettings, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
+    void updateTrackSelectorParameter(PlayerSettings playerSettings, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
         if (playerSettings == null) {
             return;
         }
@@ -1289,7 +1287,7 @@ class TrackSelectionHelper {
      * @param rendererIndex - renderer index.
      * @return - true, if adaptive {@link BaseTrack} object already exist for this group.
      */
-    private boolean adaptiveTrackAlreadyExist(String uniqueId, int rendererIndex) {
+    boolean adaptiveTrackAlreadyExist(String uniqueId, int rendererIndex) {
 
         List<? extends BaseTrack> trackList = new ArrayList<>();
         switch (rendererIndex) {
@@ -1316,7 +1314,7 @@ class TrackSelectionHelper {
         return false;
     }
 
-    private int getIndexFromUniqueId(String uniqueId, int groupIndex) {
+    int getIndexFromUniqueId(String uniqueId, int groupIndex) {
         String uniqueIdWithoutPrefix = removePrefix(uniqueId);
         String[] strArray = uniqueIdWithoutPrefix.split(",");
         if (strArray[groupIndex].equals(ADAPTIVE)) {
@@ -1326,13 +1324,13 @@ class TrackSelectionHelper {
         return Integer.valueOf(strArray[groupIndex]);
     }
 
-    private String removePrefix(String uniqueId) {
+    String removePrefix(String uniqueId) {
         String[] strArray = uniqueId.split(":");
         //always return the second element of the splitString.
         return strArray[1];
     }
 
-    private int[] convertAdaptiveListToArray(List<Integer> adaptiveTrackIndexesList) {
+    int[] convertAdaptiveListToArray(List<Integer> adaptiveTrackIndexesList) {
         int[] adaptiveTrackIndexes = new int[adaptiveTrackIndexesList.size()];
         for (int i = 0; i < adaptiveTrackIndexes.length; i++) {
             adaptiveTrackIndexes[i] = adaptiveTrackIndexesList.get(i);
@@ -1341,12 +1339,12 @@ class TrackSelectionHelper {
         return adaptiveTrackIndexes;
     }
 
-    private boolean isFormatSupported(int rendererCount, int groupIndex, int trackIndex) {
+    boolean isFormatSupported(int rendererCount, int groupIndex, int trackIndex) {
         return mappedTrackInfo.getTrackSupport(rendererCount, groupIndex, trackIndex)
                 == Consts.FORMAT_HANDLED;
     }
 
-    private boolean isAdaptive(int rendererIndex, int groupIndex) {
+    boolean isAdaptive(int rendererIndex, int groupIndex) {
         TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
         return mappedTrackInfo.getAdaptiveSupport(rendererIndex, groupIndex, false)
                 != RendererCapabilities.ADAPTIVE_NOT_SUPPORTED
@@ -1360,7 +1358,7 @@ class TrackSelectionHelper {
      * @return - parsed uniqueId in case of success.
      * @throws IllegalArgumentException when uniqueId is illegal.
      */
-    private int[] validateUniqueId(String uniqueId) throws IllegalArgumentException {
+    int[] validateUniqueId(String uniqueId) throws IllegalArgumentException {
 
         if (uniqueId == null) {
             throw new IllegalArgumentException("uniqueId is null");
@@ -1389,7 +1387,7 @@ class TrackSelectionHelper {
         throw new IllegalArgumentException("Invalid structure of uniqueId " + uniqueId);
     }
 
-    private boolean isTrackIndexValid(int[] parsedUniqueId) {
+    boolean isTrackIndexValid(int[] parsedUniqueId) {
         int rendererIndex = parsedUniqueId[RENDERER_INDEX];
         int groupIndex = parsedUniqueId[GROUP_INDEX];
         int trackIndex = parsedUniqueId[TRACK_INDEX];
@@ -1408,7 +1406,7 @@ class TrackSelectionHelper {
                 && trackIndex < mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex).length;
     }
 
-    private boolean isGroupIndexValid(int[] parsedUniqueId) {
+    boolean isGroupIndexValid(int[] parsedUniqueId) {
         if (parsedUniqueId[GROUP_INDEX] == TRACK_TYPE_IMAGE) {
             return true;
         }
@@ -1532,7 +1530,7 @@ class TrackSelectionHelper {
         return -1;
     }
 
-    private ExoTrackSelection getTrackSelection(TrackSelection trackSelection) {
+    ExoTrackSelection getTrackSelection(TrackSelection trackSelection) {
         if (trackSelection instanceof ExoTrackSelection) {
             return (ExoTrackSelection) trackSelection;
         }
@@ -1649,7 +1647,7 @@ class TrackSelectionHelper {
     }
 
     @Nullable
-    private String getPreferredTextTrackUniqueId(int trackType) {
+    String getPreferredTextTrackUniqueId(int trackType) {
         if (!isValidPreferredTextConfig()) {
             return null;
         }
@@ -1695,7 +1693,7 @@ class TrackSelectionHelper {
     }
 
     @Nullable
-    private String maybeSetFirstTextTrackAsAutoSelection() {
+    String maybeSetFirstTextTrackAsAutoSelection() {
 
         String preferredTrackUniqueId = null;
         //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
@@ -1715,7 +1713,7 @@ class TrackSelectionHelper {
         return preferredTrackUniqueId;
     }
 
-    private String getPreferredAudioTrackUniqueId(int trackType) {
+    String getPreferredAudioTrackUniqueId(int trackType) {
         if (!isValidPreferredAudioConfig()) {
             return null;
         }
@@ -1746,7 +1744,7 @@ class TrackSelectionHelper {
         return preferredTrackUniqueId;
     }
 
-    private PKVideoCodec getVideoCodec(Format format) {
+    PKVideoCodec getVideoCodec(Format format) {
         String codec = format.codecs;
         if (codec != null) {
             if (codec.startsWith("hev1") || codec.startsWith("hvc1")) {
@@ -1773,7 +1771,7 @@ class TrackSelectionHelper {
         return PKVideoCodec.AVC; //VIDEO_H264
     }
 
-    private PKAudioCodec getAudioCodec(Format format) {
+    PKAudioCodec getAudioCodec(Format format) {
         String codec = format.codecs;
         if (codec != null) {
             if (codec.startsWith("mp4a")) {
@@ -1789,7 +1787,7 @@ class TrackSelectionHelper {
         return PKAudioCodec.AAC;
     }
 
-    private boolean isValidPreferredAudioConfig() {
+    boolean isValidPreferredAudioConfig() {
         if (playerSettings == null) {
             return false;
         }
@@ -1801,7 +1799,7 @@ class TrackSelectionHelper {
                 (preferredAudioTrackConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredAudioTrackConfig.getTrackLanguage() == null));
     }
 
-    private boolean isValidPreferredTextConfig() {
+     boolean isValidPreferredTextConfig() {
         if (playerSettings == null) {
             return false;
         }
@@ -1847,9 +1845,4 @@ class TrackSelectionHelper {
             return PKCodecSupport.hasDecoder(codecs, false, allowSoftware);
         }
     }
-
-
-
-
-
 }
