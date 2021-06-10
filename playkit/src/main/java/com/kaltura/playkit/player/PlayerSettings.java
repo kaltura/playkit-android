@@ -412,13 +412,21 @@ public class PlayerSettings implements Player.Settings {
 
     @Override
     public Player.Settings setMaxVideoSize(PKMaxVideoSize maxVideoSize) {
-        this.maxVideoSize = maxVideoSize;
+        ABRSettings abrSettings = getAbrSettings();
+        if (maxVideoSize != null &&
+                (abrSettings.getMaxVideoHeight() == Long.MAX_VALUE || abrSettings.getMaxVideoWidth() == Long.MAX_VALUE)) {
+            abrSettings.setMaxVideoHeight(maxVideoSize.getMaxVideoHeight());
+            abrSettings.setMaxVideoWidth(maxVideoSize.getMaxVideoWidth());
+        }
         return this;
     }
 
     @Override
     public Player.Settings setMaxVideoBitrate(Integer maxVideoBitrate) {
-        this.maxVideoBitrate = maxVideoBitrate;
+        ABRSettings abrSettings = getAbrSettings();
+        if (maxVideoBitrate > 0 && abrSettings.getMaxVideoBitrate() == Long.MAX_VALUE) {
+            abrSettings.setMaxVideoBitrate(maxVideoBitrate);
+        }
         return this;
     }
 

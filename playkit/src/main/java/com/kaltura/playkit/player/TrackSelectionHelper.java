@@ -1234,12 +1234,6 @@ class TrackSelectionHelper {
         if (playerSettings.isTunneledAudioPlayback() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             parametersBuilder.setTunnelingEnabled(playerSettings.isTunneledAudioPlayback());
         }
-        if (playerSettings.getMaxVideoSize() != null) {
-            parametersBuilder.setMaxVideoSize(playerSettings.getMaxVideoSize().getMaxVideoWidth(), playerSettings.getMaxVideoSize().getMaxVideoHeight());
-        }
-        if (playerSettings.getMaxVideoBitrate() != null) {
-            parametersBuilder.setMaxVideoBitrate(playerSettings.getMaxVideoBitrate());
-        }
         if (playerSettings.getMaxAudioBitrate() != null) {
             parametersBuilder.setMaxAudioBitrate(playerSettings.getMaxAudioBitrate());
         }
