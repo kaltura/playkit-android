@@ -105,9 +105,9 @@ class TrackSelectionHelper {
     private List<ImageTrack> imageTracks = new ArrayList<>();
 
 
-    private Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
-    private Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
-    private Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
+    Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
+    Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
+    Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
 
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
@@ -224,7 +224,7 @@ class TrackSelectionHelper {
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private PKTracks buildTracks(List<CustomFormat> rawImageTracks) {
+     PKTracks buildTracks(List<CustomFormat> rawImageTracks) {
 
         clearTracksLists();
 
@@ -392,18 +392,18 @@ class TrackSelectionHelper {
         return trackType;
     }
 
-    private String getLanguageFromFormat(Format format) {
+    String getLanguageFromFormat(Format format) {
         if (format.language == null) {
             return LANGUAGE_UNKNOWN;
         }
         return format.language;
     }
 
-    private boolean isExternalSubtitle(String language, String sampleMimeType) {
+    boolean isExternalSubtitle(String language, String sampleMimeType) {
         return language != null && (language.contains("-" + sampleMimeType) || language.contains("-" + "Unknown"));
     }
 
-    private String getExternalSubtitleLanguage(Format format) {
+    String getExternalSubtitleLanguage(Format format) {
         if (format.language != null) {
             return format.language.substring(0, format.language.indexOf("-"));
         } else {
@@ -411,7 +411,7 @@ class TrackSelectionHelper {
         }
     }
 
-    private boolean discardTextTrackOnPreference(Format format) {
+    boolean discardTextTrackOnPreference(Format format) {
         PKSubtitlePreference subtitlePreference = playerSettings.getSubtitlePreference();
         if (subtitlePreference == PKSubtitlePreference.OFF) {
             return false;
@@ -442,7 +442,7 @@ class TrackSelectionHelper {
         return false;
     }
 
-    private List<VideoTrack> filterVideoTracks() {
+    List<VideoTrack> filterVideoTracks() {
 
         if (videoTracksCodecsMap == null || videoTracksCodecsMap.isEmpty()) {
             return videoTracks;
@@ -485,7 +485,7 @@ class TrackSelectionHelper {
         return videoTracks;
     }
 
-    private boolean videoCodecsSupportedInHardware() {
+    boolean videoCodecsSupportedInHardware() {
         for (PKVideoCodec videoCodecForPlayback : playerSettings.getPreferredVideoCodecSettings().getCodecPriorityList()) {
             if (!videoTracksCodecsMap.containsKey(videoCodecForPlayback)) {
                 continue;
@@ -504,7 +504,7 @@ class TrackSelectionHelper {
         return false;
     }
 
-    private void populateAllCodecTracks(boolean atleastOneCodecSupportedInHardware) {
+    void populateAllCodecTracks(boolean atleastOneCodecSupportedInHardware) {
         for (Map.Entry<PKVideoCodec, List<VideoTrack>> multipleCodecEntry  : videoTracksCodecsMap.entrySet()) {
             for (VideoTrack codecVideoTrack : multipleCodecEntry.getValue()) {
                 if (codecVideoTrack.getCodecName() != null &&
@@ -524,7 +524,7 @@ class TrackSelectionHelper {
      * and hide all the bitrate variants.
      * if app prefers to allow audio track selection by codec type it will return all available tracks by codec by audio groups
      */
-    private ArrayList<AudioTrack> filterAdaptiveAudioTracks() {
+     ArrayList<AudioTrack> filterAdaptiveAudioTracks() {
         ArrayList<AudioTrack> filteredAudioTracks = new ArrayList<>();
 
         AudioTrack audioTrack;
@@ -563,7 +563,7 @@ class TrackSelectionHelper {
      * Will add this track only if there is at least one text track available.
      * Selecting this track, will disable the text renderer.
      */
-    private void maybeAddDisabledTextTrack() {
+    void maybeAddDisabledTextTrack() {
 
         if (textTracks.isEmpty()) {
             return;
@@ -580,7 +580,7 @@ class TrackSelectionHelper {
      * @return - the index of the track that is selected by default or lastSelected track(Depending on the use-case),
      * or 0 if no default selection is available and no track was previously selected.
      */
-    private int getDefaultTrackIndex(List<? extends BaseTrack> trackList, String lastSelectedTrackId) {
+    int getDefaultTrackIndex(List<? extends BaseTrack> trackList, String lastSelectedTrackId) {
 
         int defaultTrackIndex = 0;
 
@@ -636,7 +636,7 @@ class TrackSelectionHelper {
      *
      * @param trackGroupArray TrackGroupArray this includes Internal and External Text Formats
      */
-    private void extractTextTracksToMap(TrackGroupArray trackGroupArray) {
+    void extractTextTracksToMap(TrackGroupArray trackGroupArray) {
         for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
             TrackGroup trackGroup = trackGroupArray.get(groupIndex);
 
@@ -670,7 +670,7 @@ class TrackSelectionHelper {
         }
     }
 
-    private int getUpdatedDefaultTrackIndex(List<? extends BaseTrack> trackList, int defaultTrackIndex) {
+    int getUpdatedDefaultTrackIndex(List<? extends BaseTrack> trackList, int defaultTrackIndex) {
 
         if (!trackList.isEmpty()) {
             int trackType = TRACK_TYPE_UNKNOWN;
@@ -691,7 +691,7 @@ class TrackSelectionHelper {
         return defaultTrackIndex;
     }
 
-    private int findDefaultTrackIndex(String selectedFormatLanguage, List<? extends BaseTrack> trackList, int defaultTrackIndex) {
+    int findDefaultTrackIndex(String selectedFormatLanguage, List<? extends BaseTrack> trackList, int defaultTrackIndex) {
         if (trackList != null && selectedFormatLanguage != null) {
 
             for (int i = 0; i < trackList.size(); i++) {
@@ -714,7 +714,7 @@ class TrackSelectionHelper {
      * @param defaultTrackIndex   - the index of the default track.
      * @return - The index of the last selected track id.
      */
-    private int restoreLastSelectedTrack(List<? extends BaseTrack> trackList, String lastSelectedTrackId, int defaultTrackIndex) {
+    int restoreLastSelectedTrack(List<? extends BaseTrack> trackList, String lastSelectedTrackId, int defaultTrackIndex) {
         //If track was previously selected and selection is differed from the default selection apply it.
         String defaultUniqueId = trackList.get(defaultTrackIndex).getUniqueId();
         if (!NONE.equals(lastSelectedTrackId) && !lastSelectedTrackId.equals(defaultUniqueId)) {
@@ -736,7 +736,7 @@ class TrackSelectionHelper {
      * @param groupIndex    - the index of the group this adaptive object refer.
      * @param format        - the actual format of the adaptive object.
      */
-    private void maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, Format format) {
+    void maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, Format format) {
         String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_ADAPTIVE);
         if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
@@ -765,7 +765,7 @@ class TrackSelectionHelper {
      * @param trackIndex    - actual track index.
      * @return - uniqueId that represent current track.
      */
-    private String getUniqueId(int rendererIndex, int groupIndex, int trackIndex) {
+    String getUniqueId(int rendererIndex, int groupIndex, int trackIndex) {
         return getUniqueIdPrefix(rendererIndex)
                 + rendererIndex
                 + ","
@@ -838,7 +838,7 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    protected void overrideMediaVideoCodec() {
+    void overrideMediaVideoCodec() {
 
         List<String> uniqueIds = getVideoTracksUniqueIds();
 
@@ -1820,7 +1820,7 @@ class TrackSelectionHelper {
         this.hasExternalSubtitles = hasExternalSubtitles;
     }
 
-    public static boolean isCodecSupported(@NonNull String codecs, @Nullable TrackType type, boolean allowSoftware) {
+    boolean isCodecSupported(@NonNull String codecs, @Nullable TrackType type, boolean allowSoftware) {
 
         if (type == TrackType.TEXT) {
             return true;    // always supported
