@@ -354,4 +354,26 @@ internal class TrackSelectionHelperTest {
         spyTrackSelectionHelper?.changeTrack("Audio:1,1,0")
         verify(spyTrackSelectionHelper).overrideTrack(eq(1), eq(DefaultTrackSelector.SelectionOverride(1, 0)), any())
     }
+
+    @Test
+    fun overrideMediaVideoCodec() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
+        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+
+        spyTrackSelectionHelper?.overrideMediaVideoCodec()
+        verify(spyTrackSelectionHelper).overrideTrack(eq(0), eq(DefaultTrackSelector.SelectionOverride(0, 0,1,2,3)), any())
+    }
+
+    @Test
+    fun overrideMediaDefaultABR() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
+        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+
+        spyTrackSelectionHelper?.overrideMediaDefaultABR(0, 1774254, PKAbrFilter.BITRATE)
+        verify(spyTrackSelectionHelper).overrideTrack(eq(0), eq(DefaultTrackSelector.SelectionOverride(0, 0,1)), any())
+    }
 }
