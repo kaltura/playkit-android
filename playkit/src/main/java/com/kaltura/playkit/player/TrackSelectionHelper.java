@@ -1160,7 +1160,8 @@ class TrackSelectionHelper {
 
     @NonNull
     SelectionOverride overrideAutoABRTracks(int rendererIndex, int groupIndex) {
-        SelectionOverride override;List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
+        SelectionOverride override;
+        List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
         int[] adaptiveTrackIndexes;
 
         switch (rendererIndex) {
