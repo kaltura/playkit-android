@@ -320,6 +320,38 @@ internal class TrackSelectionHelperTest {
         assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(2000, 10000, PKAbrFilter.WIDTH).size)
 
         assertEquals(4, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(45440, 729600, PKAbrFilter.PIXEL).size)
+    }
 
+    @Test
+    fun changeTrack_video() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
+        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+
+        spyTrackSelectionHelper?.changeTrack("Video:0,0,1")
+        verify(spyTrackSelectionHelper).overrideTrack(eq(0), eq(DefaultTrackSelector.SelectionOverride(0, 1)), any())
+    }
+
+    @Test
+    fun changeTrack_subtitle() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_with_subtitle"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
+        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+
+        spyTrackSelectionHelper?.changeTrack("Text:2,1,0")
+        verify(spyTrackSelectionHelper).overrideTrack(eq(2), eq(DefaultTrackSelector.SelectionOverride(1, 0)), any())
+    }
+
+    @Test
+    fun changeTrack_audio() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_audio_only"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
+        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+
+        spyTrackSelectionHelper?.changeTrack("Audio:1,1,0")
+        verify(spyTrackSelectionHelper).overrideTrack(eq(1), eq(DefaultTrackSelector.SelectionOverride(1, 0)), any())
     }
 }

@@ -1360,6 +1360,7 @@ class TrackSelectionHelper {
      */
     int[] validateUniqueId(String uniqueId) throws IllegalArgumentException {
 
+        // FIXME: CHECK UniqueId with TextUtils
         if (uniqueId == null) {
             throw new IllegalArgumentException("uniqueId is null");
         }
