@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
@@ -40,6 +41,9 @@ import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifestParse
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManagerProvider;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
+import com.kaltura.android.exoplayer2.extractor.ExtractorsFactory;
+import com.kaltura.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory;
+import com.kaltura.android.exoplayer2.extractor.ts.TsExtractor;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
@@ -71,6 +75,8 @@ import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.TeeDataSource;
 import com.kaltura.android.exoplayer2.upstream.TransferListener;
+import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
+import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 
 import com.kaltura.playkit.*;
@@ -92,6 +98,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -100,7 +107,7 @@ import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
-public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
+public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, MetadataOutput, BandwidthMeter.EventListener {
 
     private ByteArrayDataSink dashLastDataSink;
     private String dashManifestString;
@@ -197,7 +204,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private LoadControlStrategy getCustomLoadControlStrategy() {
         Object loadControlStrategyObj = playerSettings.getCustomLoadControlStrategy();
-        if (loadControlStrategyObj != null && loadControlStrategyObj instanceof LoadControlStrategy) {
+        if (loadControlStrategyObj instanceof LoadControlStrategy) {
             return ((LoadControlStrategy) loadControlStrategyObj);
         } else {
             return null;
@@ -501,6 +508,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         .createMediaSource(mediaItem);
                 break;
 
+            case udp:
+                MulticastSettings multicastSettings = (playerSettings != null) ? playerSettings.getMulticastSettings() : new MulticastSettings();
+                if (multicastSettings.getUseExoDefaultSettings()) {
+                    mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                            .createMediaSource(mediaItem);
+                } else {
+                    DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(multicastSettings.getMaxPacketSize(), multicastSettings.getSocketTimeoutMillis());
+                    ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[]{
+                            new TsExtractor(multicastSettings.getExtractorMode().mode,
+                                    new TimestampAdjuster(multicastSettings.getFirstSampleTimestampUs()), new DefaultTsPayloadReaderFactory())
+                    };
+                    mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
+                            .createMediaSource(mediaItem);
+                }
+                break;
+
             default:
                 throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
         }
@@ -657,10 +680,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
 
-        final PKRequestConfiguration pkRequestConfiguration = playerSettings.getPkRequestConfiguration();
-        final int connectTimeout = pkRequestConfiguration.getConnectTimeoutMs();
-        final int readTimeout = pkRequestConfiguration.getReadTimeoutMs();
-        final boolean crossProtocolRedirectEnabled = pkRequestConfiguration.getCrossProtocolRedirectEnabled();
+        final PKRequestConfig pkRequestConfig = playerSettings.getPKRequestConfig();
+        final int connectTimeout = pkRequestConfig.getConnectTimeoutMs();
+        final int readTimeout = pkRequestConfig.getReadTimeoutMs();
+        final boolean crossProtocolRedirectEnabled = pkRequestConfig.getCrossProtocolRedirectEnabled();
 
         if (CookieHandler.getDefault() == null) {
             CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
@@ -952,7 +975,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void onPositionDiscontinuity(int reason) {
+    public void onPositionDiscontinuity(Player.PositionInfo oldPosition, Player.PositionInfo newPosition, @Player.DiscontinuityReason int reason) {
         log.d("onPositionDiscontinuity reason = " + reason);
     }
 
@@ -967,10 +990,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
                 CustomDashManifest customDashManifest = null;
-                if (!TextUtils.isEmpty(dashManifestString) && dashLastDataSink != null && player.getCurrentManifest() instanceof DashManifest) {
-                    byte[] bytes = dashLastDataSink.getData();
+                MediaItem.PlaybackProperties playbackProperties = player.getMediaItemAt(0).playbackProperties;
+                if (!TextUtils.isEmpty(dashManifestString) && dashLastDataSink != null
+                        && player.getCurrentManifest() instanceof DashManifest && playbackProperties != null) {
+                    // byte[] bytes = dashLastDataSink.getData();
                     try {
-                        customDashManifest = new CustomDashManifestParser().parse(player.getMediaItemAt(0).playbackProperties.uri, dashManifestString);
+                        customDashManifest = new CustomDashManifestParser().parse(playbackProperties.uri, dashManifestString);
                     } catch (IOException e) {
                         log.e("imageTracks assemble error " + e.getMessage());
                     } finally {
@@ -1272,20 +1297,21 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+    public void overrideMediaDefaultABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the tracksSelectionHelper");
             return;
         }
 
-        if (minVideoBitrate > maxVideoBitrate || maxVideoBitrate <= 0) {
-            minVideoBitrate = Long.MIN_VALUE;
-            maxVideoBitrate = Long.MAX_VALUE;
-            String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
+        if (minAbr > maxAbr || maxAbr <= 0) {
+            minAbr = Long.MIN_VALUE;
+            maxAbr = Long.MAX_VALUE;
+            pkAbrFilter = PKAbrFilter.NONE;
+            String errorMessage = "Either given min ABR value is greater than max ABR or max ABR is <= 0";
             sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
         }
 
-        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
+        trackSelectionHelper.overrideMediaDefaultABR(minAbr, maxAbr, pkAbrFilter);
     }
 
     @Override
@@ -1503,10 +1529,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
-                boolean isABREnabled = playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE;
+                HashMap<PKAbrFilter, Pair<Long, Long>> abrPrecedence = checkABRPriority();
+                PKAbrFilter abrFilter = getPKAbrFilter(abrPrecedence);
+                boolean isABREnabled = abrFilter != PKAbrFilter.NONE;
 
                 if(isABREnabled) {
-                    overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                    overrideMediaDefaultABR(abrPrecedence.get(abrFilter).first, abrPrecedence.get(abrFilter).second, abrFilter);
                 } else {
                     overrideMediaVideoCodec();
                 }
@@ -1558,6 +1586,43 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 sendEvent(PlayerEvent.Type.IMAGE_TRACK_CHANGED);
             }
         };
+    }
+
+    private PKAbrFilter getPKAbrFilter(HashMap<PKAbrFilter, Pair<Long, Long>> abrPrecedence) {
+        Set<PKAbrFilter> abrSet = abrPrecedence.keySet();
+        PKAbrFilter abrFilter = PKAbrFilter.NONE;
+
+        if (abrSet != null && abrSet.size() == 1) {
+            abrFilter = (PKAbrFilter) abrSet.toArray()[0];
+        }
+        return abrFilter;
+    }
+
+    private HashMap<PKAbrFilter, Pair<Long, Long>> checkABRPriority() {
+        HashMap<PKAbrFilter, Pair<Long, Long>> abrPriorityMap = new HashMap<>();
+
+        ABRSettings abrSettings = playerSettings.getAbrSettings();
+        Long minVideoHeight = abrSettings.getMinVideoHeight();
+        Long maxVideoHeight = abrSettings.getMaxVideoHeight();
+        Long minVideoWidth = abrSettings.getMinVideoWidth();
+        Long maxVideoWidth = abrSettings.getMaxVideoWidth();
+        Long minVideoBitrate = abrSettings.getMinVideoBitrate();
+        Long maxVideoBitrate = abrSettings.getMaxVideoBitrate();
+
+        if ((maxVideoHeight != Long.MAX_VALUE && minVideoHeight != Long.MIN_VALUE) &&
+                (maxVideoWidth != Long.MAX_VALUE && minVideoWidth != Long.MIN_VALUE)) {
+            abrPriorityMap.put(PKAbrFilter.PIXEL, new Pair<>(minVideoWidth * minVideoHeight, maxVideoWidth * maxVideoHeight));
+        } else if (maxVideoHeight != Long.MAX_VALUE || minVideoHeight != Long.MIN_VALUE) {
+            abrPriorityMap.put(PKAbrFilter.HEIGHT, new Pair<>(minVideoHeight, maxVideoHeight));
+        } else if (maxVideoWidth != Long.MAX_VALUE || minVideoWidth != Long.MIN_VALUE) {
+            abrPriorityMap.put(PKAbrFilter.WIDTH, new Pair<>(minVideoWidth, maxVideoWidth));
+        } else if (maxVideoBitrate != Long.MAX_VALUE || minVideoBitrate != Long.MIN_VALUE) {
+            abrPriorityMap.put(PKAbrFilter.BITRATE, new Pair<>(minVideoBitrate, maxVideoBitrate));
+        } else {
+            abrPriorityMap.put(PKAbrFilter.NONE, new Pair<>(Long.MIN_VALUE, Long.MAX_VALUE));
+        }
+
+        return abrPriorityMap;
     }
 
     private void sendInvalidVideoBitrateRangeIfNeeded(String errorMessage) {
@@ -1706,14 +1771,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void updateABRSettings(ABRSettings abrSettings) {
         playerSettings.setABRSettings(abrSettings);
-        overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+        HashMap<PKAbrFilter, Pair<Long, Long>> abrPrecedence = checkABRPriority();
+        PKAbrFilter abrFilter = getPKAbrFilter(abrPrecedence);
+        overrideMediaDefaultABR(abrPrecedence.get(abrFilter).first, abrPrecedence.get(abrFilter).second, abrFilter);
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
     }
 
     @Override
     public void resetABRSettings() {
         playerSettings.setABRSettings(ABRSettings.RESET);
-        overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+        overrideMediaDefaultABR(Long.MIN_VALUE, Long.MAX_VALUE, PKAbrFilter.NONE);
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
     }
 

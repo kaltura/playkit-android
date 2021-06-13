@@ -40,7 +40,7 @@ tasks.withType(Javadoc) {
 
 dependencies {
 
-    def exoPlayerVersion = '2.13.3'
+    def exoPlayerVersion = '2.14.0'
     api "com.kaltura.playkit:kexoplayer:$exoPlayerVersion"
 
     api 'com.google.code.gson:gson:2.8.6'
@@ -71,6 +71,6 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.3.0'
 }
 
-if (hasProperty('VERSION_NAME')) {
+if (!ext.playkitVersion.contains('dev')) {
     apply from: './gradle-mvn-push.gradle'
 }
