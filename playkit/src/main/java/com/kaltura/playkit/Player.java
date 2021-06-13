@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.MulticastSettings;
@@ -392,6 +393,8 @@ public interface Player {
     void prepare(@NonNull PKMediaConfig playerConfig);
 
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
+
+    void setDownloadCache(Cache downloadCache);
 
     /**
      * Player lifecycle method. Should be used when the application went to onPause();

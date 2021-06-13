@@ -76,6 +76,8 @@ import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.TeeDataSource;
 import com.kaltura.android.exoplayer2.upstream.TransferListener;
 import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 
@@ -169,6 +171,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     @NonNull private Profiler profiler = Profiler.NOOP;
 
     private Timeline.Period period;
+
+    private Cache downloadCache;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
         this(context, new ExoPlayerView(context), playerSettings, rootPlayerView);
@@ -720,7 +724,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     private DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
-        return new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
+        DataSource.Factory httpDataSourceFactory = new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
+        if (downloadCache != null) {
+            return buildReadOnlyCacheDataSource(httpDataSourceFactory, downloadCache);
+        } else {
+            return httpDataSourceFactory;
+        }
     }
 
     private static String getUserAgent(Context context) {
@@ -736,6 +745,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (stateChangedListener != null) {
             stateChangedListener.onStateChanged(previousState, currentState);
         }
+    }
+
+    private CacheDataSource.Factory buildReadOnlyCacheDataSource(
+            DataSource.Factory upstreamFactory, Cache cache) {
+        return new CacheDataSource.Factory()
+                .setCache(cache)
+                .setUpstreamDataSourceFactory(upstreamFactory)
+                .setCacheWriteDataSinkFactory(null)
+                .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
     }
 
     private void sendDistinctEvent(PlayerEvent.Type newEvent) {
@@ -1654,6 +1672,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             return player.isCurrentWindowLive();
         }
         return false;
+    }
+
+    @Override
+    public void setDownloadCache(Cache downloadCache) {
+        this.downloadCache = downloadCache;
     }
 
     @Override
