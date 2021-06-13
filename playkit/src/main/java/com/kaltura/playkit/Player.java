@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMaxVideoSize;
@@ -92,7 +93,7 @@ public interface Player {
 
         /**
          * This method is deprecated.
-         * Please use {@link com.kaltura.playkit.PKRequestConfiguration} to set crossProtocolRedirect
+         * Please use {@link com.kaltura.playkit.PKRequestConfig} to set crossProtocolRedirect
          *
          * Decide if player should do cross protocol redirect or not. By default it will be always set
          * to false.
@@ -342,6 +343,14 @@ public interface Player {
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
 
         /**
+         * Sets the multicastSettings for udp streams.
+         *
+         * @param multicastSettings - maxPacketSize default = 3000 & socketTimeoutMillis default = 10000
+         * @return - Player Settings
+         */
+        Settings setMulticastSettings(MulticastSettings multicastSettings);
+
+        /**
          * If the device codec is known to fail if security level L1 is used
          * then set flag to true, it will force the player to use Widevine L3
          * Will work only SDK level 18 or above
@@ -362,10 +371,10 @@ public interface Player {
         /**
          * Creates a request configuration for HttpDataSourceFactory {@link com.kaltura.playkit.player.ExoPlayerWrapper}.
          *
-         * @param pkRequestConfiguration - Configuration for PKRequestConfiguration
+         * @param pkRequestConfig - Configuration for PKRequestConfig
          * @return - Player Settings
          */
-        Settings setPKRequestConfig(PKRequestConfiguration pkRequestConfiguration);
+        Settings setPKRequestConfig(PKRequestConfig pkRequestConfig);
     }
 
     /**
@@ -575,7 +584,7 @@ public interface Player {
 
     /** Update ABRSettings
      * <br>
-     * Updating {@link ABRSettings#setInitialBitrateEstimate(long)} is unaffected because
+     * Updating {@link ABRSettings#setInitialBitrateEstimate(Long)} is unaffected because
      * initial bitrate is only meant at the start of the playback
      * <br>
      * @param abrSettings new ABR Settings

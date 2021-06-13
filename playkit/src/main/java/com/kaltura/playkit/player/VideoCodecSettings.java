@@ -15,7 +15,7 @@ public class VideoCodecSettings {
     }
 
     public VideoCodecSettings(List<PKVideoCodec> codecPriorityList, boolean allowSoftwareDecoder, boolean allowMixedCodecAdaptiveness) {
-        if (codecPriorityList != null || codecPriorityList.isEmpty()) {
+        if (codecPriorityList != null && !codecPriorityList.isEmpty()) {
             this.codecPriorityList = codecPriorityList;
         } else {
             getDefaultCodecsPriorityList();
