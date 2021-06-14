@@ -385,15 +385,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             }
         }
 
+        if (isLocalMediaSource(sourceConfig) && sourceConfig.mediaSource.hasDrmParams()) {
+            drmSessionManager = getDeferredDRMSessionManager();
+            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+        }
+        
         MediaItem mediaItem;
         if (isLocalMediaItem(sourceConfig)) {
-            final LocalAssetsManagerExo.LocalExoMediaItem pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaItem) sourceConfig.mediaSource;
+            LocalAssetsManagerExo.LocalExoMediaItem pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaItem) sourceConfig.mediaSource;
             mediaItem = pkMediaSource.getExoMediaItem();
         } else {
-            if (isLocalMediaSource(sourceConfig) && sourceConfig.mediaSource.hasDrmParams()) {
-                drmSessionManager = getDeferredDRMSessionManager();
-                drmSessionManager.setMediaSource(sourceConfig.mediaSource);
-            }
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
         }
 
