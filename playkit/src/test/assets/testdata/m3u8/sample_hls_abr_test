@@ -1,0 +1,13 @@
+#EXTM3U
+
+#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio0",NAME="Hindi",LANGUAGE="hi",AUTOSELECT=YES,DEFAULT=YES,CHANNELS="1",URI="https://exmple.net/fpshls/p/sp/pqwert1_pxycp3t2/name/a.mp4/index.m3u8/index-a1.m3u8"
+#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio0",NAME="English",LANGUAGE="en",AUTOSELECT=NO,DEFAULT=NO,CHANNELS="1",URI="https://exmple.net/fpshls/p/sp/pqwert1_w62mxbkz/name/a.mp4/index.m3u8/index-a1.m3u8"
+
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=769255,RESOLUTION=320x142,FRAME-RATE=25.000,CODECS="avc1.42c01e,mp4a.40.2",AUDIO="audio0"
+https://exmple.net/fpshls/p/sp/pqwert1_h1q0wy1u/name/a.mp4/index.m3u8/index-v1-a1.m3u8
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1774254,RESOLUTION=854x380,FRAME-RATE=25.000,CODECS="avc1.42c01e,mp4a.40.2",AUDIO="audio0"
+https://exmple.net/fpshls/p/sp/pqwert1_uo5tcmjd/name/a.mp4/index.m3u8/index-v1-a1.m3u8
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=7203938,RESOLUTION=1280x570,FRAME-RATE=25.000,CODECS="avc1.42c01e,mp4a.40.2",AUDIO="audio0"
+https://exmple.net/fpshls/p/sp/pqwert1_h8c2v7qh/name/a.mp4/index.m3u8/index-v1-a1.m3u8
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=18316946,RESOLUTION=1920x856,FRAME-RATE=25.000,CODECS="avc1.42c01e,mp4a.40.2",AUDIO="audio0"
+https://exmple.net/fpshls/p/sp/pqwert1_mmf5jo25/name/a.mp4/index.m3u8/index-v1-a1.m3u8

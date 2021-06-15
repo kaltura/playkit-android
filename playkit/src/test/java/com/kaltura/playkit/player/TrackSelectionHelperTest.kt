@@ -15,6 +15,7 @@ import com.kaltura.android.exoplayer2.source.TrackGroupArray
 import com.kaltura.android.exoplayer2.trackselection.*
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter
 import com.kaltura.playkit.*
+import com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO
 import com.kaltura.testhelper.FakeRendererCapabilities
 import com.kaltura.testhelper.FakeTimeline
 import com.kaltura.testhelper.TestUtils
@@ -23,8 +24,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 @RunWith(AndroidJUnit4::class)
 internal class TrackSelectionHelperTest {
@@ -32,7 +31,6 @@ internal class TrackSelectionHelperTest {
     private val initialDashAssetPath: String = "testdata/mpd/"
     private val dashFilePrefix: String = "sample_dash"
     private val initialHlsAssetPath: String = "testdata/m3u8/"
-    private val hlsFilePrefix: String = "sample_hls"
 
     private lateinit var actualSelector: TrackSelector
     private lateinit var actualTrackSelectionArray: TrackSelectionArray
@@ -89,7 +87,7 @@ internal class TrackSelectionHelperTest {
                 MediaSource.MediaPeriodId(timeline.getUidOfPeriod(0)),
                 FakeTimeline())
 
-        var exoTrackSelectionArray = ArrayList<ExoTrackSelection>()
+        val exoTrackSelectionArray = ArrayList<ExoTrackSelection>()
         for (exoTrackSelection: ExoTrackSelection in trackSelectorResult.selections) {
             exoTrackSelectionArray.add(exoTrackSelection)
         }
@@ -125,24 +123,25 @@ internal class TrackSelectionHelperTest {
     }
 
     @Test
-    fun buildTracks_mappedTrackInfo_instream_subtitles() {
-        // Dash
+    fun buildTracks_mappedTrackInfo_instream_subtitles_dash() {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_with_subtitle"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
-        spyTrackSelectionHelper?.prepareTracks(TrackSelectionArray(), null)
+        spyTrackSelectionHelper.prepareTracks(TrackSelectionArray(), null)
         verify(spyTrackSelectionHelper)?.buildTracks(ArrayList<CustomFormat>())
 
-        val pkTracks: PKTracks? = spyTrackSelectionHelper?.buildTracks(null)
+        val pkTracks: PKTracks? = spyTrackSelectionHelper.buildTracks(null)
         assertEquals(6, pkTracks?.textTracks?.size)
+    }
 
-        // HLS
+    @Test
+    fun buildTracks_mappedTrackInfo_instream_subtitles_hls() {
         val trackSelectionHelperHls = getTrackSelectionHelper(buildActualTrackSelector("sample_hls_harold"))
         val spyTrackSelectionHelperHls = spy(trackSelectionHelperHls)
         spyTrackSelectionHelperHls?.prepareTracks(TrackSelectionArray(), null)
         verify(spyTrackSelectionHelperHls)?.buildTracks(ArrayList<CustomFormat>())
 
         val pkTracksHls: PKTracks? = spyTrackSelectionHelperHls?.buildTracks(null)
-        assertEquals(9, pkTracksHls?.textTracks?.size)
+        assertEquals(8, pkTracksHls?.textTracks?.size)
     }
 
     @Test
@@ -154,7 +153,7 @@ internal class TrackSelectionHelperTest {
     }
 
     @Test
-    fun buildTracks_mappedTrackInfo_checkTracksUnavailability_false() {
+    fun buildTracks_mappedTrackInfo_checkTracksUnavailability_false_dash() {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_no_tracks"))
         trackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
         trackSelectionHelper.prepareTracks(TrackSelectionArray(), null).let {
@@ -232,7 +231,7 @@ internal class TrackSelectionHelperTest {
     }
 
     @Test
-    fun filterVideoTracks_hevc() {
+    fun filterVideoTracks_hevc_dash() {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_hevc_and_avc_mix"))
         // HEVC only track
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
@@ -247,7 +246,22 @@ internal class TrackSelectionHelperTest {
     }
 
     @Test
-    fun filterVideoTracks_avc() {
+    fun filterVideoTracks_hevc_hls() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_hls_multi_codec"))
+        // HEVC only track
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+
+        `when`(spyTrackSelectionHelper.videoCodecsSupportedInHardware()).thenReturn(true)
+        `when`(spyTrackSelectionHelper.isCodecSupported(anyString(), eq(TrackSelectionHelper.TrackType.VIDEO), anyBoolean())).thenReturn(true)
+        playerSettings.preferredVideoCodecSettings.allowMixedCodecAdaptiveness = false
+        spyTrackSelectionHelper.prepareTracks(TrackSelectionArray(), null)
+        val videoTrack = spyTrackSelectionHelper.filterVideoTracks()
+        assertEquals(2, videoTrack.size)
+        assertEquals("HEVC Track Found: ", PKVideoCodec.HEVC, videoTrack.get(0).codecType)
+    }
+
+    @Test
+    fun filterVideoTracks_avc_dash() {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_hevc_and_avc_mix"))
         // AVC only track
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
@@ -258,6 +272,21 @@ internal class TrackSelectionHelperTest {
         spyTrackSelectionHelper.prepareTracks(TrackSelectionArray(), null)
         val videoTrack = spyTrackSelectionHelper.filterVideoTracks()
         assertEquals(5, videoTrack.size)
+        assertEquals("AVC Track Found: ", PKVideoCodec.AVC, videoTrack.get(0).codecType)
+    }
+
+    @Test
+    fun filterVideoTracks_avc_hls() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_hls_multi_codec"))
+        // AVC only track
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+
+        `when`(spyTrackSelectionHelper.videoCodecsSupportedInHardware()).thenReturn(true)
+        `when`(spyTrackSelectionHelper.isCodecSupported(anyString(), eq(TrackSelectionHelper.TrackType.VIDEO), anyBoolean())).thenReturn(true)
+        playerSettings.preferredVideoCodecSettings = VideoCodecSettings().setCodecPriorityList(listOf(PKVideoCodec.AVC, PKVideoCodec.HEVC))
+        spyTrackSelectionHelper.prepareTracks(TrackSelectionArray(), null)
+        val videoTrack = spyTrackSelectionHelper.filterVideoTracks()
+        assertEquals(3, videoTrack.size)
         assertEquals("AVC Track Found: ", PKVideoCodec.AVC, videoTrack.get(0).codecType)
     }
 
@@ -277,10 +306,10 @@ internal class TrackSelectionHelperTest {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_with_external_subtitle"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
 
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
         spyTrackSelectionHelper.hasExternalSubtitlesInTracks = true
         playerSettings.subtitlePreference = PKSubtitlePreference.EXTERNAL
-        assertEquals(2, spyTrackSelectionHelper?.getDefaultTrackIndex(spyTrackSelectionHelper.textTracks, TrackSelectionHelper.NONE))
+        assertEquals(2, spyTrackSelectionHelper.getDefaultTrackIndex(spyTrackSelectionHelper.textTracks, TrackSelectionHelper.NONE))
     }
 
     @Test
@@ -289,7 +318,7 @@ internal class TrackSelectionHelperTest {
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
 
         spyTrackSelectionHelper.hasExternalSubtitles = true
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
         assertEquals(4, spyTrackSelectionHelper.subtitleListMap.size)
         assertEquals(2, spyTrackSelectionHelper.subtitleListMap["en"]?.size)
     }
@@ -299,16 +328,51 @@ internal class TrackSelectionHelperTest {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_with_external_subtitle"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
 
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
         assertEquals(1, spyTrackSelectionHelper.videoTracks.size)
     }
 
     @Test
-    fun getCodecUniqueIdsWithABR() {
+    fun getCodecUniqueIdsWithABR_dash() {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
         spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
+
+        assertEquals(4, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(769255, 7203938, PKAbrFilter.BITRATE).size)
+        assertEquals(2, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(0, 769255, PKAbrFilter.BITRATE).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(0, 769254, PKAbrFilter.BITRATE).size)
+        assertEquals(2, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(769256, 1774250, PKAbrFilter.BITRATE).size)
+        assertEquals(4, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(1774254, 18316946, PKAbrFilter.BITRATE).size)
+        assertNotEquals(4, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(18316946, 183169469, PKAbrFilter.BITRATE).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(-1, 2000000000, PKAbrFilter.BITRATE).size)
+
+        // DO NOT TEST THIS CASE BECAUSE maxAbr > minAbr check is on ExoPlayerWrapper level. This cases will be invalid on TrackSelectionHelper level.
+        //assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(1774250, 769256, PKAbrFilter.BITRATE).size)
+
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(142, 380, PKAbrFilter.HEIGHT).size)
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(380, 570, PKAbrFilter.HEIGHT).size)
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(570, 856, PKAbrFilter.HEIGHT).size)
+        assertEquals(2, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(150, 350, PKAbrFilter.HEIGHT).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(0, 140, PKAbrFilter.HEIGHT).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(900, 10000, PKAbrFilter.HEIGHT).size)
+
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(320, 854, PKAbrFilter.WIDTH).size)
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(854, 1280, PKAbrFilter.WIDTH).size)
+        assertEquals(3, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(1280, 1920, PKAbrFilter.WIDTH).size)
+        assertEquals(2, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(310, 350, PKAbrFilter.WIDTH).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(0, 310, PKAbrFilter.WIDTH).size)
+        assertEquals(5, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(2000, 10000, PKAbrFilter.WIDTH).size)
+
+        assertEquals(4, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(45440, 729600, PKAbrFilter.PIXEL).size)
+    }
+
+    @Test
+    fun getCodecUniqueIdsWithABR_hls() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_hls_abr_test"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
 
         assertEquals(4, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(769255, 7203938, PKAbrFilter.BITRATE).size)
         assertEquals(2, spyTrackSelectionHelper.getCodecUniqueIdsWithABR(0, 769255, PKAbrFilter.BITRATE).size)
@@ -343,9 +407,9 @@ internal class TrackSelectionHelperTest {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
         spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
 
-        spyTrackSelectionHelper?.changeTrack("Video:0,0,1")
+        spyTrackSelectionHelper.changeTrack("Video:0,0,1")
         verify(spyTrackSelectionHelper).overrideTrack(eq(0), eq(DefaultTrackSelector.SelectionOverride(0, 1)), any())
     }
 
@@ -354,9 +418,9 @@ internal class TrackSelectionHelperTest {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
         spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
 
-        spyTrackSelectionHelper?.changeTrack("Video:0,0,-1")
+        spyTrackSelectionHelper.changeTrack("Video:0,0,-1")
         verify(spyTrackSelectionHelper).overrideTrack(eq(0), eq(DefaultTrackSelector.SelectionOverride(0, 0,1,2,3)), any())
     }
 
@@ -365,9 +429,9 @@ internal class TrackSelectionHelperTest {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_with_subtitle"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
         spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
 
-        spyTrackSelectionHelper?.changeTrack("Text:2,1,0")
+        spyTrackSelectionHelper.changeTrack("Text:2,1,0")
         verify(spyTrackSelectionHelper).overrideTrack(eq(2), eq(DefaultTrackSelector.SelectionOverride(1, 0)), any())
     }
 
@@ -376,9 +440,9 @@ internal class TrackSelectionHelperTest {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_audio_only"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
         spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
 
-        spyTrackSelectionHelper?.changeTrack("Audio:1,1,0")
+        spyTrackSelectionHelper.changeTrack("Audio:1,1,0")
         verify(spyTrackSelectionHelper).overrideTrack(eq(1), eq(DefaultTrackSelector.SelectionOverride(1, 0)), any())
     }
 
@@ -387,9 +451,9 @@ internal class TrackSelectionHelperTest {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
         spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
 
-        spyTrackSelectionHelper?.overrideMediaVideoCodec()
+        spyTrackSelectionHelper.overrideMediaVideoCodec()
         verify(spyTrackSelectionHelper).overrideTrack(eq(0), eq(DefaultTrackSelector.SelectionOverride(0, 0,1,2,3)), any())
     }
 
@@ -398,9 +462,9 @@ internal class TrackSelectionHelperTest {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
         spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
 
-        spyTrackSelectionHelper?.overrideMediaDefaultABR(0, 1774254, PKAbrFilter.BITRATE)
+        spyTrackSelectionHelper.overrideMediaDefaultABR(0, 1774254, PKAbrFilter.BITRATE)
         verify(spyTrackSelectionHelper).overrideTrack(eq(0), eq(DefaultTrackSelector.SelectionOverride(0, 0,1)), any())
     }
 
@@ -409,9 +473,9 @@ internal class TrackSelectionHelperTest {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
         spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
 
-        val selectionOverride = spyTrackSelectionHelper?.overrideAutoABRTracks(0, 0)
+        val selectionOverride = spyTrackSelectionHelper.overrideAutoABRTracks(0, 0)
         assertEquals(4, selectionOverride?.tracks?.size)
     }
 
@@ -420,9 +484,35 @@ internal class TrackSelectionHelperTest {
         val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_audio_only"))
         val spyTrackSelectionHelper = spy(trackSelectionHelper)
         spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
-        spyTrackSelectionHelper?.prepareTracks(actualTrackSelectionArray, null)
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
 
-        val selectionOverride = spyTrackSelectionHelper?.overrideAutoABRTracks(1, 0)
+        val selectionOverride = spyTrackSelectionHelper.overrideAutoABRTracks(1, 0)
         assertEquals(1, selectionOverride?.tracks?.size)
+    }
+
+    @Test
+    fun getCurrentVideoBitrate() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
+
+        spyTrackSelectionHelper.changeTrack("Video:0,0,1")
+
+        assertEquals(1774254, spyTrackSelectionHelper.currentVideoBitrate)
+        assertEquals(131596, spyTrackSelectionHelper.currentAudioBitrate)
+        assertEquals(380, spyTrackSelectionHelper.currentVideoHeight)
+        assertEquals(854, spyTrackSelectionHelper.currentVideoWidth)
+    }
+
+    @Test
+    fun getPreferredTrackId() {
+        val trackSelectionHelper = getTrackSelectionHelper(buildActualTrackSelector("sample_dash_clear_h264_tears"))
+        val spyTrackSelectionHelper = spy(trackSelectionHelper)
+        spyTrackSelectionHelper.setTracksErrorListener(mock(TrackSelectionHelper.TracksErrorListener::class.java))
+        spyTrackSelectionHelper.prepareTracks(actualTrackSelectionArray, null)
+        playerSettings.setPreferredAudioTrack(PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.AUTO))
+
+        assertEquals("Audio:1,0,0", spyTrackSelectionHelper.getPreferredTrackId(TRACK_TYPE_AUDIO))
     }
 }
