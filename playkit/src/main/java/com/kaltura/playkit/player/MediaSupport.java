@@ -258,7 +258,7 @@ public class MediaSupport {
 
             final byte[] response = Utils.executePost(url, null, null);
 
-            Log.d("RESULT", Base64.encodeToString(response, Base64.NO_WRAP));
+            log.d("provisionWidevine RESULT: " + Base64.encodeToString(response, Base64.NO_WRAP));
 
             mediaDrm.provideProvisionResponse(response);
             widevineModular = true; // provisioning didn't fail
