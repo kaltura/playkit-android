@@ -1359,9 +1359,7 @@ class TrackSelectionHelper {
      * @throws IllegalArgumentException when uniqueId is illegal.
      */
     int[] validateUniqueId(String uniqueId) throws IllegalArgumentException {
-
-        // FIXME: CHECK UniqueId with TextUtils
-        if (uniqueId == null) {
+        if (TextUtils.isEmpty(uniqueId)) {
             throw new IllegalArgumentException("uniqueId is null");
         }
 
