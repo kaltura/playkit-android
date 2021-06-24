@@ -51,7 +51,6 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
-    private boolean isKavaImpressionFired;
     private final String kavaPluginKey = "kava";
 
     PlayerLoader(Context context, MessageBus messageBus) {
@@ -129,7 +128,6 @@ class PlayerLoader extends PlayerDecoratorBase {
         stop();
         releasePlugins();
         releasePlayer();
-        isKavaImpressionFired = false;
     }
 
     @Override
@@ -168,10 +166,9 @@ class PlayerLoader extends PlayerDecoratorBase {
             loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
         }
 
-        if (!isKavaImpressionFired && !PKDeviceCapabilities.isKalturaPlayerAvailable() &&
+        if (!PKDeviceCapabilities.isKalturaPlayerAvailable() &&
                 loadedPlugins != null && !loadedPlugins.containsKey(kavaPluginKey)) {
             fireKavaImpression(mediaConfig);
-            isKavaImpressionFired = true;
         }
 
 //        messageBus.post(new Runnable() {
