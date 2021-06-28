@@ -306,6 +306,9 @@ public interface Player {
         Settings setSubtitlePreference(PKSubtitlePreference subtitlePreference);
 
         /**
+         * This method is deprecated.
+         * Please use {@link #setABRSettings(ABRSettings)} to set max video size.
+         *
          * Sets the maximum allowed video width and height.
          * to set the maximum allowed video bitrate to sd resolution call:
          * setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(1279).setMaxVideoHeight(719)
@@ -315,15 +318,19 @@ public interface Player {
          * @param maxVideoSize - Max allowed video width and height
          * @return - Player Settings
          */
+        @Deprecated
         Settings setMaxVideoSize(@NonNull PKMaxVideoSize maxVideoSize);
 
         /**
+         * This method is deprecated.
+         * Please use {@link #setABRSettings(ABRSettings)} to set max video bitrate.
+         *
          * Sets the maximum allowed video bitrate.
          *
          * @param maxVideoBitrate Maximum allowed video bitrate in bits per second.
          * @return - Player Settings
          */
-
+        @Deprecated
         Settings setMaxVideoBitrate(@NonNull Integer maxVideoBitrate);
 
         /**
