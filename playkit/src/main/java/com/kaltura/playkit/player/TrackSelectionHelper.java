@@ -840,6 +840,13 @@ class TrackSelectionHelper {
 
     protected void overrideMediaVideoCodec() {
 
+        if (videoTracksCodecsMap.size() == 1) {
+            // No need to execute further as override track ignores the parameters given to the trackselector
+            // so elemenating this behaviour
+            // We will execute this only in case when video tracks have more than one type of video codec available
+            return;
+        }
+
         List<String> uniqueIds = getVideoTracksUniqueIds();
 
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
