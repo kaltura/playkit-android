@@ -40,7 +40,6 @@ public class PlayerSettings implements Player.Settings {
     private PKWakeMode wakeMode = PKWakeMode.NONE;
     private boolean handleAudioFocus;
     private PKSubtitlePreference subtitlePreference = PKSubtitlePreference.INTERNAL;
-    private Integer maxVideoBitrate;
     private Integer maxAudioBitrate;
     private int maxAudioChannelCount = -1;
 
@@ -65,8 +64,6 @@ public class PlayerSettings implements Player.Settings {
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
     private Object customLoadControlStrategy = null;
-    private PKMaxVideoSize maxVideoSize;
-
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -191,13 +188,7 @@ public class PlayerSettings implements Player.Settings {
     public PKSubtitlePreference getSubtitlePreference() {
         return subtitlePreference;
     }
-
-    public PKMaxVideoSize getMaxVideoSize() { return maxVideoSize; }
-
-    public Integer getMaxVideoBitrate() {
-        return maxVideoBitrate;
-    }
-
+    
     public Integer getMaxAudioBitrate() {
         return maxAudioBitrate;
     }
@@ -412,13 +403,21 @@ public class PlayerSettings implements Player.Settings {
 
     @Override
     public Player.Settings setMaxVideoSize(PKMaxVideoSize maxVideoSize) {
-        this.maxVideoSize = maxVideoSize;
+        ABRSettings abrSettings = getAbrSettings();
+        if (maxVideoSize != null &&
+                (abrSettings.getMaxVideoHeight() == Long.MAX_VALUE || abrSettings.getMaxVideoWidth() == Long.MAX_VALUE)) {
+            abrSettings.setMaxVideoHeight(maxVideoSize.getMaxVideoHeight());
+            abrSettings.setMaxVideoWidth(maxVideoSize.getMaxVideoWidth());
+        }
         return this;
     }
 
     @Override
     public Player.Settings setMaxVideoBitrate(Integer maxVideoBitrate) {
-        this.maxVideoBitrate = maxVideoBitrate;
+        ABRSettings abrSettings = getAbrSettings();
+        if (maxVideoBitrate > 0 && abrSettings.getMaxVideoBitrate() == Long.MAX_VALUE) {
+            abrSettings.setMaxVideoBitrate(maxVideoBitrate);
+        }
         return this;
     }
 
