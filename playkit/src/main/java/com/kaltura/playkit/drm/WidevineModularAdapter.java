@@ -61,9 +61,9 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKMediaFormat mediaFormat, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
         try {
-            boolean result = registerAsset(localAssetPath, assetId, licenseUri, forceWidevineL3Playback, adapter);
+            boolean result = registerAsset(localAssetPath, assetId, licenseUri, mediaFormat, forceWidevineL3Playback, adapter);
             if (listener != null) {
                 listener.onRegistered(localAssetPath);
             }
@@ -76,10 +76,10 @@ public class WidevineModularAdapter extends DrmAdapter {
         }
     }
 
-    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri, boolean forceWidevineL3Playback, PKRequestParams.Adapter requestParamsAdapter) throws LocalAssetsManager.RegisterException {
+    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKMediaFormat mediaFormat, boolean forceWidevineL3Playback, PKRequestParams.Adapter requestParamsAdapter) throws LocalAssetsManager.RegisterException {
 
         // obtain the dash manifest.
-        SimpleDashParser dash = parseDash(localAssetPath, assetId);
+        /*SimpleDashParser dash = parseDash(localAssetPath, assetId);
 
         if (!dash.hasContentProtection) {
             // Not protected -- nothing to do.
@@ -87,7 +87,38 @@ public class WidevineModularAdapter extends DrmAdapter {
         }
 
         String mimeType = dash.format.containerMimeType;
-        byte[] initData = dash.widevineInitData;
+        byte[] initData = dash.widevineInitData;*/
+        
+        String mimeType = null;
+        byte[] initData = null;
+        boolean hasContentProtection;
+        
+        switch (mediaFormat) {
+            case dash: {
+                SimpleDashParser dash = parseDash(localAssetPath, assetId);
+                hasContentProtection = dash.hasContentProtection;
+                if (hasContentProtection) {
+                    mimeType = dash.format.containerMimeType;
+                    initData = dash.widevineInitData;
+                } else {
+                    // Not protected -- nothing to do.
+                    return true;
+                }
+                break;
+            }
+            case hls: {
+                SimpleHlsParser hls = parseHls(localAssetPath, assetId);
+                hasContentProtection = hls.hasContentProtection;
+                if (hasContentProtection && hls.format != null) {
+                    mimeType = hls.format.containerMimeType;
+                    initData = hls.hlsWidevineInitData;
+                } else {
+                    // Not protected -- nothing to do.
+                    return true;
+                }
+                break;
+            }
+        }
 
         registerAsset(initData, mimeType, licenseUri, forceWidevineL3Playback, requestParamsAdapter);
 
@@ -193,9 +224,9 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, final PKMediaFormat mediaFormat, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
         // TODO -- verify that we just need to register again
-        return registerAsset(localAssetPath, assetId, licenseUri, adapter, forceWidevineL3Playback, listener);
+        return registerAsset(localAssetPath, assetId, licenseUri, mediaFormat, adapter, forceWidevineL3Playback, listener);
     }
 
     @Override
@@ -321,6 +352,31 @@ public class WidevineModularAdapter extends DrmAdapter {
         }
 
         return dashParser;
+    }
+
+    /**
+     * Parse the hls manifest for the specified file.
+     *
+     * @param localPath - file from which to parse the dash manifest.
+     * @param assetId   - the asset id.
+     * @return - {@link SimpleHlsParser} which contains the manifest data we need.
+     * @throws LocalAssetsManager.RegisterException - {@link LocalAssetsManager.RegisterException}
+     */
+    private SimpleHlsParser parseHls(String localPath, String assetId) throws LocalAssetsManager.RegisterException {
+        SimpleHlsParser hlsParser;
+        try {
+            hlsParser = new SimpleHlsParser().parse(localPath);
+            if (hlsParser.format == null) {
+                throw new LocalAssetsManager.RegisterException("Unknown format", null);
+            }
+            if (hlsParser.hasContentProtection && hlsParser.hlsWidevineInitData == null) {
+                throw new NoWidevinePSSHException("No Widevine PSSH in media", null);
+            }
+        } catch (IOException e) {
+            throw new LocalAssetsManager.RegisterException("Can't parse local hls", e);
+        }
+
+        return hlsParser;
     }
 
     private MediaDrmSession openSessionWithKeys(FrameworkMediaDrm mediaDrm, String key) throws MediaDrmException, MediaCryptoException, FileNotFoundException {

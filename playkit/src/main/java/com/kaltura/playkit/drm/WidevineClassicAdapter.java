@@ -19,6 +19,7 @@ import android.drm.DrmInfoEvent;
 
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 
 
@@ -47,7 +48,7 @@ class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean registerAsset(final String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, final LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean registerAsset(final String localAssetPath, String assetId, String licenseUri, final PKMediaFormat mediaFormat, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, final LocalAssetsManager.AssetRegistrationListener listener) {
         WidevineClassicDrm widevineClassicDrm = new WidevineClassicDrm(context);
         widevineClassicDrm.setEventListener(new WidevineClassicDrm.EventListener() {
             @Override
@@ -75,8 +76,8 @@ class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
-        return registerAsset(localAssetPath, assetId, licenseUri,  null, forceWidevineL3Playback, listener);
+    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, final PKMediaFormat mediaFormat, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
+        return registerAsset(localAssetPath, assetId, licenseUri, mediaFormat,  null, forceWidevineL3Playback, listener);
     }
 
     @Override
