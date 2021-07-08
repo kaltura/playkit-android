@@ -503,6 +503,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
             case hls:
                 mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
+                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
                         .createMediaSource(mediaItem);
                 break;
 
@@ -621,7 +622,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                     .setLiveMaxPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed());
         }
 
-        if (format == PKMediaFormat.dash && sourceConfig.mediaSource.hasDrmParams()) {
+        if ((format == PKMediaFormat.dash || format == PKMediaFormat.hls) && sourceConfig.mediaSource.hasDrmParams()) {
             setMediaItemBuilderDRMParams(sourceConfig, builder);
         } else  if (format == PKMediaFormat.udp) {
             builder.setMimeType(null);

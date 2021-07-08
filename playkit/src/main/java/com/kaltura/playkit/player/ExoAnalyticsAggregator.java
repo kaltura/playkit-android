@@ -73,7 +73,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
 
     @Override
     public void onIsLoadingChanged(EventTime eventTime, boolean isLoading) {
-        log.v("onIsLoadingChanged eventPlaybackPositionMs = " + eventTime.eventPlaybackPositionMs + " totalBufferedDurationMs = " + eventTime.totalBufferedDurationMs + " isLoading = " +  Boolean.toString(isLoading));
+        log.v("onIsLoadingChanged eventPlaybackPositionMs = " + eventTime.eventPlaybackPositionMs + " totalBufferedDurationMs = " + eventTime.totalBufferedDurationMs + " isLoading = " + isLoading);
     }
 
     @Override
