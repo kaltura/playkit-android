@@ -70,7 +70,7 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
  * Created by anton.afanasiev on 22/11/2016.
  */
 
-class TrackSelectionHelper {
+public class TrackSelectionHelper {
 
     private static final PKLog log = PKLog.get("TrackSelectionHelper");
 
@@ -155,12 +155,25 @@ class TrackSelectionHelper {
      * @param selector             The track selector.
      * @param lastSelectedTrackIds - last selected track id`s.
      */
-    TrackSelectionHelper(Context context, DefaultTrackSelector selector,
-                         String[] lastSelectedTrackIds) {
+    public TrackSelectionHelper(Context context, DefaultTrackSelector selector,
+                                String[] lastSelectedTrackIds) {
         this.context = context;
         this.selector = selector;
         this.lastSelectedTrackIds = lastSelectedTrackIds;
         this.requestedChangeTrackIds = Arrays.copyOf(lastSelectedTrackIds, lastSelectedTrackIds.length);
+    }
+
+    public void setMappedTrackInfo(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
+        this.mappedTrackInfo = mappedTrackInfo;
+        if (playerSettings == null) {
+            this.playerSettings = new PlayerSettings();
+        }
+    }
+
+    public void setPlayerSettings(PlayerSettings playerSettings) {
+        if (playerSettings != null) {
+            this.playerSettings = playerSettings;
+        }
     }
 
     /**
@@ -224,7 +237,7 @@ class TrackSelectionHelper {
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private PKTracks buildTracks(List<CustomFormat> rawImageTracks) {
+    public PKTracks buildTracks(List<CustomFormat> rawImageTracks) {
 
         clearTracksLists();
 
