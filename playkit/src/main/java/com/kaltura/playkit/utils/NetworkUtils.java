@@ -25,12 +25,14 @@ import okhttp3.ResponseBody;
 import static com.kaltura.playkit.Utils.toBase64;
 
 public class NetworkUtils {
-    
+
     private static final PKLog log = PKLog.get("NetworkUtils");
     private static final OkHttpClient client = new OkHttpClient();
     private static final String DEFAULT_BASE_URL = "https://analytics.kaltura.com/api_v3/index.php";
     public static final String DEFAULT_KAVA_ENTRY_ID = "1_3bwzbc9o";
     public static final int DEFAULT_KAVA_PARTNER_ID = 2504201;
+    public static final String KAVA_EVENT_IMPRESSION = "1";
+    public static final String KAVA_EVENT_PLAY_REQUEST = "2";
 
     public static void requestOvpConfigByPartnerId(Context context, String baseUrl, int partnerId, String apiPrefix, NetworkUtilsCallback callback) {
 
@@ -73,17 +75,17 @@ public class NetworkUtils {
         return builder.build().toString();
     }
 
-    public static void sendKavaImpression(Context context, int partnerId, String entryId) {
-        String kavaImpressionUrl = buildKavaImpressionUrl(context, partnerId, entryId);
-        log.d("kavaImpressionUrl = " + kavaImpressionUrl);
+    public static void sendKavaAnalytics(Context context, int partnerId, String entryId, String eventType) {
+        String kavaImpressionUrl = buildKavaImpressionUrl(context, partnerId, entryId, eventType);
+        log.d("KavaAnalytics URL = " + kavaImpressionUrl);
         executeGETRequest(context, "sendKavaImpression", kavaImpressionUrl, null);
     }
 
-    private static String buildKavaImpressionUrl(Context context, int partnerId, String entryId) {
+    private static String buildKavaImpressionUrl(Context context, int partnerId, String entryId, String eventType) {
         Uri.Builder builtUri = Uri.parse(DEFAULT_BASE_URL).buildUpon();
         builtUri.appendQueryParameter("service", "analytics")
                 .appendQueryParameter("action", "trackEvent")
-                .appendQueryParameter("eventType", "1")
+                .appendQueryParameter("eventType", eventType)
                 .appendQueryParameter("partnerId", String.valueOf(partnerId))
                 .appendQueryParameter("entryId", entryId)
                 .appendQueryParameter("sessionId", generateSessionId())
