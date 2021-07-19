@@ -225,14 +225,12 @@ class PlayerLoader extends PlayerDecoratorBase {
             entryId = NetworkUtils.DEFAULT_KAVA_ENTRY_ID;
         }
 
-        String eventType = NetworkUtils.KAVA_EVENT_PLAY_REQUEST;
-
         if (!isKavaImpressionFired) {
-            eventType = NetworkUtils.KAVA_EVENT_IMPRESSION;
+            NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_IMPRESSION);
             isKavaImpressionFired = true;
         }
 
-        NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, eventType);
+        NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST);
     }
 
     /**
