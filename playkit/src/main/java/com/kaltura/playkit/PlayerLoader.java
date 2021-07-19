@@ -52,6 +52,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
     private final String kavaPluginKey = "kava";
+    private boolean isKavaImpressionFired;
 
     PlayerLoader(Context context, MessageBus messageBus) {
         this.context = context;
@@ -125,6 +126,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public void destroy() {
+        isKavaImpressionFired = false;
         stop();
         releasePlugins();
         releasePlayer();
@@ -168,7 +170,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         if (!PKDeviceCapabilities.isKalturaPlayerAvailable() &&
                 loadedPlugins != null && !loadedPlugins.containsKey(kavaPluginKey)) {
-            fireKavaImpression(mediaConfig);
+            doKavaAnalyticsCall(mediaConfig);
         }
 
 //        messageBus.post(new Runnable() {
@@ -209,11 +211,11 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     /**
-     * Fire Kava impression
+     * Do KavaAnalytics call
      * @param pkMediaConfig mediaConfig
      */
-    private void fireKavaImpression(PKMediaConfig pkMediaConfig) {
-        Pair<Integer, String> metaData = getKavaImpressionInfo(pkMediaConfig);
+    private void doKavaAnalyticsCall(PKMediaConfig pkMediaConfig) {
+        Pair<Integer, String> metaData = getRequiredAnalyticsInfo(pkMediaConfig);
 
         int partnerId = metaData.first == null ? 0 : metaData.first;
         String entryId = TextUtils.isEmpty(metaData.second) ? "" : metaData.second;
@@ -223,7 +225,12 @@ class PlayerLoader extends PlayerDecoratorBase {
             entryId = NetworkUtils.DEFAULT_KAVA_ENTRY_ID;
         }
 
-        NetworkUtils.sendKavaImpression(context, partnerId, entryId);
+        if (!isKavaImpressionFired) {
+            NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_IMPRESSION);
+            isKavaImpressionFired = true;
+        }
+
+        NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST);
     }
 
     /**
@@ -231,7 +238,7 @@ class PlayerLoader extends PlayerDecoratorBase {
      * @param pkMediaConfig mediaConfig
      * @return Pair of Entry and partner Ids
      */
-    private Pair<Integer, String> getKavaImpressionInfo(PKMediaConfig pkMediaConfig) {
+    private Pair<Integer, String> getRequiredAnalyticsInfo(PKMediaConfig pkMediaConfig) {
         final String kavaPartnerIdKey = "kavaPartnerId";
         final String kavaEntryIdKey = "entryId";
         int kavaPartnerId = 0;
