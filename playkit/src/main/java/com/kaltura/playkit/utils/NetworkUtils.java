@@ -3,6 +3,7 @@ package com.kaltura.playkit.utils;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
@@ -75,20 +76,20 @@ public class NetworkUtils {
         return builder.build().toString();
     }
 
-    public static void sendKavaAnalytics(Context context, int partnerId, String entryId, String eventType) {
-        String kavaImpressionUrl = buildKavaImpressionUrl(context, partnerId, entryId, eventType);
+    public static void sendKavaAnalytics(Context context, int partnerId, String entryId, String eventType, String sessionId) {
+        String kavaImpressionUrl = buildKavaImpressionUrl(context, partnerId, entryId, eventType, sessionId);
         log.d("KavaAnalytics URL = " + kavaImpressionUrl);
         executeGETRequest(context, "sendKavaImpression", kavaImpressionUrl, null);
     }
 
-    private static String buildKavaImpressionUrl(Context context, int partnerId, String entryId, String eventType) {
+    private static String buildKavaImpressionUrl(Context context, int partnerId, String entryId, String eventType, String sessionId) {
         Uri.Builder builtUri = Uri.parse(DEFAULT_BASE_URL).buildUpon();
         builtUri.appendQueryParameter("service", "analytics")
                 .appendQueryParameter("action", "trackEvent")
                 .appendQueryParameter("eventType", eventType)
                 .appendQueryParameter("partnerId", String.valueOf(partnerId))
                 .appendQueryParameter("entryId", entryId)
-                .appendQueryParameter("sessionId", generateSessionId())
+                .appendQueryParameter("sessionId", !TextUtils.isEmpty(sessionId) ? sessionId : generateSessionId())
                 .appendQueryParameter("eventIndex", "1")
                 .appendQueryParameter("referrer", toBase64(context.getPackageName().getBytes()))
                 .appendQueryParameter("deliveryType", "dash")

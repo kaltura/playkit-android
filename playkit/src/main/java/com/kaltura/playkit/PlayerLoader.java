@@ -170,7 +170,9 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         if (!PKDeviceCapabilities.isKalturaPlayerAvailable() &&
                 loadedPlugins != null && !loadedPlugins.containsKey(kavaPluginKey)) {
-            doKavaAnalyticsCall(mediaConfig);
+            Player player = getPlayer();
+            String sessionId = (player != null && player.getSessionId() != null) ? player.getSessionId() : "";
+            doKavaAnalyticsCall(mediaConfig, sessionId);
         }
 
 //        messageBus.post(new Runnable() {
@@ -214,7 +216,7 @@ class PlayerLoader extends PlayerDecoratorBase {
      * Do KavaAnalytics call
      * @param pkMediaConfig mediaConfig
      */
-    private void doKavaAnalyticsCall(PKMediaConfig pkMediaConfig) {
+    private void doKavaAnalyticsCall(PKMediaConfig pkMediaConfig, String sessionId) {
         Pair<Integer, String> metaData = getRequiredAnalyticsInfo(pkMediaConfig);
 
         int partnerId = metaData.first == null ? 0 : metaData.first;
@@ -226,11 +228,11 @@ class PlayerLoader extends PlayerDecoratorBase {
         }
 
         if (!isKavaImpressionFired) {
-            NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_IMPRESSION);
+            NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_IMPRESSION, sessionId);
             isKavaImpressionFired = true;
         }
 
-        NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST);
+        NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST, sessionId);
     }
 
     /**
