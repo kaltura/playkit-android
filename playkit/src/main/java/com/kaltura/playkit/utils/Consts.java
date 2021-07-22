@@ -127,6 +127,8 @@ public class Consts {
 
     public static final int FORMAT_HANDLED = 4;
 
+    public static String EXO_DOWNLOAD_CHANNEL_ID = "download_channel";
+
     public static final String HTTP_METHOD_POST = "POST";
 
     public static final String HTTP_METHOD_GET = "GET";
