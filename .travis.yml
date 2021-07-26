@@ -11,6 +11,7 @@ android:
 before_script:
   - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
 script:
+  - ./gradlew playkit:test
   - ./gradlew playkit:build
 after_failure:
   - cat playkit/build/reports/lint-results.xml

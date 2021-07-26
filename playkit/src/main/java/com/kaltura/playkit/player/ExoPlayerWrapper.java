@@ -1007,7 +1007,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                 shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(trackSelections, customDashManifest);
             }
         }
-
+        
         trackSelectionHelper.notifyAboutTrackChange(trackSelections);
     }
 
