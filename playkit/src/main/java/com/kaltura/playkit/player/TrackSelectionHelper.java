@@ -170,12 +170,6 @@ public class TrackSelectionHelper {
         }
     }
 
-    public void setPlayerSettings(PlayerSettings playerSettings) {
-        if (playerSettings != null) {
-            this.playerSettings = playerSettings;
-        }
-    }
-
     /**
      * Prepare {@link PKTracks} object for application.
      * When the object is created, notify {@link ExoPlayerWrapper} about that,
@@ -1826,8 +1820,10 @@ public class TrackSelectionHelper {
                 (preferredTextTrackConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredTextTrackConfig.getTrackLanguage() == null));
     }
 
-    protected void applyPlayerSettings(PlayerSettings settings) {
-        this.playerSettings = settings;
+    public void applyPlayerSettings(PlayerSettings settings) {
+        if (settings != null) {
+            this.playerSettings = settings;
+        }
     }
 
     protected void hasExternalSubtitles(boolean hasExternalSubtitles) {

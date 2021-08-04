@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
+import com.kaltura.playkit.PKDeviceCapabilities;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -673,6 +674,13 @@ public class PlayerController implements Player {
     @Override
     public void setDownloadCache(Cache downloadCache) {
         log.v("setDownloadCache");
+
+        if (!PKDeviceCapabilities.isKalturaPlayerAvailable()) {
+            log.e("CacheDataSource is being used for Prefetch feature. This feature is not available in Playkit SDK. " +
+                    "It is only being used by Kaltura Player SDK.");
+            return;
+        }
+
         if (assertPlayerIsNotNull("setDownloadCache()")) {
             player.setDownloadCache(downloadCache);
         }

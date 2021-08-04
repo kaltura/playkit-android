@@ -401,6 +401,12 @@ public interface Player {
 
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
 
+    /**
+     * Used by Kaltura-Player SDK internally for ExoOffline provider.
+     * This feature is blocked for being used directly by Playkit SDK.
+     *
+     * @param downloadCache internally build the CacheDataSource
+     */
     void setDownloadCache(Cache downloadCache);
 
     /**
