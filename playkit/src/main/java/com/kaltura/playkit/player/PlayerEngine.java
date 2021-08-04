@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKAbrFilter;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
@@ -299,6 +300,8 @@ public interface PlayerEngine {
      * Must be called by application when Android onConfigurationChanged triggered by system.
      */
     void onOrientationChanged();
+
+    default void setDownloadCache(Cache downloadCache) {}
 
     default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
 

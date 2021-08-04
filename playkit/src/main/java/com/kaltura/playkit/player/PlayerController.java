@@ -21,8 +21,10 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
+import com.kaltura.playkit.PKDeviceCapabilities;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -85,7 +87,7 @@ public class PlayerController implements Player {
     private PlayerEngine.EventListener eventTrigger = initEventListener();
     private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
     private PlayerEngineWrapper playerEngineWrapper;
-
+    private Cache downloadCache;
 
     public PlayerController(Context context) {
         this.context = context;
@@ -262,6 +264,10 @@ public class PlayerController implements Player {
         //Initialize new PlayerEngine.
         try {
             player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings, rootPlayerView);
+            if (downloadCache != null) {
+                player.setDownloadCache(downloadCache);
+            }
+
             if (playerEngineWrapper != null) {
                 playerEngineWrapper.setPlayerEngine(player);
                 player = playerEngineWrapper;
@@ -663,6 +669,22 @@ public class PlayerController implements Player {
             return player.getPlaybackRate();
         }
         return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
+    }
+
+    @Override
+    public void setDownloadCache(Cache downloadCache) {
+        log.v("setDownloadCache");
+
+        if (!PKDeviceCapabilities.isKalturaPlayerAvailable()) {
+            log.e("CacheDataSource is being used for Prefetch feature. This feature is not available in Playkit SDK. " +
+                    "It is only being used by Kaltura Player SDK.");
+            return;
+        }
+
+        if (assertPlayerIsNotNull("setDownloadCache()")) {
+            player.setDownloadCache(downloadCache);
+        }
+        this.downloadCache = downloadCache;
     }
 
     @Override
