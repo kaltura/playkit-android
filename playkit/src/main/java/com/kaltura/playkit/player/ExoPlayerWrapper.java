@@ -1786,7 +1786,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
-
         if (playerSettings.getSubtitleStyleSettings() != null && subtitleStyleSettings != null) {
             playerSettings.setSubtitleStyle(subtitleStyleSettings);
             configureSubtitleView();
