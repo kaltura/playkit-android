@@ -5,5 +5,5 @@ public enum PKAbrFilter {
     BITRATE,
     HEIGHT,
     WIDTH,
-    PIXEL;
+    PIXEL
 }

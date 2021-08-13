@@ -76,6 +76,8 @@ import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.TeeDataSource;
 import com.kaltura.android.exoplayer2.upstream.TransferListener;
 import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 
@@ -169,6 +171,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     @NonNull private Profiler profiler = Profiler.NOOP;
 
     private Timeline.Period period;
+
+    private Cache downloadCache;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
         this(context, new ExoPlayerView(context), playerSettings, rootPlayerView);
@@ -381,15 +385,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             }
         }
 
+        if (isLocalMediaSource(sourceConfig) && sourceConfig.mediaSource.hasDrmParams()) {
+            drmSessionManager = getDeferredDRMSessionManager();
+            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+        }
+        
         MediaItem mediaItem;
         if (isLocalMediaItem(sourceConfig)) {
-            final LocalAssetsManagerExo.LocalExoMediaItem pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaItem) sourceConfig.mediaSource;
+            LocalAssetsManagerExo.LocalExoMediaItem pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaItem) sourceConfig.mediaSource;
             mediaItem = pkMediaSource.getExoMediaItem();
         } else {
-            if (isLocalMediaSource(sourceConfig) && sourceConfig.mediaSource.hasDrmParams()) {
-                drmSessionManager = getDeferredDRMSessionManager();
-                drmSessionManager.setMediaSource(sourceConfig.mediaSource);
-            }
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
         }
 
@@ -498,6 +503,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
             case hls:
                 mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
+                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
                         .createMediaSource(mediaItem);
                 break;
 
@@ -616,7 +622,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                     .setLiveMaxPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed());
         }
 
-        if (format == PKMediaFormat.dash && sourceConfig.mediaSource.hasDrmParams()) {
+        if ((format == PKMediaFormat.dash || format == PKMediaFormat.hls) && sourceConfig.mediaSource.hasDrmParams()) {
             setMediaItemBuilderDRMParams(sourceConfig, builder);
         } else  if (format == PKMediaFormat.udp) {
             builder.setMimeType(null);
@@ -720,7 +726,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     private DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
-        return new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
+        DataSource.Factory httpDataSourceFactory = new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
+        if (downloadCache != null) {
+            return buildReadOnlyCacheDataSource(httpDataSourceFactory, downloadCache);
+        } else {
+            return httpDataSourceFactory;
+        }
     }
 
     private static String getUserAgent(Context context) {
@@ -736,6 +747,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (stateChangedListener != null) {
             stateChangedListener.onStateChanged(previousState, currentState);
         }
+    }
+
+    private CacheDataSource.Factory buildReadOnlyCacheDataSource(
+            DataSource.Factory upstreamFactory, Cache cache) {
+        return new CacheDataSource.Factory()
+                .setCache(cache)
+                .setUpstreamDataSourceFactory(upstreamFactory)
+                .setCacheWriteDataSinkFactory(null)
+                .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
     }
 
     private void sendDistinctEvent(PlayerEvent.Type newEvent) {
@@ -1657,6 +1677,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     @Override
+    public void setDownloadCache(Cache downloadCache) {
+        this.downloadCache = downloadCache;
+    }
+
+    @Override
     public ThumbnailInfo getThumbnailInfo(long positionMS) {
         log.v("getThumbnailInfo positionMS = " + positionMS);
         if (assertPlayerIsNotNull("getThumbnailInfo()")) {
@@ -1761,7 +1786,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
-        if (playerSettings.getSubtitleStyleSettings() != null) {
+        if (playerSettings.getSubtitleStyleSettings() != null && subtitleStyleSettings != null) {
             playerSettings.setSubtitleStyle(subtitleStyleSettings);
             configureSubtitleView();
             sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);

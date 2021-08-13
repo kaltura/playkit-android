@@ -104,6 +104,7 @@ public class LocalAssetsManagerExo {
 
     public static class LocalExoMediaItem extends LocalAssetsManager.LocalMediaSource {
         private MediaItem exoMediaItem;
+        PKDrmParams.Scheme scheme;
 
         /**
          * @param localDataStore - the storage from where drm keySetId is stored.
@@ -114,15 +115,22 @@ public class LocalAssetsManagerExo {
             super(localDataStore, null, assetId, scheme);
 
             this.exoMediaItem = exoMediaItem;
+            this.scheme = scheme;
         }
 
         public MediaItem getExoMediaItem() {
             return exoMediaItem;
         }
+
+        public PKDrmParams.Scheme getScheme() {
+            return scheme;
+        }
     }
+
 
     public static class LocalExoMediaSource extends LocalAssetsManager.LocalMediaSource {
         private MediaSource exoMediaSource;
+        PKDrmParams.Scheme scheme;
 
         /**
          * @param localDataStore - the storage from where drm keySetId is stored.
@@ -133,10 +141,15 @@ public class LocalAssetsManagerExo {
             super(localDataStore, null, assetId, scheme);
 
             this.exoMediaSource = exoMediaSource;
+            this.scheme = scheme;
         }
 
         public MediaSource getExoMediaSource() {
             return exoMediaSource;
+        }
+
+        public PKDrmParams.Scheme getScheme() {
+            return scheme;
         }
     }
 }

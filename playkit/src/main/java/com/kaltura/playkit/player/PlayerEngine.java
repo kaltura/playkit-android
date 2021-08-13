@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKAbrFilter;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
@@ -155,7 +156,7 @@ public interface PlayerEngine {
      * Seek player to Live Default Position.
      *
      */
-    default void seekToDefaultPosition() {};
+    default void seekToDefaultPosition() {}
     
     /**
      * Start players playback from the specified position.
@@ -299,6 +300,8 @@ public interface PlayerEngine {
      * Must be called by application when Android onConfigurationChanged triggered by system.
      */
     void onOrientationChanged();
+
+    default void setDownloadCache(Cache downloadCache) {}
 
     default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
 
