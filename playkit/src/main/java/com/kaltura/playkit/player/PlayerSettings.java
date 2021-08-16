@@ -201,6 +201,9 @@ public class PlayerSettings implements Player.Settings {
     }
 
     public PKRequestConfig getPKRequestConfig() {
+        if (pkRequestConfig == null) {
+            return new PKRequestConfig();
+        }
         return pkRequestConfig;
     }
 
