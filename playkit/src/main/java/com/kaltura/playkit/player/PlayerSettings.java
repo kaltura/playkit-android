@@ -27,7 +27,6 @@ public class PlayerSettings implements Player.Settings {
     private boolean isSurfaceSecured;
     private boolean cea608CaptionsEnabled;
     private boolean mpgaAudioFormatEnabled;
-    private boolean crossProtocolRedirectEnabled;
     private boolean enableDecoderFallback;
     private boolean allowClearLead = true;
     private boolean adAutoPlayOnResume = true;
@@ -50,7 +49,7 @@ public class PlayerSettings implements Player.Settings {
     private ABRSettings abrSettings = new ABRSettings();
     private VRSettings vrSettings;
     private PKLowLatencyConfig pkLowLatencyConfig;
-    private PKRequestConfig pkRequestConfig;
+    private PKRequestConfig pkRequestConfig = new PKRequestConfig();
     /**
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
@@ -75,10 +74,6 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean useTextureView() {
         return useTextureView;
-    }
-
-    public boolean crossProtocolRedirectEnabled() {
-        return crossProtocolRedirectEnabled;
     }
 
     public boolean allowClearLead() {
@@ -206,11 +201,6 @@ public class PlayerSettings implements Player.Settings {
     }
 
     public PKRequestConfig getPKRequestConfig() {
-        if (pkRequestConfig == null) {
-            PKRequestConfig requestConfiguration = new PKRequestConfig();
-            requestConfiguration.setCrossProtocolRedirectEnabled(crossProtocolRedirectEnabled());
-            pkRequestConfig = requestConfiguration;
-        }
         return pkRequestConfig;
     }
 
@@ -282,7 +272,9 @@ public class PlayerSettings implements Player.Settings {
     
     @Override
     public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
-        this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
+        pkRequestConfig = new PKRequestConfig(crossProtocolRedirectEnabled,
+                pkRequestConfig.getReadTimeoutMs(),
+                pkRequestConfig.getConnectTimeoutMs());
         return this;
     }
 
