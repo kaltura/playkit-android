@@ -36,16 +36,7 @@ class SimpleHlsParser {
         masterPlaylist.variants?.let { variant ->
             if (variant.size > 0) {
                 format = variant[0].format
-
-                variant[0].url.lastPathSegment?.let { pathSegment ->
-                    if (pathSegment.contains("media")) {
-                        //TODO: Is it uniform for all the medias or not (it is standard or not)
-                        val originLastPathSegment = pathSegment.replace("media", "origin")
-                        val variantUrl = variant[0].url.toString()
-                        val leftOverVariantUrl = variantUrl.substring(0, variantUrl.lastIndexOf("/") + 1)
-                        segmentUrl = leftOverVariantUrl.plus(originLastPathSegment)
-                    }
-                }
+                segmentUrl = variant[0].url.toString()
             } else {
                 throw IOException("At least one video representation is required")
             }
@@ -87,9 +78,9 @@ class SimpleHlsParser {
         }
 
         var schemeData: DrmInitData.SchemeData? = null
-        for (i in 0 until drmInitData!!.schemeDataCount) {
-            if (drmInitData!![i] != null && drmInitData!![i].matches(widevineUUID)) {
-                schemeData = drmInitData!![i]
+        for (i in 0 until drmInitData.schemeDataCount) {
+            if (drmInitData[i] != null && drmInitData[i].matches(widevineUUID)) {
+                schemeData = drmInitData[i]
             }
         }
 
