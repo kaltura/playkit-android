@@ -77,6 +77,8 @@ class SimpleHlsParser {
         return this
     }
 
+    fun getWidevineInitData(): ByteArray? = hlsWidevineInitData
+
     private fun getWidevineInitData(drmInitData: DrmInitData?): DrmInitData.SchemeData? {
         val widevineUUID = MediaSupport.WIDEVINE_UUID
         if (drmInitData == null) {
