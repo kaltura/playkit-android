@@ -34,7 +34,7 @@ class SimpleHlsParser {
         val masterPlaylist: HlsMasterPlaylist = HlsPlaylistParser().parse(Uri.parse(localPath), isMasterPlaylist) as HlsMasterPlaylist
 
         masterPlaylist.variants?.let { variant ->
-            if (variant.size > 0) {
+            if (variant.isNotEmpty()) {
                 format = variant[0].format
                 segmentUrl = variant[0].url.toString()
             } else {
@@ -45,7 +45,7 @@ class SimpleHlsParser {
         segmentUrl?.let {
             val isMediaPlaylist = BufferedInputStream(FileInputStream(it))
             val mediaPlaylist: HlsMediaPlaylist = HlsPlaylistParser().parse(Uri.parse(localPath), isMediaPlaylist) as HlsMediaPlaylist
-            if (mediaPlaylist.segments.size > 0) {
+            if (mediaPlaylist.segments.isNotEmpty()) {
                 mediaPlaylist.segments[0].drmInitData?.let { drmData ->
                     hasContentProtection = true
                     drmInitData = drmData
