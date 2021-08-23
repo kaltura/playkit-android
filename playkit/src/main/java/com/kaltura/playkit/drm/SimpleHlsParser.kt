@@ -29,27 +29,24 @@ class SimpleHlsParser {
 
     @Throws(IOException::class)
     fun parse(localPath: String): SimpleHlsParser {
-        var segmentUrl: String? = null
-        val isMasterPlaylist = BufferedInputStream(FileInputStream(localPath))
-        val masterPlaylist: HlsMasterPlaylist = HlsPlaylistParser().parse(Uri.parse(localPath), isMasterPlaylist) as HlsMasterPlaylist
+        val segmentUrl: String?
+        val inStreamMasterPlaylist = BufferedInputStream(FileInputStream(localPath))
+        val masterPlaylist: HlsMasterPlaylist = HlsPlaylistParser().parse(Uri.parse(localPath), inStreamMasterPlaylist) as HlsMasterPlaylist
 
-        masterPlaylist.variants?.let { variant ->
-            if (variant.isNotEmpty()) {
-                format = variant[0].format
-                segmentUrl = variant[0].url.toString()
-            } else {
-                throw IOException("At least one video representation is required")
-            }
+        val variant = masterPlaylist.variants
+        if (variant.isNotEmpty()) {
+            format = variant[0].format
+            segmentUrl = variant[0].url.toString()
+        } else {
+            throw IOException("At least one video representation is required")
         }
 
-        segmentUrl?.let {
-            val isMediaPlaylist = BufferedInputStream(FileInputStream(it))
-            val mediaPlaylist: HlsMediaPlaylist = HlsPlaylistParser().parse(Uri.parse(localPath), isMediaPlaylist) as HlsMediaPlaylist
-            if (mediaPlaylist.segments.isNotEmpty()) {
-                mediaPlaylist.segments[0].drmInitData?.let { drmData ->
-                    hasContentProtection = true
-                    drmInitData = drmData
-                }
+        val isMediaPlaylist = BufferedInputStream(FileInputStream(segmentUrl))
+        val mediaPlaylist: HlsMediaPlaylist = HlsPlaylistParser().parse(Uri.parse(localPath), isMediaPlaylist) as HlsMediaPlaylist
+        if (mediaPlaylist.segments.isNotEmpty()) {
+            mediaPlaylist.segments[0].drmInitData?.let { drmData ->
+                hasContentProtection = true
+                drmInitData = drmData
             }
         }
 
@@ -79,7 +76,7 @@ class SimpleHlsParser {
 
         var schemeData: DrmInitData.SchemeData? = null
         for (i in 0 until drmInitData.schemeDataCount) {
-            if (drmInitData[i] != null && drmInitData[i].matches(widevineUUID)) {
+            if (drmInitData[i].matches(widevineUUID)) {
                 schemeData = drmInitData[i]
             }
         }
