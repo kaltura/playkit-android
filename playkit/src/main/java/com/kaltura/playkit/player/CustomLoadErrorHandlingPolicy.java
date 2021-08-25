@@ -12,17 +12,24 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 
-public class ExternalTextTrackLoadErrorPolicy extends DefaultLoadErrorHandlingPolicy {
+public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolicy {
 
     private static final PKLog log = PKLog.get("ExternalTextTrackLoadError");
 
-    private ExternalTextTrackLoadErrorPolicy.OnTextTrackLoadErrorListener textTrackLoadErrorListener;
+    private CustomLoadErrorHandlingPolicy.OnTextTrackLoadErrorListener textTrackLoadErrorListener;
+    public static final int MIN_LOADABLE_RETRY_COUNT = -1;
+    private static final int DATA_TYPE_MEDIA_PROGRESSIVE_LIVE = 7;
+    private final int minimumLoadableRetryCount;
 
     public interface OnTextTrackLoadErrorListener {
         void onTextTrackLoadError(PKError currentError);
     }
 
-    public void setOnTextTrackErrorListener(ExternalTextTrackLoadErrorPolicy.OnTextTrackLoadErrorListener onTextTrackErrorListener) {
+    public CustomLoadErrorHandlingPolicy(int minimumLoadableRetryCount) {
+        this.minimumLoadableRetryCount = minimumLoadableRetryCount;
+    }
+
+    public void setOnTextTrackErrorListener(CustomLoadErrorHandlingPolicy.OnTextTrackLoadErrorListener onTextTrackErrorListener) {
         this.textTrackLoadErrorListener = onTextTrackErrorListener;
     }
 
@@ -49,6 +56,14 @@ public class ExternalTextTrackLoadErrorPolicy extends DefaultLoadErrorHandlingPo
         } else {
             return super.getRetryDelayMsFor(loadErrorInfo);
         }
+    }
+
+    @Override
+    public int getMinimumLoadableRetryCount(int dataType) {
+        if (minimumLoadableRetryCount != MIN_LOADABLE_RETRY_COUNT && dataType != DATA_TYPE_MEDIA_PROGRESSIVE_LIVE) {
+            return minimumLoadableRetryCount;
+        }
+        return super.getMinimumLoadableRetryCount(dataType);
     }
 
     private Uri getPathSegmentUri(IOException ioException) {

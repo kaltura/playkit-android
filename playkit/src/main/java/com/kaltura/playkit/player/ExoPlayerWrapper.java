@@ -165,7 +165,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
-    private ExternalTextTrackLoadErrorPolicy externalTextTrackLoadErrorPolicy;
+    private CustomLoadErrorHandlingPolicy customLoadErrorHandlingPolicy;
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
     private PKMediaSourceConfig sourceConfig;
     @NonNull private Profiler profiler = Profiler.NOOP;
@@ -228,9 +228,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
-        addExternalTextTrackErrorListener();
+        addCustomLoadErrorPolicy();
         mediaSourceFactory = new DefaultMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
-        mediaSourceFactory.setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy);
+        mediaSourceFactory.setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy);
 
         player = new SimpleExoPlayer.Builder(context, renderersFactory)
                 .setTrackSelector(trackSelector)
@@ -448,7 +448,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
         PKRequestParams requestParams = sourceConfig.getRequestParams();
         final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
-
         MediaSource mediaSource;
         switch (format) {
             case dash:
@@ -498,12 +497,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                         new DefaultDashChunkSource.Factory(dataSourceFactory), teedDtaSourceFactory)
                         .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
                         .setManifestParser(new DashManifestParserForThumbnail())
+                        .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
                         .createMediaSource(mediaItem);
                 break;
 
             case hls:
                 mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
                         .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
+                        .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
                         .createMediaSource(mediaItem);
                 break;
 
@@ -511,6 +512,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             case mp4:
             case mp3:
                 mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
                         .createMediaSource(mediaItem);
                 break;
 
@@ -518,6 +520,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                 MulticastSettings multicastSettings = (playerSettings != null) ? playerSettings.getMulticastSettings() : new MulticastSettings();
                 if (multicastSettings.getUseExoDefaultSettings()) {
                     mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                            .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
                             .createMediaSource(mediaItem);
                 } else {
                     DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(multicastSettings.getMaxPacketSize(), multicastSettings.getSocketTimeoutMillis());
@@ -526,6 +529,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                                     new TimestampAdjuster(multicastSettings.getFirstSampleTimestampUs()), new DefaultTsPayloadReaderFactory())
                     };
                     mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
+                            .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
                             .createMediaSource(mediaItem);
                 }
                 break;
@@ -533,8 +537,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             default:
                 throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
         }
+
         if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
-            removeExternalTextTrackListener();
             return mediaSource;
         } else {
             addExternalTextTrackErrorListener();
@@ -571,29 +575,33 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     @NonNull
     private MediaSource buildExternalSubtitleSource(MediaItem.Subtitle mediaItemSubtitle) {
         return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
-                .setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy)
+                .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
                 .setTreatLoadErrorsAsEndOfStream(true)
                 .createMediaSource(mediaItemSubtitle, C.TIME_UNSET);
     }
 
-    private void removeExternalTextTrackListener() {
-        if (externalTextTrackLoadErrorPolicy != null) {
-            externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(null);
-            externalTextTrackLoadErrorPolicy = null;
+    private void removeCustomLoadErrorPolicy() {
+        if (customLoadErrorHandlingPolicy != null) {
+            customLoadErrorHandlingPolicy.setOnTextTrackErrorListener(null);
+            customLoadErrorHandlingPolicy = null;
+        }
+    }
+
+    private void addCustomLoadErrorPolicy() {
+        if (customLoadErrorHandlingPolicy == null) {
+            customLoadErrorHandlingPolicy = new CustomLoadErrorHandlingPolicy(playerSettings.getPKRequestConfig().getMinLoadableRetryCount());
         }
     }
 
     private void addExternalTextTrackErrorListener() {
-        if (externalTextTrackLoadErrorPolicy == null) {
-            externalTextTrackLoadErrorPolicy = new ExternalTextTrackLoadErrorPolicy();
-            externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(err -> {
-                currentError = err;
-                if (eventListener != null) {
-                    log.e("Error-Event sent, type = " + currentError.errorType);
-                    eventListener.onEvent(PlayerEvent.Type.ERROR);
-                }
-            });
-        }
+        addCustomLoadErrorPolicy();
+        customLoadErrorHandlingPolicy.setOnTextTrackErrorListener(err -> {
+            currentError = err;
+            if (eventListener != null) {
+                log.e("Error-Event sent, type = " + currentError.errorType);
+                eventListener.onEvent(PlayerEvent.Type.ERROR);
+            }
+        });
     }
 
     private MediaItem buildInternalExoMediaItem(PKMediaSourceConfig sourceConfig, List<PKExternalSubtitle> externalSubtitleList) {
@@ -1239,7 +1247,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             if (bandwidthMeter != null) {
                 bandwidthMeter.removeEventListener(this);
             }
-            removeExternalTextTrackListener();
+            removeCustomLoadErrorPolicy();
             if (assertTrackSelectionIsNotNull("release()")) {
                 trackSelectionHelper.release();
                 trackSelectionHelper = null;
@@ -1292,7 +1300,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     public void destroy() {
         log.v("destroy");
         closeProfilerSession();
-        removeExternalTextTrackListener();
+        removeCustomLoadErrorPolicy();
         if (assertPlayerIsNotNull("destroy()")) {
             player.release();
         }
