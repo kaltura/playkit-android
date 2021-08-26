@@ -10,5 +10,5 @@ import com.kaltura.playkit.player.CustomLoadErrorHandlingPolicy
 data class PKRequestConfig @JvmOverloads constructor(@NonNull var crossProtocolRedirectEnabled: Boolean = false,
                                                      @NonNull var readTimeoutMs: Int = DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
                                                      @NonNull var connectTimeoutMs: Int = DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                                                     /* Minimum number of times to retry a load in the case of a load error, before propagating the error.*/
-                                                     @NonNull var minRetryCount: Int = CustomLoadErrorHandlingPolicy.MIN_LOADABLE_RETRY_COUNT)
+                                                     /* Maximum number of times to retry a load in the case of a load error, before propagating the error.*/
+                                                     @NonNull var maxRetries: Int = CustomLoadErrorHandlingPolicy.MAX_LOADABLE_RETRY_COUNT)

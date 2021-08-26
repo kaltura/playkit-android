@@ -17,16 +17,16 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
     private static final PKLog log = PKLog.get("LoadErrorHandlingPolicy");
 
     private CustomLoadErrorHandlingPolicy.OnTextTrackLoadErrorListener textTrackLoadErrorListener;
-    public static final int MIN_LOADABLE_RETRY_COUNT = -1;
+    public static final int MAX_LOADABLE_RETRY_COUNT = -1;
     private static final int DATA_TYPE_MEDIA_PROGRESSIVE_LIVE = 7;
-    private final int minimumLoadableRetryCount;
+    private final int maximumLoadableRetryCount;
 
     public interface OnTextTrackLoadErrorListener {
         void onTextTrackLoadError(PKError currentError);
     }
 
-    public CustomLoadErrorHandlingPolicy(int minimumLoadableRetryCount) {
-        this.minimumLoadableRetryCount = minimumLoadableRetryCount;
+    public CustomLoadErrorHandlingPolicy(int maximumLoadableRetryCount) {
+        this.maximumLoadableRetryCount = maximumLoadableRetryCount;
     }
 
     public void setOnTextTrackErrorListener(CustomLoadErrorHandlingPolicy.OnTextTrackLoadErrorListener onTextTrackErrorListener) {
@@ -56,8 +56,8 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
 
     @Override
     public int getMinimumLoadableRetryCount(int dataType) {
-        if (minimumLoadableRetryCount > MIN_LOADABLE_RETRY_COUNT && dataType != DATA_TYPE_MEDIA_PROGRESSIVE_LIVE) {
-            return minimumLoadableRetryCount;
+        if (maximumLoadableRetryCount > 0 && dataType != DATA_TYPE_MEDIA_PROGRESSIVE_LIVE) {
+            return maximumLoadableRetryCount;
         }
         return super.getMinimumLoadableRetryCount(dataType);
     }
