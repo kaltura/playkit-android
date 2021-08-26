@@ -63,7 +63,7 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
     }
 
     private int setMaximumLoadableRetryCount(int retryCount) {
-        if (retryCount > MAX_LOADABLE_RETRY_COUNT && retryCount <=1) {
+        if (retryCount > MAX_LOADABLE_RETRY_COUNT && retryCount <= 1) {
             return retryCount; // In case of count 0 or 1, retry is still 2 times from ExoPlayer
         }
         return retryCount > 0 ? retryCount - 1 : MAX_LOADABLE_RETRY_COUNT;
