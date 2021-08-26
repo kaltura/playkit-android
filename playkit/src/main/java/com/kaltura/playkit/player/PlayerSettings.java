@@ -202,7 +202,7 @@ public class PlayerSettings implements Player.Settings {
 
     public PKRequestConfig getPKRequestConfig() {
         if (pkRequestConfig == null) {
-            return new PKRequestConfig();
+            pkRequestConfig = new PKRequestConfig();
         }
         return pkRequestConfig;
     }
@@ -275,9 +275,7 @@ public class PlayerSettings implements Player.Settings {
     
     @Override
     public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
-        pkRequestConfig = new PKRequestConfig(crossProtocolRedirectEnabled,
-                pkRequestConfig.getReadTimeoutMs(),
-                pkRequestConfig.getConnectTimeoutMs());
+        getPKRequestConfig().setCrossProtocolRedirectEnabled(crossProtocolRedirectEnabled);
         return this;
     }
 
