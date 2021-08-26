@@ -18,7 +18,7 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
 
     private CustomLoadErrorHandlingPolicy.OnTextTrackLoadErrorListener textTrackLoadErrorListener;
     public static final int MAX_LOADABLE_RETRY_COUNT = -1;
-    private static final int DATA_TYPE_MEDIA_PROGRESSIVE_LIVE = 7;
+    private static final int DATA_TYPE_MEDIA_PROGRESSIVE_LIVE = 7; // For progressive live medias, we are keeping the retry count 6(default in ExoPlayer).
     private final int maximumLoadableRetryCount;
 
     public interface OnTextTrackLoadErrorListener {
@@ -26,7 +26,7 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
     }
 
     public CustomLoadErrorHandlingPolicy(int maximumLoadableRetryCount) {
-        this.maximumLoadableRetryCount = maximumLoadableRetryCount;
+        this.maximumLoadableRetryCount = setMaximumLoadableRetryCount(maximumLoadableRetryCount);
     }
 
     public void setOnTextTrackErrorListener(CustomLoadErrorHandlingPolicy.OnTextTrackLoadErrorListener onTextTrackErrorListener) {
@@ -56,10 +56,17 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
 
     @Override
     public int getMinimumLoadableRetryCount(int dataType) {
-        if (maximumLoadableRetryCount > 0 && dataType != DATA_TYPE_MEDIA_PROGRESSIVE_LIVE) {
+        if (maximumLoadableRetryCount != MAX_LOADABLE_RETRY_COUNT && dataType != DATA_TYPE_MEDIA_PROGRESSIVE_LIVE) {
             return maximumLoadableRetryCount;
         }
         return super.getMinimumLoadableRetryCount(dataType);
+    }
+
+    private int setMaximumLoadableRetryCount(int retryCount) {
+        if (retryCount > MAX_LOADABLE_RETRY_COUNT && retryCount <=1) {
+            return retryCount; // In case of count 0 or 1, retry is still 2 times from ExoPlayer
+        }
+        return retryCount > 0 ? retryCount - 1 : MAX_LOADABLE_RETRY_COUNT;
     }
 
     private Uri getPathSegmentUri(IOException ioException) {
