@@ -589,7 +589,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private void addCustomLoadErrorPolicy() {
         if (customLoadErrorHandlingPolicy == null) {
-            customLoadErrorHandlingPolicy = new CustomLoadErrorHandlingPolicy(playerSettings.getPKRequestConfig().getMinLoadableRetryCount());
+            customLoadErrorHandlingPolicy = new CustomLoadErrorHandlingPolicy(playerSettings.getPKRequestConfig().getMinRetryCount());
         }
     }
 

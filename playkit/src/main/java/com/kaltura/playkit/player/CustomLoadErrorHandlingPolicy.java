@@ -14,7 +14,7 @@ import java.io.IOException;
 
 public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolicy {
 
-    private static final PKLog log = PKLog.get("ExternalTextTrackLoadError");
+    private static final PKLog log = PKLog.get("LoadErrorHandlingPolicy");
 
     private CustomLoadErrorHandlingPolicy.OnTextTrackLoadErrorListener textTrackLoadErrorListener;
     public static final int MIN_LOADABLE_RETRY_COUNT = -1;
@@ -32,10 +32,6 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
     public void setOnTextTrackErrorListener(CustomLoadErrorHandlingPolicy.OnTextTrackLoadErrorListener onTextTrackErrorListener) {
         this.textTrackLoadErrorListener = onTextTrackErrorListener;
     }
-
-    //public void onTextTrackLoadError(PKError currentError) {
-    //    textTrackLoadErrorListener.onTextTrackLoadError(currentError);
-    //} TODO // need to test with vtt errored file
 
     @Override
     public long getRetryDelayMsFor(LoadErrorInfo loadErrorInfo) {
@@ -60,7 +56,7 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
 
     @Override
     public int getMinimumLoadableRetryCount(int dataType) {
-        if (minimumLoadableRetryCount != MIN_LOADABLE_RETRY_COUNT && dataType != DATA_TYPE_MEDIA_PROGRESSIVE_LIVE) {
+        if (minimumLoadableRetryCount > MIN_LOADABLE_RETRY_COUNT && dataType != DATA_TYPE_MEDIA_PROGRESSIVE_LIVE) {
             return minimumLoadableRetryCount;
         }
         return super.getMinimumLoadableRetryCount(dataType);

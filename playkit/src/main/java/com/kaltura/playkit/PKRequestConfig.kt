@@ -11,4 +11,4 @@ data class PKRequestConfig @JvmOverloads constructor(@NonNull var crossProtocolR
                                                      @NonNull var readTimeoutMs: Int = DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
                                                      @NonNull var connectTimeoutMs: Int = DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                                                      /* Minimum number of times to retry a load in the case of a load error, before propagating the error.*/
-                                                     @NonNull var minLoadableRetryCount: Int = CustomLoadErrorHandlingPolicy.MIN_LOADABLE_RETRY_COUNT)
+                                                     @NonNull var minRetryCount: Int = CustomLoadErrorHandlingPolicy.MIN_LOADABLE_RETRY_COUNT)
