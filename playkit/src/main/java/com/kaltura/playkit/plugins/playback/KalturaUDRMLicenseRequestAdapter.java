@@ -19,6 +19,7 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.Utils;
 
 import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
 
@@ -45,7 +46,7 @@ public class KalturaUDRMLicenseRequestAdapter implements PKRequestParams.Adapter
 
         boolean isEmptyApplicationName = TextUtils.isEmpty(applicationName);
         if (!isEmptyApplicationName) {
-            requestParams.headers.put("Referrer", applicationName);
+            requestParams.headers.put("Referrer", Utils.toBase64(applicationName.getBytes()));
         }
 
         Uri licenseUrl = requestParams.url;
@@ -55,7 +56,7 @@ public class KalturaUDRMLicenseRequestAdapter implements PKRequestParams.Adapter
                     .appendQueryParameter("clientTag", CLIENT_TAG).build();
 
             if (!isEmptyApplicationName) {
-                alt = alt.buildUpon().appendQueryParameter("referrer", applicationName).build();
+                alt = alt.buildUpon().appendQueryParameter("referrer", Utils.toBase64(applicationName.getBytes())).build();
             }
 
             return new PKRequestParams(alt, requestParams.headers);
