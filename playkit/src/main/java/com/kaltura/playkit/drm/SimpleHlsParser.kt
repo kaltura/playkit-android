@@ -30,8 +30,8 @@ class SimpleHlsParser {
     @Throws(IOException::class)
     fun parse(localPath: String): SimpleHlsParser {
         val segmentUrl: String?
-        val inStreamMasterPlaylist = BufferedInputStream(FileInputStream(localPath))
-        val masterPlaylist: HlsMasterPlaylist = HlsPlaylistParser().parse(Uri.parse(localPath), inStreamMasterPlaylist) as HlsMasterPlaylist
+        val inputStreamLocalPath = BufferedInputStream(FileInputStream(localPath))
+        val masterPlaylist: HlsMasterPlaylist = HlsPlaylistParser().parse(Uri.parse(localPath), inputStreamLocalPath) as HlsMasterPlaylist
 
         val variant = masterPlaylist.variants
         if (variant.isNotEmpty()) {
@@ -56,7 +56,7 @@ class SimpleHlsParser {
         }
 
         drmInitData?.let {
-            val schemeInitData = getWidevineInitData(drmInitData)
+            val schemeInitData = getWidevineSchemeData(drmInitData)
             schemeInitData?.let {
                 hlsWidevineInitData = it.data
             }
@@ -67,7 +67,7 @@ class SimpleHlsParser {
 
     fun getWidevineInitData(): ByteArray? = hlsWidevineInitData
 
-    private fun getWidevineInitData(drmInitData: DrmInitData?): DrmInitData.SchemeData? {
+    private fun getWidevineSchemeData(drmInitData: DrmInitData?): DrmInitData.SchemeData? {
         val widevineUUID = MediaSupport.WIDEVINE_UUID
         if (drmInitData == null) {
             log.e("No PSSH in media")
@@ -95,6 +95,5 @@ class SimpleHlsParser {
         }
         return schemeData
     }
-
 }
 
