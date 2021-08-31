@@ -53,9 +53,9 @@ public abstract class DrmAdapter {
         return new NullDrmAdapter();
     }
 
-    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, final PKMediaFormat mediaFormat, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
+    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
 
-    public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, final PKMediaFormat mediaFormat, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, final LocalAssetsManager.AssetRegistrationListener listener);
+    public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, final LocalAssetsManager.AssetRegistrationListener listener);
 
     public abstract boolean unregisterAsset(final String localAssetPath, final String assetId, boolean forceWidevineL3Playback, final LocalAssetsManager.AssetRemovalListener listener);
 
@@ -71,7 +71,7 @@ public abstract class DrmAdapter {
         }
 
         @Override
-        public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, final PKMediaFormat mediaFormat, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
+        public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
             if (listener != null) {
                 listener.onRegistered(localAssetPath);
             }
@@ -79,8 +79,8 @@ public abstract class DrmAdapter {
         }
 
         @Override
-        public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, final PKMediaFormat mediaFormat, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
-            return registerAsset(localAssetPath, assetId, licenseUri, mediaFormat, adapter, forceWidevineL3Playback,  listener);
+        public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
+            return registerAsset(localAssetPath, assetId, licenseUri, adapter, forceWidevineL3Playback,  listener);
         }
 
         @Override

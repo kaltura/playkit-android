@@ -210,7 +210,7 @@ public class LocalAssetsManager {
                 DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), helper.context, helper.localDataStore);
                 String licenseUri = drmParams.getLicenseUri();
 
-                boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, mediaFormat, helper.licenseRequestParamAdapter, forceWidevineL3Playback, listener);
+                boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, helper.licenseRequestParamAdapter, forceWidevineL3Playback, listener);
                 if (isRegistered) {
                     helper.saveMediaFormat(assetId, mediaFormat, drmParams.getScheme());
                 }
