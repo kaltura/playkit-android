@@ -19,7 +19,6 @@ import android.drm.DrmInfoEvent;
 
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 
 
