@@ -12,9 +12,10 @@
 
 package com.kaltura.playkit.plugins.ads;
 
-import androidx.annotation.Nullable;
-
 import com.kaltura.playkit.ads.PKAdInfo;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by gilad.nadav on 22/11/2016.
@@ -39,9 +40,9 @@ public class AdInfo implements PKAdInfo {
     private String dealId;
     private String surveyUrl;
     private String traffickingParams;
-    private String[] adWrapperCreativeIds;
-    private String[] adWrapperIds;
-    private String[] adWrapperSystems;
+    private List<String> adWrapperCreativeIds;
+    private List<String> adWrapperIds;
+    private List<String> adWrapperSystems;
     private int adHeight;
     private int adWidth;
     private int mediaBitrate;
@@ -56,8 +57,8 @@ public class AdInfo implements PKAdInfo {
                   boolean isAdSkippable, long skipTimeOffset, String adContentType,
                   String adId, String adSystem, String creativeId, String creativeAdId,
                   String advertiserName, String dealId, String surveyUrl,
-                  String traffickingParams, @Nullable String[] adWrapperCreativeIds,
-                  @Nullable String[] adWrapperIds, @Nullable String[] adWrapperSystems,
+                  String traffickingParams, List<String> adWrapperCreativeIds,
+                  List<String> adWrapperIds, List<String> adWrapperSystems,
                   int adHeight, int adWidth, int mediaBitrate,
                   int totalAdsInPod, int adIndexInPod, int currentPodIndex, int podCount,
                   boolean isBumper, long adPodTimeOffset) {
@@ -187,19 +188,16 @@ public class AdInfo implements PKAdInfo {
         return traffickingParams;
     }
 
-    @Nullable
-    public String[] getAdWrapperCreativeIds() {
-        return adWrapperCreativeIds;
+    public List<String> getAdWrapperCreativeIds() {
+        return adWrapperCreativeIds != null ? adWrapperCreativeIds : Collections.emptyList();
     }
 
-    @Nullable
-    public String[] getAdWrapperIds() {
-        return adWrapperIds;
+    public List<String> getAdWrapperIds() {
+        return adWrapperIds != null ? adWrapperIds : Collections.emptyList();
     }
 
-    @Nullable
-    public String[] getAdWrapperSystems() {
-        return adWrapperSystems;
+    public List<String> getAdWrapperSystems() {
+        return adWrapperSystems != null ? adWrapperSystems : Collections.emptyList();
     }
 
     @Override
@@ -272,6 +270,6 @@ public class AdInfo implements PKAdInfo {
             adType = "Pre-Roll";
         }
         return "AdType=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " isBumper=" + isBumper + " contentType= " + adContentType + " adBitrate=" + mediaBitrate +
-               " adWidth=" + adWidth + " adHeight=" + adHeight + " adCount=" + adIndexInPod + "/" + totalAdsInPod + " podCount=" + podIndex + "/" + podCount;
+                " adWidth=" + adWidth + " adHeight=" + adHeight + " adCount=" + adIndexInPod + "/" + totalAdsInPod + " podCount=" + podIndex + "/" + podCount;
     }
 }
