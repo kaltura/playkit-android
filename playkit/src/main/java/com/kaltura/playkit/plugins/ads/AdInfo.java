@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.plugins.ads;
 
+import androidx.annotation.Nullable;
+
 import com.kaltura.playkit.ads.PKAdInfo;
 
 /**
@@ -37,6 +39,9 @@ public class AdInfo implements PKAdInfo {
     private String dealId;
     private String surveyUrl;
     private String traffickingParams;
+    private String[] adWrapperCreativeIds;
+    private String[] adWrapperIds;
+    private String[] adWrapperSystems;
     private int adHeight;
     private int adWidth;
     private int mediaBitrate;
@@ -51,7 +56,9 @@ public class AdInfo implements PKAdInfo {
                   boolean isAdSkippable, long skipTimeOffset, String adContentType,
                   String adId, String adSystem, String creativeId, String creativeAdId,
                   String advertiserName, String dealId, String surveyUrl,
-                  String traffickingParams, int adHeight, int adWidth, int mediaBitrate,
+                  String traffickingParams, @Nullable String[] adWrapperCreativeIds,
+                  @Nullable String[] adWrapperIds, @Nullable String[] adWrapperSystems,
+                  int adHeight, int adWidth, int mediaBitrate,
                   int totalAdsInPod, int adIndexInPod, int currentPodIndex, int podCount,
                   boolean isBumper, long adPodTimeOffset) {
 
@@ -70,6 +77,9 @@ public class AdInfo implements PKAdInfo {
         this.dealId = dealId;
         this.surveyUrl = surveyUrl;
         this.traffickingParams = traffickingParams;
+        this.adWrapperCreativeIds = adWrapperCreativeIds;
+        this.adWrapperIds = adWrapperIds;
+        this.adWrapperSystems = adWrapperSystems;
         this.adHeight = adHeight;
         this.adWidth = adWidth;
         this.mediaBitrate = mediaBitrate;
@@ -175,6 +185,21 @@ public class AdInfo implements PKAdInfo {
 
     public String getTraffickingParams() {
         return traffickingParams;
+    }
+
+    @Nullable
+    public String[] getAdWrapperCreativeIds() {
+        return adWrapperCreativeIds;
+    }
+
+    @Nullable
+    public String[] getAdWrapperIds() {
+        return adWrapperIds;
+    }
+
+    @Nullable
+    public String[] getAdWrapperSystems() {
+        return adWrapperSystems;
     }
 
     @Override
