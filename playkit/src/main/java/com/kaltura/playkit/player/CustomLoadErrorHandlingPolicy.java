@@ -17,7 +17,7 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
     private static final PKLog log = PKLog.get("LoadErrorHandlingPolicy");
 
     private CustomLoadErrorHandlingPolicy.OnTextTrackLoadErrorListener textTrackLoadErrorListener;
-    public static final int MAX_LOADABLE_RETRY_COUNT = -1;
+    public static final int LOADABLE_RETRY_COUNT_UNSET = 0;
     private static final int DATA_TYPE_MEDIA_PROGRESSIVE_LIVE = 7; // For progressive live medias, we are keeping the retry count 6(default in ExoPlayer).
     private final int maximumLoadableRetryCount;
 
@@ -26,7 +26,7 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
     }
 
     public CustomLoadErrorHandlingPolicy(int maximumLoadableRetryCount) {
-        this.maximumLoadableRetryCount = setMaximumLoadableRetryCount(maximumLoadableRetryCount);
+        this.maximumLoadableRetryCount = maximumLoadableRetryCount;
     }
 
     public void setOnTextTrackErrorListener(CustomLoadErrorHandlingPolicy.OnTextTrackLoadErrorListener onTextTrackErrorListener) {
@@ -38,9 +38,9 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
         IOException exception = loadErrorInfo.exception;
         Uri pathSegment = getPathSegmentUri(exception);
         if (pathSegment == null || !(exception instanceof HttpDataSource.HttpDataSourceException)) {
-            return super.getRetryDelayMsFor(loadErrorInfo);
+            return getRetryDelay(loadErrorInfo);
         }
-        
+
         String lastPathSegment = pathSegment.getLastPathSegment();
         if (lastPathSegment != null && (lastPathSegment.endsWith(PKSubtitleFormat.vtt.pathExt) || lastPathSegment.endsWith(PKSubtitleFormat.srt.pathExt))) {
             PKError currentError = new PKError(PKPlayerErrorType.SOURCE_ERROR, PKError.Severity.Recoverable, "TextTrack is invalid url=" + pathSegment, exception);
@@ -50,23 +50,16 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
             }
             return Consts.TIME_UNSET;
         } else {
+            return getRetryDelay(loadErrorInfo);
+        }
+    }
+
+    private long getRetryDelay(LoadErrorInfo loadErrorInfo) {
+        if (maximumLoadableRetryCount > LOADABLE_RETRY_COUNT_UNSET && loadErrorInfo.errorCount >= maximumLoadableRetryCount) {
+            return Consts.TIME_UNSET;
+        } else {
             return super.getRetryDelayMsFor(loadErrorInfo);
         }
-    }
-
-    @Override
-    public int getMinimumLoadableRetryCount(int dataType) {
-        if (maximumLoadableRetryCount != MAX_LOADABLE_RETRY_COUNT && dataType != DATA_TYPE_MEDIA_PROGRESSIVE_LIVE) {
-            return maximumLoadableRetryCount;
-        }
-        return super.getMinimumLoadableRetryCount(dataType);
-    }
-
-    private int setMaximumLoadableRetryCount(int retryCount) {
-        if (retryCount > MAX_LOADABLE_RETRY_COUNT && retryCount <= 1) {
-            return retryCount; // In case of count 0 or 1, retry is still 2 times from ExoPlayer
-        }
-        return retryCount > 0 ? retryCount - 1 : MAX_LOADABLE_RETRY_COUNT;
     }
 
     private Uri getPathSegmentUri(IOException ioException) {
