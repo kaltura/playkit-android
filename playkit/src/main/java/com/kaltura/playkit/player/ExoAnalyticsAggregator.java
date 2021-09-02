@@ -86,6 +86,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
 
     @Override
     public void onLoadError(@NonNull EventTime eventTime, @NonNull LoadEventInfo loadEventInfo, @NonNull MediaLoadData mediaLoadData, @NonNull IOException error, boolean wasCanceled) {
+        log.v("onLoadError Uri = " + loadEventInfo.uri.toString());
         onLoadCompleted(eventTime, loadEventInfo, mediaLoadData);   // in case there are bytes loaded
         if (listener != null) {
             listener.onLoadError(error, wasCanceled);
