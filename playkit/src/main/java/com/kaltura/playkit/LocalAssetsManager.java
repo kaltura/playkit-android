@@ -238,8 +238,6 @@ public class LocalAssetsManager {
 
     public void unregisterAsset(@NonNull final String localAssetPath,
                                 @NonNull final String assetId, final AssetRemovalListener listener) {
-
-
         PKDrmParams.Scheme scheme = helper.getLocalAssetScheme(assetId);
 
         if (scheme == null) {
