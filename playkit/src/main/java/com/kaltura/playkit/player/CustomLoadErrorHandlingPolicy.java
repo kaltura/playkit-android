@@ -53,6 +53,13 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
         }
     }
 
+    /**
+     * Delay in the each retry request
+     * Max delay is 5ms (Formula: min((loadErrorInfo.errorCount - 1) * 1000, 5000))
+     *
+     * @param loadErrorInfo Object containing the data about error
+     * @return delay
+     */
     private long getRetryDelay(LoadErrorInfo loadErrorInfo) {
         if (maximumLoadableRetryCount > LOADABLE_RETRY_COUNT_UNSET && loadErrorInfo.errorCount >= maximumLoadableRetryCount) {
             return Consts.TIME_UNSET;
@@ -60,6 +67,13 @@ public class CustomLoadErrorHandlingPolicy extends DefaultLoadErrorHandlingPolic
         return super.getRetryDelayMsFor(loadErrorInfo);
     }
 
+    /**
+     * Override the retry count on ExoPlayer.
+     * This retry count is valid for all types of Player requests (Manifest/DRM/Chunk)
+     *
+     * @param dataType Type of request
+     * @return No of retries
+     */
     @Override
     public int getMinimumLoadableRetryCount(int dataType) {
         if (maximumLoadableRetryCount > LOADABLE_RETRY_COUNT_UNSET) {
