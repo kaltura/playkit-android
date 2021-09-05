@@ -76,7 +76,7 @@ class WidevineClassicAdapter extends DrmAdapter {
 
     @Override
     public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
-        return registerAsset(localAssetPath, assetId, licenseUri,  null, forceWidevineL3Playback, listener);
+        return registerAsset(localAssetPath, assetId, licenseUri, null, forceWidevineL3Playback, listener);
     }
 
     @Override
