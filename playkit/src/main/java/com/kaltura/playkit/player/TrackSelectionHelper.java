@@ -14,7 +14,9 @@ package com.kaltura.playkit.player;
 
 
 import android.content.Context;
+import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +30,9 @@ import com.kaltura.android.exoplayer2.dashmanifestparser.CustomFormat;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomRepresentation;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
+import com.kaltura.android.exoplayer2.text.Subtitle;
+import com.kaltura.android.exoplayer2.text.SubtitleDecoderException;
+import com.kaltura.android.exoplayer2.text.webvtt.WebvttCueInfo;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
 import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
@@ -41,18 +46,29 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PKVideoCodec;
+import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.player.thumbnail.PKThumbnailsWebVttDecoder;
+import com.kaltura.playkit.player.thumbnail.PKWebvttSubtitle;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static com.kaltura.android.exoplayer2.util.MimeTypes.AUDIO_AAC;
 import static com.kaltura.android.exoplayer2.util.MimeTypes.VIDEO_AV1;
@@ -103,6 +119,7 @@ public class TrackSelectionHelper {
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
     private List<ImageTrack> imageTracks = new ArrayList<>();
+    Map<Integer, ThumbnailInfo> externalVttThumbnailInfo = new LinkedHashMap<>();
 
 
     private Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
@@ -178,7 +195,7 @@ public class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    boolean prepareTracks(TrackSelectionArray trackSelections, CustomDashManifest customDashManifest) {
+    boolean prepareTracks(TrackSelectionArray trackSelections, String externalThumbnailWebVttUrl, CustomDashManifest customDashManifest) {
         trackSelectionArray = trackSelections;
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
@@ -215,7 +232,7 @@ public class TrackSelectionHelper {
             }
         }
 
-        PKTracks tracksInfo = buildTracks(rawImageTracks);
+        PKTracks tracksInfo = buildTracks(externalThumbnailWebVttUrl, rawImageTracks);
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
@@ -227,11 +244,36 @@ public class TrackSelectionHelper {
         return true;
     }
 
+
+    private static class HttpGetWebVttThumbnails implements Callable<Subtitle> {
+        private String url;
+
+        public HttpGetWebVttThumbnails(String url) {
+            this.url = url;
+        }
+
+        public Subtitle call() throws IOException, SubtitleDecoderException {
+
+            byte[] bytes = Utils.executeGet(url, null);
+            PKThumbnailsWebVttDecoder pkThumbnailsWebVttDecoder = new PKThumbnailsWebVttDecoder();
+            Subtitle subtitle = pkThumbnailsWebVttDecoder.decode(bytes, bytes.length, true);
+            return  subtitle;
+        }
+    }
+
+    static HttpURLConnection openConnection(Uri uri) throws IOException {
+        if (uri == null) {
+            return null;
+        }
+
+        HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(uri.toString()).openConnection();
+        return httpURLConnection;
+    }
     /**
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    public PKTracks buildTracks(List<CustomFormat> rawImageTracks) {
+    public PKTracks buildTracks(String externalThumbnailWebVttUrl, List<CustomFormat> rawImageTracks) {
 
         clearTracksLists();
 
@@ -356,8 +398,66 @@ public class TrackSelectionHelper {
                 log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
                 lastSelectedTrackIds[TRACK_TYPE_IMAGE] = imageTracks.get(0).getUniqueId();
             }
-        }
+        } else if (!TextUtils.isEmpty(externalThumbnailWebVttUrl)) {
+            externalVttThumbnailInfo = new LinkedHashMap<>();
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            try {
+                Future<Subtitle> webVttThumbnails = executorService.submit(new HttpGetWebVttThumbnails(externalThumbnailWebVttUrl));
+                Uri uri = Uri.parse(externalThumbnailWebVttUrl);
 
+                String baseUrl = uri.toString().replace(uri.getLastPathSegment(), "");
+                String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, 0);
+                PKWebvttSubtitle subtitle = (PKWebvttSubtitle)webVttThumbnails.get();
+                List<WebvttCueInfo> webvttCueInfos = subtitle.getCueInfos();
+
+                long firstThumbStartTime = webvttCueInfos.get(0).startTimeUs / Consts.MILLISECONDS_MULTIPLIER;
+                long firstThumbEndTime = webvttCueInfos.get(0).endTimeUs / Consts.MILLISECONDS_MULTIPLIER;
+
+                for (int i = 0 ; i < webvttCueInfos.size(); i++) {
+                    Pair<Pair<Long,Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfos.get(i));
+                    externalVttThumbnailInfo.put(i, thumbnailInfoPair.second);
+                }
+
+                ThumbnailInfo firstTumbnailInfo = externalVttThumbnailInfo.get(0);
+                ThumbnailInfo lastTumbnailInfo = externalVttThumbnailInfo.get(externalVttThumbnailInfo.size() -1);
+
+                int cols = 0;
+                for (WebvttCueInfo webvttCueInfo : webvttCueInfos) {
+                    Pair<Pair<Long,Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfo);
+                    if (thumbnailInfoPair.second.getX() == 0 && thumbnailInfoPair.second.getY() == 0) {
+                        cols++;
+                    } else if (thumbnailInfoPair.second.getX() > 0) {
+                        cols++;
+                    }  else if(thumbnailInfoPair.second.getX() == 0) {
+                        break;
+                    }
+                }
+                cols = (cols > 0) ? cols : 1;
+
+                int rows = (lastTumbnailInfo.getY() != -1 && lastTumbnailInfo.getHeight() != -1) ? (int) (1 + Math.ceil(lastTumbnailInfo.getY() / lastTumbnailInfo.getHeight())) : 1;
+
+                float width = (firstTumbnailInfo.getWidth() * (cols - 1)) <= 0 ? -1 : firstTumbnailInfo.getWidth() * (cols - 1);
+                if (cols == 1) {
+                    width = firstTumbnailInfo.getWidth();
+                }
+
+                float height = (firstTumbnailInfo.getHeight() * (rows - 1) <= 0) ? -1 : firstTumbnailInfo.getHeight() * (rows - 1);
+                if (rows == 1) {
+                    height = firstTumbnailInfo.getHeight();
+                }
+
+                int imagesInLastLine = (lastTumbnailInfo.getY() != -1 && lastTumbnailInfo.getHeight() != -1) ? (int) (1 + (lastTumbnailInfo.getX() / lastTumbnailInfo.getWidth())) : 1;
+                long imageDuration = firstThumbEndTime - firstThumbStartTime;
+                imageDuration = (imageDuration * cols * rows) - (imageDuration * (cols - imagesInLastLine));
+
+                imageTracks.add(0, new ImageTrack(uniqueId, "externalVttThumbnail", -1, width, height, cols , rows, imageDuration, baseUrl));
+            } catch (Exception exception) {
+                log.e("error " + exception.getMessage());
+            } finally {
+                executorService.shutdown();
+            }
+        }
+        
         //add disable option to the text tracks.
         maybeAddDisabledTextTrack();
         videoTracks = filterVideoTracks();
@@ -371,6 +471,51 @@ public class TrackSelectionHelper {
 
         Collections.sort(videoTracks);
         return new PKTracks(videoTracks, filteredAudioTracks, textTracks, imageTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex, defaultImageTrackIndex);
+    }
+
+    private Pair<Pair<Long,Long>, ThumbnailInfo> getExternalVttThumbnailInfo(String baseUrl, WebvttCueInfo cueInfo) {
+        String cueText = cueInfo.cue.text.toString();
+        String imageUrl = "";
+        long x = -1;
+        long y = -1;
+        long w = -1;
+        long h = -1;
+
+        if (!TextUtils.isEmpty(cueText)) {
+            String[] cueParts = cueText.split("#");
+            if (cueParts.length > 0) {
+                imageUrl = cueParts[0];
+                if (cueParts.length == 2 && cueParts[1].startsWith("xywh") && cueParts[1].contains("=")) {
+                    String[] xywh = cueParts[1].split("=")[1].split(",");
+                    if (xywh.length == 4) {
+                        x = Long.valueOf(xywh[0]);
+                        y = Long.valueOf(xywh[1]);
+                        w = Long.valueOf(xywh[2]);
+                        h = Long.valueOf(xywh[3]);
+                    }
+                }
+            }
+        }
+        long startTime = cueInfo.startTimeUs / Consts.MILLISECONDS_MULTIPLIER;
+        long endTime = cueInfo.endTimeUs / Consts.MILLISECONDS_MULTIPLIER;
+
+        if (imageUrl.startsWith("/")) {
+            imageUrl = imageUrl.replaceFirst("/", "");
+        }
+        String[] imageUrlSlices = imageUrl.split("/");
+
+        String maybeRemoveString = "";
+        if (imageUrlSlices.length > 1) {
+            for (int i = 0 ; i < imageUrlSlices.length -1; i++) {
+                maybeRemoveString += "/" + imageUrlSlices[i] + "/";
+            }
+        }
+        if (!TextUtils.isEmpty(maybeRemoveString) && baseUrl.endsWith(maybeRemoveString)) {
+            baseUrl = baseUrl.replace(maybeRemoveString, "");
+            baseUrl += "/";
+        }
+        ThumbnailInfo thumbnailInfo = new ThumbnailInfo(baseUrl + imageUrl, x, y, w, h);
+        return new Pair(new Pair(startTime, endTime), thumbnailInfo);
     }
 
     private boolean checkTracksUnavailability(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
@@ -1276,18 +1421,38 @@ public class TrackSelectionHelper {
             return null;
         }
 
-        long seq = (long)Math.floor(positionMS / imageTrack.getDuration());
-        double offset = positionMS % imageTrack.getDuration();
-        int thumbIndex = (int) Math.floor((offset * imageTrack.getCols() * imageTrack.getRows()) / imageTrack.getDuration());
-        long seqIdx = seq + ((DashImageTrack)imageTrack).getStartNumber();
-        float imageWidth = imageTrack.getWidth() / imageTrack.getCols();
-        float imageHeight = imageTrack.getHeight() / imageTrack.getRows();
-        float imageX = (float) Math.floor(thumbIndex % imageTrack.getCols()) * imageWidth;
-        float imageY = (float) Math.floor(thumbIndex / imageTrack.getCols()) * imageHeight;
+        if (externalVttThumbnailInfo == null) {
 
-        long imageRealUrlTime = ((seqIdx - 1) * imageTrack.getDuration());
-        String realImageUrl = imageTrack.getUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$",  String.valueOf(imageRealUrlTime));
-        return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
+            long seq = (long) Math.floor(positionMS * 1.0 / imageTrack.getDuration());
+            double offset = positionMS % imageTrack.getDuration();
+            int thumbIndex = (int) Math.floor((offset * imageTrack.getCols() * imageTrack.getRows()) / imageTrack.getDuration());
+            long seqIdx = seq + ((DashImageTrack) imageTrack).getStartNumber();
+            float imageWidth = imageTrack.getWidth() / imageTrack.getCols();
+            float imageHeight = imageTrack.getHeight() / imageTrack.getRows();
+            float imageX = (float) Math.floor(thumbIndex % imageTrack.getCols()) * imageWidth;
+            float imageY = (float) Math.floor(thumbIndex / imageTrack.getCols()) * imageHeight;
+
+            long imageRealUrlTime = ((seqIdx - 1) * imageTrack.getDuration());
+            String realImageUrl = imageTrack.getUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$", String.valueOf(imageRealUrlTime));
+            return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
+        } else if (externalVttThumbnailInfo.size() > 0) {
+
+            long imageTrackDuration = imageTrack.getDuration();
+            if (positionMS > imageTrackDuration) {
+                positionMS = imageTrackDuration;
+            } else if (positionMS < 0) {
+                positionMS = 0;
+            }
+            int thumbIndex = (int)Math.floor(positionMS * 1.0 / (imageTrackDuration * 1.0 / (imageTrack.getCols() * imageTrack.getRows())));
+
+            if (thumbIndex > externalVttThumbnailInfo.size() - 1) {
+                thumbIndex = externalVttThumbnailInfo.size() - 1;
+            } else if (thumbIndex < 0) {
+                thumbIndex = 0;
+            }
+            return externalVttThumbnailInfo.get(thumbIndex);
+        }
+        return null;
     }
 
     /**
@@ -1483,6 +1648,10 @@ public class TrackSelectionHelper {
         subtitleListMap.clear();
         if (originalVideoTracks != null) {
             originalVideoTracks.clear();
+        }
+        if (externalVttThumbnailInfo != null) {
+            externalVttThumbnailInfo.clear();
+            externalVttThumbnailInfo = null;
         }
     }
 
