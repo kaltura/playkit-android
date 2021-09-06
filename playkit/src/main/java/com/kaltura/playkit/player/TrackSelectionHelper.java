@@ -255,20 +255,10 @@ public class TrackSelectionHelper {
 
             byte[] bytes = Utils.executeGet(url, null);
             PKThumbnailsWebVttDecoder pkThumbnailsWebVttDecoder = new PKThumbnailsWebVttDecoder();
-            Subtitle subtitle = pkThumbnailsWebVttDecoder.decode(bytes, bytes.length, true);
-            return  subtitle;
+            return pkThumbnailsWebVttDecoder.decode(bytes, bytes.length, true);
         }
     }
 
-    static HttpURLConnection openConnection(Uri uri) throws IOException {
-        if (uri == null) {
-            return null;
-        }
-
-        HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(uri.toString()).openConnection();
-        return httpURLConnection;
-    }
-    
     /**
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
@@ -394,87 +384,74 @@ public class TrackSelectionHelper {
                 ));
             }
 
-            if (NONE.equals(requestedChangeTrackIds[TRACK_TYPE_IMAGE])) {
-                log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
-                lastSelectedTrackIds[TRACK_TYPE_IMAGE] = imageTracks.get(0).getUniqueId();
-            }
+            updatelastSelectedImageTrackIds();
         } else if (!TextUtils.isEmpty(externalThumbnailWebVttUrl)) {
             externalVttThumbnailRangesInfo = new LinkedHashMap<>();
             ExecutorService executorService = Executors.newSingleThreadExecutor();
             try {
                 Future<Subtitle> webVttThumbnails = executorService.submit(new HttpGetWebVttThumbnails(externalThumbnailWebVttUrl));
-                Uri uri = Uri.parse(externalThumbnailWebVttUrl);
+                if (webVttThumbnails != null) {
+                    PKWebvttSubtitle vttSubtitle = (PKWebvttSubtitle) webVttThumbnails.get();
+                    if (vttSubtitle != null) {
+                        List<WebvttCueInfo> webvttCueInfos = vttSubtitle.getCueInfos();
+                        if (webvttCueInfos != null && !webvttCueInfos.isEmpty()) {
 
-                String baseUrl = uri.toString().replace(uri.getLastPathSegment(), "");
-                String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, 0);
-                PKWebvttSubtitle subtitle = (PKWebvttSubtitle)webVttThumbnails.get();
-                List<WebvttCueInfo> webvttCueInfos = subtitle.getCueInfos();
+                            long firstThumbStartTime = webvttCueInfos.get(0).startTimeUs / Consts.MILLISECONDS_MULTIPLIER;
+                            long firstThumbEndTime = webvttCueInfos.get(0).endTimeUs / Consts.MILLISECONDS_MULTIPLIER;
 
-                long firstThumbStartTime = webvttCueInfos.get(0).startTimeUs / Consts.MILLISECONDS_MULTIPLIER;
-                long firstThumbEndTime = webvttCueInfos.get(0).endTimeUs / Consts.MILLISECONDS_MULTIPLIER;
+                            Uri uri = Uri.parse(externalThumbnailWebVttUrl);
+                            String baseUrl = uri.toString().replace(uri.getLastPathSegment(), "");
 
-                for (int i = 0 ; i < webvttCueInfos.size(); i++) {
-                    Pair<Pair<Long,Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfos.get(i));
-                    externalVttThumbnailRangesInfo.put(new Pair(thumbnailInfoPair.first.first,thumbnailInfoPair.first.second), thumbnailInfoPair.second);
-                }
-                
-                long imageDuration = firstThumbEndTime - firstThumbStartTime;
-                ThumbnailInfo firstTumbnailInfo = externalVttThumbnailRangesInfo.get(new Pair<>(0L, imageDuration));
+                            for (int i = 0; i < webvttCueInfos.size(); i++) {
+                                Pair<Pair<Long, Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfos.get(i));
+                                if (thumbnailInfoPair == null) {
+                                    continue;
+                                }
 
-                int cols = 0;
-                for (WebvttCueInfo webvttCueInfo : webvttCueInfos) {
-                    Pair<Pair<Long,Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfo);
-                    if (thumbnailInfoPair.second.getX() == 0 && thumbnailInfoPair.second.getY() == 0) {
-                        cols++;
-                    } else if (thumbnailInfoPair.second.getX() > 0) {
-                        cols++;
-                    }  else if(thumbnailInfoPair.second.getX() == 0) {
-                        break;
-                    }
-                }
-                cols = (cols > 0) ? cols : 1;
+                                externalVttThumbnailRangesInfo.put(new Pair<>(thumbnailInfoPair.first.first, thumbnailInfoPair.first.second), thumbnailInfoPair.second);
+                            }
 
-                int rows = 0;
-                boolean rowsFirst = true;
-                for (WebvttCueInfo webvttCueInfo : webvttCueInfos) {
-                    Pair<Pair<Long,Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfo);
-                    if (thumbnailInfoPair.second.getX() == 0 && thumbnailInfoPair.second.getY() == 0) {
-                        if (rowsFirst) {
-                            rows++;
-                            rowsFirst = false;
-                        } else {
-                            break;
+                            long imageDuration = firstThumbEndTime - firstThumbStartTime;
+                            List<Pair<Long, Long>> externalVttThumbnailRangesInfoKeySetList = new ArrayList<>(externalVttThumbnailRangesInfo.keySet());
+                            if (!externalVttThumbnailRangesInfoKeySetList.isEmpty()) {
+                                ThumbnailInfo firstThumbnailInfo = externalVttThumbnailRangesInfo.get(externalVttThumbnailRangesInfoKeySetList.get(0));
+                                if (firstThumbnailInfo != null) {
+
+                                    int cols = getThumbnailColsCount(webvttCueInfos, baseUrl);
+                                    cols = (cols > 0) ? cols : 1;
+
+                                    int rows = getThumbnailRowsCount(webvttCueInfos, baseUrl);
+                                    rows = (rows > 0) ? rows : 1;
+
+                                    float width = (firstThumbnailInfo.getWidth() * (cols - 1)) <= 0 ? -1 : firstThumbnailInfo.getWidth() * (cols - 1);
+                                    if (cols == 1) {
+                                        width = firstThumbnailInfo.getWidth();
+                                    }
+
+                                    float height = (firstThumbnailInfo.getHeight() * (rows - 1) <= 0) ? -1 : firstThumbnailInfo.getHeight() * (rows - 1);
+                                    if (rows == 1) {
+                                        height = firstThumbnailInfo.getHeight();
+                                    }
+
+                                    imageDuration = (imageDuration * cols * rows);
+
+                                    String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, 0);
+                                    imageTracks.add(0, new ImageTrack(uniqueId, "externalVttThumbnail", -1, width, height, cols, rows, imageDuration, baseUrl));
+
+                                    updatelastSelectedImageTrackIds();
+                                }
+                            }
                         }
-                    } else if (thumbnailInfoPair.second.getX() == 0) {
-                        rows++;
                     }
                 }
-                rows = (rows > 0) ? rows : 1;
-
-                float width = (firstTumbnailInfo.getWidth() * (cols - 1)) <= 0 ? -1 : firstTumbnailInfo.getWidth() * (cols - 1);
-                if (cols == 1) {
-                    width = firstTumbnailInfo.getWidth();
-                }
-
-                float height = (firstTumbnailInfo.getHeight() * (rows - 1) <= 0) ? -1 : firstTumbnailInfo.getHeight() * (rows - 1);
-                if (rows == 1) {
-                    height = firstTumbnailInfo.getHeight();
-                }
-
-                imageDuration = (imageDuration * cols * rows);
-
-                imageTracks.add(0, new ImageTrack(uniqueId, "externalVttThumbnail", -1, width, height, cols , rows, imageDuration, baseUrl));
-                if (NONE.equals(requestedChangeTrackIds[TRACK_TYPE_IMAGE])) {
-                    log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
-                    lastSelectedTrackIds[TRACK_TYPE_IMAGE] = imageTracks.get(0).getUniqueId();
-                }
-            } catch (Exception exception) {
+            } catch(Exception exception){
                 log.e("error " + exception.getMessage());
-            } finally {
+            } finally{
                 executorService.shutdown();
             }
+
         }
-        
+
         //add disable option to the text tracks.
         maybeAddDisabledTextTrack();
         videoTracks = filterVideoTracks();
@@ -490,8 +467,61 @@ public class TrackSelectionHelper {
         return new PKTracks(videoTracks, filteredAudioTracks, textTracks, imageTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex, defaultImageTrackIndex);
     }
 
+    private int getThumbnailColsCount(List<WebvttCueInfo> webvttCueInfos, String baseUrl) {
+        int cols = 0;
+        for (WebvttCueInfo webvttCueInfo : webvttCueInfos) {
+            Pair<Pair<Long, Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfo);
+            if (thumbnailInfoPair == null) {
+                continue;
+            }
+
+            if (thumbnailInfoPair.second.getX() == 0 && thumbnailInfoPair.second.getY() == 0) {
+                cols++;
+            } else if (thumbnailInfoPair.second.getX() > 0) {
+                cols++;
+            } else if (thumbnailInfoPair.second.getX() == 0) {
+                break;
+            }
+        }
+        return cols;
+    }
+
+    private int getThumbnailRowsCount(List<WebvttCueInfo> webvttCueInfos, String baseUrl) {
+        int rows = 0;
+        boolean rowsFirst = true;
+        for (WebvttCueInfo webvttCueInfo : webvttCueInfos) {
+            Pair<Pair<Long, Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfo);
+            if (thumbnailInfoPair == null) {
+                continue;
+            }
+
+            if (thumbnailInfoPair.second.getX() == 0 && thumbnailInfoPair.second.getY() == 0) {
+                if (rowsFirst) {
+                    rows++;
+                    rowsFirst = false;
+                } else {
+                    break;
+                }
+            } else if (thumbnailInfoPair.second.getX() == 0) {
+                rows++;
+            }
+        }
+        return rows;
+    }
+
+    private void updatelastSelectedImageTrackIds() {
+        if (NONE.equals(requestedChangeTrackIds[TRACK_TYPE_IMAGE])) {
+            log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
+            lastSelectedTrackIds[TRACK_TYPE_IMAGE] = imageTracks.get(0).getUniqueId();
+        }
+    }
+
     private Pair<Pair<Long,Long>, ThumbnailInfo> getExternalVttThumbnailInfo(String baseUrl, WebvttCueInfo cueInfo) {
-        String cueText = cueInfo.cue.text.toString();
+        if (cueInfo == null || TextUtils.isEmpty(cueInfo.cue.text)) {
+            return null;
+        }
+
+        String cueText = String.valueOf(cueInfo.cue.text);
         String imageUrl = "";
         long x = -1;
         long y = -1;
@@ -505,10 +535,10 @@ public class TrackSelectionHelper {
                 if (cueParts.length == 2 && cueParts[1].startsWith("xywh") && cueParts[1].contains("=")) {
                     String[] xywh = cueParts[1].split("=")[1].split(",");
                     if (xywh.length == 4) {
-                        x = Long.valueOf(xywh[0]);
-                        y = Long.valueOf(xywh[1]);
-                        w = Long.valueOf(xywh[2]);
-                        h = Long.valueOf(xywh[3]);
+                        x = Long.parseLong(xywh[0]);
+                        y = Long.parseLong(xywh[1]);
+                        w = Long.parseLong(xywh[2]);
+                        h = Long.parseLong(xywh[3]);
                     }
                 }
             }
@@ -521,18 +551,18 @@ public class TrackSelectionHelper {
         }
         String[] imageUrlSlices = imageUrl.split("/");
 
-        String maybeRemoveString = "";
+        StringBuilder maybeRemoveString = new StringBuilder();
         if (imageUrlSlices.length > 1) {
-            for (int i = 0 ; i < imageUrlSlices.length -1; i++) {
-                maybeRemoveString += "/" + imageUrlSlices[i] + "/";
+            for (int i = 0 ; i < imageUrlSlices.length - 1 ; i++) {
+                maybeRemoveString.append("/").append(imageUrlSlices[i]).append("/");
             }
         }
-        if (!TextUtils.isEmpty(maybeRemoveString) && baseUrl.endsWith(maybeRemoveString)) {
-            baseUrl = baseUrl.replace(maybeRemoveString, "");
+        if (!TextUtils.isEmpty(maybeRemoveString.toString()) && baseUrl.endsWith(maybeRemoveString.toString())) {
+            baseUrl = baseUrl.replace(maybeRemoveString.toString(), "");
             baseUrl += "/";
         }
         ThumbnailInfo thumbnailInfo = new ThumbnailInfo(baseUrl + imageUrl, x, y, w, h);
-        return new Pair(new Pair(startTime, endTime), thumbnailInfo);
+        return new Pair<>(new Pair<>(startTime, endTime), thumbnailInfo);
     }
 
     private boolean checkTracksUnavailability(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
