@@ -244,8 +244,7 @@ public class TrackSelectionHelper {
 
         return true;
     }
-
-
+    
     private static class HttpGetWebVttThumbnails implements Callable<Subtitle> {
         private String url;
 
