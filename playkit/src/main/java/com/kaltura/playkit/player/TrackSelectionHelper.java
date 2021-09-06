@@ -270,6 +270,7 @@ public class TrackSelectionHelper {
         HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(uri.toString()).openConnection();
         return httpURLConnection;
     }
+    
     /**
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
