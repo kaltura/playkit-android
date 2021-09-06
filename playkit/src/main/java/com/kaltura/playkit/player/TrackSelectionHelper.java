@@ -417,6 +417,7 @@ public class TrackSelectionHelper {
                     Pair<Pair<Long,Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfos.get(i));
                     externalVttThumbnailRangesInfo.put(new Pair(thumbnailInfoPair.first.first,thumbnailInfoPair.first.second), thumbnailInfoPair.second);
                 }
+                
                 long imageDuration = firstThumbEndTime - firstThumbStartTime;
                 ThumbnailInfo firstTumbnailInfo = externalVttThumbnailRangesInfo.get(new Pair<>(0L, imageDuration));
 
@@ -463,6 +464,10 @@ public class TrackSelectionHelper {
                 imageDuration = (imageDuration * cols * rows);
 
                 imageTracks.add(0, new ImageTrack(uniqueId, "externalVttThumbnail", -1, width, height, cols , rows, imageDuration, baseUrl));
+                if (NONE.equals(requestedChangeTrackIds[TRACK_TYPE_IMAGE])) {
+                    log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
+                    lastSelectedTrackIds[TRACK_TYPE_IMAGE] = imageTracks.get(0).getUniqueId();
+                }
             } catch (Exception exception) {
                 log.e("error " + exception.getMessage());
             } finally {
