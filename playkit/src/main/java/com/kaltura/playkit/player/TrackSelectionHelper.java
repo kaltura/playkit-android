@@ -1485,15 +1485,16 @@ public class TrackSelectionHelper {
             return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
         } else if (externalVttThumbnailRangesInfo.size() > 0) {
 
-            List<Pair<Long, Long>> list = new ArrayList<>(externalVttThumbnailRangesInfo.keySet());
-            long thumbIndex = findImageIndex(list, externalVttThumbnailRangesInfo.size(), positionMS);
+            List<Pair<Long, Long>> keySetList = new ArrayList<>(externalVttThumbnailRangesInfo.keySet());
+
+            long thumbIndex = findImageIndex(keySetList, externalVttThumbnailRangesInfo.size(), positionMS);
 
             if (thumbIndex > externalVttThumbnailRangesInfo.size() - 1) {
                 thumbIndex = externalVttThumbnailRangesInfo.size() - 1;
             } else if (thumbIndex < 0) {
                 thumbIndex = 0;
             }
-            return externalVttThumbnailRangesInfo.get(list.get((int) thumbIndex));
+            return externalVttThumbnailRangesInfo.get(keySetList.get((int) thumbIndex));
         }
         return null;
     }
