@@ -99,5 +99,4 @@ public final class PKThumbnailsWebVttDecoder extends SimpleSubtitleDecoder {
     private static void skipComment(ParsableByteArray parsableWebvttData) {
         while (!TextUtils.isEmpty(parsableWebvttData.readLine())) {}
     }
-
 }
