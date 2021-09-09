@@ -342,10 +342,10 @@ public class TrackSelectionHelper {
             }
         }
 
-        if (rawImageTracks != null && !rawImageTracks.isEmpty()) {
-            createDashThumbnailImageTracks(rawImageTracks);
-        } else if (!TextUtils.isEmpty(externalThumbnailWebVttUrl)) {
+        if (!TextUtils.isEmpty(externalThumbnailWebVttUrl)) {
             createVttThumbnailImageTrack(externalThumbnailWebVttUrl);
+        } else if (rawImageTracks != null && !rawImageTracks.isEmpty()) {
+            createDashThumbnailImageTracks(rawImageTracks);
         }
 
         //add disable option to the text tracks.
