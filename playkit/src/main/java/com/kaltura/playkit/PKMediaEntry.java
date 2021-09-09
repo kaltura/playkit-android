@@ -36,10 +36,8 @@ public class PKMediaEntry implements Parcelable {
     private List<PKExternalSubtitle> externalSubtitleList;
     private String externalVttThumbnailUrl;
 
-
     public PKMediaEntry() {
     }
-
 
     public PKMediaEntry setId(String id) {
         this.id = id;
