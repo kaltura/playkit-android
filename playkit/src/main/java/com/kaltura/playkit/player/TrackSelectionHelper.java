@@ -243,15 +243,15 @@ public class TrackSelectionHelper {
     }
 
     private static class HttpGetWebVttThumbnails implements Callable<Subtitle> {
-        private String url;
+        private final String vttThumbnailUrl;
 
-        public HttpGetWebVttThumbnails(String url) {
-            this.url = url;
+        public HttpGetWebVttThumbnails(String vttThumbnailUrl) {
+            this.vttThumbnailUrl = vttThumbnailUrl;
         }
 
         public Subtitle call() throws IOException, SubtitleDecoderException {
 
-            byte[] bytes = Utils.executeGet(url, null);
+            byte[] bytes = Utils.executeGet(vttThumbnailUrl, null);
             PKThumbnailsWebVttDecoder pkThumbnailsWebVttDecoder = new PKThumbnailsWebVttDecoder();
             return pkThumbnailsWebVttDecoder.decode(bytes, bytes.length, true);
         }
