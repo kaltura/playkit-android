@@ -463,9 +463,11 @@ public class TrackSelectionHelper {
             }
 
             final ThumbnailInfo thumbnailInfoSecond = thumbnailInfoPair.second;
+
             if (thumbnailInfoSecond.getHeight() == -1 || thumbnailInfoSecond.getWidth() == -1) {
                 break;
             }
+
             if (thumbnailInfoSecond.getX() == 0 && thumbnailInfoSecond.getY() == 0) {
                 cols++;
             } else if (thumbnailInfoSecond.getX() > 0) {
