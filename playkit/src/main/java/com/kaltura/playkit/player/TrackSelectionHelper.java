@@ -31,7 +31,6 @@ import com.kaltura.android.exoplayer2.dashmanifestparser.CustomRepresentation;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.text.Subtitle;
-import com.kaltura.android.exoplayer2.text.SubtitleDecoderException;
 import com.kaltura.android.exoplayer2.text.webvtt.WebvttCueInfo;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
@@ -46,13 +45,11 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PKVideoCodec;
-import com.kaltura.playkit.Utils;
-import com.kaltura.playkit.player.thumbnail.PKThumbnailsWebVttDecoder;
+import com.kaltura.playkit.player.thumbnail.VttThumbnailDownloader;
 import com.kaltura.playkit.player.thumbnail.PKWebvttSubtitle;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.utils.Consts;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,7 +60,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -242,21 +238,6 @@ public class TrackSelectionHelper {
         return true;
     }
 
-    private static class HttpGetWebVttThumbnails implements Callable<Subtitle> {
-        private final String vttThumbnailUrl;
-
-        public HttpGetWebVttThumbnails(String vttThumbnailUrl) {
-            this.vttThumbnailUrl = vttThumbnailUrl;
-        }
-
-        public Subtitle call() throws IOException, SubtitleDecoderException {
-
-            byte[] bytes = Utils.executeGet(vttThumbnailUrl, null);
-            PKThumbnailsWebVttDecoder pkThumbnailsWebVttDecoder = new PKThumbnailsWebVttDecoder();
-            return pkThumbnailsWebVttDecoder.decode(bytes, bytes.length, true);
-        }
-    }
-
     /**
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
@@ -410,7 +391,7 @@ public class TrackSelectionHelper {
         externalVttThumbnailRangesInfo = new LinkedHashMap<>();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         try {
-            Future<Subtitle> webVttThumbnails = executorService.submit(new HttpGetWebVttThumbnails(externalThumbnailWebVttUrl));
+            Future<Subtitle> webVttThumbnails = executorService.submit(new VttThumbnailDownloader(externalThumbnailWebVttUrl));
             if (webVttThumbnails != null) {
                 PKWebvttSubtitle vttSubtitle = (PKWebvttSubtitle) webVttThumbnails.get();
                 if (vttSubtitle != null) {
