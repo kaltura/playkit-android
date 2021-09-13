@@ -19,6 +19,6 @@ open class InterceptorEvent(type: Type?): PKEvent {
 
     companion object {
         @JvmField
-        val cdnCode = CdnSwitchedEvent::class.java
+        val cdnSwitched = CdnSwitchedEvent::class.java
     }
 }
