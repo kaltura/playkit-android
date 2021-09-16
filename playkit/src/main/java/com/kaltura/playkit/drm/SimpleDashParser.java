@@ -102,8 +102,12 @@ public class SimpleDashParser {
     }
 
     private void loadDrmInitData(Representation representation) throws IOException {
+        
+        if (representation.baseUrls.isEmpty()) {
+            return;
+        }
 
-        Uri initFile = representation.getInitializationUri().resolveUri(representation.baseUrl);
+        Uri initFile = representation.getInitializationUri().resolveUri(representation.baseUrls.get(0).url);
 
         FileDataSource initChunkSource = new FileDataSource();
         DataSpec initDataSpec = new DataSpec(initFile);
