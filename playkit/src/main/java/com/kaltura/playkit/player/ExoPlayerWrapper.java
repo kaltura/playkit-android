@@ -13,7 +13,6 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.media.MediaCodec;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,9 +27,9 @@ import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
-import com.kaltura.android.exoplayer2.ExoTimeoutException;
 import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.MediaItem;
+import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
@@ -44,11 +43,8 @@ import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
 import com.kaltura.android.exoplayer2.extractor.ExtractorsFactory;
 import com.kaltura.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory;
 import com.kaltura.android.exoplayer2.extractor.ts.TsExtractor;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
-import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
 import com.kaltura.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.android.exoplayer2.source.MediaSourceFactory;
@@ -389,7 +385,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             drmSessionManager = getDeferredDRMSessionManager();
             drmSessionManager.setMediaSource(sourceConfig.mediaSource);
         }
-        
+
         MediaItem mediaItem;
         if (isLocalMediaItem(sourceConfig)) {
             LocalAssetsManagerExo.LocalExoMediaItem pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaItem) sourceConfig.mediaSource;
@@ -887,9 +883,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     @Override
-    public void onPlayerError(ExoPlaybackException error) {
-        log.d("onPlayerError error type => " + error.type);
-        if (isBehindLiveWindow(error) && sourceConfig != null) {
+    public void onPlayerError(PlaybackException playbackException) {
+        log.d("onPlayerError error type => " + playbackException.errorCode);
+        if (isBehindLiveWindow(playbackException) && sourceConfig != null) {
             log.d("onPlayerError BehindLiveWindowException received, re-preparing player");
             MediaItem mediaItem = buildExoMediaItem(sourceConfig);
             if (mediaItem != null) {
@@ -906,95 +902,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             return;
         }
 
-        Enum errorType;
-        String errorMessage = error.getMessage();
-
-        switch (error.type) {
-            case ExoPlaybackException.TYPE_SOURCE:
-                errorType = PKPlayerErrorType.SOURCE_ERROR;
-                errorMessage = getSourceErrorMessage(error, errorMessage);
-                break;
-            case ExoPlaybackException.TYPE_RENDERER:
-                errorMessage = getRendererExceptionDetails(error, errorMessage);
-                errorType = PKPlayerErrorType.RENDERER_ERROR;
-                if (errorMessage != null) {
-                    if (errorMessage.startsWith("DRM_ERROR:")) {
-                        errorType = PKPlayerErrorType.DRM_ERROR;
-                    } else if (errorMessage.startsWith("EXO_TIMEOUT_EXCEPTION:")) {
-                        errorType = PKPlayerErrorType.TIMEOUT;
-                    }
-                }
-                break;
-            case ExoPlaybackException.TYPE_REMOTE:
-                errorType = PKPlayerErrorType.REMOTE_COMPONENT_ERROR;
-                break;
-            case ExoPlaybackException.TYPE_UNEXPECTED:
-            default:
-                errorType = PKPlayerErrorType.UNEXPECTED;
-                errorMessage = getUnexpectedErrorMessage(error, errorMessage);
-                break;
-        }
-
-        String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
-        log.e(errorStr);
-
-        if (errorType == PKPlayerErrorType.TIMEOUT && errorMessage.contains(Consts.EXO_TIMEOUT_OPERATION_RELEASE)) {
+        // Fire the more accurate error codes coming under PlaybackException from ExoPlayer
+        Pair<PKPlayerErrorType, String> exceptionPair = PKPlaybackException.getPlaybackExceptionType(playbackException);
+        if (exceptionPair.first == PKPlayerErrorType.TIMEOUT && exceptionPair.second.contains(Consts.EXO_TIMEOUT_OPERATION_RELEASE)) {
             // ExoPlayer is being stopped internally in other EXO_TIMEOUT_EXCEPTION types
-            currentError = new PKError(PKPlayerErrorType.TIMEOUT, PKError.Severity.Recoverable, errorStr, error);
+            currentError = new PKError(PKPlayerErrorType.TIMEOUT, PKError.Severity.Recoverable, exceptionPair.second, playbackException);
         } else {
-            currentError = new PKError(errorType, errorStr, error);
+            currentError = new PKError(exceptionPair.first, exceptionPair.second, playbackException);
         }
+        log.e("ExoPlaybackException, type = " + exceptionPair.first);
+
         if (eventListener != null) {
-            log.e("Error-Event sent, type = " + error.type);
+            log.e("Error-Event Sent");
             eventListener.onEvent(PlayerEvent.Type.ERROR);
         } else {
-            log.e("eventListener is null cannot send Error-Event type = " + error.type);
+            log.e("eventListener is null cannot send Error-Event type = " + playbackException.getErrorCodeName());
         }
-    }
-
-    private String getRendererExceptionDetails(ExoPlaybackException error, String errorMessage) {
-        Exception cause = error.getRendererException();
-        if (cause instanceof MediaCodecRenderer.DecoderInitializationException) {
-            // Special case for decoder initialization failures.
-            MediaCodecRenderer.DecoderInitializationException decoderInitializationException =
-                    (MediaCodecRenderer.DecoderInitializationException) cause;
-            if (decoderInitializationException.codecInfo == null) {
-                if (decoderInitializationException.getCause() instanceof MediaCodecUtil.DecoderQueryException) {
-                    errorMessage = "Unable to query device decoders";
-                } else if (decoderInitializationException.secureDecoderRequired) {
-                    errorMessage = "This device does not provide a secure decoder for " +  decoderInitializationException.mimeType;
-                } else {
-                    errorMessage = "This device does not provide a decoder for " + decoderInitializationException.mimeType;
-                }
-            } else {
-                errorMessage = "Unable to instantiate decoder" + decoderInitializationException.codecInfo.name;
-            }
-        } else if (cause instanceof MediaCodec.CryptoException) {
-            MediaCodec.CryptoException mediaCodecCryptoException = (MediaCodec.CryptoException) cause;
-            errorMessage = mediaCodecCryptoException.getMessage() != null ? mediaCodecCryptoException.getMessage() : "MediaCodec.CryptoException occurred";
-            errorMessage = "DRM_ERROR:" + errorMessage;
-        } else if (cause instanceof ExoTimeoutException) {
-            ExoTimeoutException exoTimeoutException = (ExoTimeoutException) cause;
-            errorMessage = exoTimeoutException.getMessage() != null ? exoTimeoutException.getMessage() : "Exo timeout exception";
-            errorMessage = "EXO_TIMEOUT_EXCEPTION:" + errorMessage;
-        }
-        return errorMessage;
-    }
-
-    private String getUnexpectedErrorMessage(ExoPlaybackException error, String errorMessage) {
-        Exception cause = error.getUnexpectedException();
-        if (cause.getCause() != null) {
-            errorMessage = cause.getCause().getMessage();
-        }
-        return errorMessage;
-    }
-
-    private String getSourceErrorMessage(ExoPlaybackException error, String errorMessage) {
-        Exception cause = error.getSourceException();
-        if (cause.getCause() != null) {
-            errorMessage = cause.getCause().getMessage();
-        }
-        return errorMessage;
     }
 
     @Override
@@ -1059,18 +982,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         preparePlayer(mediaSourceConfig);
     }
 
-    private boolean isBehindLiveWindow(ExoPlaybackException e) {
-        if (e.type != ExoPlaybackException.TYPE_SOURCE) {
-            return false;
-        }
-        Throwable cause = e.getSourceException();
-        while (cause != null) {
-            if (cause instanceof BehindLiveWindowException) {
-                return true;
-            }
-            cause = cause.getCause();
-        }
-        return false;
+    private boolean isBehindLiveWindow(PlaybackException e) {
+        return e.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW;
     }
 
     private void maybeChangePlayerRenderView() {
