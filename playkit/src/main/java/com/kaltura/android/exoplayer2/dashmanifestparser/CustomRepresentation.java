@@ -54,7 +54,7 @@ public abstract class CustomRepresentation {
      * @return The constructed instance.
      */
     public static CustomRepresentation newInstance(
-            long revisionId,CustomFormat format, List<BaseUrl> baseUrls, CustomSegmentBase segmentBase) {
+            long revisionId, CustomFormat format, List<BaseUrl> baseUrls, CustomSegmentBase segmentBase) {
         return newInstance(revisionId, format, baseUrls, segmentBase, /* inbandEventStreams= */ null);
     }
 
@@ -97,18 +97,18 @@ public abstract class CustomRepresentation {
             CustomSegmentBase segmentBase,
             @Nullable List<Descriptor> inbandEventStreams,
             @Nullable String cacheKey) {
-        if (segmentBase instanceof SingleSegmentBase) {
-            return new SingleSegmentRepresentation(
+        if (segmentBase instanceof CustomSegmentBase.SingleSegmentBase) {
+            return new CustomRepresentation.SingleSegmentRepresentation(
                     revisionId,
                     format,
                     baseUrls,
-                    (SingleSegmentBase) segmentBase,
+                    (CustomSegmentBase.SingleSegmentBase) segmentBase,
                     inbandEventStreams,
                     cacheKey,
                     C.LENGTH_UNSET);
-        } else if (segmentBase instanceof MultiSegmentBase) {
-            return new MultiSegmentRepresentation(
-                    revisionId, format, baseUrls, (MultiSegmentBase) segmentBase, inbandEventStreams);
+        } else if (segmentBase instanceof CustomSegmentBase.MultiSegmentBase) {
+            return new CustomRepresentation.MultiSegmentRepresentation(
+                    revisionId, format, baseUrls, (CustomSegmentBase.MultiSegmentBase) segmentBase, inbandEventStreams);
         } else {
             throw new IllegalArgumentException(
                     "segmentBase must be of type SingleSegmentBase or " + "MultiSegmentBase");
@@ -194,8 +194,8 @@ public abstract class CustomRepresentation {
                 long contentLength) {
             RangedUri rangedUri =
                     new RangedUri(null, initializationStart, initializationEnd - initializationStart + 1);
-            SingleSegmentBase segmentBase =
-                    new SingleSegmentBase(rangedUri, 1, 0, indexStart, indexEnd - indexStart + 1);
+            CustomSegmentBase.SingleSegmentBase segmentBase =
+                    new CustomSegmentBase.SingleSegmentBase(rangedUri, 1, 0, indexStart, indexEnd - indexStart + 1);
             List<BaseUrl> baseUrls = ImmutableList.of(new BaseUrl(uri));
             return new SingleSegmentRepresentation(
                     revisionId, format, baseUrls, segmentBase, inbandEventStreams, cacheKey, contentLength);
@@ -252,7 +252,7 @@ public abstract class CustomRepresentation {
     public static class MultiSegmentRepresentation extends CustomRepresentation
             implements DashSegmentIndex {
 
-        @VisibleForTesting /* package */ final MultiSegmentBase segmentBase;
+        @VisibleForTesting /* package */ final CustomSegmentBase.MultiSegmentBase segmentBase;
 
         /**
          * Creates the multi-segment Representation.
@@ -267,7 +267,7 @@ public abstract class CustomRepresentation {
                 long revisionId,
                 CustomFormat format,
                 List<BaseUrl> baseUrls,
-                MultiSegmentBase segmentBase,
+                CustomSegmentBase.MultiSegmentBase segmentBase,
                 @Nullable List<Descriptor> inbandEventStreams) {
             super(revisionId, format, baseUrls, segmentBase, inbandEventStreams);
             this.segmentBase = segmentBase;
