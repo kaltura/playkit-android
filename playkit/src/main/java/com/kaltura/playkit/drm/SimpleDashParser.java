@@ -75,7 +75,7 @@ public class SimpleDashParser {
 
         List<Representation> representations = videoAdaptation.representations;
 
-        if (representations == null || representations.isEmpty()) {
+        if (representations.isEmpty()) {
             throw new IOException("At least one video representation is required");
         }
 
@@ -83,9 +83,7 @@ public class SimpleDashParser {
 
         if (representation != null) {
             format = representation.format;
-            if (format != null) {
-                drmInitData = format.drmInitData;
-            }
+            drmInitData = format.drmInitData;
 
             if (drmInitData != null && drmInitData.schemeDataCount > 0) {
                 hasContentProtection = true;
@@ -103,7 +101,7 @@ public class SimpleDashParser {
 
     private void loadDrmInitData(Representation representation) throws IOException {
         
-        if (representation.baseUrls.isEmpty()) {
+        if (representation.baseUrls.isEmpty() || representation.getInitializationUri() == null) {
             return;
         }
 

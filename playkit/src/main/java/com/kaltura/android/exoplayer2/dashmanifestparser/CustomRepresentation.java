@@ -214,7 +214,7 @@ public abstract class CustomRepresentation {
                 long revisionId,
                 CustomFormat format,
                 List<BaseUrl> baseUrls,
-                SingleSegmentBase segmentBase,
+                CustomSegmentBase.SingleSegmentBase segmentBase,
                 @Nullable List<Descriptor> inbandEventStreams,
                 @Nullable String cacheKey,
                 long contentLength) {
