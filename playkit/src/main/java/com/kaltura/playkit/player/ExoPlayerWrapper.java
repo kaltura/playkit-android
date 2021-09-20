@@ -25,7 +25,6 @@ import com.google.common.base.Charsets;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
-import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.MediaItem;
@@ -272,7 +271,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         log.v("setPlayerListeners");
         if (assertPlayerIsNotNull("setPlayerListeners()")) {
             player.addListener(this);
-            player.addMetadataOutput(this);
 
 //            PlaybackStatsListener playbackStatsListener  = new PlaybackStatsListener(true, new PlaybackStatsListener.Callback() {
 //                @Override
@@ -1398,7 +1396,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
         if (assertPlayerIsNotNull("stop()")) {
             player.setPlayWhenReady(false);
-            player.stop(true);
+            player.clearMediaItems();
+            player.stop();
         }
 
         analyticsAggregator.reset();

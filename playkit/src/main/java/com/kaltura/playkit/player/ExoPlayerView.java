@@ -204,11 +204,11 @@ class ExoPlayerView extends BaseExoplayerView {
             }
 
             //Clear listeners.
-            player.removeVideoListener(componentListener);
+            player.removeListener(componentListener);
         }
 
         if (oldTextComponent != null) {
-            player.removeTextOutput(componentListener);
+            player.removeListener(componentListener);
         }
         lastReportedCues = null;
         contentFrame.removeView(videoSurface);
