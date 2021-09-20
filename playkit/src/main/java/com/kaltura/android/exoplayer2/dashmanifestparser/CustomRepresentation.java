@@ -15,7 +15,6 @@ import com.kaltura.android.exoplayer2.source.dash.manifest.RangedUri;
 import java.util.Collections;
 import java.util.List;
 
-import static com.kaltura.android.exoplayer2.dashmanifestparser.CustomSegmentBase.*;
 import static com.kaltura.android.exoplayer2.util.Assertions.checkArgument;
 
 /**
