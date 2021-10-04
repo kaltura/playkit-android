@@ -1,13 +1,15 @@
 package com.kaltura.playkit.profiler;
 
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
@@ -23,6 +25,8 @@ import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.android.exoplayer2.video.VideoSize;
+import com.kaltura.playkit.PKPlaybackException;
+import com.kaltura.playkit.player.PKPlayerErrorType;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -230,24 +234,10 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onPlayerError(EventTime eventTime, ExoPlaybackException error) {
-        String type = null;
-        switch (error.type) {
-            case ExoPlaybackException.TYPE_SOURCE:
-                type = "SourceError";
-                break;
-            case ExoPlaybackException.TYPE_RENDERER:
-                type = "RendererError";
-                break;
-            case ExoPlaybackException.TYPE_UNEXPECTED:
-                type = "UnexpectedError";
-                break;
-            case ExoPlaybackException.TYPE_REMOTE:
-                type = "remoteComponentError";
-                break;
-        }
-
-        log("PlayerError", field("type", type), "cause={" + error.getCause() + "}");
+    public void onPlayerError(EventTime eventTime, PlaybackException playbackException) {
+        Pair<PKPlayerErrorType, String> exceptionPair = PKPlaybackException.getPlaybackExceptionType(playbackException);
+        String type = exceptionPair.first.toString();
+        log("PlayerError", field("type", type), "cause={" + playbackException.getCause() + "}");
     }
 
     @Override

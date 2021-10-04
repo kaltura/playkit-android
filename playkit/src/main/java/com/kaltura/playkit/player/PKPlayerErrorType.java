@@ -28,7 +28,9 @@ public enum PKPlayerErrorType {
     LOAD_ERROR(7007),
     OUT_OF_MEMORY(7008),
     REMOTE_COMPONENT_ERROR(7009),
-    TIMEOUT(7010);
+    TIMEOUT(7010),
+    IO_ERROR(7011),
+    MISCELLANEOUS(7012);
 
     public final int errorCode;
 
