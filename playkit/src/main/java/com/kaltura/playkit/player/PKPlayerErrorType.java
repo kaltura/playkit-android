@@ -29,7 +29,8 @@ public enum PKPlayerErrorType {
     OUT_OF_MEMORY(7008),
     REMOTE_COMPONENT_ERROR(7009),
     TIMEOUT(7010),
-    MISCELLANEOUS(7011);
+    IO_ERROR(7011),
+    MISCELLANEOUS(7012);
 
     public final int errorCode;
 

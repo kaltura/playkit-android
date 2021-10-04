@@ -274,7 +274,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
 //            PlaybackStatsListener playbackStatsListener  = new PlaybackStatsListener(true, new PlaybackStatsListener.Callback() {
 //                @Override
-//                public void onPlaybackStatsReady(com.kaltura.android.exoplayer2.analytics.AnalyticsListener.EventTime eventTime, PlaybackStats playbackStats) {
+//            public void onPlaybackStatsReady(com.kaltura.android.exoplayer2.analytics.AnalyticsListener.EventTime eventTime, PlaybackStats playbackStats) {
 //                    log.d("PlaybackStatsListener playbackCount = " + playbackStats.playbackCount);
 //                }
 //            });
@@ -1396,8 +1396,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
         if (assertPlayerIsNotNull("stop()")) {
             player.setPlayWhenReady(false);
-            player.clearMediaItems();
             player.stop();
+            player.clearMediaItems();
         }
 
         analyticsAggregator.reset();
