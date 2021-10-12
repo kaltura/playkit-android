@@ -118,6 +118,11 @@ public class DefaultDAIAdControllerImpl implements AdController {
         }
         return false;
     }
+
+    @Override
+    public void playAdNow(String adTagUrl) {
+        // PlayAdNow is not supported for DAI
+    }
 }
 
 

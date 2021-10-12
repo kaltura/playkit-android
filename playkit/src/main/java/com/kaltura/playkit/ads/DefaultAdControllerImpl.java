@@ -113,6 +113,13 @@ public class DefaultAdControllerImpl implements AdController {
         }
         return null;
     }
+
+    @Override
+    public void playAdNow(String adTagUrl) {
+        if (adsProvider != null) {
+            adsProvider.playAdNow(adTagUrl);
+        }
+    }
 }
 
 

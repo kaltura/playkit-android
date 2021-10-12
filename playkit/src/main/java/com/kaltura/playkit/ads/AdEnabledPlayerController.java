@@ -255,4 +255,11 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
             adsProvider.removeAdProviderListener();
         }
     }
+
+    @Override
+    public void playAdNow(String adTagUrl) {
+        if (adsProvider != null) {
+            adsProvider.playAdNow(adTagUrl);
+        }
+    }
 }
