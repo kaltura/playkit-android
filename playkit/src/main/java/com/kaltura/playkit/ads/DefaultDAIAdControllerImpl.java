@@ -123,6 +123,11 @@ public class DefaultDAIAdControllerImpl implements AdController {
     public void playAdNow(String adTagUrl) {
         // PlayAdNow is not supported for DAI
     }
+
+    @Override
+    public void advertisingConfigured(boolean isConfigured) {
+        // advertisingConfigured is not supported for DAI
+    }
 }
 
 

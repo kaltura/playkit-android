@@ -29,6 +29,8 @@ public interface AdController extends PKController {
 
     default void setVolume(float volume) {}
 
+    void advertisingConfigured(boolean isConfigured);
+
     void playAdNow(String adTagUrl);
 
     long getAdCurrentPosition();

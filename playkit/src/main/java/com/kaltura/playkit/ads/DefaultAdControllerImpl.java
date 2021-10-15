@@ -120,6 +120,13 @@ public class DefaultAdControllerImpl implements AdController {
             adsProvider.playAdNow(adTagUrl);
         }
     }
+
+    @Override
+    public void advertisingConfigured(boolean isConfigured) {
+        if (adsProvider != null) {
+            adsProvider.advertisingConfigured(isConfigured);
+        }
+    }
 }
 
 

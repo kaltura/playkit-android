@@ -29,6 +29,8 @@ public interface AdsProvider {
     default void setVolume(float volume) {}
 
     void contentCompleted();
+    
+    default void advertisingConfigured(boolean isConfigured) {}
 
     default void playAdNow(String adTagUrl) {}
 
