@@ -200,7 +200,7 @@ public class PlayerController implements Player {
 
     @Override
     public void setAdvertising(@NonNull Advertising advertising, @NonNull PKAdvertisingController pkAdvertisingController) {
-        //TODO
+        //TODO FIX ME
     }
 
     /**
