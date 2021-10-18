@@ -38,6 +38,7 @@ import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.PKAbrFilter;
 import com.kaltura.playkit.PKAudioCodec;
 import com.kaltura.playkit.PKError;
@@ -591,10 +592,17 @@ public class TrackSelectionHelper {
     }
 
     private String getLanguageFromFormat(Format format) {
-        if (format.language == null) {
+
+        String language = format.language;
+        if (TextUtils.isEmpty(format.language)) {
             return LANGUAGE_UNKNOWN;
         }
-        return format.language;
+
+        if (!C.LANGUAGE_UNDETERMINED.equals(language) && language.length() > 2) {
+            Locale locale = Util.SDK_INT >= 21 ? Locale.forLanguageTag(language) : new Locale(language);
+            return locale.getISO3Language();
+        }
+        return language;
     }
 
     private boolean isExternalSubtitle(String language, String sampleMimeType) {
