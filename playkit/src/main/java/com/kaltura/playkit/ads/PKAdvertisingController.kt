@@ -6,7 +6,6 @@ import com.kaltura.playkit.PKLog
 import com.kaltura.playkit.Player
 import com.kaltura.playkit.PlayerEvent
 import com.kaltura.playkit.plugins.ads.AdEvent
-import com.kaltura.playkit.plugins.ads.AdPositionType
 import java.util.*
 
 class PKAdvertisingController: PKAdvertising {
@@ -17,15 +16,34 @@ class PKAdvertisingController: PKAdvertising {
     private var adController: AdController? = null
     private var advertising: Advertising? = null
     private var advertisingTree: AdvertisingTree? = null
-    private var midRollAdsQueue: Queue<Long>? = null
+    private var cuePointsList: LinkedList<Long>? = null
+    private var adsConfigMap: MutableMap<Long, AdPodConfig?>? = null
 
-    private var currentAdPositionType: AdPositionType? = null
-    private var nextMidRollPositionToMonitor: Long = 0L
+    private val DEFAULT_AD_INDEX: Int = Int.MIN_VALUE
+    private val PREROLL_AD_INDEX: Int = 0
+    private var POSTROLL_AD_INDEX: Int = 0
+
+    private var currentAdIndexPosition: Int = DEFAULT_AD_INDEX
+    private var nextAdIndexForMonitoring: Int = DEFAULT_AD_INDEX
     private var adPlaybackTriggered: Boolean = false
 
     override fun playAdNow() {
-        getAdFromQueue(AdPositionType.PRE_ROLL, 0)?.let {
-            adController?.playAdNow(it)
+        if (hasPostRoll()) {
+            POSTROLL_AD_INDEX = cuePointsList?.size?.minus(1)!!
+        }
+
+        if (hasPreRoll()) {
+            val preRollAdUrl = getAdFromAdConfigMap(PREROLL_AD_INDEX)
+            if (preRollAdUrl != null) {
+                adController?.playAdNow(preRollAdUrl)
+            }
+        } else if (midRollAdsCount() > 0){
+            cuePointsList?.let {
+                if (it.isNotEmpty()) {
+                    // Update next Ad index for monitoring
+                    nextAdIndexForMonitoring = 0
+                }
+            }
         }
     }
 
@@ -51,23 +69,50 @@ class PKAdvertisingController: PKAdvertising {
         this.advertising = advertising
         adController?.advertisingConfigured(true)
         advertisingTree = AdvertisingTree(advertising)
-        midRollAdsQueue = advertisingTree?.getMidRollAdvertisingQueue()
+        cuePointsList = advertisingTree?.getCuePointsQueue()
+        adsConfigMap = advertisingTree?.getAdsConfigMap()
     }
 
+    //  15230  15800/ 1000 => 15 * 1000 => 15000 // TOD0: Check what will happen if app passed 15100 and 15500
+
     private fun subscribeToAdEvents() {
-        player?.addListener(this, PlayerEvent.playheadUpdated) {
-            log.d("playheadUpdated ${it.position} & nextMidRollPositionToMonitor = $nextMidRollPositionToMonitor")
-            if (it.position >= nextMidRollPositionToMonitor && !adPlaybackTriggered) {
-                adPlaybackTriggered = true;
-                getAdFromQueue(AdPositionType.MID_ROLL, nextMidRollPositionToMonitor)?.let { adUrl ->
-                    adController?.playAdNow(adUrl)
+        player?.addListener(this, PlayerEvent.playheadUpdated) { event ->
+            log.d("playheadUpdated ${event.position} & nextAdIndexForMonitoring is $nextAdIndexForMonitoring & nextAdForMonitoring ad position is = ${cuePointsList?.get(nextAdIndexForMonitoring)}")
+            cuePointsList?.let { list ->
+                if (event.position >= list[nextAdIndexForMonitoring] && list[nextAdIndexForMonitoring] != list.last && !adPlaybackTriggered) {
+                    log.d("nextAdForMonitoring ad position is = $list[nextAdIndexForMonitoring]")
+                    // TODO: handle situation of player.pause or content_pause_requested
+                    // (because there is a delay while loading the ad
+                    adPlaybackTriggered = true
+                    getAdFromAdConfigMap(nextAdIndexForMonitoring)?.let { adUrl ->
+                        adController?.playAdNow(adUrl)
+                    }
+                }
+            }
+        }
+
+        player?.addListener(this, PlayerEvent.seeked) {
+            log.d("Player seeked for position = ${player?.currentPosition}" )
+            if (midRollAdsCount() > 0) {
+                val lastAdPosition = getImmediateLastAdPosition(player?.currentPosition)
+                if (lastAdPosition > 0) {
+                    adPlaybackTriggered = true
+                    getAdFromAdConfigMap(lastAdPosition)?.let { adUrl ->
+                        adController?.playAdNow(adUrl)
+                    }
                 }
             }
         }
 
         player?.addListener(this, PlayerEvent.ended) {
-            getAdFromQueue(AdPositionType.POST_ROLL, 0)?.let {
-                adController?.playAdNow(it)
+            if (hasPostRoll()) {
+                getAdFromAdConfigMap(POSTROLL_AD_INDEX)?.let {
+                    adController?.playAdNow(it)
+                }
+            } else {
+                currentAdIndexPosition = DEFAULT_AD_INDEX
+                nextAdIndexForMonitoring = DEFAULT_AD_INDEX
+                adPlaybackTriggered = false
             }
         }
 
@@ -77,15 +122,14 @@ class PKAdvertisingController: PKAdvertising {
 
         player?.addListener(this, AdEvent.contentResumeRequested) {
             log.d("contentResumeRequested ${player?.currentPosition}")
-            player?.currentPosition?.let { currentPosition ->
-                if (currentPosition >= 0L) {
-                    midRollAdsQueue?.poll()?.let {
-                        nextMidRollPositionToMonitor = it
-                        currentAdPositionType = AdPositionType.MID_ROLL
-                        adPlaybackTriggered = false
-                    }
-                }
-            }
+//            player?.currentPosition?.let { currentPosition ->
+//                if (currentPosition >= 0L) {
+//                    cuePointsList?.peek()?.let {
+//                        nextAdIndexForMonitoring = it
+//                        adPlaybackTriggered = false
+//                    }
+//                }
+//            }
         }
 
         player?.addListener(this, AdEvent.contentPauseRequested) {
@@ -139,9 +183,8 @@ class PKAdvertisingController: PKAdvertising {
         player?.addListener(this, AdEvent.completed) {
             //  isCustomAdTriggered = false
             log.d("completed")
-            currentAdPositionType?.let {
-                setAdPodStatePlayed(it, nextMidRollPositionToMonitor)
-            }
+            adPlaybackTriggered = false
+            changeAdPodState(AdState.PLAYED)
         }
 
         player?.addListener(this, AdEvent.firstQuartile) {
@@ -165,65 +208,62 @@ class PKAdvertisingController: PKAdvertising {
         }
 
         player?.addListener(this, AdEvent.error) {
-            log.d("error ${it}")
-            currentAdPositionType?.let {
-                getAdFromQueue(it, 0)?.let { adUrl ->
-                    adController?.playAdNow(adUrl)
-                }
+            log.d("AdEvent.error ${it}")
+            adPlaybackTriggered = false
+            val ad = getAdFromAdConfigMap(currentAdIndexPosition)
+            if (ad.isNullOrEmpty()) {
+                log.d("Ad is completely errored $it")
+                changeAdPodState(AdState.ERROR)
+            } else {
+                log.d("Playing next waterfalling ad")
+                adController?.playAdNow(ad)
             }
-
         }
-
     }
 
-    @Nullable
-    private fun getAdFromQueue(adPositionType: AdPositionType, position: Long): String? {
-        currentAdPositionType = adPositionType
-        var pickedAdUrl: String? = null
-
-        advertisingTree?.let queue@{ queue ->
-            when (adPositionType) {
-                AdPositionType.PRE_ROLL -> {
-                    queue.getPrerollAds()?.let adUrlConfig@{ adUrlConfigs ->
-                        pickedAdUrl = getAdFromAdUrlConfig(adUrlConfigs)
-                    }
-                }
-
-                AdPositionType.MID_ROLL -> {
-                    queue.getMidRollAds()?.let { midRollAdMap ->
-                        if (midRollAdMap.containsKey(position)) {
-                            val adUrlConfig = midRollAdMap[position]
-                            adUrlConfig?.let {
-                                pickedAdUrl = getAdFromAdUrlConfig(it)
-                            }
+    private fun getAdFromAdConfigMap(adIndex: Int): String? {
+        var adUrl: String? = null
+        cuePointsList?.let { queue ->
+            if (queue.isNotEmpty()) {
+                val adPosition: Long = queue[adIndex]
+                adsConfigMap?.let { adsMap ->
+                    getAdPodConfigMap(adPosition)?.let {
+                        adUrl = fetchPlayableAdFromAdsList(it)
+                        adUrl?.let {
+                            currentAdIndexPosition = adIndex
                         }
                     }
                 }
-
-                AdPositionType.POST_ROLL -> {
-                    queue.getPostrollAds()?.let adUrlConfig@{ adUrlConfigs ->
-                        pickedAdUrl = getAdFromAdUrlConfig(adUrlConfigs)
-                    }
-                }
-
-                AdPositionType.UNKNOWN -> {
-                    pickedAdUrl = null
-                }
             }
-
         }
-        log.d("getAdFromQueue $adPositionType and pickedAdUrl is $pickedAdUrl")
-        return pickedAdUrl
+
+        return adUrl
     }
 
-    private fun getAdFromAdUrlConfig(adUrlConfigs: AdUrlConfigs): String? {
+    @Nullable
+    private fun getAdPodConfigMap(position: Long?): AdPodConfig? {
+        var adPodConfig: AdPodConfig? = null
+        advertisingTree?.let { _ ->
+            adsConfigMap?.let { adsMap ->
+                if (adsMap.contains(position)) {
+                    adPodConfig = adsMap[position]
+                }
+            }
+        }
+
+        log.d("getAdPodConfigMap AdPodConfig is $adPodConfig and podState is ${adPodConfig?.adPodState}")
+        return adPodConfig
+    }
+
+    private fun fetchPlayableAdFromAdsList(adPodConfig: AdPodConfig?): String? {
+        log.d("fetchPlayableAdFromAdsList AdPodConfig position is ${adPodConfig?.adPosition}")
         var adTagUrl: String? = null
 
-        when (adUrlConfigs.adPodState) {
-            AdState.LOADED -> {
-                log.d("I am in Loaded State and getting the first ad Tag.")
-                adUrlConfigs.adList?.let { adUrlList ->
-                    adUrlConfigs.adPodState = AdState.PLAYING
+        when (adPodConfig?.adPodState) {
+            AdState.READY -> {
+                log.d("I am in ready State and getting the first ad Tag.")
+                adPodConfig.adList?.let { adUrlList ->
+                    adPodConfig.adPodState = AdState.PLAYING
                     if (adUrlList.isNotEmpty()) {
                         adTagUrl = adUrlList[0].ad
                         adUrlList[0].adState = AdState.PLAYING
@@ -233,13 +273,14 @@ class PKAdvertisingController: PKAdvertising {
 
             AdState.PLAYING -> {
                 log.d("I am in Playing State and checking for the next ad Tag.")
-                adUrlConfigs.adList?.let { adUrlList ->
+                adPodConfig.adList?.let { adUrlList ->
                     for (specificAd: Ad in adUrlList) {
-                        if (specificAd.adState == AdState.PLAYING || specificAd.adState == AdState.ERROR) {
+                        if (specificAd.adState == AdState.PLAYING) {
                             specificAd.adState = AdState.ERROR
                         } else {
                             adTagUrl = specificAd.ad
                             specificAd.adState = AdState.PLAYING
+                            break
                         }
                     }
                 }
@@ -249,57 +290,94 @@ class PKAdvertisingController: PKAdvertising {
         return adTagUrl
     }
 
-    private fun setAdPodStatePlayed(adPositionType: AdPositionType, position: Long) {
-        log.d("setAdPodStatePlayed $adPositionType and position is $position")
-
-        when(adPositionType) {
-            AdPositionType.PRE_ROLL -> {
-                advertisingTree?.getPrerollAds()?.let {
-                    it.adPodState = AdState.PLAYED
-                }
-            }
-
-            AdPositionType.MID_ROLL -> {
-                advertisingTree?.getMidRollAds()?.let { midRollAdMap ->
-                    if (midRollAdMap.containsKey(position)) {
-                        val adUrlConfigs = midRollAdMap[position]
-                        adUrlConfigs?.adPodState = AdState.PLAYED
+    private fun changeAdPodState(adState: AdState) {
+        log.d("changeAdPodState AdState is $adState")
+        advertisingTree?.let { _ ->
+            cuePointsList?.let { queue ->
+                if (queue.isNotEmpty()) {
+                    adsConfigMap?.let { adsMap ->
+                        if (currentAdIndexPosition != DEFAULT_AD_INDEX) {
+                            val adPosition: Long = queue[currentAdIndexPosition]
+                            val adPodConfig: AdPodConfig? = adsMap[adPosition]
+                            adPodConfig?.let { adPod ->
+                                log.d("AdState is changed for AdPod position ${adPod.adPosition}")
+                                adPod.adPodState = adState
+                               // queue.remove(adPosition)
+                               // currentAdIndexPosition = DEFAULT_AD_INDEX
+                                if (currentAdIndexPosition < queue.size - 1) {
+                                    // Update next Ad index for monitoring
+                                    nextAdIndexForMonitoring = currentAdIndexPosition + 1
+                                    log.d("nextAdIndexForMonitoring is ${nextAdIndexForMonitoring}")
+                                }
+                            }
+                        }
                     }
-                }
-            }
-
-            AdPositionType.POST_ROLL -> {
-                advertisingTree?.getPostrollAds()?.let {
-                    it.adPodState = AdState.PLAYED
                 }
             }
         }
     }
 
-    /* private fun getPrerollAd(): String? {
-         val prerollAvailable = advertising?.prerollAd?.isNotEmpty() ?: return null
+    /**
+     * Check is preRoll ad is present
+     */
+    private fun hasPreRoll(): Boolean {
+        return cuePointsList?.first == 0L
+    }
 
-         if (prerollAvailable) {
-             return advertising?.prerollAd?.get(0)
-         }
-         return null
-     }
+    /**
+     * Check is postRoll ad is present
+     */
+    private fun hasPostRoll(): Boolean {
+        return cuePointsList?.last == -1L
+    }
 
-     private fun getMidrollAd(): String? {
-         val midrollAvailable = advertising?.midrollAds?.isNotEmpty() ?: return null
+    /**
+     * Get the number of midRolls,
+     * if no midRoll is present count will be zero.
+     */
+    private fun midRollAdsCount(): Int {
+        cuePointsList?.let {
+            return if (hasPreRoll() && hasPostRoll()) {
+                it.size.minus(2)
+            } else if (hasPreRoll() || hasPostRoll()) {
+                it.size.minus(1)
+            } else {
+                it.size
+            }
+        }
+        return 0
+    }
 
-         if (midrollAvailable) {
-             return advertising?.midrollAds?.get(0)?.ads?.get(0)
-         }
-         return null
-     }
+    private fun getImmediateLastAdPosition(seekPosition: Long?): Int {
+        if (seekPosition == null || cuePointsList == null || cuePointsList.isNullOrEmpty()) {
+            log.d("Error in getImmediateLastAdPosition returning DEFAULT_AD_POSITION")
+            return DEFAULT_AD_INDEX
+        }
 
-     private fun getPostrollAd(): String? {
-         val postrollAvailable = advertising?.postrollAd?.isNotEmpty() ?: return null
+        var adPosition = -1
 
-         if (postrollAvailable) {
-             return advertising?.postrollAd?.get(0)
-         }
-         return null
-     }*/
+        cuePointsList?.let {
+            if (seekPosition > 0 && it.isNotEmpty() && it.size > 1) {
+                var lowerIndex: Int = if (it.first == 0L) 1 else 0
+                var upperIndex: Int = if (it.last == -1L) it.size -2 else (it.size - 1)
+
+                while (lowerIndex <= upperIndex) {
+                    val midIndex = lowerIndex + (upperIndex - lowerIndex) / 2
+
+                    if (it[midIndex] == seekPosition) {
+                        adPosition = midIndex
+                        break
+                    } else if (it[midIndex] < seekPosition) {
+                        adPosition = midIndex
+                        lowerIndex = midIndex + 1
+                    } else if (it[midIndex] > seekPosition) {
+                        upperIndex = midIndex - 1
+                    }
+                }
+            }
+        }
+
+        log.d("Immediate last Ad Position ${adPosition}")
+        return adPosition
+    }
 }

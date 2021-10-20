@@ -1,18 +1,18 @@
 package com.kaltura.playkit.ads
 
 import androidx.annotation.Nullable
-import com.kaltura.playkit.plugins.ads.AdPositionType
+import com.kaltura.playkit.PKLog
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
+/**
+ * Class to map the Advertising object to our internal helper DataStructure
+ */
 internal class AdvertisingTree(advertising: Advertising?) {
 
-    private var prerollAdConfig: AdUrlConfigs? = null
-    private var midRollAdConfig: MutableMap<Long, AdUrlConfigs?>? = null
-    private var postrollAdConfig: AdUrlConfigs? = null
-
-    private var midRollAdvertisingQueue: Queue<Long>? = null
+    private val log = PKLog.get(AdvertisingTree::class.java.simpleName)
+    private var adsConfigMap: MutableMap<Long, AdPodConfig?>? = null // TODO: Check the condition having 0sec -> 1sec (how video view is getting removed)
+    private var cuePointsQueue: LinkedList<Long>? = null
 
     init {
         advertising?.let {
@@ -20,98 +20,105 @@ internal class AdvertisingTree(advertising: Advertising?) {
         }
     }
 
+    /**
+     * Parse the Ads from the external Ads' data structure
+     */
     private fun parseAdTypes(advertising: Advertising) {
-        advertising.ads?.let { adBreaks ->
-            val midRollAdBreaks = ArrayList<MidRollAdConfig>()
-            for (adBreak: AdBreak? in adBreaks) {
-                adBreak?.let {
-                    if (it.position == -1L) {
-                        postrollAdConfig = setAdUrlConfig(it.ads)
-                    } else if (it.position > 0) {
-                        midRollAdvertisingQueue = LinkedList()
-                        midRollAdBreaks.add(MidRollAdConfig(it.position, setAdUrlConfig(it.ads)))
-                    } else if (it.position == 0L) {
-                        prerollAdConfig = setAdUrlConfig(it.ads)
-                    } else {
-                        //TODO: Handle it
-                    }
+        advertising.ads?.let { adPods ->
+            val adPodsList = ArrayList<AdPodConfig>()
+            cuePointsQueue = LinkedList()
+            for (adPod: AdPod? in adPods) {
+                adPod?.let {
+                    adPodsList.add(AdPodConfig(it.position, AdState.READY, setAdUrlConfig(it.ads)))
                 }
             }
+            sortAdsByPosition(adPodsList)
+        }
+    }
 
-            if (midRollAdBreaks.isNotEmpty()) {
-                midRollAdBreaks.sortWith(compareBy { it.value })
-                populateMidRollAds(midRollAdBreaks)
+    /**
+     * Sorting ads by position: App can pass the AdPod in any sequence
+     * Here we are arranging the ads in Pre(0)/Mid(n)/Post(-1) adroll order
+     * Here Mid(n) n denotes the time/percentage
+     */
+    private fun sortAdsByPosition(adPodsList: ArrayList<AdPodConfig>) {
+        if (adPodsList.isNotEmpty()) {
+            adPodsList.sortWith(compareBy { it.adPosition })
+            prepareAdsMapAndQueue(adPodsList)
+            movePostRollAdToLast()
+        }
+    }
+
+    /**
+     * After the Ads sorting, create a map with position and the relevant AdPodConfig
+     * Prepare a CuePoints Queue. Queue is being monitored on the controller level
+     * to understand the current and upcoming cuepoint
+     */
+    private fun prepareAdsMapAndQueue(adPodConfigList: ArrayList<AdPodConfig>) {
+        if (adPodConfigList.isNotEmpty()) {
+            adsConfigMap = mutableMapOf()
+            for (adPodConfig: AdPodConfig in adPodConfigList) {
+                adsConfigMap?.put(adPodConfig.adPosition, adPodConfig)
+                cuePointsQueue?.add(adPodConfig.adPosition)
             }
         }
     }
 
-    private fun populateMidRollAds(midRollAdBreaks: ArrayList<MidRollAdConfig>) {
-        if (midRollAdBreaks.isNotEmpty()) {
-            midRollAdConfig = HashMap()
-            for (adConfig: MidRollAdConfig in midRollAdBreaks) {
-                midRollAdConfig?.put(adConfig.value, adConfig.adUrlConfigs)
-                midRollAdvertisingQueue?.add(adConfig.value)
+    /**
+     * After the sorting -1 will be on the top,
+     * so remove it and put it at the last (Postroll)
+     */
+    private fun movePostRollAdToLast() {
+        cuePointsQueue?.let {
+            if (it.first == -1L) {
+                it.remove(-1)
             }
+            it.addLast(-1)
         }
     }
 
-    private fun setAdUrlConfig(ads: List<String>): AdUrlConfigs {
+    /**
+     * AdPod contains the list of Ads (including waterfalling ads)
+     * Mark all the ads Ready.
+     */
+    private fun setAdUrlConfig(ads: List<String>): List<Ad> {
         val adUrls = mutableListOf<Ad>()
         for (url: String in ads) {
-            adUrls.add(Ad(AdState.LOADED, url))
+            adUrls.add(Ad(AdState.READY, url))
         }
-        return AdUrlConfigs(AdState.LOADED, adUrls)
+        return adUrls
     }
 
-   /* private fun setMidrollAds(ads: List<AdBreak?>): List<MidrollAdConfig> {
-        val midRollAdBreak = mutableListOf<MidrollAdConfig>()
-        for (adBreak: AdBreak? in ads) {
-            adBreak?.let {
-                midRollAdBreak.add(MidrollAdConfig(false, it.position, setAdUrlConfig(it.ads)))
-            }
-        }
-        return midRollAdBreak
-    }*/
-
+    /**
+     * Getter for CuePoints queue
+     */
     @Nullable
-    fun getMidRollAdvertisingQueue(): Queue<Long>? {
-        midRollAdvertisingQueue?.let {
-            if (it.isEmpty()) {
-                getMidRollAds()?.keys?.forEach { key ->
-                    it.add(key)
-                }
-            }
-        }
-        return midRollAdvertisingQueue
+    fun getCuePointsQueue(): LinkedList<Long>? {
+        return cuePointsQueue
     }
 
+    /**
+     * Get MidRoll ads if there is any
+     */
     @Nullable
-    fun getPrerollAds(): AdUrlConfigs? {
-        return prerollAdConfig
-    }
-
-    @Nullable
-    fun getMidRollAds(): MutableMap<Long, AdUrlConfigs?>? {
-        return midRollAdConfig
-    }
-
-    @Nullable
-    fun getPostrollAds(): AdUrlConfigs? {
-        return postrollAdConfig
+    fun getAdsConfigMap(): MutableMap<Long, AdPodConfig?>? {
+        return adsConfigMap
     }
 }
 
-internal data class AdUrlConfigs(var adPodState: AdState, val adList: List<Ad>?)
+// Ad Pod Config
+internal data class AdPodConfig(val adPosition: Long, var adPodState: AdState, val adList: List<Ad>?)
+// Each ad with list of waterfalling ads
 internal data class Ad(var adState: AdState, val ad: String)
 
-internal data class MidRollAdConfig(val value: Long, val adUrlConfigs: AdUrlConfigs?)
-
+// Ad's State
 enum class AdState {
-    LOADED,
+    READY, // name it READY
     PLAYING,
     PLAYED,
     ERROR
 }
+
 
 
 

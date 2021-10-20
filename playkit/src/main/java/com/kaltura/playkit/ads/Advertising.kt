@@ -1,10 +1,14 @@
 package com.kaltura.playkit.ads
 
 // List of waterfalling ads
-data class Advertising(val ads: List<AdBreak?>?)// TODO: change it to ADBreak as well
+data class Advertising(val ads: List<AdPod?>?)// TODO: change it to ADBreak as well
 
 // Where the ad lies (adtype - pre/mid/post)
-data class AdBreak(val position: Long, val ads: List<String>)
+data class AdPod(val position: Long, val ads: List<String>)
+//TODO: try to add single Ad
+
+
+// data class AdBreak(val positionPercentage: Float, val ads: List<String>)
 
 // For each ad pod, how many waterfalling ads are supplied
 //data class AdUrl(val url: List<String>)
