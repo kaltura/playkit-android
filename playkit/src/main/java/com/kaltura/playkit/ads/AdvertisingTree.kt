@@ -12,7 +12,7 @@ internal class AdvertisingTree(advertising: Advertising?) {
 
     private val log = PKLog.get(AdvertisingTree::class.java.simpleName)
     private var adsConfigMap: MutableMap<Long, AdPodConfig?>? = null // TODO: Check the condition having 0sec -> 1sec (how video view is getting removed)
-    private var cuePointsQueue: LinkedList<Long>? = null
+    private var cuePointsList: LinkedList<Long>? = null
 
     init {
         advertising?.let {
@@ -26,7 +26,7 @@ internal class AdvertisingTree(advertising: Advertising?) {
     private fun parseAdTypes(advertising: Advertising) {
         advertising.ads?.let { adPods ->
             val adPodsList = ArrayList<AdPodConfig>()
-            cuePointsQueue = LinkedList()
+            cuePointsList = LinkedList()
             for (adPod: AdPod? in adPods) {
                 adPod?.let {
                     adPodsList.add(AdPodConfig(it.position, AdState.READY, setAdUrlConfig(it.ads)))
@@ -44,22 +44,22 @@ internal class AdvertisingTree(advertising: Advertising?) {
     private fun sortAdsByPosition(adPodsList: ArrayList<AdPodConfig>) {
         if (adPodsList.isNotEmpty()) {
             adPodsList.sortWith(compareBy { it.adPosition })
-            prepareAdsMapAndQueue(adPodsList)
-            movePostRollAdToLast()
+            prepareAdsMapAndList(adPodsList)
+            movePostRollAdToLastInList()
         }
     }
 
     /**
      * After the Ads sorting, create a map with position and the relevant AdPodConfig
-     * Prepare a CuePoints Queue. Queue is being monitored on the controller level
+     * Prepare a CuePoints List. List is being monitored on the controller level
      * to understand the current and upcoming cuepoint
      */
-    private fun prepareAdsMapAndQueue(adPodConfigList: ArrayList<AdPodConfig>) {
+    private fun prepareAdsMapAndList(adPodConfigList: ArrayList<AdPodConfig>) {
         if (adPodConfigList.isNotEmpty()) {
             adsConfigMap = mutableMapOf()
             for (adPodConfig: AdPodConfig in adPodConfigList) {
                 adsConfigMap?.put(adPodConfig.adPosition, adPodConfig)
-                cuePointsQueue?.add(adPodConfig.adPosition)
+                cuePointsList?.add(adPodConfig.adPosition)
             }
         }
     }
@@ -68,8 +68,8 @@ internal class AdvertisingTree(advertising: Advertising?) {
      * After the sorting -1 will be on the top,
      * so remove it and put it at the last (Postroll)
      */
-    private fun movePostRollAdToLast() {
-        cuePointsQueue?.let {
+    private fun movePostRollAdToLastInList() {
+        cuePointsList?.let {
             if (it.first == -1L) {
                 it.remove(-1)
             }
@@ -90,11 +90,11 @@ internal class AdvertisingTree(advertising: Advertising?) {
     }
 
     /**
-     * Getter for CuePoints queue
+     * Getter for CuePoints list
      */
     @Nullable
-    fun getCuePointsQueue(): LinkedList<Long>? {
-        return cuePointsQueue
+    fun getCuePointsList(): LinkedList<Long>? {
+        return cuePointsList
     }
 
     /**

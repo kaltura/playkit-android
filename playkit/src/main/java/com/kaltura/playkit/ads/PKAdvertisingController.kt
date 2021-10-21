@@ -26,6 +26,7 @@ class PKAdvertisingController: PKAdvertising {
     private var currentAdIndexPosition: Int = DEFAULT_AD_INDEX
     private var nextAdIndexForMonitoring: Int = DEFAULT_AD_INDEX
     private var adPlaybackTriggered: Boolean = false
+    private var isPlayerSeeking: Boolean = false
 
     override fun playAdNow() {
         if (hasPostRoll()) {
@@ -69,7 +70,8 @@ class PKAdvertisingController: PKAdvertising {
         this.advertising = advertising
         adController?.advertisingConfigured(true)
         advertisingTree = AdvertisingTree(advertising)
-        cuePointsList = advertisingTree?.getCuePointsQueue()
+        cuePointsList = advertisingTree?.getCuePointsList()
+        log.d("cuePointsList $cuePointsList")
         adsConfigMap = advertisingTree?.getAdsConfigMap()
     }
 
@@ -77,10 +79,10 @@ class PKAdvertisingController: PKAdvertising {
 
     private fun subscribeToAdEvents() {
         player?.addListener(this, PlayerEvent.playheadUpdated) { event ->
-            log.d("playheadUpdated ${event.position} & nextAdIndexForMonitoring is $nextAdIndexForMonitoring & nextAdForMonitoring ad position is = ${cuePointsList?.get(nextAdIndexForMonitoring)}")
             cuePointsList?.let { list ->
-                if (event.position >= list[nextAdIndexForMonitoring] && list[nextAdIndexForMonitoring] != list.last && !adPlaybackTriggered) {
-                    log.d("nextAdForMonitoring ad position is = $list[nextAdIndexForMonitoring]")
+                if (!isPlayerSeeking && event.position >= list[nextAdIndexForMonitoring] && list[nextAdIndexForMonitoring] != list.last && !adPlaybackTriggered) {
+                    log.d("playheadUpdated ${event.position} & nextAdIndexForMonitoring is $nextAdIndexForMonitoring & nextAdForMonitoring ad position is = ${cuePointsList?.get(nextAdIndexForMonitoring)}")
+                    log.d("nextAdForMonitoring ad position is = $list")
                     // TODO: handle situation of player.pause or content_pause_requested
                     // (because there is a delay while loading the ad
                     adPlaybackTriggered = true
@@ -91,7 +93,13 @@ class PKAdvertisingController: PKAdvertising {
             }
         }
 
+        player?.addListener(this, PlayerEvent.seeking) {
+            log.d("Player seeking for player position = ${player?.currentPosition} - currentPosition ${it.currentPosition} - targetPosition ${it.targetPosition}" )
+            isPlayerSeeking = true
+        }
+
         player?.addListener(this, PlayerEvent.seeked) {
+            isPlayerSeeking = false
             log.d("Player seeked for position = ${player?.currentPosition}" )
             if (midRollAdsCount() > 0) {
                 val lastAdPosition = getImmediateLastAdPosition(player?.currentPosition)
@@ -223,14 +231,20 @@ class PKAdvertisingController: PKAdvertising {
 
     private fun getAdFromAdConfigMap(adIndex: Int): String? {
         var adUrl: String? = null
-        cuePointsList?.let { queue ->
-            if (queue.isNotEmpty()) {
-                val adPosition: Long = queue[adIndex]
+        cuePointsList?.let { cuePointsList ->
+            if (cuePointsList.isNotEmpty()) {
+                val adPosition: Long = cuePointsList[adIndex]
                 adsConfigMap?.let { adsMap ->
                     getAdPodConfigMap(adPosition)?.let {
                         adUrl = fetchPlayableAdFromAdsList(it)
                         adUrl?.let {
                             currentAdIndexPosition = adIndex
+                            log.d("currentAdIndexPosition is ${currentAdIndexPosition}")
+                            if (currentAdIndexPosition < cuePointsList.size - 1 && adPosition != -1L) {
+                                // Update next Ad index for monitoring
+                                nextAdIndexForMonitoring = currentAdIndexPosition + 1
+                                log.d("nextAdIndexForMonitoring is ${nextAdIndexForMonitoring}")
+                            }
                         }
                     }
                 }
@@ -293,22 +307,17 @@ class PKAdvertisingController: PKAdvertising {
     private fun changeAdPodState(adState: AdState) {
         log.d("changeAdPodState AdState is $adState")
         advertisingTree?.let { _ ->
-            cuePointsList?.let { queue ->
-                if (queue.isNotEmpty()) {
+            cuePointsList?.let { cuePointsList ->
+                if (cuePointsList.isNotEmpty()) {
                     adsConfigMap?.let { adsMap ->
                         if (currentAdIndexPosition != DEFAULT_AD_INDEX) {
-                            val adPosition: Long = queue[currentAdIndexPosition]
+                            val adPosition: Long = cuePointsList[currentAdIndexPosition]
                             val adPodConfig: AdPodConfig? = adsMap[adPosition]
                             adPodConfig?.let { adPod ->
                                 log.d("AdState is changed for AdPod position ${adPod.adPosition}")
                                 adPod.adPodState = adState
-                               // queue.remove(adPosition)
+                               // cuePointsList.remove(adPosition)
                                // currentAdIndexPosition = DEFAULT_AD_INDEX
-                                if (currentAdIndexPosition < queue.size - 1) {
-                                    // Update next Ad index for monitoring
-                                    nextAdIndexForMonitoring = currentAdIndexPosition + 1
-                                    log.d("nextAdIndexForMonitoring is ${nextAdIndexForMonitoring}")
-                                }
                             }
                         }
                     }
