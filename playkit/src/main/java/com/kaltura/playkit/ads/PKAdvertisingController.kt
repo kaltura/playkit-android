@@ -218,13 +218,20 @@ class PKAdvertisingController: PKAdvertising {
         player?.addListener(this, AdEvent.error) {
             log.d("AdEvent.error ${it}")
             adPlaybackTriggered = false
-            val ad = getAdFromAdConfigMap(currentAdIndexPosition)
-            if (ad.isNullOrEmpty()) {
-                log.d("Ad is completely errored $it")
-                changeAdPodState(AdState.ERROR)
+            if (it.error.errorType != PKAdErrorType.VIDEO_PLAY_ERROR) {
+                val ad = getAdFromAdConfigMap(currentAdIndexPosition)
+                if (ad.isNullOrEmpty()) {
+                    log.d("Ad is completely errored $it")
+                    changeAdPodState(AdState.ERROR)
+                } else {
+                    log.d("Playing next waterfalling ad")
+                    adController?.playAdNow(ad)
+                }
             } else {
-                log.d("Playing next waterfalling ad")
-                adController?.playAdNow(ad)
+                log.d("PKAdErrorType.VIDEO_PLAY_ERROR currentAdIndexPosition = $currentAdIndexPosition")
+                // Update next Ad index for monitoring
+                nextAdIndexForMonitoring = currentAdIndexPosition + 1
+                log.d("nextAdIndexForMonitoring is ${nextAdIndexForMonitoring}")
             }
         }
     }
@@ -315,6 +322,7 @@ class PKAdvertisingController: PKAdvertising {
                             val adPodConfig: AdPodConfig? = adsMap[adPosition]
                             adPodConfig?.let { adPod ->
                                 log.d("AdState is changed for AdPod position ${adPod.adPosition}")
+                                //TODO: Change internal ad index state which eventually was played after waterfalling
                                 adPod.adPodState = adState
                                // cuePointsList.remove(adPosition)
                                // currentAdIndexPosition = DEFAULT_AD_INDEX
