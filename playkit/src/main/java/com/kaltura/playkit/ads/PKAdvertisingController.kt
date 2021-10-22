@@ -104,9 +104,18 @@ class PKAdvertisingController: PKAdvertising {
             if (midRollAdsCount() > 0) {
                 val lastAdPosition = getImmediateLastAdPosition(player?.currentPosition)
                 if (lastAdPosition > 0) {
+                    log.d("Ad found on the left side of ad list")
                     adPlaybackTriggered = true
                     getAdFromAdConfigMap(lastAdPosition)?.let { adUrl ->
                         adController?.playAdNow(adUrl)
+                    }
+                } else {
+                    log.d("No Ad found on the left side of ad list, finding on right side")
+                    // Trying to get the immediate Next ad from pod
+                    val nextAdPosition = getImmediateNextAdPosition(player?.currentPosition)
+                    if (nextAdPosition > 0) {
+                        log.d("Ad found on the right side of ad list, update the current and next ad Index")
+                        nextAdIndexForMonitoring = nextAdPosition
                     }
                 }
             }
@@ -229,9 +238,14 @@ class PKAdvertisingController: PKAdvertising {
                 }
             } else {
                 log.d("PKAdErrorType.VIDEO_PLAY_ERROR currentAdIndexPosition = $currentAdIndexPosition")
-                // Update next Ad index for monitoring
-                nextAdIndexForMonitoring = currentAdIndexPosition + 1
-                log.d("nextAdIndexForMonitoring is ${nextAdIndexForMonitoring}")
+                cuePointsList?.let { cueList ->
+                    val adPosition: Long = cueList[currentAdIndexPosition]
+                    if (currentAdIndexPosition < cueList.size - 1 && adPosition != -1L) {
+                        // Update next Ad index for monitoring
+                        nextAdIndexForMonitoring = currentAdIndexPosition + 1
+                        log.d("nextAdIndexForMonitoring is $nextAdIndexForMonitoring")
+                    }
+                }
             }
         }
     }
@@ -250,7 +264,7 @@ class PKAdvertisingController: PKAdvertising {
                             if (currentAdIndexPosition < cuePointsList.size - 1 && adPosition != -1L) {
                                 // Update next Ad index for monitoring
                                 nextAdIndexForMonitoring = currentAdIndexPosition + 1
-                                log.d("nextAdIndexForMonitoring is ${nextAdIndexForMonitoring}")
+                                log.d("nextAdIndexForMonitoring is $nextAdIndexForMonitoring")
                             }
                         }
                     }
@@ -394,7 +408,40 @@ class PKAdvertisingController: PKAdvertising {
             }
         }
 
-        log.d("Immediate last Ad Position ${adPosition}")
+        log.d("Immediate Last Ad Position ${adPosition}")
+        return adPosition
+    }
+
+    private fun getImmediateNextAdPosition(seekPosition: Long?): Int {
+        if (seekPosition == null || cuePointsList == null || cuePointsList.isNullOrEmpty()) {
+            log.d("Error in getImmediateNextAdPosition returning DEFAULT_AD_POSITION")
+            return DEFAULT_AD_INDEX
+        }
+
+        var adPosition = -1
+
+        cuePointsList?.let {
+            if (seekPosition > 0 && it.isNotEmpty() && it.size > 1) {
+                var lowerIndex: Int = if (it.first == 0L) 1 else 0
+                var upperIndex: Int = if (it.last == -1L) it.size -2 else (it.size - 1)
+
+                while (lowerIndex <= upperIndex) {
+                    val midIndex = lowerIndex + (upperIndex - lowerIndex) / 2
+
+                    if (it[midIndex] == seekPosition) {
+                        adPosition = midIndex
+                        break
+                    } else if (it[midIndex] < seekPosition) {
+                        lowerIndex = midIndex + 1
+                    } else if (it[midIndex] > seekPosition) {
+                        adPosition = midIndex
+                        upperIndex = midIndex - 1
+                    }
+                }
+            }
+        }
+
+        log.d("Immediate Next Ad Position ${adPosition}")
         return adPosition
     }
 }
