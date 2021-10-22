@@ -733,22 +733,37 @@ public class TrackSelectionHelper {
     private ArrayList<AudioTrack> filterAdaptiveAudioTracks() {
         ArrayList<AudioTrack> filteredAudioTracks = new ArrayList<>();
 
-        AudioTrack audioTrack;
         int[] parsedUniqueId;
         int currentGroup = -1;
 
-        for (int i = 0; i < audioTracks.size(); i++) {
-            audioTrack = audioTracks.get(i);
+
+        boolean allowMixedCodecs = playerSettings.getPreferredAudioCodecSettings().getAllowMixedCodecs();
+        HashMap<String, Boolean> currentCodecMap = new HashMap<>();
+        for (AudioTrack audioTrack : audioTracks) {
             parsedUniqueId = parseUniqueId(audioTrack.getUniqueId());
 
-            if (parsedUniqueId[TRACK_INDEX] == TRACK_ADAPTIVE) {
+            if (parsedUniqueId[TRACK_INDEX] == TRACK_ADAPTIVE || (allowMixedCodecs && !currentCodecMap.containsKey(audioTrack.getCodecName()))) {
                 filteredAudioTracks.add(audioTrack);
                 currentGroup = parsedUniqueId[GROUP_INDEX];
+                if (allowMixedCodecs) {
+                    currentCodecMap.put(audioTrack.getCodecName(), parsedUniqueId[TRACK_INDEX] == TRACK_ADAPTIVE);
+                }
             } else if (parsedUniqueId[GROUP_INDEX] != currentGroup) {
                 filteredAudioTracks.add(audioTrack);
                 currentGroup = -1;
+            } else {
+                if (allowMixedCodecs) {
+                    Boolean isAdaptive = currentCodecMap.get(audioTrack.getCodecName());
+                    if (isAdaptive != null && !isAdaptive) {
+                        // check if same codec track is not adaptive
+                        filteredAudioTracks.add(audioTrack);
+                        currentGroup = -1;
+                    }
+                }
             }
         }
+        currentCodecMap.clear();
+
 
         AudioCodecSettings preferredAudioCodecSettings = playerSettings.getPreferredAudioCodecSettings();
         if (preferredAudioCodecSettings.getAllowMixedCodecs()) {
