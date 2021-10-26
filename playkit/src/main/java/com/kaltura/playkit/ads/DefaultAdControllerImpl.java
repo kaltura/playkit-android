@@ -127,6 +127,13 @@ public class DefaultAdControllerImpl implements AdController {
             adsProvider.advertisingConfigured(isConfigured);
         }
     }
+
+    @Override
+    public void setAllAdsCompleted() {
+        if (adsProvider != null) {
+            adsProvider.setAllAdsCompleted();
+        }
+    }
 }
 
 

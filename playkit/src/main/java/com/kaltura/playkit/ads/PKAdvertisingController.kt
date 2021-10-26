@@ -338,8 +338,8 @@ class PKAdvertisingController: PKAdvertising {
                                 log.d("AdState is changed for AdPod position ${adPod.adPosition}")
                                 //TODO: Change internal ad index state which eventually was played after waterfalling
                                 adPod.adPodState = adState
-                               // cuePointsList.remove(adPosition)
-                               // currentAdIndexPosition = DEFAULT_AD_INDEX
+                                // cuePointsList.remove(adPosition)
+                                // currentAdIndexPosition = DEFAULT_AD_INDEX
                             }
                         }
                     }
@@ -443,5 +443,21 @@ class PKAdvertisingController: PKAdvertising {
 
         log.d("Immediate Next Ad Position ${adPosition}")
         return adPosition
+    }
+
+    private fun checkAllAdsArePlayed(): Boolean {
+        var isAllAdsPlayed = true
+        if (hasPreRoll() && midRollAdsCount() <=0 && !hasPostRoll()) {
+            return true
+        }
+
+        adsConfigMap?.let {
+            it.forEach { (key, value) ->
+                if (key > 0L && (value?.adPodState != AdState.PLAYED || value.adPodState != AdState.ERROR)) {
+                    isAllAdsPlayed = false
+                }
+            }
+        }
+        return isAllAdsPlayed
     }
 }

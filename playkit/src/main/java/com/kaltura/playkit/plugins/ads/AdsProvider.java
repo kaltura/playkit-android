@@ -34,6 +34,8 @@ public interface AdsProvider {
 
     default void playAdNow(String adTagUrl) {}
 
+    default void setAllAdsCompleted() {}
+
     PKAdInfo getAdInfo();
 
     AdCuePoints getCuePoints();

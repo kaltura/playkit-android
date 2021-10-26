@@ -32,6 +32,8 @@ public interface AdController extends PKController {
     void advertisingConfigured(boolean isConfigured);
 
     void playAdNow(String adTagUrl);
+    
+    void setAllAdsCompleted();
 
     long getAdCurrentPosition();
 
