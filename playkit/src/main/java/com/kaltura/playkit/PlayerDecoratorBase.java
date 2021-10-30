@@ -16,7 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
-import com.kaltura.playkit.ads.Advertising;
+import com.kaltura.playkit.ads.AdvertisingConfig;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -40,8 +40,8 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void setAdvertising(@NonNull Advertising advertising, @NonNull PKAdvertisingController pkAdvertisingController) {
-        player.setAdvertising(advertising, pkAdvertisingController);
+    public void setAdvertising(@NonNull AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController) {
+        player.setAdvertising(advertisingConfig, pkAdvertisingController);
     }
 
     @Override

@@ -14,7 +14,7 @@ class PKAdvertisingController: PKAdvertising {
     private var player: Player? = null
     private var messageBus: MessageBus? = null
     private var adController: AdController? = null
-    private var advertising: Advertising? = null
+    private var advertisingConfig: AdvertisingConfig? = null
     private var advertisingTree: AdvertisingTree? = null
     private var cuePointsList: LinkedList<Long>? = null
     private var adsConfigMap: MutableMap<Long, AdPodConfig?>? = null
@@ -28,7 +28,15 @@ class PKAdvertisingController: PKAdvertising {
     private var adPlaybackTriggered: Boolean = false
     private var isPlayerSeeking: Boolean = false
 
-    override fun playAdNow() {
+    override fun playAdNow(vastAdTag: List<AdBreak>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getCurrentAd() {
+        TODO("Not yet implemented")
+    }
+
+    fun playAdNow() {
         if (hasPostRoll()) {
             POSTROLL_AD_INDEX = cuePointsList?.size?.minus(1)!!
         }
@@ -48,14 +56,6 @@ class PKAdvertisingController: PKAdvertising {
         }
     }
 
-    override fun playAdNow(vastAdTag: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getCurrentAd() {
-        TODO("Not yet implemented")
-    }
-
     fun setPlayer(player: Player, messageBus: MessageBus) {
         this.player = player
         this.messageBus = messageBus
@@ -66,10 +66,10 @@ class PKAdvertisingController: PKAdvertising {
         this.adController = adController
     }
 
-    fun setAdvertising(advertising: Advertising) {
-        this.advertising = advertising
+    fun setAdvertising(advertisingConfig: AdvertisingConfig) {
+        this.advertisingConfig = advertisingConfig
         adController?.advertisingConfigured(true)
-        advertisingTree = AdvertisingTree(advertising)
+        advertisingTree = AdvertisingTree(advertisingConfig)
         cuePointsList = advertisingTree?.getCuePointsList()
         log.d("cuePointsList $cuePointsList")
         adsConfigMap = advertisingTree?.getAdsConfigMap()

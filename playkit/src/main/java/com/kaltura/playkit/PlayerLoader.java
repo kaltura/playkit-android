@@ -21,7 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
 import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.ads.Advertising;
+import com.kaltura.playkit.ads.AdvertisingConfig;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
@@ -54,7 +54,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
-    private Advertising advertising;
+    private AdvertisingConfig advertisingConfig;
     private PKAdvertisingController pkAdvertisingController;
     private final String kavaPluginKey = "kava";
     private boolean isKavaImpressionFired;
@@ -169,9 +169,9 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         super.prepare(mediaConfig);
         
-        if (advertising != null && pkAdvertisingController != null) {
+        if (advertisingConfig != null && pkAdvertisingController != null) {
             pkAdvertisingController.setAdController(playerController.getController(AdController.class));
-            pkAdvertisingController.setAdvertising(advertising);
+            pkAdvertisingController.setAdvertising(advertisingConfig);
         }
 
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
@@ -196,13 +196,13 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public void setAdvertising(@NonNull Advertising advertising, @NonNull PKAdvertisingController pkAdvertisingController) {
+    public void setAdvertising(@NonNull AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController) {
         if (!PKDeviceCapabilities.isKalturaPlayerAvailable()) {
             log.e("Advertising is being used to configure custom adlayout. This feature is not available in Playkit SDK. " +
                     "It is only being used by Kaltura Player SDK.");
             return;
         }
-        this.advertising = advertising;
+        this.advertisingConfig = advertisingConfig;
         this.pkAdvertisingController = pkAdvertisingController;
     }
 

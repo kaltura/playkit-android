@@ -1,10 +1,13 @@
 package com.kaltura.playkit.ads
 
 // List of waterfalling ads
-data class Advertising(val ads: List<AdPod?>?)// TODO: change it to ADBreak as well
+data class AdvertisingConfig(val ads: List<AdBreak?>?)// TODO: change it to ADBreak as well
 
 // Where the ad lies (adtype - pre/mid/post)
-data class AdPod(val position: Long, val ads: List<String>)
+data class AdBreak(val position: Long, val ads: List<String>) {
+    constructor(ads: List<String>): this(Long.MIN_VALUE, ads)
+    constructor(ad: String): this(Long.MIN_VALUE, listOf(ad))
+}
 //TODO: try to add single Ad
 
 

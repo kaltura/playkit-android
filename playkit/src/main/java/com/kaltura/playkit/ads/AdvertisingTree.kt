@@ -8,14 +8,14 @@ import kotlin.collections.ArrayList
 /**
  * Class to map the Advertising object to our internal helper DataStructure
  */
-internal class AdvertisingTree(advertising: Advertising?) {
+internal class AdvertisingTree(advertisingConfig: AdvertisingConfig?) {
 
     private val log = PKLog.get(AdvertisingTree::class.java.simpleName)
     private var adsConfigMap: MutableMap<Long, AdPodConfig?>? = null // TODO: Check the condition having 0sec -> 1sec (how video view is getting removed)
     private var cuePointsList: LinkedList<Long>? = null
 
     init {
-        advertising?.let {
+        advertisingConfig?.let {
             parseAdTypes(it)
         }
     }
@@ -23,12 +23,12 @@ internal class AdvertisingTree(advertising: Advertising?) {
     /**
      * Parse the Ads from the external Ads' data structure
      */
-    private fun parseAdTypes(advertising: Advertising) {
-        advertising.ads?.let { adPods ->
+    private fun parseAdTypes(advertisingConfig: AdvertisingConfig) {
+        advertisingConfig.ads?.let { adPods ->
             val adPodsList = ArrayList<AdPodConfig>()
             cuePointsList = LinkedList()
-            for (adPod: AdPod? in adPods) {
-                adPod?.let {
+            for (adBreak: AdBreak? in adPods) {
+                adBreak?.let {
                     adPodsList.add(AdPodConfig(it.position, AdState.READY, setAdUrlConfig(it.ads)))
                 }
             }

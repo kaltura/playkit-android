@@ -38,7 +38,7 @@ import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
-import com.kaltura.playkit.ads.Advertising;
+import com.kaltura.playkit.ads.AdvertisingConfig;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
@@ -199,7 +199,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void setAdvertising(@NonNull Advertising advertising, @NonNull PKAdvertisingController pkAdvertisingController) {
+    public void setAdvertising(@NonNull AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController) {
         Assert.shouldNeverHappen();
     }
 

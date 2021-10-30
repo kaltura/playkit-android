@@ -16,7 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
-import com.kaltura.playkit.ads.Advertising;
+import com.kaltura.playkit.ads.AdvertisingConfig;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
@@ -401,7 +401,7 @@ public interface Player {
      */
     void prepare(@NonNull PKMediaConfig playerConfig);
     
-    void setAdvertising(@NonNull Advertising advertising, @NonNull PKAdvertisingController pkAdvertisingController);
+    void setAdvertising(@NonNull AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController);
 
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
     
