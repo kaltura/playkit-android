@@ -8,6 +8,9 @@ import com.kaltura.playkit.PlayerEvent
 import com.kaltura.playkit.plugins.ads.AdEvent
 import java.util.*
 
+/**
+ * Controller to handle the Custom Ad playback
+ */
 class PKAdvertisingController: PKAdvertising {
 
     private val log = PKLog.get(PKAdvertisingController::class.java.simpleName)
@@ -28,15 +31,39 @@ class PKAdvertisingController: PKAdvertising {
     private var adPlaybackTriggered: Boolean = false
     private var isPlayerSeeking: Boolean = false
 
-    override fun playAdNow(vastAdTag: List<AdBreak>) {
-        TODO("Not yet implemented")
+    /**
+     * Set the AdController from PlayerLoader level
+     * Need to inform IMAPlugin that Advertising is configured
+     * before onUpdateMedia call
+     */
+    fun setAdController(adController: AdController) {
+        this.adController = adController
     }
 
-    override fun getCurrentAd() {
-        TODO("Not yet implemented")
+    /**
+     * Set the actual advertising config object
+     * and map it with our internal Advertising tree
+     */
+    fun setAdvertising(advertisingConfig: AdvertisingConfig) {
+        this.advertisingConfig = advertisingConfig
+        adController?.advertisingConfigured(true)
+        advertisingTree = AdvertisingTree(advertisingConfig)
+        cuePointsList = advertisingTree?.getCuePointsList()
+        log.d("cuePointsList $cuePointsList")
+        adsConfigMap = advertisingTree?.getAdsConfigMap()
     }
 
-    fun playAdNow() {
+    fun setPlayer(player: Player, messageBus: MessageBus) {
+        this.player = player
+        this.messageBus = messageBus
+        subscribeToPlayerAndAdEvents()
+    }
+
+    /**
+     * After the Player prepare, starting point
+     * to play the Advertising
+     */
+    fun playAdvertising() {
         if (hasPostRoll()) {
             POSTROLL_AD_INDEX = cuePointsList?.size?.minus(1)!!
         }
@@ -44,7 +71,7 @@ class PKAdvertisingController: PKAdvertising {
         if (hasPreRoll()) {
             val preRollAdUrl = getAdFromAdConfigMap(PREROLL_AD_INDEX)
             if (preRollAdUrl != null) {
-                adController?.playAdNow(preRollAdUrl)
+                playAd(preRollAdUrl)
             }
         } else if (midRollAdsCount() > 0){
             cuePointsList?.let {
@@ -56,28 +83,17 @@ class PKAdvertisingController: PKAdvertising {
         }
     }
 
-    fun setPlayer(player: Player, messageBus: MessageBus) {
-        this.player = player
-        this.messageBus = messageBus
-        subscribeToAdEvents()
+    override fun playAdNow(vastAdTag: List<AdBreak>) {
+        TODO("Not yet implemented")
     }
 
-    fun setAdController(adController: AdController) {
-        this.adController = adController
-    }
-
-    fun setAdvertising(advertisingConfig: AdvertisingConfig) {
-        this.advertisingConfig = advertisingConfig
-        adController?.advertisingConfigured(true)
-        advertisingTree = AdvertisingTree(advertisingConfig)
-        cuePointsList = advertisingTree?.getCuePointsList()
-        log.d("cuePointsList $cuePointsList")
-        adsConfigMap = advertisingTree?.getAdsConfigMap()
+    override fun getCurrentAd() {
+        TODO("Not yet implemented")
     }
 
     //  15230  15800/ 1000 => 15 * 1000 => 15000 // TOD0: Check what will happen if app passed 15100 and 15500
 
-    private fun subscribeToAdEvents() {
+    private fun subscribeToPlayerAndAdEvents() {
         player?.addListener(this, PlayerEvent.playheadUpdated) { event ->
             cuePointsList?.let { list ->
                 if (!isPlayerSeeking && event.position >= list[nextAdIndexForMonitoring] && list[nextAdIndexForMonitoring] != list.last && !adPlaybackTriggered) {
@@ -87,7 +103,7 @@ class PKAdvertisingController: PKAdvertising {
                     // (because there is a delay while loading the ad
                     adPlaybackTriggered = true
                     getAdFromAdConfigMap(nextAdIndexForMonitoring)?.let { adUrl ->
-                        adController?.playAdNow(adUrl)
+                        playAd(adUrl)
                     }
                 }
             }
@@ -107,7 +123,7 @@ class PKAdvertisingController: PKAdvertising {
                     log.d("Ad found on the left side of ad list")
                     adPlaybackTriggered = true
                     getAdFromAdConfigMap(lastAdPosition)?.let { adUrl ->
-                        adController?.playAdNow(adUrl)
+                        playAd(adUrl)
                     }
                 } else {
                     log.d("No Ad found on the left side of ad list, finding on right side")
@@ -124,7 +140,7 @@ class PKAdvertisingController: PKAdvertising {
         player?.addListener(this, PlayerEvent.ended) {
             if (hasPostRoll()) {
                 getAdFromAdConfigMap(POSTROLL_AD_INDEX)?.let {
-                    adController?.playAdNow(it)
+                    playAd(it)
                 }
             } else {
                 currentAdIndexPosition = DEFAULT_AD_INDEX
@@ -234,7 +250,7 @@ class PKAdvertisingController: PKAdvertising {
                     changeAdPodState(AdState.ERROR)
                 } else {
                     log.d("Playing next waterfalling ad")
-                    adController?.playAdNow(ad)
+                    playAd(ad)
                 }
             } else {
                 log.d("PKAdErrorType.VIDEO_PLAY_ERROR currentAdIndexPosition = $currentAdIndexPosition")
@@ -250,6 +266,7 @@ class PKAdvertisingController: PKAdvertising {
         }
     }
 
+    @Nullable
     private fun getAdFromAdConfigMap(adIndex: Int): String? {
         var adUrl: String? = null
         cuePointsList?.let { cuePointsList ->
@@ -290,6 +307,7 @@ class PKAdvertisingController: PKAdvertising {
         return adPodConfig
     }
 
+    @Nullable
     private fun fetchPlayableAdFromAdsList(adPodConfig: AdPodConfig?): String? {
         log.d("fetchPlayableAdFromAdsList AdPodConfig position is ${adPodConfig?.adPosition}")
         var adTagUrl: String? = null
@@ -346,6 +364,22 @@ class PKAdvertisingController: PKAdvertising {
                 }
             }
         }
+    }
+
+    /**
+     * Ad Playback
+     * Call the play Ad API on IMAPlugin
+     */
+    private fun playAd(adUrl: String) {
+        player?.pause()
+        adController?.playAdNow(adUrl)
+    }
+
+    /**
+     * Content Playback
+     */
+    private fun playContent() {
+        player?.play()
     }
 
     /**
