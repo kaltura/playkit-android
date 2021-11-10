@@ -27,7 +27,7 @@ class PKAdvertisingController: PKAdvertising {
     private var POSTROLL_AD_INDEX: Int = 0
 
     private var currentAdBreakIndexPosition: Int = DEFAULT_AD_INDEX // For each ad Break 0, 15, 30, -1
-    private var currentAdPodIndexPosition: Int = DEFAULT_AD_INDEX // For each ad pod 1 of 2, 2 of 2 so monitor this value
+    //private var currentAdPodIndexPosition: Int = 0 // For each ad pod 1 of 2, 2 of 2 so monitor this value
     private var nextAdBreakIndexForMonitoring: Int = DEFAULT_AD_INDEX // For Next ad Break 0, 15, 30, -1
     private var adPlaybackTriggered: Boolean = false
     private var isPlayerSeeking: Boolean = false
@@ -220,7 +220,12 @@ class PKAdvertisingController: PKAdvertising {
             //  isCustomAdTriggered = false
             log.d("AdEvent.completed")
             adPlaybackTriggered = false
-            changeAdPodState(AdState.PLAYED)
+            val adUrl = getAdFromAdConfigMap(currentAdBreakIndexPosition)
+            if (adUrl != null) {
+                playAd(adUrl)
+            } else {
+                changeAdPodState(AdState.PLAYED)
+            }
         }
 
         player?.addListener(this, AdEvent.firstQuartile) {
@@ -317,35 +322,97 @@ class PKAdvertisingController: PKAdvertising {
 
         when (adBreakConfig?.adBreakState) {
             AdState.READY -> {
-                log.d("I am in ready State and getting the first ad Tag.")
-                adBreakConfig.adList?.let { adUrlList ->
+                log.i("fetchPlayableAdFromAdsList -> I am in ready State and getting the first ad Tag.")
+                adBreakConfig.adPodList?.let { adPodList ->
                     adBreakConfig.adBreakState = AdState.PLAYING
-                    if (adUrlList.isNotEmpty()) {
-                        adTagUrl = adUrlList[0].ad
-                        adUrlList[0].adState = AdState.PLAYING
+                    if (adPodList.isNotEmpty()) {
+                        val adsList = adPodList[0].adList
+                        adsList?.let { ads ->
+                            if (ads.isNotEmpty()) {
+                                ads[0].adState = AdState.PLAYING
+                                adPodList[0].adPodState = AdState.PLAYING
+                                adTagUrl = ads[0].ad
+                            }
+                        }
+
                     }
                 }
             }
 
             AdState.PLAYING -> {
-                log.d("I am in Playing State and checking for the next ad Tag.")
-                adBreakConfig.adList?.let { adUrlList ->
-                    for (specificAd: Ad in adUrlList) {
-                        log.w("specificAd State ${specificAd.adState}")
-                        log.w("specificAd ${specificAd.ad}")
-                        if (specificAd.adState == AdState.PLAYING || specificAd.adState == AdState.ERROR) {
-                            specificAd.adState = AdState.ERROR
-                        } else {
-                            adTagUrl = specificAd.ad
-                            specificAd.adState = AdState.PLAYING
-                            break
-                        }
-                    }
+                log.i("fetchPlayableAdFromAdsList -> I am in Playing State and checking for the next ad Tag.")
+                adBreakConfig.adPodList?.let { adPodList ->
+                    adTagUrl = getAdFromAdPod(adPodList)
+//                    for (adPodConfig: AdPodConfig in adPodList) {
+//                        log.w("specificAd State ${specificAd.adState}")
+//                        log.w("specificAd ${specificAd.ad}")
+//                        if (specificAd.adState == AdState.PLAYING || specificAd.adState == AdState.ERROR) {
+//                            specificAd.adState = AdState.ERROR
+//                        } else {
+//                            adTagUrl = specificAd.ad
+//                            specificAd.adState = AdState.PLAYING
+//                            break
+//                        }
+//                    }
                 }
             }
         }
 
         return adTagUrl
+    }
+
+    @Nullable
+    private fun getAdFromAdPod(adPodList: List<AdPodConfig>): String? {
+        var adUrl: String? = null
+
+        for (adPodConfig: AdPodConfig in adPodList) {
+            when(adPodConfig.adPodState) {
+
+                AdState.READY -> {
+                    log.i("getAdFromAdPod -> I am in ready State and getting the first ad Tag.")
+                    adPodConfig.adList?.let {
+                        if(it.isNotEmpty()) {
+                            it[0].adState = AdState.PLAYING
+                            adPodConfig.adPodState = AdState.PLAYING
+                            return it[0].ad
+                        }
+                    }
+                }
+
+                AdState.PLAYING -> {
+                    log.i("getAdFromAdPod -> I am in Playing State and checking for the next ad Tag.")
+                    adPodConfig.adList?.let { adsList ->
+                        if(adsList.isNotEmpty()) {
+                            for (specificAd: Ad in adsList) {
+                                log.w("specificAd State ${specificAd.adState}")
+                                log.w("specificAd ${specificAd.ad}")
+                                when (specificAd.adState) {
+                                    AdState.ERROR, AdState.PLAYED -> continue
+
+                                    AdState.READY -> {
+                                        adPodConfig.adPodState = AdState.PLAYING
+                                        specificAd.adState = AdState.PLAYING
+                                        return specificAd.ad
+                                    }
+
+                                    AdState.PLAYING -> {
+                                        specificAd.adState = AdState.ERROR
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                AdState.ERROR, AdState.PLAYED -> {
+                    continue
+                }
+
+            }
+
+        }
+
+        return adUrl
     }
 
     private fun changeAdPodState(adState: AdState) {
@@ -357,10 +424,10 @@ class PKAdvertisingController: PKAdvertising {
                         if (currentAdBreakIndexPosition != DEFAULT_AD_INDEX) {
                             val adPosition: Long = cuePointsList[currentAdBreakIndexPosition]
                             val adBreakConfig: AdBreakConfig? = adsMap[adPosition]
-                            adBreakConfig?.let { adPod ->
-                                log.d("AdState is changed for AdPod position ${adPod.adPosition}")
+                            adBreakConfig?.let { adBreak ->
+                                log.d("AdState is changed for AdPod position ${adBreak.adPosition}")
                                 //TODO: Change internal ad index state which eventually was played after waterfalling
-                                adPod.adBreakState = adState
+                                adBreak.adBreakState = adState
                                 // cuePointsList.remove(adPosition)
                                 // currentAdIndexPosition = DEFAULT_AD_INDEX
                             }

@@ -28,12 +28,43 @@ internal class AdvertisingTree(advertisingConfig: AdvertisingConfig?) {
             val adBreaksList = ArrayList<AdBreakConfig>()
             cuePointsList = LinkedList()
             for (adBreak: AdBreak? in adBreaks) {
-                adBreak?.let {
-                        adBreaksList.add(AdBreakConfig(it.position, AdState.READY, setAdUrlConfig(it.ads)))
+                adBreak?.let { singleAdBreak ->
+                    val adPodConfigList = parseAdPodConfig(singleAdBreak)
+                    // Create ad break list and mark them ready
+                    val adBreakConfig = AdBreakConfig(singleAdBreak.position, AdState.READY, adPodConfigList)
+                    adBreaksList.add(adBreakConfig)
                 }
             }
             sortAdsByPosition(adBreaksList)
         }
+    }
+
+    /**
+     * Parse Each AdBreak. AdBreak may contain list of ad pods
+     * Mark all the ad pods Ready.
+     */
+    private fun parseAdPodConfig(singleAdBreak: AdBreak): List<AdPodConfig> {
+        val adPodConfigList = mutableListOf<AdPodConfig>()
+        for (adPod: List<String>? in singleAdBreak.ads) {
+            val adsList = parseEachAdUrl(adPod)
+            val adPodConfig = AdPodConfig(AdState.READY, adsList)
+            adPodConfigList.add(adPodConfig)
+        }
+        return adPodConfigList
+    }
+
+    /**
+     * AdPod may contain the list of Ads (including waterfalling ads)
+     * Mark all the ads Ready.
+     */
+    private fun parseEachAdUrl(ads: List<String>?): List<Ad> {
+        val adUrls = mutableListOf<Ad>()
+        if (ads != null) {
+            for (url: String in ads) {
+                adUrls.add(Ad(AdState.READY, url))
+            }
+        }
+        return adUrls
     }
 
     /**
@@ -78,18 +109,6 @@ internal class AdvertisingTree(advertisingConfig: AdvertisingConfig?) {
     }
 
     /**
-     * AdPod contains the list of Ads (including waterfalling ads)
-     * Mark all the ads Ready.
-     */
-    private fun setAdUrlConfig(ads: List<String>): List<Ad> {
-        val adUrls = mutableListOf<Ad>()
-        for (url: String in ads) {
-            adUrls.add(Ad(AdState.READY, url))
-        }
-        return adUrls
-    }
-
-    /**
      * Getter for CuePoints list
      */
     @Nullable
@@ -107,8 +126,12 @@ internal class AdvertisingTree(advertisingConfig: AdvertisingConfig?) {
 }
 
 // Ad Break Config
-internal data class AdBreakConfig(val adPosition: Long, var adBreakState: AdState, val adList: List<Ad>?)
-// Each ad with list of waterfalling ads
+internal data class AdBreakConfig(val adPosition: Long, var adBreakState: AdState, val adPodList: List<AdPodConfig>?)
+
+// Ad list contains waterfalling ads as well.
+internal data class AdPodConfig(var adPodState: AdState, val adList: List<Ad>?)
+
+// Single Ad
 internal data class Ad(var adState: AdState, val ad: String)
 
 // Ad's State

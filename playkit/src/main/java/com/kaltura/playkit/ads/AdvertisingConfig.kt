@@ -11,7 +11,7 @@ data class AdvertisingConfig(val ads: List<AdBreak?>?)// TODO: change it to ADBr
  *                                                 -> Ad 2 -> List Of Ads  (Ad Waterfalling may occur here)
  *
  */
-data class AdBreak(val position: Long, val ads: List<String>)
+data class AdBreak(val position: Long, val ads: List<List<String>>)
 //{
 //    constructor(ads: List<String>): this(Long.MIN_VALUE, ads)
 //    constructor(ad: String): this(Long.MIN_VALUE, listOf(ad))
