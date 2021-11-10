@@ -20,14 +20,15 @@ class PKAdvertisingController: PKAdvertising {
     private var advertisingConfig: AdvertisingConfig? = null
     private var advertisingTree: AdvertisingTree? = null
     private var cuePointsList: LinkedList<Long>? = null
-    private var adsConfigMap: MutableMap<Long, AdPodConfig?>? = null
+    private var adsConfigMap: MutableMap<Long, AdBreakConfig?>? = null
 
     private val DEFAULT_AD_INDEX: Int = Int.MIN_VALUE
     private val PREROLL_AD_INDEX: Int = 0
     private var POSTROLL_AD_INDEX: Int = 0
 
-    private var currentAdIndexPosition: Int = DEFAULT_AD_INDEX
-    private var nextAdIndexForMonitoring: Int = DEFAULT_AD_INDEX
+    private var currentAdBreakIndexPosition: Int = DEFAULT_AD_INDEX // For each ad Break 0, 15, 30, -1
+    private var currentAdPodIndexPosition: Int = DEFAULT_AD_INDEX // For each ad pod 1 of 2, 2 of 2 so monitor this value
+    private var nextAdBreakIndexForMonitoring: Int = DEFAULT_AD_INDEX // For Next ad Break 0, 15, 30, -1
     private var adPlaybackTriggered: Boolean = false
     private var isPlayerSeeking: Boolean = false
 
@@ -77,7 +78,7 @@ class PKAdvertisingController: PKAdvertising {
             cuePointsList?.let {
                 if (it.isNotEmpty()) {
                     // Update next Ad index for monitoring
-                    nextAdIndexForMonitoring = 0
+                    nextAdBreakIndexForMonitoring = 0
                 }
             }
         }
@@ -96,13 +97,13 @@ class PKAdvertisingController: PKAdvertising {
     private fun subscribeToPlayerAndAdEvents() {
         player?.addListener(this, PlayerEvent.playheadUpdated) { event ->
             cuePointsList?.let { list ->
-                if (!isPlayerSeeking && event.position >= list[nextAdIndexForMonitoring] && list[nextAdIndexForMonitoring] != list.last && !adPlaybackTriggered) {
-                    log.d("playheadUpdated ${event.position} & nextAdIndexForMonitoring is $nextAdIndexForMonitoring & nextAdForMonitoring ad position is = ${cuePointsList?.get(nextAdIndexForMonitoring)}")
+                if (!isPlayerSeeking && event.position >= list[nextAdBreakIndexForMonitoring] && list[nextAdBreakIndexForMonitoring] != list.last && !adPlaybackTriggered) {
+                    log.d("playheadUpdated ${event.position} & nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring & nextAdForMonitoring ad position is = ${cuePointsList?.get(nextAdBreakIndexForMonitoring)}")
                     log.d("nextAdForMonitoring ad position is = $list")
                     // TODO: handle situation of player.pause or content_pause_requested
                     // (because there is a delay while loading the ad
                     adPlaybackTriggered = true
-                    getAdFromAdConfigMap(nextAdIndexForMonitoring)?.let { adUrl ->
+                    getAdFromAdConfigMap(nextAdBreakIndexForMonitoring)?.let { adUrl ->
                         playAd(adUrl)
                     }
                 }
@@ -131,20 +132,21 @@ class PKAdvertisingController: PKAdvertising {
                     val nextAdPosition = getImmediateNextAdPosition(player?.currentPosition)
                     if (nextAdPosition > 0) {
                         log.d("Ad found on the right side of ad list, update the current and next ad Index")
-                        nextAdIndexForMonitoring = nextAdPosition
+                        nextAdBreakIndexForMonitoring = nextAdPosition
                     }
                 }
             }
         }
 
         player?.addListener(this, PlayerEvent.ended) {
+            log.d("PlayerEvent.ended came = ${player?.currentPosition}" )
             if (hasPostRoll()) {
                 getAdFromAdConfigMap(POSTROLL_AD_INDEX)?.let {
                     playAd(it)
                 }
             } else {
-                currentAdIndexPosition = DEFAULT_AD_INDEX
-                nextAdIndexForMonitoring = DEFAULT_AD_INDEX
+                currentAdBreakIndexPosition = DEFAULT_AD_INDEX
+                nextAdBreakIndexForMonitoring = DEFAULT_AD_INDEX
                 adPlaybackTriggered = false
             }
         }
@@ -155,6 +157,7 @@ class PKAdvertisingController: PKAdvertising {
 
         player?.addListener(this, AdEvent.contentResumeRequested) {
             log.d("contentResumeRequested ${player?.currentPosition}")
+            playContent()
 //            player?.currentPosition?.let { currentPosition ->
 //                if (currentPosition >= 0L) {
 //                    cuePointsList?.peek()?.let {
@@ -215,7 +218,7 @@ class PKAdvertisingController: PKAdvertising {
 
         player?.addListener(this, AdEvent.completed) {
             //  isCustomAdTriggered = false
-            log.d("completed")
+            log.d("AdEvent.completed")
             adPlaybackTriggered = false
             changeAdPodState(AdState.PLAYED)
         }
@@ -244,7 +247,7 @@ class PKAdvertisingController: PKAdvertising {
             log.d("AdEvent.error ${it}")
             adPlaybackTriggered = false
             if (it.error.errorType != PKAdErrorType.VIDEO_PLAY_ERROR) {
-                val ad = getAdFromAdConfigMap(currentAdIndexPosition)
+                val ad = getAdFromAdConfigMap(currentAdBreakIndexPosition)
                 if (ad.isNullOrEmpty()) {
                     log.d("Ad is completely errored $it")
                     changeAdPodState(AdState.ERROR)
@@ -253,13 +256,13 @@ class PKAdvertisingController: PKAdvertising {
                     playAd(ad)
                 }
             } else {
-                log.d("PKAdErrorType.VIDEO_PLAY_ERROR currentAdIndexPosition = $currentAdIndexPosition")
+                log.d("PKAdErrorType.VIDEO_PLAY_ERROR currentAdIndexPosition = $currentAdBreakIndexPosition")
                 cuePointsList?.let { cueList ->
-                    val adPosition: Long = cueList[currentAdIndexPosition]
-                    if (currentAdIndexPosition < cueList.size - 1 && adPosition != -1L) {
+                    val adPosition: Long = cueList[currentAdBreakIndexPosition]
+                    if (currentAdBreakIndexPosition < cueList.size - 1 && adPosition != -1L) {
                         // Update next Ad index for monitoring
-                        nextAdIndexForMonitoring = currentAdIndexPosition + 1
-                        log.d("nextAdIndexForMonitoring is $nextAdIndexForMonitoring")
+                        nextAdBreakIndexForMonitoring = currentAdBreakIndexPosition + 1
+                        log.d("nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring")
                     }
                 }
             }
@@ -276,12 +279,12 @@ class PKAdvertisingController: PKAdvertising {
                     getAdPodConfigMap(adPosition)?.let {
                         adUrl = fetchPlayableAdFromAdsList(it)
                         adUrl?.let {
-                            currentAdIndexPosition = adIndex
-                            log.d("currentAdIndexPosition is ${currentAdIndexPosition}")
-                            if (currentAdIndexPosition < cuePointsList.size - 1 && adPosition != -1L) {
+                            currentAdBreakIndexPosition = adIndex
+                            log.d("currentAdIndexPosition is ${currentAdBreakIndexPosition}")
+                            if (currentAdBreakIndexPosition < cuePointsList.size - 1 && adPosition != -1L) {
                                 // Update next Ad index for monitoring
-                                nextAdIndexForMonitoring = currentAdIndexPosition + 1
-                                log.d("nextAdIndexForMonitoring is $nextAdIndexForMonitoring")
+                                nextAdBreakIndexForMonitoring = currentAdBreakIndexPosition + 1
+                                log.d("nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring")
                             }
                         }
                     }
@@ -293,30 +296,30 @@ class PKAdvertisingController: PKAdvertising {
     }
 
     @Nullable
-    private fun getAdPodConfigMap(position: Long?): AdPodConfig? {
-        var adPodConfig: AdPodConfig? = null
+    private fun getAdPodConfigMap(position: Long?): AdBreakConfig? {
+        var adBreakConfig: AdBreakConfig? = null
         advertisingTree?.let { _ ->
             adsConfigMap?.let { adsMap ->
                 if (adsMap.contains(position)) {
-                    adPodConfig = adsMap[position]
+                    adBreakConfig = adsMap[position]
                 }
             }
         }
 
-        log.d("getAdPodConfigMap AdPodConfig is $adPodConfig and podState is ${adPodConfig?.adPodState}")
-        return adPodConfig
+        log.d("getAdPodConfigMap AdPodConfig is $adBreakConfig and podState is ${adBreakConfig?.adBreakState}")
+        return adBreakConfig
     }
 
     @Nullable
-    private fun fetchPlayableAdFromAdsList(adPodConfig: AdPodConfig?): String? {
-        log.d("fetchPlayableAdFromAdsList AdPodConfig position is ${adPodConfig?.adPosition}")
+    private fun fetchPlayableAdFromAdsList(adBreakConfig: AdBreakConfig?): String? {
+        log.d("fetchPlayableAdFromAdsList AdPodConfig position is ${adBreakConfig?.adPosition}")
         var adTagUrl: String? = null
 
-        when (adPodConfig?.adPodState) {
+        when (adBreakConfig?.adBreakState) {
             AdState.READY -> {
                 log.d("I am in ready State and getting the first ad Tag.")
-                adPodConfig.adList?.let { adUrlList ->
-                    adPodConfig.adPodState = AdState.PLAYING
+                adBreakConfig.adList?.let { adUrlList ->
+                    adBreakConfig.adBreakState = AdState.PLAYING
                     if (adUrlList.isNotEmpty()) {
                         adTagUrl = adUrlList[0].ad
                         adUrlList[0].adState = AdState.PLAYING
@@ -326,9 +329,11 @@ class PKAdvertisingController: PKAdvertising {
 
             AdState.PLAYING -> {
                 log.d("I am in Playing State and checking for the next ad Tag.")
-                adPodConfig.adList?.let { adUrlList ->
+                adBreakConfig.adList?.let { adUrlList ->
                     for (specificAd: Ad in adUrlList) {
-                        if (specificAd.adState == AdState.PLAYING) {
+                        log.w("specificAd State ${specificAd.adState}")
+                        log.w("specificAd ${specificAd.ad}")
+                        if (specificAd.adState == AdState.PLAYING || specificAd.adState == AdState.ERROR) {
                             specificAd.adState = AdState.ERROR
                         } else {
                             adTagUrl = specificAd.ad
@@ -349,13 +354,13 @@ class PKAdvertisingController: PKAdvertising {
             cuePointsList?.let { cuePointsList ->
                 if (cuePointsList.isNotEmpty()) {
                     adsConfigMap?.let { adsMap ->
-                        if (currentAdIndexPosition != DEFAULT_AD_INDEX) {
-                            val adPosition: Long = cuePointsList[currentAdIndexPosition]
-                            val adPodConfig: AdPodConfig? = adsMap[adPosition]
-                            adPodConfig?.let { adPod ->
+                        if (currentAdBreakIndexPosition != DEFAULT_AD_INDEX) {
+                            val adPosition: Long = cuePointsList[currentAdBreakIndexPosition]
+                            val adBreakConfig: AdBreakConfig? = adsMap[adPosition]
+                            adBreakConfig?.let { adPod ->
                                 log.d("AdState is changed for AdPod position ${adPod.adPosition}")
                                 //TODO: Change internal ad index state which eventually was played after waterfalling
-                                adPod.adPodState = adState
+                                adPod.adBreakState = adState
                                 // cuePointsList.remove(adPosition)
                                 // currentAdIndexPosition = DEFAULT_AD_INDEX
                             }
@@ -487,7 +492,7 @@ class PKAdvertisingController: PKAdvertising {
 
         adsConfigMap?.let {
             it.forEach { (key, value) ->
-                if (key > 0L && (value?.adPodState != AdState.PLAYED || value.adPodState != AdState.ERROR)) {
+                if (key > 0L && (value?.adBreakState != AdState.PLAYED || value.adBreakState != AdState.ERROR)) {
                     isAllAdsPlayed = false
                 }
             }
