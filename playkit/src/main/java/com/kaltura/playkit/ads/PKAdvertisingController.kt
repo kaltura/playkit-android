@@ -1,17 +1,14 @@
 package com.kaltura.playkit.ads
 
 import androidx.annotation.Nullable
-import com.kaltura.playkit.MessageBus
-import com.kaltura.playkit.PKLog
-import com.kaltura.playkit.Player
-import com.kaltura.playkit.PlayerEvent
+import com.kaltura.playkit.*
 import com.kaltura.playkit.plugins.ads.AdEvent
 import java.util.*
 
 /**
  * Controller to handle the Custom Ad playback
  */
-class PKAdvertisingController: PKAdvertising {
+class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
     private val log = PKLog.get(PKAdvertisingController::class.java.simpleName)
     private var player: Player? = null
@@ -47,7 +44,7 @@ class PKAdvertisingController: PKAdvertising {
      */
     fun setAdvertising(advertisingConfig: AdvertisingConfig) {
         this.advertisingConfig = advertisingConfig
-        adController?.advertisingConfigured(true)
+        adController?.setAdvertisingConfig(true, this)
         advertisingTree = AdvertisingTree(advertisingConfig)
         cuePointsList = advertisingTree?.getCuePointsList()
         log.d("cuePointsList $cuePointsList")
@@ -57,7 +54,7 @@ class PKAdvertisingController: PKAdvertising {
     fun setPlayer(player: Player, messageBus: MessageBus) {
         this.player = player
         this.messageBus = messageBus
-        subscribeToPlayerAndAdEvents()
+        subscribeToPlayerEvents()
     }
 
     /**
@@ -94,7 +91,7 @@ class PKAdvertisingController: PKAdvertising {
 
     //  15230  15800/ 1000 => 15 * 1000 => 15000 // TOD0: Check what will happen if app passed 15100 and 15500
 
-    private fun subscribeToPlayerAndAdEvents() {
+    private fun subscribeToPlayerEvents() {
         player?.addListener(this, PlayerEvent.playheadUpdated) { event ->
             cuePointsList?.let { list ->
                 if (!isPlayerSeeking && event.position >= list[nextAdBreakIndexForMonitoring] && list[nextAdBreakIndexForMonitoring] != list.last && !adPlaybackTriggered) {
@@ -157,15 +154,6 @@ class PKAdvertisingController: PKAdvertising {
 
         player?.addListener(this, AdEvent.contentResumeRequested) {
             log.d("contentResumeRequested ${player?.currentPosition}")
-            playContent()
-//            player?.currentPosition?.let { currentPosition ->
-//                if (currentPosition >= 0L) {
-//                    cuePointsList?.peek()?.let {
-//                        nextAdIndexForMonitoring = it
-//                        adPlaybackTriggered = false
-//                    }
-//                }
-//            }
         }
 
         player?.addListener(this, AdEvent.contentPauseRequested) {
@@ -219,13 +207,6 @@ class PKAdvertisingController: PKAdvertising {
         player?.addListener(this, AdEvent.completed) {
             //  isCustomAdTriggered = false
             log.d("AdEvent.completed")
-            adPlaybackTriggered = false
-            val adUrl = getAdFromAdConfigMap(currentAdBreakIndexPosition)
-            if (adUrl != null) {
-                playAd(adUrl)
-            } else {
-                changeAdPodState(AdState.PLAYED)
-            }
         }
 
         player?.addListener(this, AdEvent.firstQuartile) {
@@ -249,26 +230,66 @@ class PKAdvertisingController: PKAdvertising {
         }
 
         player?.addListener(this, AdEvent.error) {
-            log.d("AdEvent.error ${it}")
-            adPlaybackTriggered = false
-            if (it.error.errorType != PKAdErrorType.VIDEO_PLAY_ERROR) {
-                val ad = getAdFromAdConfigMap(currentAdBreakIndexPosition)
-                if (ad.isNullOrEmpty()) {
-                    log.d("Ad is completely errored $it")
-                    changeAdPodState(AdState.ERROR)
-                } else {
-                    log.d("Playing next waterfalling ad")
-                    playAd(ad)
-                }
+            log.d("AdEvent.error $it")
+        }
+    }
+
+    override fun allAdsCompleted() {
+        log.w("allAdsCompleted callback")
+        adPlaybackTriggered = false
+        changeAdState(AdState.PLAYED, AdrollType.AD)
+        val adUrl = getAdFromAdConfigMap(currentAdBreakIndexPosition)
+        if (adUrl != null) {
+            playAd(adUrl)
+        } else {
+            changeAdState(AdState.PLAYED, AdrollType.ADBREAK)
+            playContent()
+        }
+    }
+
+    override fun contentResumeRequested() {
+        log.w("contentResumeRequested callback ${player?.currentPosition}")
+        playContent()
+//            player?.currentPosition?.let { currentPosition ->
+//                if (currentPosition >= 0L) {
+//                    cuePointsList?.peek()?.let {
+//                        nextAdIndexForMonitoring = it
+//                        adPlaybackTriggered = false
+//                    }
+//                }
+//            }
+    }
+
+    override fun contentPauseRequested() {
+        log.w("contentPauseRequested callback")
+    }
+
+    override fun adCompleted() {
+        log.w("adCompleted callback")
+    }
+
+    override fun adError(error: AdEvent.Error) {
+        log.e("AdEvent.error callback $error")
+        adPlaybackTriggered = false
+        if (error.error.errorType != PKAdErrorType.VIDEO_PLAY_ERROR) {
+            val ad = getAdFromAdConfigMap(currentAdBreakIndexPosition)
+            if (ad.isNullOrEmpty()) {
+                log.d("Ad is completely errored $error")
+                changeAdState(AdState.ERROR, AdrollType.ADBREAK)
+                playContent()
             } else {
-                log.d("PKAdErrorType.VIDEO_PLAY_ERROR currentAdIndexPosition = $currentAdBreakIndexPosition")
-                cuePointsList?.let { cueList ->
-                    val adPosition: Long = cueList[currentAdBreakIndexPosition]
-                    if (currentAdBreakIndexPosition < cueList.size - 1 && adPosition != -1L) {
-                        // Update next Ad index for monitoring
-                        nextAdBreakIndexForMonitoring = currentAdBreakIndexPosition + 1
-                        log.d("nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring")
-                    }
+                log.d("Playing next waterfalling ad")
+                changeAdState(AdState.ERROR, AdrollType.ADPOD)
+                playAd(ad)
+            }
+        } else {
+            log.d("PKAdErrorType.VIDEO_PLAY_ERROR currentAdIndexPosition = $currentAdBreakIndexPosition")
+            cuePointsList?.let { cueList ->
+                val adPosition: Long = cueList[currentAdBreakIndexPosition]
+                if (currentAdBreakIndexPosition < cueList.size - 1 && adPosition != -1L) {
+                    // Update next Ad index for monitoring
+                    nextAdBreakIndexForMonitoring = currentAdBreakIndexPosition + 1
+                    log.d("nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring")
                 }
             }
         }
@@ -282,14 +303,16 @@ class PKAdvertisingController: PKAdvertising {
                 val adPosition: Long = cuePointsList[adIndex]
                 adsConfigMap?.let { adsMap ->
                     getAdPodConfigMap(adPosition)?.let {
-                        adUrl = fetchPlayableAdFromAdsList(it)
-                        adUrl?.let {
-                            currentAdBreakIndexPosition = adIndex
-                            log.d("currentAdIndexPosition is ${currentAdBreakIndexPosition}")
-                            if (currentAdBreakIndexPosition < cuePointsList.size - 1 && adPosition != -1L) {
-                                // Update next Ad index for monitoring
-                                nextAdBreakIndexForMonitoring = currentAdBreakIndexPosition + 1
-                                log.d("nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring")
+                        if (it.adBreakState == AdState.PLAYING || it.adBreakState == AdState.READY) {
+                            adUrl = fetchPlayableAdFromAdsList(it)
+                            adUrl?.let {
+                                currentAdBreakIndexPosition = adIndex
+                                log.d("currentAdIndexPosition is ${currentAdBreakIndexPosition}")
+                                if (currentAdBreakIndexPosition < cuePointsList.size - 1 && adPosition != -1L) {
+                                    // Update next Ad index for monitoring
+                                    nextAdBreakIndexForMonitoring = currentAdBreakIndexPosition + 1
+                                    log.d("nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring")
+                                }
                             }
                         }
                     }
@@ -368,6 +391,10 @@ class PKAdvertisingController: PKAdvertising {
         for (adPodConfig: AdPodConfig in adPodList) {
             when(adPodConfig.adPodState) {
 
+                AdState.ERROR, AdState.PLAYED -> {
+                    continue
+                }
+
                 AdState.READY -> {
                     log.i("getAdFromAdPod -> I am in ready State and getting the first ad Tag.")
                     adPodConfig.adList?.let {
@@ -403,19 +430,13 @@ class PKAdvertisingController: PKAdvertising {
                         }
                     }
                 }
-
-                AdState.ERROR, AdState.PLAYED -> {
-                    continue
-                }
-
             }
-
         }
 
         return adUrl
     }
 
-    private fun changeAdPodState(adState: AdState) {
+    private fun changeAdState(adState: AdState, adrollType: AdrollType) {
         log.d("changeAdPodState AdState is $adState")
         advertisingTree?.let { _ ->
             cuePointsList?.let { cuePointsList ->
@@ -427,7 +448,23 @@ class PKAdvertisingController: PKAdvertising {
                             adBreakConfig?.let { adBreak ->
                                 log.d("AdState is changed for AdPod position ${adBreak.adPosition}")
                                 //TODO: Change internal ad index state which eventually was played after waterfalling
-                                adBreak.adBreakState = adState
+                                if (adrollType == AdrollType.ADBREAK) {
+                                    adBreak.adBreakState = adState
+                                }
+
+                                adBreak.adPodList?.forEach {
+                                    if (adrollType == AdrollType.ADBREAK && it.adPodState == AdState.PLAYING) {
+                                        it.adPodState = adState
+                                    }
+                                    it.adList?.forEach { ad ->
+                                        if (adrollType == AdrollType.AD && ad.adState == AdState.PLAYING) {
+                                            if (ad.adState != AdState.ERROR) {
+                                                it.adPodState = adState
+                                            }
+                                            ad.adState = adState
+                                        }
+                                    }
+                                }
                                 // cuePointsList.remove(adPosition)
                                 // currentAdIndexPosition = DEFAULT_AD_INDEX
                             }

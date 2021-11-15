@@ -8,7 +8,10 @@ data class AdvertisingConfig(val ads: List<AdBreak?>?)// TODO: change it to ADBr
 /**
  *                                                 -> Ad 1 -> List of Ads (Ad Waterfalling may occur here)
  *  AdBreak -> Position, AdPod -> List Of Ads --->|
- *                                                 -> Ad 2 -> List Of Ads  (Ad Waterfalling may occur here)
+ *                                                 -> Ad 2 -> List Of Ads  (Ad Waterfalling may occur here)1, 2, 3
+ *
+ *                                                 2 adpods 1, 2
+ *                                                  2ads
  *
  */
 data class AdBreak(val position: Long, val ads: List<List<String>>)

@@ -125,7 +125,7 @@ public class DefaultDAIAdControllerImpl implements AdController {
     }
 
     @Override
-    public void advertisingConfigured(boolean isConfigured) {
+    public void setAdvertisingConfig(boolean isConfigured, IMAEventsListener imaEventsListener) {
         // advertisingConfigured is not supported for DAI
     }
 

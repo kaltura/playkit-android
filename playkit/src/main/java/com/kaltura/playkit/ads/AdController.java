@@ -29,7 +29,7 @@ public interface AdController extends PKController {
 
     default void setVolume(float volume) {}
 
-    void advertisingConfigured(boolean isConfigured);
+    void setAdvertisingConfig(boolean isConfigured, IMAEventsListener imaEventsListener);
 
     void playAdNow(String adTagUrl);
     

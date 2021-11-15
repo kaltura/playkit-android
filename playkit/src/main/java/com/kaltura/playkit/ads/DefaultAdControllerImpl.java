@@ -122,9 +122,9 @@ public class DefaultAdControllerImpl implements AdController {
     }
 
     @Override
-    public void advertisingConfigured(boolean isConfigured) {
+    public void setAdvertisingConfig(boolean isConfigured, IMAEventsListener imaEventsListener) {
         if (adsProvider != null) {
-            adsProvider.advertisingConfigured(isConfigured);
+            adsProvider.setAdvertisingConfig(isConfigured, imaEventsListener);
         }
     }
 

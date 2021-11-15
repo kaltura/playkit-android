@@ -264,9 +264,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
-    public void advertisingConfigured(boolean isConfigured) {
+    public void setAdvertisingConfig(boolean isConfigured, IMAEventsListener imaEventsListener) {
         if (adsProvider != null) {
-            adsProvider.advertisingConfigured(isConfigured);
+            adsProvider.setAdvertisingConfig(isConfigured, imaEventsListener);
         }
     }
 

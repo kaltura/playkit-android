@@ -142,6 +142,13 @@ enum class AdState {
     ERROR
 }
 
+// Ad's State
+enum class AdrollType {
+    ADBREAK,
+    ADPOD,
+    AD
+}
+
 
 
 

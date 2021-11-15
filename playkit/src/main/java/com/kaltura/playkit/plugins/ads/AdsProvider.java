@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.plugins.ads;
 
+import com.kaltura.playkit.ads.IMAEventsListener;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdPluginType;
 import com.kaltura.playkit.ads.PKAdProviderListener;
@@ -30,7 +31,7 @@ public interface AdsProvider {
 
     void contentCompleted();
     
-    default void advertisingConfigured(boolean isConfigured) {}
+    default void setAdvertisingConfig(boolean isConfigured, IMAEventsListener imaEventsListener) {}
 
     default void playAdNow(String adTagUrl) {}
 
