@@ -456,6 +456,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                                     if (adrollType == AdrollType.ADBREAK && it.adPodState == AdState.PLAYING) {
                                         it.adPodState = adState
                                     }
+                                    var isAdPodCompletelyErrored = 0
                                     it.adList?.forEach { ad ->
                                         if (adrollType == AdrollType.AD && ad.adState == AdState.PLAYING) {
                                             if (ad.adState != AdState.ERROR) {
@@ -463,6 +464,12 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                                             }
                                             ad.adState = adState
                                         }
+                                        if (ad.adState != AdState.ERROR) {
+                                            isAdPodCompletelyErrored++
+                                        }
+                                    }
+                                    if (isAdPodCompletelyErrored == 0) {
+                                        it.adPodState = AdState.ERROR
                                     }
                                 }
                                 // cuePointsList.remove(adPosition)
