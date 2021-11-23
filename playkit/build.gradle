@@ -60,7 +60,7 @@ dependencies {
     compileOnly 'org.checkerframework:checker-qual:' + checkerframeworkVersion
     compileOnly 'org.checkerframework:checker-compat-qual:' + checkerframeworkCompatVersion
 
-    def     guavaVersion = '27.1-android'
+    def guavaVersion = '27.1-android'
 
     api ('com.google.guava:guava:' + guavaVersion) {
         exclude group: 'org.checkerframework', module: 'checker-compat-qual'
