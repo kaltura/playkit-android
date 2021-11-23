@@ -13,6 +13,7 @@ android {
         targetSdkVersion 30
         versionName playkitVersion  // defined in version.gradle
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String","VERSION_NAME","\"${playkitVersion}\"")
     }
     buildTypes {
         release {
