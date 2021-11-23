@@ -13,6 +13,8 @@ internal class AdvertisingTree(advertisingConfig: AdvertisingConfig?) {
     private val log = PKLog.get(AdvertisingTree::class.java.simpleName)
     private var adsConfigMap: MutableMap<Long, AdBreakConfig?>? = null // TODO: Check the condition having 0sec -> 1sec (how video view is getting removed)
     private var cuePointsList: LinkedList<Long>? = null
+    private var isMidrollFrequencyBased = false
+    private var midrollFrequency = Long.MIN_VALUE
 
     init {
         advertisingConfig?.let {
@@ -27,16 +29,38 @@ internal class AdvertisingTree(advertisingConfig: AdvertisingConfig?) {
         advertisingConfig.ads?.let { adBreaks ->
             val adBreaksList = ArrayList<AdBreakConfig>()
             cuePointsList = LinkedList()
+
             for (adBreak: AdBreak? in adBreaks) {
                 adBreak?.let { singleAdBreak ->
+
+                    if (!isMidrollFrequencyBased && adBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
+                        isMidrollFrequencyBased = true
+                        midrollFrequency = singleAdBreak.position
+                    } else if (isMidrollFrequencyBased && adBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
+                        log.w("There should not be multiple Midrolls for AdBreakPositionType EVERY.\n" +
+                                "Keep One MidRoll ad which will play at the given second.")
+
+                        // TODO:
+                        isMidrollFrequencyBased = false
+                        return
+                    }
+
                     val adPodConfigList = parseAdPodConfig(singleAdBreak)
                     // Create ad break list and mark them ready
-                    val adBreakConfig = AdBreakConfig(singleAdBreak.position, AdState.READY, adPodConfigList)
+                    val adBreakConfig = AdBreakConfig(singleAdBreak.adBreakPositionType, singleAdBreak.position, AdState.READY, adPodConfigList)
                     adBreaksList.add(adBreakConfig)
                 }
             }
             sortAdsByPosition(adBreaksList)
         }
+    }
+
+    fun isMidrollFrequencyBased(): Boolean {
+        return isMidrollFrequencyBased
+    }
+
+    fun getMidrollFrequency(): Long {
+        return midrollFrequency
     }
 
     /**
@@ -126,7 +150,7 @@ internal class AdvertisingTree(advertisingConfig: AdvertisingConfig?) {
 }
 
 // Ad Break Config
-internal data class AdBreakConfig(val adPosition: Long, var adBreakState: AdState, val adPodList: List<AdPodConfig>?)
+internal data class AdBreakConfig(val adBreakPositionType: AdBreakPositionType, val adPosition: Long, var adBreakState: AdState, val adPodList: List<AdPodConfig>?)
 
 // Ad list contains waterfalling ads as well.
 internal data class AdPodConfig(var adPodState: AdState, val adList: List<Ad>?)

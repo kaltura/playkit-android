@@ -14,7 +14,23 @@ data class AdvertisingConfig(val ads: List<AdBreak?>?)// TODO: change it to ADBr
  *                                                  2ads
  *
  */
-data class AdBreak(val position: Long, val ads: List<List<String>>)
+data class AdBreak(var adBreakPositionType: AdBreakPositionType, var position: Long, val ads: List<List<String>>) {
+    init {
+        if (adBreakPositionType == null) {
+            adBreakPositionType = AdBreakPositionType.POSITION
+        }
+
+        if (adBreakPositionType == AdBreakPositionType.POSITION || adBreakPositionType == AdBreakPositionType.EVERY) {
+            position = if (position > 0) (position * 1000) else position // Convert to miliseconds
+        }
+    }
+}
+
+enum class AdBreakPositionType {
+    POSITION, // Play AdBreak at this specific second
+    PERCENTAGE, // Play AdBreak at nth percentage (Position percentage of the media length)
+    EVERY // Play AdBreak at every n seconds (60 means on every 1 min ad will be played)
+}
 //{
 //    constructor(ads: List<String>): this(Long.MIN_VALUE, ads)
 //    constructor(ad: String): this(Long.MIN_VALUE, listOf(ad))
