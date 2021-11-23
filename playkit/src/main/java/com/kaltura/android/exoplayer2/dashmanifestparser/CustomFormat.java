@@ -137,14 +137,14 @@ public final class CustomFormat implements Parcelable {
         private int rotationDegrees;
         private float pixelWidthHeightRatio;
         @Nullable private byte[] projectionData;
-        @C.StereoMode private int stereoMode;
+        private int stereoMode;
         @Nullable private ColorInfo colorInfo;
 
         // Audio specific.
 
         private int channelCount;
         private int sampleRate;
-        @C.PcmEncoding private int pcmEncoding;
+        private int pcmEncoding;
         private int encoderDelay;
         private int encoderPadding;
 

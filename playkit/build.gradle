@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 apply from: 'version.gradle'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -13,6 +13,7 @@ android {
         targetSdkVersion 30
         versionName playkitVersion  // defined in version.gradle
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String","VERSION_NAME","\"${playkitVersion}\"")
     }
     buildTypes {
         release {
@@ -59,7 +60,7 @@ dependencies {
     compileOnly 'org.checkerframework:checker-qual:' + checkerframeworkVersion
     compileOnly 'org.checkerframework:checker-compat-qual:' + checkerframeworkCompatVersion
 
-    def     guavaVersion = '27.1-android'
+    def guavaVersion = '27.1-android'
 
     api ('com.google.guava:guava:' + guavaVersion) {
         exclude group: 'org.checkerframework', module: 'checker-compat-qual'
