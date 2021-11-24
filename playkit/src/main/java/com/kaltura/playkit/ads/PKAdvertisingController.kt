@@ -67,7 +67,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     fun playAdvertising() {
         if (hasPostRoll()) {
-            POSTROLL_AD_INDEX = cuePointsList?.size?.minus(1)!!
+            cuePointsList?.let {
+                POSTROLL_AD_INDEX = if (it.size > 1) it.size.minus(1) else 0
+                nextAdBreakIndexForMonitoring = POSTROLL_AD_INDEX
+            }
         }
 
         if (hasPreRoll()) {
