@@ -75,14 +75,18 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             if (preRollAdUrl != null) {
                 playAd(preRollAdUrl)
             }
-        } else if (midRollAdsCount() > 0){
-            cuePointsList?.let {
-                if (it.isNotEmpty()) {
-                    // Update next Ad index for monitoring
-                    nextAdBreakIndexForMonitoring = 0
+        } else {
+            if (midRollAdsCount() > 0) {
+                cuePointsList?.let {
+                    if (it.isNotEmpty()) {
+                        // Update next Ad index for monitoring
+                        nextAdBreakIndexForMonitoring = 0
+                    }
                 }
             }
-            playContent()
+            // In case if there is no Preroll ad
+            // prepare the content player
+            prepareContentPlayer()
         }
     }
 
@@ -580,6 +584,14 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     private fun playContent() {
         player?.play()
+    }
+
+    /**
+     * Prepare content player by passing empty ad tag
+     * Empty ad tag will trigger preparePlayer inside IMAPlugin
+     */
+    private fun prepareContentPlayer() {
+        playAd("")
     }
 
     /**
