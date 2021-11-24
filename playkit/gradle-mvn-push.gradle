@@ -31,6 +31,7 @@ afterEvaluate { project ->
 
                 groupId = GROUP
                 artifactId = POM_ARTIFACT_ID
+                
                 VERSION_NAME = playkitVersion
                 version = VERSION_NAME
 
