@@ -23,7 +23,6 @@ def getRepositoryPassword() {
     return System.getenv("NEXUS_PASSWORD")
 }
 
-
 afterEvaluate { project ->
     publishing {
         publications {
