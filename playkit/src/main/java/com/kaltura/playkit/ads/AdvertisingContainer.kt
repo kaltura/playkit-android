@@ -1,0 +1,230 @@
+package com.kaltura.playkit.ads
+
+import androidx.annotation.Nullable
+import com.kaltura.playkit.PKLog
+import java.util.*
+import kotlin.collections.ArrayList
+
+/**
+ * Class to map the Advertising object to our internal helper DataStructure
+ */
+internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
+
+    private val log = PKLog.get(AdvertisingContainer::class.java.simpleName)
+    private var adsConfigMap: MutableMap<Long, AdBreakConfig?>? = null // TODO: Check the condition having 0sec -> 1sec (how video view is getting removed)
+    private var cuePointsList: LinkedList<Long>? = null
+    private var midrollAdPositionType: AdBreakPositionType = AdBreakPositionType.POSITION
+    private var midrollFrequency = Long.MIN_VALUE
+
+    init {
+        advertisingConfig?.let {
+            parseAdTypes(it)
+        }
+    }
+
+    /**
+     * Parse the Ads from the external Ads' data structure
+     */
+    private fun parseAdTypes(advertisingConfig: AdvertisingConfig) {
+        advertisingConfig.advertising?.let { adBreaks ->
+            val adBreaksList = ArrayList<AdBreakConfig>()
+            cuePointsList = LinkedList()
+
+            for (adBreak: AdBreak? in adBreaks) {
+
+                adBreak?.let adBreakLoop@{ singleAdBreak ->
+
+                    // Only one ad can be configured for Every AdBreakPositionType
+
+                    if (midrollAdPositionType == AdBreakPositionType.POSITION && adBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
+                        midrollAdPositionType = AdBreakPositionType.EVERY
+                        midrollFrequency = singleAdBreak.position
+                    } else if (midrollAdPositionType == AdBreakPositionType.EVERY && adBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
+                        log.w("There should not be multiple Midrolls for AdBreakPositionType EVERY.\n" +
+                                "Keep One MidRoll ad which will play at the given second.")
+                        midrollAdPositionType = AdBreakPositionType.POSITION
+                        midrollFrequency = 0L
+                        return@adBreakLoop
+                    }
+
+                    if (adBreak.adBreakPositionType == AdBreakPositionType.PERCENTAGE) {
+                        if (midrollAdPositionType == AdBreakPositionType.EVERY) {
+                            log.w("There should not be a combination of PERCENTAGE and EVERY.")
+                            return@adBreakLoop
+                        }
+                        if (singleAdBreak.position <= 0 || singleAdBreak.position >= 100) {
+                            log.w("AdBreak having PERCENTAGE type \n " +
+                                    "should neither give percentage values less than or equal to 0 nor \n " +
+                                    "greater than or equal to 100.")
+                            return@adBreakLoop
+                        }
+
+                        midrollAdPositionType = AdBreakPositionType.PERCENTAGE
+                    }
+
+                    if (singleAdBreak.adBreakPositionType == AdBreakPositionType.POSITION || singleAdBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
+                        singleAdBreak.position = if (singleAdBreak.position > 0) (singleAdBreak.position * 1000) else singleAdBreak.position // Convert to miliseconds
+                    }
+
+                    val adPodConfigList = parseAdPodConfig(singleAdBreak)
+                    // Create ad break list and mark them ready
+                    val adBreakConfig = AdBreakConfig(singleAdBreak.adBreakPositionType, singleAdBreak.position, AdState.READY, adPodConfigList)
+                    adBreaksList.add(adBreakConfig)
+                }
+            }
+            sortAdsByPosition(adBreaksList)
+        }
+    }
+
+    /**
+     * Parse Each AdBreak. AdBreak may contain list of ad pods
+     * Mark all the ad pods Ready.
+     */
+    private fun parseAdPodConfig(singleAdBreak: AdBreak): List<AdPodConfig> {
+        val adPodConfigList = mutableListOf<AdPodConfig>()
+        for (adPod: List<String>? in singleAdBreak.ads) {
+            val adsList = parseEachAdUrl(adPod)
+            val adPodConfig = AdPodConfig(AdState.READY, adsList)
+            adPodConfigList.add(adPodConfig)
+        }
+        return adPodConfigList
+    }
+
+    /**
+     * AdPod may contain the list of Ads (including waterfalling ads)
+     * Mark all the ads Ready.
+     */
+    private fun parseEachAdUrl(ads: List<String>?): List<Ad> {
+        val adUrls = mutableListOf<Ad>()
+        if (ads != null) {
+            for (url: String in ads) {
+                adUrls.add(Ad(AdState.READY, url))
+            }
+        }
+        return adUrls
+    }
+
+    /**
+     * Sorting ads by position: App can pass the AdBreaks in any sequence
+     * Here we are arranging the ads in Pre(0)/Mid(n)/Post(-1) adroll order
+     * Here Mid(n) n denotes the time/percentage
+     */
+    private fun sortAdsByPosition(adBreaksList: ArrayList<AdBreakConfig>) {
+        if (adBreaksList.isNotEmpty()) {
+            adBreaksList.sortWith(compareBy { it.adPosition })
+            prepareAdsMapAndList(adBreaksList)
+            movePostRollAdToLastInList()
+        }
+    }
+
+    /**
+     * After the Ads sorting, create a map with position and the relevant AdBreakConfig
+     * Prepare a CuePoints List. List is being monitored on the controller level
+     * to understand the current and upcoming cuepoint
+     */
+    private fun prepareAdsMapAndList(adBreakConfigList: ArrayList<AdBreakConfig>) {
+        if (adBreakConfigList.isNotEmpty()) {
+            adsConfigMap = hashMapOf()
+            for (adBreakConfig: AdBreakConfig in adBreakConfigList) {
+                adsConfigMap?.put(adBreakConfig.adPosition, adBreakConfig)
+                cuePointsList?.add(adBreakConfig.adPosition)
+            }
+        }
+    }
+
+    /**
+     * After the sorting -1 will be on the top,
+     * so remove it and put it at the last (Postroll)
+     */
+    private fun movePostRollAdToLastInList() {
+        cuePointsList?.let {
+            if (it.first == -1L) {
+                it.remove(-1)
+            }
+            it.addLast(-1)
+        }
+    }
+
+    /**
+     * Used only if AdBreakPositionType is PERCENTAGE
+     * Remove and Add the Map's Adbreak Position as per the player duration (Replace not allowed for key in Map)
+     * Replace the List's Adbreak Position as per the player duration
+     */
+    fun updatePercentageBasedPosition(playerDuration: Long?) {
+        playerDuration?.let {
+            if (it <= 0) {
+                return
+            }
+        }
+
+        adsConfigMap?.let { adsMap ->
+            val iterator = adsMap.entries.iterator()
+            while (iterator.hasNext()) {
+                val entry = iterator.next()
+                val config = entry.value
+
+                if (config?.adBreakPositionType == AdBreakPositionType.PERCENTAGE) {
+                    playerDuration?.let {
+                        // Copy of adconfig object
+                        val newAdBreakConfig = config.copy()
+                        // Remove the actual adconfig from map
+                        adsMap.remove(config.adPosition)
+
+                        // Update the copied object with updated position for percentage
+                        val oldAdPosition = newAdBreakConfig.adPosition
+                        val updatedPosition = playerDuration.times(oldAdPosition).div(100) // Ex: 23456
+                        val updatedRoundedOfPositionMs = (updatedPosition.div(1000)) * 1000 // It will be changed to 23000
+                        newAdBreakConfig.adPosition = updatedRoundedOfPositionMs
+
+                        // Put back again the object in the map
+                        adsMap.put(newAdBreakConfig.adPosition, newAdBreakConfig)
+
+                        cuePointsList?.forEachIndexed { index, adPosition ->
+                            if (adPosition == oldAdPosition) {
+                                cuePointsList?.set(index, updatedRoundedOfPositionMs)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Get Midroll ad break position type (POSITION, PERCENTAGE, EVERY)
+     */
+    fun getMidrollAdBreakPositionType(): AdBreakPositionType {
+        return midrollAdPositionType
+    }
+
+    /**
+     * If Midroll ad break position type is EVERY
+     * Then at what frequency ad will be played
+     */
+    fun getMidrollFrequency(): Long {
+        return midrollFrequency
+    }
+
+    /**
+     * Getter for CuePoints list
+     */
+    @Nullable
+    fun getCuePointsList(): LinkedList<Long>? {
+        return cuePointsList
+    }
+
+    /**
+     * Get MidRoll ads if there is any
+     */
+    @Nullable
+    fun getAdsConfigMap(): MutableMap<Long, AdBreakConfig?>? {
+        return adsConfigMap
+    }
+}
+
+
+
+
+
+
+
