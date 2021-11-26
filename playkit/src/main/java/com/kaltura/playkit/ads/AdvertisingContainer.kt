@@ -186,6 +186,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
 
                         // Put back again the object in the temp map (Because Iterator doesn't have put method
                         // hence to avoidConcurrentModificationException, need to use temp map and putall the values after the iteration
+                        // Don't use ConcurrentHashmap as it can be overkilling
                         tempMapForUpdatedConfigs?.put(newAdBreakConfig.adPosition, newAdBreakConfig)
                         cuePointsList?.forEachIndexed { index, adPosition ->
                             if (adPosition == oldAdPosition) {
