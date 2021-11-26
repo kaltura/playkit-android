@@ -30,6 +30,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private var nextAdBreakIndexForMonitoring: Int = DEFAULT_AD_INDEX // For Next ad Break 0, 15, 30, -1
     private var adPlaybackTriggered: Boolean = false
     private var isPlayerSeeking: Boolean = false
+    private var isPostrollLeftForPlaying = false
 
     private var midrollAdBreakPositionType: AdBreakPositionType = AdBreakPositionType.POSITION
     private var midrollFrequency = Long.MIN_VALUE
@@ -131,7 +132,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     log.d("nextAdForMonitoring ad position is = $list")
                     // TODO: handle situation of player.pause or content_pause_requested
                     // (because there is a delay while loading the ad
-                    adPlaybackTriggered = true
                     getAdFromAdConfigMap(nextAdBreakIndexForMonitoring, true)?.let { adUrl ->
                         playAd(adUrl)
                     }
@@ -143,7 +143,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     log.d("nextAdForMonitoring ad position is = $list")
                     // TODO: handle situation of player.pause or content_pause_requested
                     // (because there is a delay while loading the ad
-                    adPlaybackTriggered = true
                     getAdFromAdConfigMap(nextAdBreakIndexForMonitoring, false)?.let { adUrl ->
                         playAd(adUrl)
                     }
@@ -163,12 +162,12 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         player?.addListener(this, PlayerEvent.seeked) {
             isPlayerSeeking = false
+            adPlaybackTriggered = false
             log.d("Player seeked for position = ${player?.currentPosition}" )
             if (midRollAdsCount() > 0) {
                 val lastAdPosition = getImmediateLastAdPosition(player?.currentPosition)
                 if (lastAdPosition > 0) {
                     log.d("Ad found on the left side of ad list")
-                    adPlaybackTriggered = true
                     getAdFromAdConfigMap(lastAdPosition, false)?.let { adUrl ->
                         playAd(adUrl)
                     }
@@ -187,8 +186,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         player?.addListener(this, PlayerEvent.ended) {
             log.d("PlayerEvent.ended came = ${player?.currentPosition}" )
             if (hasPostRoll()) {
-                getAdFromAdConfigMap(POSTROLL_AD_INDEX, false)?.let {
-                    playAd(it)
+                if (!adPlaybackTriggered) {
+                    playPostrollAdBreak()
+                } else {
+                    isPostrollLeftForPlaying = true
                 }
             } else {
                 currentAdBreakIndexPosition = DEFAULT_AD_INDEX
@@ -297,6 +298,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             changeAdState(AdState.PLAYED, AdrollType.ADBREAK)
             playContent()
         }
+
+        if (isPostrollLeftForPlaying) {
+            playPostrollAdBreak()
+        }
+        isPostrollLeftForPlaying = false
     }
 
     /**
@@ -348,6 +354,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     log.d("nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring")
                 }
             }
+            playContent()
         }
     }
 
@@ -534,7 +541,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 }
             }
         }
-
+        //TODO: Check te case of bg/fg, calling, network on/off
         return adUrl
     }
 
@@ -633,10 +640,20 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     }
 
     /**
+     * Trigger Postroll ad playback
+     */
+    private fun playPostrollAdBreak() {
+        getAdFromAdConfigMap(POSTROLL_AD_INDEX, false)?.let {
+            playAd(it)
+        }
+    }
+
+    /**
      * Ad Playback
      * Call the play Ad API on IMAPlugin
      */
     private fun playAd(adUrl: String) {
+        adPlaybackTriggered = true
         player?.pause()
         adController?.playAdNow(adUrl)
     }
@@ -645,6 +662,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Content Playback
      */
     private fun playContent() {
+        adPlaybackTriggered = false
         player?.play()
     }
 
@@ -660,14 +678,20 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Check is preRoll ad is present
      */
     private fun hasPreRoll(): Boolean {
-        return cuePointsList?.first == 0L // TODO Protect if first is not there
+        if (cuePointsList?.first != null) {
+            return cuePointsList?.first == 0L
+        }
+        return false
     }
 
     /**
      * Check is postRoll ad is present
      */
     private fun hasPostRoll(): Boolean {
-        return cuePointsList?.last == -1L // TODO Protect if last is not there
+        if (cuePointsList?.last != null) {
+            return cuePointsList?.last == -1L
+        }
+        return false
     }
 
     /**
