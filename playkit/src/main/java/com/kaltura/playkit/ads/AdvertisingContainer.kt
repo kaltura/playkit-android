@@ -2,8 +2,10 @@ package com.kaltura.playkit.ads
 
 import androidx.annotation.Nullable
 import com.kaltura.playkit.PKLog
+import com.kaltura.playkit.utils.Consts
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 /**
  * Class to map the Advertising object to our internal helper DataStructure
@@ -36,6 +38,8 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
 
                     // Only one ad can be configured for Every AdBreakPositionType
 
+                    // TODO: Check pre/post is not passed apart from position
+
                     if (midrollAdPositionType == AdBreakPositionType.POSITION && adBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
                         midrollAdPositionType = AdBreakPositionType.EVERY
                         midrollFrequency = singleAdBreak.position
@@ -63,12 +67,15 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                     }
 
                     if (singleAdBreak.adBreakPositionType == AdBreakPositionType.POSITION || singleAdBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
-                        singleAdBreak.position = if (singleAdBreak.position > 0) (singleAdBreak.position * 1000) else singleAdBreak.position // Convert to miliseconds
+                        singleAdBreak.position = if (singleAdBreak.position > 0) (singleAdBreak.position * Consts.MILLISECONDS_MULTIPLIER) else singleAdBreak.position // Convert to miliseconds
                     }
 
                     val adPodConfigList = parseAdPodConfig(singleAdBreak)
                     // Create ad break list and mark them ready
                     val adBreakConfig = AdBreakConfig(singleAdBreak.adBreakPositionType, singleAdBreak.position, AdState.READY, adPodConfigList)
+                    // TODO: If some one gives midroll equal to duration with postroll
+
+                    // TODO: When I am dropping the every feature.
                     adBreaksList.add(adBreakConfig)
                 }
             }
@@ -158,27 +165,28 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
         }
 
         adsConfigMap?.let { adsMap ->
-            val iterator = adsMap.entries.iterator()
+            val iterator = adsMap.keys.iterator()
+            var tempMapForUpdatedConfigs: HashMap<Long, AdBreakConfig?>? = HashMap(adsMap.size)
             while (iterator.hasNext()) {
                 val entry = iterator.next()
-                val config = entry.value
+                val config = adsMap[entry]
 
                 if (config?.adBreakPositionType == AdBreakPositionType.PERCENTAGE) {
                     playerDuration?.let {
                         // Copy of adconfig object
                         val newAdBreakConfig = config.copy()
                         // Remove the actual adconfig from map
-                        adsMap.remove(config.adPosition)
+                        iterator.remove()
 
                         // Update the copied object with updated position for percentage
                         val oldAdPosition = newAdBreakConfig.adPosition
                         val updatedPosition = playerDuration.times(oldAdPosition).div(100) // Ex: 23456
-                        val updatedRoundedOfPositionMs = (updatedPosition.div(1000)) * 1000 // It will be changed to 23000
+                        val updatedRoundedOfPositionMs = (updatedPosition.div(Consts.MILLISECONDS_MULTIPLIER)) * Consts.MILLISECONDS_MULTIPLIER // It will be changed to 23000
                         newAdBreakConfig.adPosition = updatedRoundedOfPositionMs
 
-                        // Put back again the object in the map
-                        adsMap.put(newAdBreakConfig.adPosition, newAdBreakConfig)
-
+                        // Put back again the object in the temp map (Because Iterator doesn't have put method
+                        // hence to avoidConcurrentModificationException, need to use temp map and putall the values after the iteration
+                        tempMapForUpdatedConfigs?.put(newAdBreakConfig.adPosition, newAdBreakConfig)
                         cuePointsList?.forEachIndexed { index, adPosition ->
                             if (adPosition == oldAdPosition) {
                                 cuePointsList?.set(index, updatedRoundedOfPositionMs)
@@ -187,7 +195,24 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                     }
                 }
             }
+            tempMapForUpdatedConfigs?.let {
+                if (it.isNotEmpty()) {
+                    adsMap.putAll(it)
+                }
+                it.clear()
+            }
+            tempMapForUpdatedConfigs = null
         }
+        sortCuePointsList()
+    }
+
+    /**
+     * Sort the cue points list again
+     * Move the postroll to the last
+     */
+    private fun sortCuePointsList() {
+        cuePointsList?.sort()
+        movePostRollAdToLastInList()
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.kaltura.playkit.ads
 
+import com.kaltura.playkit.utils.Consts
+
 // Collection of classes and enums required for Advertising
 
 /**
@@ -17,7 +19,7 @@ data class AdvertisingConfig(val advertising: List<AdBreak?>?)// TODO: change it
 data class AdBreak(var adBreakPositionType: AdBreakPositionType = AdBreakPositionType.POSITION, var position: Long, val ads: List<List<String>>) {
     init {
         if (adBreakPositionType == AdBreakPositionType.POSITION || adBreakPositionType == AdBreakPositionType.EVERY) {
-            position = if (position > 0) (position * 1000) else position // Convert to miliseconds
+            position = if (position > 0) (position * Consts.MILLISECONDS_MULTIPLIER) else position // Convert to miliseconds // TODO: Use constant for miliseconds
         }
     }
 }
