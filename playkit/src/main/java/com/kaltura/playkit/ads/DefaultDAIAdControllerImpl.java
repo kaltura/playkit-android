@@ -133,6 +133,11 @@ public class DefaultDAIAdControllerImpl implements AdController {
     public void setAllAdsCompleted() {
         // setAllAdsCompleted is not supported for DAI
     }
+
+    @Override
+    public void adControllerPreparePlayer() {
+
+    }
 }
 
 
