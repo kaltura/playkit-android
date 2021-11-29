@@ -35,6 +35,8 @@ public class AdEvent implements PKEvent {
     public static final Class<AdClickedEvent> adClickedEvent = AdClickedEvent.class;
     public static final Class<Error> error = Error.class;
     public static final Class<DAISourceSelected> daiSourceSelected = DAISourceSelected.class;
+    public static final Class<AdWaterFalling> adWaterFalling = AdWaterFalling.class;
+    public static final Class<AdWaterFallingFailed> adWaterFallingFailed = AdWaterFallingFailed.class;
 
     public static final AdEvent.Type adFirstPlay = Type.AD_FIRST_PLAY;
     public static final AdEvent.Type adDisplayedAfterContentPause = Type.AD_DISPLAYED_AFTER_CONTENT_PAUSE;
@@ -219,6 +221,20 @@ public class AdEvent implements PKEvent {
         }
     }
 
+    public static class AdWaterFalling extends AdEvent {
+
+        public AdWaterFalling() {
+            super((Type.AD_WATERFALLING));
+        }
+    }
+
+    public static class AdWaterFallingFailed extends AdEvent {
+
+        public AdWaterFallingFailed() {
+            super((Type.AD_WATERFALLING_FAILED));
+        }
+    }
+
     public enum Type {
         AD_REQUESTED,
         AD_FIRST_PLAY,
@@ -253,7 +269,9 @@ public class AdEvent implements PKEvent {
         AD_BUFFER_END,
         AD_PLAYBACK_INFO_UPDATED,
         ERROR,
-        DAI_SOURCE_SELECTED
+        DAI_SOURCE_SELECTED,
+        AD_WATERFALLING,
+        AD_WATERFALLING_FAILED
     }
 
 

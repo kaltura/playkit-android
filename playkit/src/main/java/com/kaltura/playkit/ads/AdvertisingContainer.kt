@@ -27,8 +27,8 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
     /**
      * Parse the Ads from the external Ads' data structure
      */
-    private fun parseAdTypes(advertisingConfig: AdvertisingConfig) {
-        advertisingConfig.advertising?.let { adBreaks ->
+    private fun parseAdTypes(advertisingConfig: AdvertisingConfig?) {
+        advertisingConfig?.advertising?.let { adBreaks ->
             val adBreaksList = ArrayList<AdBreakConfig>()
             cuePointsList = LinkedList()
 
@@ -66,7 +66,9 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                         midrollAdPositionType = AdBreakPositionType.PERCENTAGE
                     }
 
-                    if (singleAdBreak.adBreakPositionType == AdBreakPositionType.POSITION || singleAdBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
+                    if (advertisingConfig.adTimeUnit == AdTimeUnit.SECONDS &&
+                        (singleAdBreak.adBreakPositionType == AdBreakPositionType.POSITION || singleAdBreak.adBreakPositionType == AdBreakPositionType.EVERY)) {
+
                         singleAdBreak.position = if (singleAdBreak.position > 0) (singleAdBreak.position * Consts.MILLISECONDS_MULTIPLIER) else singleAdBreak.position // Convert to miliseconds
                     }
 
@@ -75,7 +77,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                     val adBreakConfig = AdBreakConfig(singleAdBreak.adBreakPositionType, singleAdBreak.position, AdState.READY, adPodConfigList)
                     // TODO: If some one gives midroll equal to duration with postroll
 
-                    // TODO: When I am dropping the every feature.
+                    // TODO: When I am dropping the every feature. may be 5 second before the media end
                     adBreaksList.add(adBreakConfig)
                 }
             }

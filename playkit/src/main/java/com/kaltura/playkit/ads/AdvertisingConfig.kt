@@ -1,14 +1,12 @@
 package com.kaltura.playkit.ads
 
-import com.kaltura.playkit.utils.Consts
-
 // Collection of classes and enums required for Advertising
 
 /**
  * Advertising configuration
  * Pass the list the AdBreaks
  */
-data class AdvertisingConfig(val advertising: List<AdBreak?>?)// TODO: change it to ADBreak as well
+data class AdvertisingConfig(val advertising: List<AdBreak?>?, val adTimeUnit: AdTimeUnit)// TODO: change it to ADBreak as well
 
 /**
  * AdBreak: Pre, Mid, Post
@@ -16,13 +14,7 @@ data class AdvertisingConfig(val advertising: List<AdBreak?>?)// TODO: change it
  * Each AdPod may contain a list of Ads (List of Ads is being used to do waterfalling)
  * @see <a href="Ad Waterfalling">https://github.com/kaltura/kaltura-player-js/blob/master/docs/advertisement-layout-management.md#waterfalling</a>
  */
-data class AdBreak(var adBreakPositionType: AdBreakPositionType = AdBreakPositionType.POSITION, var position: Long, val ads: List<List<String>>) {
-    init {
-        if (adBreakPositionType == AdBreakPositionType.POSITION || adBreakPositionType == AdBreakPositionType.EVERY) {
-            position = if (position > 0) (position * Consts.MILLISECONDS_MULTIPLIER) else position // Convert to miliseconds // TODO: Use constant for miliseconds
-        }
-    }
-}
+data class AdBreak(var adBreakPositionType: AdBreakPositionType = AdBreakPositionType.POSITION, var position: Long, val ads: List<List<String>>)
 
 /**
  * For Preroll and Postroll, always configure POSITION
@@ -34,6 +26,11 @@ enum class AdBreakPositionType {
     POSITION, // Play AdBreak at this specific second
     PERCENTAGE, // Play AdBreak at nth percentage (Position percentage of the media length)
     EVERY // Play AdBreak at every n seconds (60 means on every 1 min ad will be played)
+}
+
+enum class AdTimeUnit {
+    SECONDS,
+    MILISECONDS
 }
 
 // Ad Break Config

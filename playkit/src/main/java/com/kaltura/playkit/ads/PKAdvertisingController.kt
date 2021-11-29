@@ -36,6 +36,15 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private var midrollFrequency = Long.MIN_VALUE
 
     /**
+     * Player configuration from KalturaPlayer
+     */
+    fun setPlayer(player: Player, messageBus: MessageBus) {
+        this.player = player
+        this.messageBus = messageBus
+        subscribeToPlayerEvents()
+    }
+
+    /**
      * Set the AdController from PlayerLoader level
      * Need to inform IMAPlugin that Advertising is configured
      * before onUpdateMedia call
@@ -56,15 +65,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         checkTypeOfMidrollAdPresent(advertisingContainer?.getMidrollAdBreakPositionType(), 0L)
         cuePointsList = advertisingContainer?.getCuePointsList()
         log.d("cuePointsList $cuePointsList")
-    }
-
-    /**
-     * Player configuration from KalturaPlayer
-     */
-    fun setPlayer(player: Player, messageBus: MessageBus) {
-        this.player = player
-        this.messageBus = messageBus
-        subscribeToPlayerEvents()
     }
 
     /**
