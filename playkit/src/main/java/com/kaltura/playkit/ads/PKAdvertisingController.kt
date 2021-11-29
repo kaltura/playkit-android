@@ -37,15 +37,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private var midrollFrequency = Long.MIN_VALUE
 
     /**
-     * Player configuration from KalturaPlayer
-     */
-    fun setPlayer(player: Player, messageBus: MessageBus) {
-        this.player = player
-        this.messageBus = messageBus
-        subscribeToPlayerEvents()
-    }
-
-    /**
      * Set the AdController from PlayerLoader level
      * Need to inform IMAPlugin that Advertising is configured
      * before onUpdateMedia call
@@ -58,10 +49,41 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Set the actual advertising config object
      * and map it with our internal Advertising tree
      */
-    fun setAdvertising(advertisingConfig: AdvertisingConfig) {
+    fun setAdvertising(advertisingConfig: AdvertisingConfig?) {
+        if (advertisingConfig != null) {
+            initAdvertising(advertisingConfig)
+        } else {
+            log.d("setAdvertising: AdvertisingConfig is null hence cleaning up existing objects.")
+            cleanupAdvertisingConfig()
+        }
+    }
+
+    /**
+     * Player configuration from KalturaPlayer
+     */
+    fun setPlayer(player: Player, messageBus: MessageBus) {
+        this.player = player
+        this.messageBus = messageBus
+        subscribeToPlayerEvents()
+    }
+
+    private fun cleanupAdvertisingConfig() {
+        this.player = null
+        this.messageBus?.removeListeners(this)
+        this.messageBus = null
+
+        this.advertisingConfig = null
+        advertisingContainer = null
+        cuePointsList = null
+        adsConfigMap = null
+        adController?.setAdvertisingConfig(false, null)
+    }
+
+    private fun initAdvertising(advertisingConfig: AdvertisingConfig) {
         this.advertisingConfig = advertisingConfig
+        log.d("initAdvertising")
         adController?.setAdvertisingConfig(true, this)
-        advertisingContainer = AdvertisingContainer(advertisingConfig)
+        advertisingContainer = AdvertisingContainer(this.advertisingConfig)
         adsConfigMap = advertisingContainer?.getAdsConfigMap()
         checkTypeOfMidrollAdPresent(advertisingContainer?.getMidrollAdBreakPositionType(), 0L)
         cuePointsList = advertisingContainer?.getCuePointsList()
@@ -113,7 +135,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     private fun subscribeToPlayerEvents() {
         var adPlayedWithFrequency = 0
-        player?.addListener(this, PlayerEvent.playheadUpdated) { event ->
+        messageBus?.addListener(this, PlayerEvent.playheadUpdated) { event ->
             cuePointsList?.let { list ->
 
                 log.d("nextAdBreakIndexForMonitoring = $nextAdBreakIndexForMonitoring")
@@ -153,23 +175,23 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             }
         }
 
-        player?.addListener(this, PlayerEvent.seeking) {
+        messageBus?.addListener(this, PlayerEvent.seeking) {
             log.d("Player seeking for player position = ${player?.currentPosition} - currentPosition ${it.currentPosition} - targetPosition ${it.targetPosition}" )
             isPlayerSeeking = true
         }
 
-        player?.addListener(this, PlayerEvent.loadedMetadata) {
+        messageBus?.addListener(this, PlayerEvent.loadedMetadata) {
             log.d("loadedMetadata Player duration is = ${player?.duration}" )
             checkTypeOfMidrollAdPresent(advertisingContainer?.getMidrollAdBreakPositionType(), player?.duration)
         }
 
-        player?.addListener(this, PlayerEvent.seeked) {
+        messageBus?.addListener(this, PlayerEvent.seeked) {
             isPlayerSeeking = false
             adPlaybackTriggered = false
             log.d("Player seeked for position = ${player?.currentPosition}" )
             if (midRollAdsCount() > 0) {
                 val lastAdPosition = getImmediateLastAdPosition(player?.currentPosition)
-                if (lastAdPosition > 0) {
+                if (lastAdPosition > 0 || (lastAdPosition == 0 && !hasPreRoll())) {
                     log.d("Ad found on the left side of ad list")
                     getAdFromAdConfigMap(lastAdPosition, false)?.let { adUrl ->
                         playAd(adUrl)
@@ -186,7 +208,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             }
         }
 
-        player?.addListener(this, PlayerEvent.ended) {
+        messageBus?.addListener(this, PlayerEvent.ended) {
             log.d("PlayerEvent.ended came = ${player?.currentPosition}" )
             if (hasPostRoll()) {
                 if (!adPlaybackTriggered) {
@@ -201,88 +223,88 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             }
         }
 
-        player?.addListener(this, AdEvent.started) {
+        messageBus?.addListener(this, AdEvent.started) {
             log.d("started")
         }
 
-        player?.addListener(this, AdEvent.contentResumeRequested) {
+        messageBus?.addListener(this, AdEvent.contentResumeRequested) {
             log.d("contentResumeRequested ${player?.currentPosition}")
         }
 
-        player?.addListener(this, AdEvent.contentPauseRequested) {
+        messageBus?.addListener(this, AdEvent.contentPauseRequested) {
             log.d("contentPauseRequested")
         }
 
-        player?.addListener(this, AdEvent.adPlaybackInfoUpdated) {
+        messageBus?.addListener(this, AdEvent.adPlaybackInfoUpdated) {
             log.d("adPlaybackInfoUpdated")
         }
 
-        player?.addListener(this, AdEvent.skippableStateChanged) {
+        messageBus?.addListener(this, AdEvent.skippableStateChanged) {
             log.d("skippableStateChanged")
         }
 
-        player?.addListener(this, AdEvent.adRequested) {
+        messageBus?.addListener(this, AdEvent.adRequested) {
             log.d("adRequested")
         }
 
-        player?.addListener(this, AdEvent.playHeadChanged) {
+        messageBus?.addListener(this, AdEvent.playHeadChanged) {
             log.d("playHeadChanged")
         }
 
-        player?.addListener(this, AdEvent.adBreakStarted) {
+        messageBus?.addListener(this, AdEvent.adBreakStarted) {
             log.d("adBreakStarted")
         }
 
-        player?.addListener(this, AdEvent.cuepointsChanged) {
+        messageBus?.addListener(this, AdEvent.cuepointsChanged) {
             log.d("cuepointsChanged")
         }
 
-        player?.addListener(this, AdEvent.loaded) {
+        messageBus?.addListener(this, AdEvent.loaded) {
             log.d("loaded")
         }
 
-        player?.addListener(this, AdEvent.resumed) {
+        messageBus?.addListener(this, AdEvent.resumed) {
             log.d("resumed")
         }
 
-        player?.addListener(this, AdEvent.paused) {
+        messageBus?.addListener(this, AdEvent.paused) {
             log.d("paused")
         }
 
-        player?.addListener(this, AdEvent.skipped) {
+        messageBus?.addListener(this, AdEvent.skipped) {
             log.d("skipped")
         }
 
-        player?.addListener(this, AdEvent.allAdsCompleted) {
+        messageBus?.addListener(this, AdEvent.allAdsCompleted) {
             log.d("allAdsCompleted")
         }
 
-        player?.addListener(this, AdEvent.completed) {
+        messageBus?.addListener(this, AdEvent.completed) {
             //  isCustomAdTriggered = false
             log.d("AdEvent.completed")
         }
 
-        player?.addListener(this, AdEvent.firstQuartile) {
+        messageBus?.addListener(this, AdEvent.firstQuartile) {
             log.d("firstQuartile")
         }
 
-        player?.addListener(this, AdEvent.midpoint) {
+        messageBus?.addListener(this, AdEvent.midpoint) {
             log.d("midpoint")
         }
 
-        player?.addListener(this, AdEvent.thirdQuartile) {
+        messageBus?.addListener(this, AdEvent.thirdQuartile) {
             log.d("thirdQuartile")
         }
 
-        player?.addListener(this, AdEvent.adBreakEnded) {
+        messageBus?.addListener(this, AdEvent.adBreakEnded) {
             log.d("adBreakEnded")
         }
 
-        player?.addListener(this, AdEvent.adClickedEvent) {
+        messageBus?.addListener(this, AdEvent.adClickedEvent) {
             log.d("adClickedEvent")
         }
 
-        player?.addListener(this, AdEvent.error) {
+        messageBus?.addListener(this, AdEvent.error) {
             log.d("AdEvent.error $it")
         }
     }
@@ -679,7 +701,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     }
 
     /**
-     * Check is preRoll ad is present
+     * Check if preRoll ad is present
      */
     private fun hasPreRoll(): Boolean {
         if (cuePointsList?.first != null) {
@@ -689,7 +711,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     }
 
     /**
-     * Check is postRoll ad is present
+     * Check if postRoll ad is present
      */
     private fun hasPostRoll(): Boolean {
         if (cuePointsList?.last != null) {
