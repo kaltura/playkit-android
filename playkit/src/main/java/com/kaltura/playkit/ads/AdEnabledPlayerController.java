@@ -276,4 +276,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
             adsProvider.setAllAdsCompleted();
         }
     }
+
+    @Override
+    public void adControllerPreparePlayer() {
+
+    }
 }

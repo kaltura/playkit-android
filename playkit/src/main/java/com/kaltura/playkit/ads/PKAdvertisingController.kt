@@ -1,5 +1,6 @@
 package com.kaltura.playkit.ads
 
+import android.text.TextUtils
 import androidx.annotation.Nullable
 import com.kaltura.playkit.*
 import com.kaltura.playkit.plugins.ads.AdEvent
@@ -115,6 +116,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         player?.addListener(this, PlayerEvent.playheadUpdated) { event ->
             cuePointsList?.let { list ->
 
+                log.d("nextAdBreakIndexForMonitoring = $nextAdBreakIndexForMonitoring")
+                log.d("adPlaybackTriggered = $adPlaybackTriggered")
                 log.d("Gourav event.position = ${event.position}")
                 log.d("Gourav midrollFrequency = ${midrollFrequency}")
                 log.d("Gourav (event.position > 1000L && event.position % midrollFrequency < 999L) = ${(event.position > 1000L && event.position % midrollFrequency < 1000L)}")
@@ -295,6 +298,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         if (adUrl != null) {
             playAd(adUrl)
         } else {
+            adController?.adControllerPreparePlayer()
             changeAdState(AdState.PLAYED, AdrollType.ADBREAK)
             playContent()
         }
@@ -653,7 +657,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Call the play Ad API on IMAPlugin
      */
     private fun playAd(adUrl: String) {
-        adPlaybackTriggered = true
+        adPlaybackTriggered = !TextUtils.isEmpty(adUrl)
         player?.pause()
         adController?.playAdNow(adUrl)
     }

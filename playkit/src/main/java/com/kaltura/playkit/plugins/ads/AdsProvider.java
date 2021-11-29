@@ -37,6 +37,8 @@ public interface AdsProvider {
 
     default void setAllAdsCompleted() {}
 
+    default void adControllerPreparePlayer() {}
+
     PKAdInfo getAdInfo();
 
     AdCuePoints getCuePoints();

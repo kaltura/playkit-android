@@ -35,6 +35,8 @@ public interface AdController extends PKController {
     
     void setAllAdsCompleted();
 
+    void adControllerPreparePlayer();
+
     long getAdCurrentPosition();
 
     long getAdDuration();
