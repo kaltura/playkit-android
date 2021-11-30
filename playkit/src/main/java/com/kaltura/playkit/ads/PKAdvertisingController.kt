@@ -321,7 +321,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         if (adUrl != null) {
             playAd(adUrl)
         } else {
-            adController?.adControllerPreparePlayer()
             changeAdState(AdState.PLAYED, AdrollType.ADBREAK)
             playContent()
         }
@@ -392,6 +391,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     @Nullable
     private fun getAdFromAdConfigMap(adIndex: Int, isTriggeredFromPlayerPosition: Boolean): String? {
         log.d("getAdFromAdConfigMap")
+
+        if (isAllAdsCompleted) {
+            log.d("All ads have completed its playback. Hence returning null from here.")
+            return null
+        }
 
         var adUrl: String? = null
         cuePointsList?.let { cuePointsList ->
@@ -624,6 +628,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 }
             }
         }
+        checkAllAdsArePlayed()
     }
 
     /**
@@ -679,6 +684,15 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     }
 
     /**
+     * Releasing the underlying resources
+     */
+    fun release() {
+        log.d("release")
+        resetAdvertisingConfig()
+        destroyConfigResources()
+    }
+
+    /**
      * Destroy the Advertising Config in case if
      * config is null
      */
@@ -693,12 +707,14 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     /**
      * TODO: USE this method
      */
-    private fun checkAllAdsArePlayed() {
+    private fun checkAllAdsArePlayed(): Boolean {
+        log.d("checkAllAdsArePlayed")
         if (!hasPreRoll() && midRollAdsCount() <=0 && !hasPostRoll()) {
             isAllAdsCompleted = true
         }
 
         adsConfigMap?.let map@ { adsMap ->
+            var unplayedAdCount = 0
             adsMap.forEach { (adBreakTime, adBreak) ->
                 adBreak?.let {
                     if (it.adBreakPositionType == AdBreakPositionType.EVERY) {
@@ -706,13 +722,17 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                         return@map
                     }
 
-                    if ((adBreakTime >= 0L || adBreakTime == -1L) && (it.adBreakState == AdState.PLAYED || it.adBreakState == AdState.ERROR)) {
-                        isAllAdsCompleted = true
-                        return@map
+                    if ((adBreakTime >= 0L || adBreakTime == -1L) && (it.adBreakState == AdState.READY || it.adBreakState == AdState.PLAYING)) {
+                        unplayedAdCount++
                     }
                 }
             }
+            isAllAdsCompleted = (unplayedAdCount <= 0)
+            log.d("UnplayedAdCount is $unplayedAdCount")
         }
+
+        log.d("isAllAdsCompleted $isAllAdsCompleted")
+        return isAllAdsCompleted
     }
 
     /**
@@ -742,6 +762,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private fun playContent() {
         log.d("playContent")
         adPlaybackTriggered = false
+        adController?.adControllerPreparePlayer()
         player?.play()
     }
 
