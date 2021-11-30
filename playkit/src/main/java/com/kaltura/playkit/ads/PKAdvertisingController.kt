@@ -327,6 +327,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         if (isPostrollLeftForPlaying) {
             playPostrollAdBreak()
+            isAllAdsCompleted = true
         }
         isPostrollLeftForPlaying = false
     }
@@ -705,9 +706,14 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     }
 
     /**
-     * TODO: USE this method
+     * Check if all the ads are completely played
      */
     private fun checkAllAdsArePlayed(): Boolean {
+        if (isAllAdsCompleted) {
+            fireAllAdsCompleteEvent()
+            return true
+        }
+
         log.d("checkAllAdsArePlayed")
         if (!hasPreRoll() && midRollAdsCount() <=0 && !hasPostRoll()) {
             isAllAdsCompleted = true
@@ -735,6 +741,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         return isAllAdsCompleted
     }
 
+    private fun fireAllAdsCompleteEvent() {
+        log.d("fireAllAdsCompleteEvent")
+        messageBus?.post(AdEvent(AdEvent.Type.ALL_ADS_COMPLETED))
+    }
     /**
      * Trigger Postroll ad playback
      */

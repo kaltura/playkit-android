@@ -42,9 +42,16 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
 
                     // TODO: Check pre/post is not passed apart from position
 
+                    if ((singleAdBreak.position == 0L || singleAdBreak.position == -1L) &&
+                        (singleAdBreak.adBreakPositionType == AdBreakPositionType.EVERY || singleAdBreak.adBreakPositionType == AdBreakPositionType.PERCENTAGE)) {
+                        log.w("Preroll or Postroll ad should not be configured with AdBreakPositionType.EVERY or AdBreakPositionType.PERCENTAGE\n" +
+                                "Dropping such AdBreak")
+                        return@adBreakLoop
+                    }
+
                     if (midrollAdPositionType == AdBreakPositionType.POSITION && adBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
                         midrollAdPositionType = AdBreakPositionType.EVERY
-                        midrollFrequency = singleAdBreak.position
+                        midrollFrequency = singleAdBreak.position * 1000L
                     } else if (midrollAdPositionType == AdBreakPositionType.EVERY && adBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
                         log.w("There should not be multiple Midrolls for AdBreakPositionType EVERY.\n" +
                                 "Keep One MidRoll ad which will play at the given second.")
