@@ -23,15 +23,16 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     // Map containg the actual ads with position as key in the Map (Insertion order of app maintained)
     private var adsConfigMap: MutableMap<Long, AdBreakConfig?>? = null
 
-    private val DEFAULT_AD_INDEX: Int = Int.MIN_VALUE
-    private val PREROLL_AD_INDEX: Int = 0
+    private var DEFAULT_AD_INDEX: Int = Int.MIN_VALUE
+    private var PREROLL_AD_INDEX: Int = 0
     private var POSTROLL_AD_INDEX: Int = 0
 
     private var currentAdBreakIndexPosition: Int = DEFAULT_AD_INDEX // For each ad Break 0, 15, 30, -1
     private var nextAdBreakIndexForMonitoring: Int = DEFAULT_AD_INDEX // For Next ad Break 0, 15, 30, -1
     private var adPlaybackTriggered: Boolean = false
     private var isPlayerSeeking: Boolean = false
-    private var isPostrollLeftForPlaying = false
+    private var isPostrollLeftForPlaying: Boolean = false
+    private var isAllAdsCompleted: Boolean = false
 
     private var midrollAdBreakPositionType: AdBreakPositionType = AdBreakPositionType.POSITION
     private var midrollFrequency = Long.MIN_VALUE
@@ -50,11 +51,13 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * and map it with our internal Advertising tree
      */
     fun setAdvertising(advertisingConfig: AdvertisingConfig?) {
+        log.d("setAdvertising")
+        resetAdvertisingConfig()
         if (advertisingConfig != null) {
             initAdvertising(advertisingConfig)
         } else {
             log.d("setAdvertising: AdvertisingConfig is null hence cleaning up existing objects.")
-            cleanupAdvertisingConfig()
+            destroyConfigResources()
         }
     }
 
@@ -62,26 +65,18 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Player configuration from KalturaPlayer
      */
     fun setPlayer(player: Player, messageBus: MessageBus) {
+        log.d("setPlayer")
         this.player = player
         this.messageBus = messageBus
         subscribeToPlayerEvents()
     }
 
-    private fun cleanupAdvertisingConfig() {
-        this.player = null
-        this.messageBus?.removeListeners(this)
-        this.messageBus = null
-
-        this.advertisingConfig = null
-        advertisingContainer = null
-        cuePointsList = null
-        adsConfigMap = null
-        adController?.setAdvertisingConfig(false, null)
-    }
-
+    /**
+     * Initialize Advertising Config
+     */
     private fun initAdvertising(advertisingConfig: AdvertisingConfig) {
-        this.advertisingConfig = advertisingConfig
         log.d("initAdvertising")
+        this.advertisingConfig = advertisingConfig
         adController?.setAdvertisingConfig(true, this)
         advertisingContainer = AdvertisingContainer(this.advertisingConfig)
         adsConfigMap = advertisingContainer?.getAdsConfigMap()
@@ -95,14 +90,18 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * to play the Advertising
      */
     fun playAdvertising() {
+        log.d("playAdvertising")
+
         if (hasPostRoll()) {
             cuePointsList?.let {
+                log.d("Config has Postroll")
                 POSTROLL_AD_INDEX = if (it.size > 1) it.size.minus(1) else 0
                 nextAdBreakIndexForMonitoring = POSTROLL_AD_INDEX
             }
         }
 
         if (hasPreRoll()) {
+            log.d("Config has Preroll")
             val preRollAdUrl = getAdFromAdConfigMap(PREROLL_AD_INDEX, false)
             if (preRollAdUrl != null) {
                 playAd(preRollAdUrl)
@@ -134,6 +133,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Player Events' subscription
      */
     private fun subscribeToPlayerEvents() {
+        log.d("subscribeToPlayerEvents")
+
         var adPlayedWithFrequency = 0
         messageBus?.addListener(this, PlayerEvent.playheadUpdated) { event ->
             cuePointsList?.let { list ->
@@ -313,7 +314,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Mapping of ALL_ADS_COMPLETED event from IMAPlugin
      */
     override fun allAdsCompleted() {
-        log.w("allAdsCompleted callback")
+        log.d("allAdsCompleted callback")
         adPlaybackTriggered = false
         changeAdState(AdState.PLAYED, AdrollType.AD)
         val adUrl = getAdFromAdConfigMap(currentAdBreakIndexPosition, false)
@@ -335,7 +336,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Mapping of CONTENT_RESUME_REQUESTED event from IMAPlugin
      */
     override fun contentResumeRequested() {
-        log.w("contentResumeRequested callback ${player?.currentPosition}")
+        log.d("contentResumeRequested callback and PlayerPosition is${player?.currentPosition}")
         playContent()
     }
 
@@ -343,21 +344,21 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Mapping of CONTENT_PAUSE_REQUESTED event from IMAPlugin
      */
     override fun contentPauseRequested() {
-        log.w("contentPauseRequested callback")
+        log.d("contentPauseRequested callback")
     }
 
     /**
      * Mapping of AD_COMPLETED event from IMAPlugin
      */
     override fun adCompleted() {
-        log.w("adCompleted callback")
+        log.d("adCompleted callback")
     }
 
     /**
      * Mapping of AD_ERROR event from IMAPlugin
      */
     override fun adError(error: AdEvent.Error) {
-        log.e("AdEvent.error callback $error")
+        log.w("AdEvent.error callback $error")
         adPlaybackTriggered = false
         if (error.error.errorType != PKAdErrorType.VIDEO_PLAY_ERROR) {
             val ad = getAdFromAdConfigMap(currentAdBreakIndexPosition, false)
@@ -390,6 +391,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     @Nullable
     private fun getAdFromAdConfigMap(adIndex: Int, isTriggeredFromPlayerPosition: Boolean): String? {
+        log.d("getAdFromAdConfigMap")
+
         var adUrl: String? = null
         cuePointsList?.let { cuePointsList ->
             if (cuePointsList.isNotEmpty()) {
@@ -429,6 +432,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     @Nullable
     private fun getAdPodConfigMap(position: Long?): AdBreakConfig? {
+        log.d("getAdPodConfigMap")
+
         var adBreakConfig: AdBreakConfig? = null
         advertisingContainer?.let { _ ->
             adsConfigMap?.let { adsMap ->
@@ -447,6 +452,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     @Nullable
     private fun fetchPlayableAdOnFrequency(adBreakConfig: AdBreakConfig?, isTriggeredFromPlayerPosition: Boolean): String? {
+        log.d("fetchPlayableAdOnFrequency")
         if (midRollAdsCount() > 0) {
             return fetchPlayableAdFromAdsList(adBreakConfig, isTriggeredFromPlayerPosition)
         }
@@ -458,12 +464,12 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     @Nullable
     private fun fetchPlayableAdFromAdsList(adBreakConfig: AdBreakConfig?, isTriggeredFromPlayerPosition: Boolean): String? {
-        log.e("Gourav fetchPlayableAdFromAdsList AdPodConfig position is ${adBreakConfig}")
+        log.d("fetchPlayableAdFromAdsList AdBreakConfig is $adBreakConfig")
         var adTagUrl: String? = null
 
         when (adBreakConfig?.adBreakState) {
             AdState.READY -> {
-                log.i("fetchPlayableAdFromAdsList -> I am in ready State and getting the first ad Tag.")
+                log.d("fetchPlayableAdFromAdsList -> I am in ready State and getting the first ad Tag.")
                 adBreakConfig.adPodList?.let { adPodList ->
                     adBreakConfig.adBreakState = AdState.PLAYING
                     if (adPodList.isNotEmpty()) {
@@ -481,7 +487,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             }
 
             AdState.PLAYING -> {
-                log.i("fetchPlayableAdFromAdsList -> I am in Playing State and checking for the next ad Tag.")
+                log.d("fetchPlayableAdFromAdsList -> I am in Playing State and checking for the next ad Tag.")
                 adBreakConfig.adPodList?.let { adPodList ->
                     adTagUrl = getAdFromAdPod(adPodList, adBreakConfig.adBreakPositionType, isTriggeredFromPlayerPosition)
                 }
@@ -489,7 +495,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
             AdState.PLAYED -> {
                 if (isTriggeredFromPlayerPosition && adBreakConfig.adBreakPositionType == AdBreakPositionType.EVERY) {
-                    log.i("fetchPlayableAdFromAdsList -> I am in Played State only for adBreakPositionType EVERY \n " +
+                    log.d("fetchPlayableAdFromAdsList -> I am in Played State only for adBreakPositionType EVERY \n " +
                             "and checking for the PLAYED ad Tag.")
                     adBreakConfig.adPodList?.let { adPodList ->
                         adTagUrl = getAdFromAdPod(adPodList, adBreakConfig.adBreakPositionType, isTriggeredFromPlayerPosition)
@@ -507,8 +513,9 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
     @Nullable
     private fun getAdFromAdPod(adPodList: List<AdPodConfig>, adBreakPositionType: AdBreakPositionType, isTriggeredFromPlayerPosition: Boolean): String? {
-        var adUrl: String? = null
+        log.d("getAdFromAdPod")
 
+        val adUrl: String? = null
         for (adPodConfig: AdPodConfig in adPodList) {
             when(adPodConfig.adPodState) {
 
@@ -517,7 +524,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 }
 
                 AdState.READY -> {
-                    log.i("getAdFromAdPod -> I am in ready State and getting the first ad Tag.")
+                    log.d("getAdFromAdPod -> I am in ready State and getting the first ad Tag.")
                     adPodConfig.adList?.let {
                         if(it.isNotEmpty()) {
                             it[0].adState = AdState.PLAYING
@@ -534,12 +541,12 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                         }
                     }
 
-                    log.i("getAdFromAdPod -> I am in Playing State and checking for the next ad Tag.")
+                    log.d("getAdFromAdPod -> I am in Playing State and checking for the next ad Tag.")
                     adPodConfig.adList?.let { adsList ->
                         if(adsList.isNotEmpty()) {
                             for (specificAd: Ad in adsList) {
-                                log.w("specificAd State ${specificAd.adState}")
-                                log.w("specificAd ${specificAd.ad}")
+                                log.d("specificAd State ${specificAd.adState}")
+                                log.d("specificAd ${specificAd.ad}")
                                 when (specificAd.adState) {
                                     AdState.ERROR -> continue
 
@@ -626,6 +633,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * For PERCENTAGE case, update the Advertising tree data structure
      */
     private fun checkTypeOfMidrollAdPresent(adBreakPositionType: AdBreakPositionType?, playerDuration: Long?) {
+        log.d("checkTypeOfMidrollAdPresent")
+
         when(adBreakPositionType) {
             AdBreakPositionType.EVERY -> {
                 midrollAdBreakPositionType = adBreakPositionType
@@ -647,28 +656,70 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     }
 
     /**
+     * Resets the Advertising Config
+     * */
+    private fun resetAdvertisingConfig() {
+        log.d("resetAdvertisingConfig")
+        advertisingConfig = null
+        advertisingContainer = null
+        cuePointsList = null
+        adsConfigMap = null
+        DEFAULT_AD_INDEX = Int.MIN_VALUE
+        PREROLL_AD_INDEX = 0
+        POSTROLL_AD_INDEX = 0
+        currentAdBreakIndexPosition = DEFAULT_AD_INDEX
+        nextAdBreakIndexForMonitoring = DEFAULT_AD_INDEX
+        adPlaybackTriggered = false
+        isPlayerSeeking = false
+        isPostrollLeftForPlaying = false
+        isAllAdsCompleted = false
+
+        midrollAdBreakPositionType = AdBreakPositionType.POSITION
+        midrollFrequency = Long.MIN_VALUE
+    }
+
+    /**
+     * Destroy the Advertising Config in case if
+     * config is null
+     */
+    private fun destroyConfigResources() {
+        log.d("destroyConfigResources")
+        this.player = null
+        this.messageBus?.removeListeners(this)
+        this.messageBus = null
+        adController?.setAdvertisingConfig(false, null)
+    }
+
+    /**
      * TODO: USE this method
      */
-    private fun checkAllAdsArePlayed(): Boolean {
-        var isAllAdsPlayed = true
-        if (hasPreRoll() && midRollAdsCount() <=0 && !hasPostRoll()) {
-            return true
+    private fun checkAllAdsArePlayed() {
+        if (!hasPreRoll() && midRollAdsCount() <=0 && !hasPostRoll()) {
+            isAllAdsCompleted = true
         }
 
-        adsConfigMap?.let {
-            it.forEach { (key, value) ->
-                if (key > 0L && (value?.adBreakState != AdState.PLAYED || value.adBreakState != AdState.ERROR)) {
-                    isAllAdsPlayed = false
+        adsConfigMap?.let map@ { adsMap ->
+            adsMap.forEach { (adBreakTime, adBreak) ->
+                adBreak?.let {
+                    if (it.adBreakPositionType == AdBreakPositionType.EVERY) {
+                        isAllAdsCompleted = false
+                        return@map
+                    }
+
+                    if ((adBreakTime >= 0L || adBreakTime == -1L) && (it.adBreakState == AdState.PLAYED || it.adBreakState == AdState.ERROR)) {
+                        isAllAdsCompleted = true
+                        return@map
+                    }
                 }
             }
         }
-        return isAllAdsPlayed
     }
 
     /**
      * Trigger Postroll ad playback
      */
     private fun playPostrollAdBreak() {
+        log.d("playPostrollAdBreak")
         getAdFromAdConfigMap(POSTROLL_AD_INDEX, false)?.let {
             playAd(it)
         }
@@ -679,6 +730,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Call the play Ad API on IMAPlugin
      */
     private fun playAd(adUrl: String) {
+        log.d("playAd AdUrl is $adUrl")
         adPlaybackTriggered = !TextUtils.isEmpty(adUrl)
         player?.pause()
         adController?.playAdNow(adUrl)
@@ -688,6 +740,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Content Playback
      */
     private fun playContent() {
+        log.d("playContent")
         adPlaybackTriggered = false
         player?.play()
     }
@@ -697,6 +750,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Empty ad tag will trigger preparePlayer inside IMAPlugin
      */
     private fun prepareContentPlayer() {
+        log.d("prepareContentPlayer")
         playAd("")
     }
 
@@ -725,16 +779,18 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * if no midRoll is present count will be zero.
      */
     private fun midRollAdsCount(): Int {
+        var midrollAdsCount = 0
         cuePointsList?.let {
-            return if (hasPreRoll() && hasPostRoll()) {
-                it.size.minus(2)
+            if (hasPreRoll() && hasPostRoll()) {
+                midrollAdsCount = it.size.minus(2)
             } else if (hasPreRoll() || hasPostRoll()) {
-                it.size.minus(1)
+                midrollAdsCount = it.size.minus(1)
             } else {
-                it.size
+                midrollAdsCount = it.size
             }
         }
-        return 0
+        log.d("MidRollAdsCount is $midrollAdsCount")
+        return midrollAdsCount
     }
 
     /**
@@ -743,6 +799,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Mimicking the SNAPBACK feature
      */
     private fun getImmediateLastAdPosition(seekPosition: Long?): Int {
+        log.d("getImmediateLastAdPosition")
+
         if (seekPosition == null || cuePointsList == null || cuePointsList.isNullOrEmpty()) {
             log.d("Error in getImmediateLastAdPosition returning DEFAULT_AD_POSITION")
             return DEFAULT_AD_INDEX
@@ -781,6 +839,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Mimicking the SNAPBACK feature
      */
     private fun getImmediateNextAdPosition(seekPosition: Long?): Int {
+        log.d("getImmediateNextAdPosition")
+
         if (seekPosition == null || cuePointsList == null || cuePointsList.isNullOrEmpty()) {
             log.d("Error in getImmediateNextAdPosition returning DEFAULT_AD_POSITION")
             return DEFAULT_AD_INDEX
@@ -813,3 +873,4 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         return adPosition
     }
 }
+
