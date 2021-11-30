@@ -1,12 +1,14 @@
 package com.kaltura.playkit.ads
 
+import androidx.annotation.NonNull
+
 // Collection of classes and enums required for Advertising
 
 /**
  * Advertising configuration
  * Pass the list the AdBreaks
  */
-data class AdvertisingConfig(val advertising: List<AdBreak?>?, val adTimeUnit: AdTimeUnit)// TODO: change it to ADBreak as well
+data class AdvertisingConfig(@NonNull val advertising: List<AdBreak?>?, @NonNull val adTimeUnit: AdTimeUnit = AdTimeUnit.SECONDS)// TODO: change it to ADBreak as well
 
 /**
  * AdBreak: Pre, Mid, Post
@@ -14,7 +16,7 @@ data class AdvertisingConfig(val advertising: List<AdBreak?>?, val adTimeUnit: A
  * Each AdPod may contain a list of Ads (List of Ads is being used to do waterfalling)
  * @see <a href="Ad Waterfalling">https://github.com/kaltura/kaltura-player-js/blob/master/docs/advertisement-layout-management.md#waterfalling</a>
  */
-data class AdBreak(var adBreakPositionType: AdBreakPositionType = AdBreakPositionType.POSITION, var position: Long, val ads: List<List<String>>)
+data class AdBreak(@NonNull var adBreakPositionType: AdBreakPositionType = AdBreakPositionType.POSITION, @NonNull var position: Long, @NonNull val ads: List<List<String>>)
 
 /**
  * For Preroll and Postroll, always configure POSITION
