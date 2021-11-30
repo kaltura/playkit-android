@@ -28,6 +28,8 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * Parse the Ads from the external Ads' data structure
      */
     private fun parseAdTypes(advertisingConfig: AdvertisingConfig?) {
+        log.d("parseAdTypes")
+
         advertisingConfig?.advertising?.let { adBreaks ->
             val adBreaksList = ArrayList<AdBreakConfig>()
             cuePointsList = LinkedList()
@@ -90,6 +92,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * Mark all the ad pods Ready.
      */
     private fun parseAdPodConfig(singleAdBreak: AdBreak): List<AdPodConfig> {
+        log.d("parseAdPodConfig")
         val adPodConfigList = mutableListOf<AdPodConfig>()
         for (adPod: List<String>? in singleAdBreak.ads) {
             val adsList = parseEachAdUrl(adPod)
@@ -104,6 +107,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * Mark all the ads Ready.
      */
     private fun parseEachAdUrl(ads: List<String>?): List<Ad> {
+        log.d("parseEachAdUrl")
         val adUrls = mutableListOf<Ad>()
         if (ads != null) {
             for (url: String in ads) {
@@ -119,6 +123,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * Here Mid(n) n denotes the time/percentage
      */
     private fun sortAdsByPosition(adBreaksList: ArrayList<AdBreakConfig>) {
+        log.d("sortAdsByPosition")
         if (adBreaksList.isNotEmpty()) {
             adBreaksList.sortWith(compareBy { it.adPosition })
             prepareAdsMapAndList(adBreaksList)
@@ -132,6 +137,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * to understand the current and upcoming cuepoint
      */
     private fun prepareAdsMapAndList(adBreakConfigList: ArrayList<AdBreakConfig>) {
+        log.d("prepareAdsMapAndList")
         if (adBreakConfigList.isNotEmpty()) {
             adsConfigMap = hashMapOf()
             for (adBreakConfig: AdBreakConfig in adBreakConfigList) {
@@ -146,6 +152,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * so remove it and put it at the last (Postroll)
      */
     private fun movePostRollAdToLastInList() {
+        log.d("movePostRollAdToLastInList")
         cuePointsList?.let {
             if (it.first == -1L) {
                 it.remove(-1)
@@ -160,6 +167,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * Replace the List's Adbreak Position as per the player duration
      */
     fun updatePercentageBasedPosition(playerDuration: Long?) {
+        log.d("updatePercentageBasedPosition PlayerDuration is $playerDuration")
         playerDuration?.let {
             if (it <= 0) {
                 return
@@ -214,6 +222,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * Move the postroll to the last
      */
     private fun sortCuePointsList() {
+        log.d("sortCuePointsList")
         cuePointsList?.sort()
         movePostRollAdToLastInList()
     }
@@ -222,6 +231,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * Get Midroll ad break position type (POSITION, PERCENTAGE, EVERY)
      */
     fun getMidrollAdBreakPositionType(): AdBreakPositionType {
+        log.d("getMidrollAdBreakPositionType")
         return midrollAdPositionType
     }
 
@@ -230,6 +240,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * Then at what frequency ad will be played
      */
     fun getMidrollFrequency(): Long {
+        log.d("getMidrollFrequency")
         return midrollFrequency
     }
 
@@ -238,6 +249,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      */
     @Nullable
     fun getCuePointsList(): LinkedList<Long>? {
+        log.d("getCuePointsList")
         return cuePointsList
     }
 
@@ -246,6 +258,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      */
     @Nullable
     fun getAdsConfigMap(): MutableMap<Long, AdBreakConfig?>? {
+        log.d("getAdsConfigMap")
         return adsConfigMap
     }
 }

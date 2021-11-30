@@ -168,11 +168,9 @@ class PlayerLoader extends PlayerDecoratorBase {
         }
 
         super.prepare(mediaConfig);
-        
-        if (advertisingConfig != null && pkAdvertisingController != null) {
-            pkAdvertisingController.setAdController(playerController.getController(AdController.class));
-            pkAdvertisingController.setAdvertising(advertisingConfig);
-        }
+
+        pkAdvertisingController.setAdController(playerController.getController(AdController.class));
+        pkAdvertisingController.setAdvertising(advertisingConfig);
 
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
             loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
@@ -198,7 +196,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     @Override
     public void setAdvertising(@NonNull AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController) {
         if (!PKDeviceCapabilities.isKalturaPlayerAvailable()) {
-            log.e("Advertising is being used to configure custom adlayout. This feature is not available in Playkit SDK. " +
+            log.e("Advertising is being used to configure custom AdLayout. This feature is not available in Playkit SDK. " +
                     "It is only being used by Kaltura Player SDK.");
             return;
         }
