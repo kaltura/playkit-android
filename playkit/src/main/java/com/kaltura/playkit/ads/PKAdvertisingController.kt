@@ -69,7 +69,13 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     /**
      * Player configuration from KalturaPlayer
      */
-    fun setPlayer(player: Player, messageBus: MessageBus) {
+    fun setPlayer(player: Player?, messageBus: MessageBus?) {
+        if (player == null || messageBus == null) {
+            log.d("setPlayer: Player or MessageBus is null hence cleaning up the underlying controller resources.")
+            resetAdvertisingConfig()
+            destroyConfigResources()
+            return
+        }
         log.d("setPlayer")
         this.player = player
         this.messageBus = messageBus
@@ -154,9 +160,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             if (it.position > 0) {
                 isPlayAdNowTriggered = true
                 val adPodConfig = advertisingContainer?.parseAdPodConfig(it)
-                val adBreakConfig =
-                    AdBreakConfig(it.adBreakPositionType, it.position, AdState.READY, adPodConfig)
-                playAdNowAdBreak = adBreakConfig
+                playAdNowAdBreak = AdBreakConfig(it.adBreakPositionType, it.position, AdState.READY, adPodConfig)
                 val adUrl = fetchPlayableAdFromAdsList(playAdNowAdBreak, false)
                 adUrl?.let { url ->
                     playAd(url)
