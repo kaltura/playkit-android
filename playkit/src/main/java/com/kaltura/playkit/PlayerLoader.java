@@ -169,8 +169,10 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         super.prepare(mediaConfig);
 
-        pkAdvertisingController.setAdController(playerController.getController(AdController.class));
-        pkAdvertisingController.setAdvertising(advertisingConfig);
+        if (pkAdvertisingController != null && playerController.getController(AdController.class) != null) {
+            pkAdvertisingController.setAdController(playerController.getController(AdController.class));
+            pkAdvertisingController.setAdvertising(advertisingConfig);
+        }
 
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
             loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);

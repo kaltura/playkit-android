@@ -51,7 +51,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
 
                     if (midrollAdPositionType == AdBreakPositionType.POSITION && adBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
                         midrollAdPositionType = AdBreakPositionType.EVERY
-                        midrollFrequency = singleAdBreak.position * 1000L
+                        midrollFrequency = if (advertisingConfig.adTimeUnit == AdTimeUnit.SECONDS) singleAdBreak.position * Consts.MILLISECONDS_MULTIPLIER else singleAdBreak.position
                     } else if (midrollAdPositionType == AdBreakPositionType.EVERY && adBreak.adBreakPositionType == AdBreakPositionType.EVERY) {
                         log.w("There should not be multiple Midrolls for AdBreakPositionType EVERY.\n" +
                                 "Keep One MidRoll ad which will play at the given second.")
@@ -98,7 +98,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * Parse Each AdBreak. AdBreak may contain list of ad pods
      * Mark all the ad pods Ready.
      */
-    private fun parseAdPodConfig(singleAdBreak: AdBreak): List<AdPodConfig> {
+    internal fun parseAdPodConfig(singleAdBreak: AdBreak): List<AdPodConfig> {
         log.d("parseAdPodConfig")
         val adPodConfigList = mutableListOf<AdPodConfig>()
         for (adPod: List<String>? in singleAdBreak.ads) {
