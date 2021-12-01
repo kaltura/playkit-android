@@ -122,12 +122,26 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
     }
 
-    override fun playAdNow(vastAdTag: List<AdBreak>) {
-        TODO("Not yet implemented")
-    }
+    override fun playAdNow(adBreak: AdBreak?) {
+        adBreak?.let {
+            if (it.adBreakPositionType == AdBreakPositionType.EVERY || it.adBreakPositionType == AdBreakPositionType.PERCENTAGE) {
+                log.e("For playAdNow, AdBreakPositionType can only be AdBreakPositionType.POSITION. Hence discarding the AdPlayback")
+                return@let
+            }
 
-    override fun getCurrentAd() {
-        TODO("Not yet implemented")
+            if (advertisingContainer == null) {
+                log.d("AdvertisingContainer is null. Hence discarding the AdPlayback")
+                return@let
+            }
+
+            val adPodConfig = advertisingContainer?.parseAdPodConfig(it)
+            val adBreakConfig = AdBreakConfig(it.adBreakPositionType, it.position, AdState.READY, adPodConfig)
+
+            val adUrl = fetchPlayableAdFromAdsList(adBreakConfig, false)
+            adUrl?.let { url ->
+                playAd(url)
+            }
+        }
     }
 
     /**
@@ -607,40 +621,47 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                         if (currentAdBreakIndexPosition != DEFAULT_AD_INDEX) {
                             val adPosition: Long = cuePointsList[currentAdBreakIndexPosition]
                             val adBreakConfig: AdBreakConfig? = adsMap[adPosition]
-                            adBreakConfig?.let { adBreak ->
-                                log.d("AdState is changed for AdPod position ${adBreak.adPosition}")
-                                //TODO: Change internal ad index state which eventually was played after waterfalling
-                                if (adrollType == AdrollType.ADBREAK) {
-                                    adBreak.adBreakState = adState
-                                }
-
-                                adBreak.adPodList?.forEach {
-                                    if (adrollType == AdrollType.ADBREAK && it.adPodState == AdState.PLAYING) {
-                                        it.adPodState = adState
-                                    }
-                                    var isAdPodCompletelyErrored = 0
-                                    it.adList?.forEach { ad ->
-                                        if (adrollType == AdrollType.AD && ad.adState == AdState.PLAYING) {
-                                            if (ad.adState != AdState.ERROR) {
-                                                it.adPodState = adState
-                                            }
-                                            ad.adState = adState
-                                        }
-                                        if (ad.adState != AdState.ERROR) {
-                                            isAdPodCompletelyErrored++
-                                        }
-                                    }
-                                    if (isAdPodCompletelyErrored == 0) {
-                                        it.adPodState = AdState.ERROR
-                                    }
-                                }
-                            }
+                            changeAdBreakState(adBreakConfig, adrollType, adState)
                         }
                     }
                 }
             }
         }
         checkAllAdsArePlayed()
+    }
+
+    /**
+     * Change the internal state of AdBreak, AdPod or Ad
+     */
+    private fun changeAdBreakState(adBreakConfig: AdBreakConfig?, adrollType: AdrollType, adState: AdState) {
+        adBreakConfig?.let { adBreak ->
+            log.d("AdState is changed for AdPod position ${adBreak.adPosition}")
+            //TODO: Change internal ad index state which eventually was played after waterfalling
+            if (adrollType == AdrollType.ADBREAK) {
+                adBreak.adBreakState = adState
+            }
+
+            adBreak.adPodList?.forEach {
+                if (adrollType == AdrollType.ADBREAK && it.adPodState == AdState.PLAYING) {
+                    it.adPodState = adState
+                }
+                var isAdPodCompletelyErrored = 0
+                it.adList?.forEach { ad ->
+                    if (adrollType == AdrollType.AD && ad.adState == AdState.PLAYING) {
+                        if (ad.adState != AdState.ERROR) {
+                            it.adPodState = adState
+                        }
+                        ad.adState = adState
+                    }
+                    if (ad.adState != AdState.ERROR) {
+                        isAdPodCompletelyErrored++
+                    }
+                }
+                if (isAdPodCompletelyErrored == 0) {
+                    it.adPodState = AdState.ERROR
+                }
+            }
+        }
     }
 
     /**

@@ -98,7 +98,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      * Parse Each AdBreak. AdBreak may contain list of ad pods
      * Mark all the ad pods Ready.
      */
-    private fun parseAdPodConfig(singleAdBreak: AdBreak): List<AdPodConfig> {
+    internal fun parseAdPodConfig(singleAdBreak: AdBreak): List<AdPodConfig> {
         log.d("parseAdPodConfig")
         val adPodConfigList = mutableListOf<AdPodConfig>()
         for (adPod: List<String>? in singleAdBreak.ads) {
