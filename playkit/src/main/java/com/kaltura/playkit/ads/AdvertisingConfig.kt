@@ -7,8 +7,13 @@ import androidx.annotation.NonNull
 /**
  * Advertising configuration
  * Pass the list the AdBreaks
+ * @param advertising: List of AdBreaks
+ * @param adTimeUnit: AdBreak position in Seconds or Milliseconds
+ * @param playAdsAfterTime: Play ads only from a specific time
  */
-data class AdvertisingConfig(@NonNull val advertising: List<AdBreak?>?, @NonNull val adTimeUnit: AdTimeUnit = AdTimeUnit.SECONDS)// TODO: change it to ADBreak as well
+data class AdvertisingConfig(@NonNull val advertising: List<AdBreak?>?,
+                             @NonNull val adTimeUnit: AdTimeUnit = AdTimeUnit.SECONDS,
+                             @NonNull val playAdsAfterTime: Long = Long.MIN_VALUE)
 
 /**
  * AdBreak: Pre, Mid, Post
@@ -16,7 +21,23 @@ data class AdvertisingConfig(@NonNull val advertising: List<AdBreak?>?, @NonNull
  * Each AdPod may contain a list of Ads (List of Ads is being used to do waterfalling)
  * @see <a href="Ad Waterfalling">https://github.com/kaltura/kaltura-player-js/blob/master/docs/advertisement-layout-management.md#waterfalling</a>
  */
-data class AdBreak(@NonNull var adBreakPositionType: AdBreakPositionType = AdBreakPositionType.POSITION, @NonNull var position: Long, @NonNull val ads: List<List<String>>)
+data class AdBreak(@NonNull var adBreakPositionType: AdBreakPositionType = AdBreakPositionType.POSITION,
+                   @NonNull var position: Long,
+                   @NonNull val ads: List<List<String>>)
+
+// Ad Break Config
+internal data class AdBreakConfig(val adBreakPositionType: AdBreakPositionType,
+                                  var adPosition: Long,
+                                  var adBreakState: AdState,
+                                  val adPodList: List<AdPodConfig>?)
+
+// Ad list contains waterfalling ads as well.
+internal data class AdPodConfig(var adPodState: AdState,
+                                val adList: List<Ad>?)
+
+// Single Ad
+internal data class Ad(var adState: AdState,
+                       val ad: String)
 
 /**
  * For Preroll and Postroll, always configure POSITION
@@ -34,15 +55,6 @@ enum class AdTimeUnit {
     SECONDS,
     MILISECONDS
 }
-
-// Ad Break Config
-internal data class AdBreakConfig(val adBreakPositionType: AdBreakPositionType, var adPosition: Long, var adBreakState: AdState, val adPodList: List<AdPodConfig>?)
-
-// Ad list contains waterfalling ads as well.
-internal data class AdPodConfig(var adPodState: AdState, val adList: List<Ad>?)
-
-// Single Ad
-internal data class Ad(var adState: AdState, val ad: String)
 
 // Ad's State
 internal enum class AdState {

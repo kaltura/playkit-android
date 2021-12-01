@@ -132,6 +132,9 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
     }
 
+    /**
+     * App may call it whenever it wants to play an AdBreak
+     */
     override fun playAdNow(adBreak: AdBreak?) {
         log.d("playAdNow AdBreak is $adBreak")
         adBreak?.let adbreak@ {
@@ -394,7 +397,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     override fun contentResumeRequested() {
         log.d("contentResumeRequested callback and PlayerPosition is${player?.currentPosition}")
-        playContent()
+        //playContent() //TODO: Check it because after commenting it video frame between ad playback is gone
     }
 
     /**
