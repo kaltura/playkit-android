@@ -17,6 +17,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
     private var cuePointsList: LinkedList<Long>? = null
     private var midrollAdPositionType: AdBreakPositionType = AdBreakPositionType.POSITION
     private var midrollFrequency = Long.MIN_VALUE
+    private var playAdsAfterTime = Long.MIN_VALUE
 
     init {
         advertisingConfig?.let {
@@ -33,6 +34,12 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
         advertisingConfig?.advertising?.let { adBreaks ->
             val adBreaksList = ArrayList<AdBreakConfig>()
             cuePointsList = LinkedList()
+
+            playAdsAfterTime = if (advertisingConfig.adTimeUnit == AdTimeUnit.SECONDS && (advertisingConfig.playAdsAfterTime != -1L || advertisingConfig.playAdsAfterTime >0)) {
+                advertisingConfig.playAdsAfterTime * Consts.MILLISECONDS_MULTIPLIER
+            } else {
+                advertisingConfig.playAdsAfterTime
+            }
 
             for (adBreak: AdBreak? in adBreaks) {
 
@@ -267,6 +274,13 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
     fun getAdsConfigMap(): MutableMap<Long, AdBreakConfig?>? {
         log.d("getAdsConfigMap")
         return adsConfigMap
+    }
+
+    /**
+     * Get PlayAdsAfterTime value from AdvertisingConfig
+     */
+    fun getPlayAdsAfterTime(): Long {
+        return playAdsAfterTime
     }
 }
 
