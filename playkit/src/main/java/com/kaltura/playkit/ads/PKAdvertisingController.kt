@@ -101,6 +101,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         checkTypeOfMidrollAdPresent(advertisingContainer?.getMidrollAdBreakPositionType(), 0L)
 
         cuePointsList = advertisingContainer?.getCuePointsList()
+        adController?.setCuePoints(cuePointsList, advertisingContainer?.getMidrollAdBreakPositionType(), false)
         playAdsAfterTime = advertisingContainer?.getPlayAdsAfterTime() ?: Long.MIN_VALUE
 
         if (isAdsListEmpty()) {
@@ -842,6 +843,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                         advertisingContainer?.updatePercentageBasedPosition(playerDuration)
                         adsConfigMap = advertisingContainer?.getAdsConfigMap()
                         cuePointsList = advertisingContainer?.getCuePointsList()
+                        adController?.setCuePoints(cuePointsList, advertisingContainer?.getMidrollAdBreakPositionType(), true)
                         log.d("Updated cuePointsList for PERCENTAGE based Midrolls $cuePointsList")
                     }
                 }

@@ -12,10 +12,13 @@
 
 package com.kaltura.playkit.plugins.ads;
 
+import com.kaltura.playkit.ads.AdBreakPositionType;
 import com.kaltura.playkit.ads.IMAEventsListener;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdPluginType;
 import com.kaltura.playkit.ads.PKAdProviderListener;
+
+import java.util.List;
 
 
 public interface AdsProvider {
@@ -35,7 +38,7 @@ public interface AdsProvider {
 
     default void playAdNow(String adTagUrl) {}
 
-    default void setAllAdsCompleted() {}
+    default void setCuePoints(List<Long> cuePoints, AdBreakPositionType adBreakPositionType, boolean isUpdatedCuePoint) {}
 
     default void adControllerPreparePlayer() {}
 

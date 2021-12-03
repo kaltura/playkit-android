@@ -15,6 +15,8 @@ package com.kaltura.playkit.ads;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 
+import java.util.List;
+
 /**
  * Created by Noam Tamim @ Kaltura on 14/12/2016.
  */
@@ -33,7 +35,7 @@ public interface AdController extends PKController {
 
     void playAdNow(String adTagUrl);
     
-    void setAllAdsCompleted();
+    void setCuePoints(List<Long> cuePoints, AdBreakPositionType adBreakPositionType, boolean isUpdatedCuePoint);
 
     void adControllerPreparePlayer();
 

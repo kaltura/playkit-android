@@ -4,6 +4,8 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.List;
+
 public class DefaultDAIAdControllerImpl implements AdController {
 
     private AdsProvider adsProvider;
@@ -130,7 +132,7 @@ public class DefaultDAIAdControllerImpl implements AdController {
     }
 
     @Override
-    public void setAllAdsCompleted() {
+    public void setCuePoints(List<Long> cuePoints, AdBreakPositionType adBreakPositionType, boolean isUpdatedCuePoint) {
         // setAllAdsCompleted is not supported for DAI
     }
 

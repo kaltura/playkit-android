@@ -4,6 +4,8 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.List;
+
 public class DefaultAdControllerImpl implements AdController {
 
     private AdsProvider adsProvider;
@@ -129,9 +131,9 @@ public class DefaultAdControllerImpl implements AdController {
     }
 
     @Override
-    public void setAllAdsCompleted() {
+    public void setCuePoints(List<Long> cuePoints, AdBreakPositionType adBreakPositionType, boolean isUpdatedCuePoint) {
         if (adsProvider != null) {
-            adsProvider.setAllAdsCompleted();
+            adsProvider.setCuePoints(cuePoints, adBreakPositionType, isUpdatedCuePoint);
         }
     }
 
