@@ -14,6 +14,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private val log = PKLog.get(PKAdvertisingController::class.java.simpleName)
     private var player: Player? = null
     private var messageBus: MessageBus? = null
+    private var mediaConfig: PKMediaConfig? = null
     private var adController: AdController? = null
     private var advertisingConfig: AdvertisingConfig? = null
     private var advertisingContainer: AdvertisingContainer? = null
@@ -73,7 +74,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     /**
      * Player configuration from KalturaPlayer
      */
-    fun setPlayer(player: Player?, messageBus: MessageBus?) {
+    fun setPlayer(player: Player?, messageBus: MessageBus?, mediaConfig: PKMediaConfig) {
         if (player == null || messageBus == null) {
             log.d("setPlayer: Player or MessageBus is null hence cleaning up the underlying controller resources.")
             resetAdvertisingConfig()
@@ -83,6 +84,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         log.d("setPlayer")
         this.player = player
         this.messageBus = messageBus
+        this.mediaConfig = mediaConfig
         subscribeToPlayerEvents()
     }
 
@@ -216,6 +218,13 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         var adPlayedWithFrequency = 0
         messageBus?.addListener(this, PlayerEvent.playheadUpdated) { event ->
+
+            if (isLiveMedia()) {
+                log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured and releasing the resources.")
+                release()
+                return@addListener
+            }
+
             cuePointsList?.let { list ->
 
                 if (list.isEmpty()) {
@@ -888,6 +897,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         this.player = null
         this.messageBus?.removeListeners(this)
         this.messageBus = null
+        this.mediaConfig = null
         adController?.setAdvertisingConfig(false, null)
     }
 
@@ -1007,6 +1017,33 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private fun prepareContentPlayer() {
         log.d("prepareContentPlayer")
         playAd("")
+    }
+
+    /**
+     * Checks if the media is Live
+     * @return isLive or not
+     */
+    private fun isLiveMedia(): Boolean {
+        player?.let {
+            if (it.isLive) {
+                return true
+            }
+            getMediaEntry()?.let { pkMediaEntry ->
+                return pkMediaEntry.mediaType != PKMediaEntry.MediaEntryType.Vod
+            }
+        }
+        return false
+    }
+
+    /**
+     * Get the PKMediaEntry from PKMediaConfig
+     */
+    private fun getMediaEntry(): PKMediaEntry? {
+        return mediaConfig?.let { pkMediaConfig ->
+            pkMediaConfig.mediaEntry?.let { pkMediaEntry ->
+                pkMediaEntry
+            }
+        }
     }
 
     /**
