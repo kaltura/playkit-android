@@ -16,6 +16,8 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.ads.AdBreakConfig;
+import com.kaltura.playkit.ads.PKAdvertisingAdInfo;
 
 @SuppressWarnings("unused")
 public class AdEvent implements PKEvent {
@@ -223,15 +225,21 @@ public class AdEvent implements PKEvent {
 
     public static class AdWaterFalling extends AdEvent {
 
-        public AdWaterFalling() {
-            super((Type.AD_WATERFALLING));
+        public final AdBreakConfig adBreakConfig;
+
+        public AdWaterFalling(AdBreakConfig adBreakConfig) {
+            super(Type.AD_WATERFALLING);
+            this.adBreakConfig = adBreakConfig;
         }
     }
 
     public static class AdWaterFallingFailed extends AdEvent {
 
-        public AdWaterFallingFailed() {
-            super((Type.AD_WATERFALLING_FAILED));
+        public final AdBreakConfig adBreakConfig;
+
+        public AdWaterFallingFailed(AdBreakConfig adBreakConfig) {
+            super(Type.AD_WATERFALLING_FAILED);
+            this.adBreakConfig = adBreakConfig;
         }
     }
 
