@@ -37,6 +37,8 @@ public interface AdController extends PKController {
     
     void setCuePoints(List<Long> cuePoints, AdBreakPositionType adBreakPositionType, boolean isUpdatedCuePoint);
 
+    void setAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo);
+
     void adControllerPreparePlayer();
 
     long getAdCurrentPosition();

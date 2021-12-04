@@ -123,22 +123,27 @@ public class DefaultDAIAdControllerImpl implements AdController {
 
     @Override
     public void playAdNow(String adTagUrl) {
-        // PlayAdNow is not supported for DAI
+        // Not supported for DAI
     }
 
     @Override
     public void setAdvertisingConfig(boolean isConfigured, IMAEventsListener imaEventsListener) {
-        // advertisingConfigured is not supported for DAI
+        // Not supported for DAI
     }
 
     @Override
     public void setCuePoints(List<Long> cuePoints, AdBreakPositionType adBreakPositionType, boolean isUpdatedCuePoint) {
-        // setAllAdsCompleted is not supported for DAI
+        // Not supported for DAI
     }
 
     @Override
     public void adControllerPreparePlayer() {
+        // Not supported for DAI
+    }
 
+    @Override
+    public void setAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {
+        // Not supported for DAI
     }
 }
 

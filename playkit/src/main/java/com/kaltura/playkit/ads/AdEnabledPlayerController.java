@@ -279,6 +279,13 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
+    public void setAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {
+        if (adsProvider != null) {
+            adsProvider.setAdInfo(pkAdvertisingAdInfo);
+        }
+    }
+
+    @Override
     public void adControllerPreparePlayer() {
 
     }

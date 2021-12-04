@@ -39,6 +39,12 @@ internal data class AdPodConfig(var adPodState: AdState,
 internal data class Ad(var adState: AdState,
                        val ad: String)
 
+data class PKAdvertisingAdInfo(var adDescription: String,
+                               var adTitle: String,
+                               var adPodTimeOffset: Long,
+                               var podIndex: Int,
+                               var podCount: Int)
+
 /**
  * For Preroll and Postroll, always configure POSITION
  * For Midroll, PERCENTAGE or EVERY can be configured

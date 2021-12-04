@@ -17,6 +17,7 @@ import com.kaltura.playkit.ads.IMAEventsListener;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdPluginType;
 import com.kaltura.playkit.ads.PKAdProviderListener;
+import com.kaltura.playkit.ads.PKAdvertisingAdInfo;
 
 import java.util.List;
 
@@ -39,6 +40,8 @@ public interface AdsProvider {
     default void playAdNow(String adTagUrl) {}
 
     default void setCuePoints(List<Long> cuePoints, AdBreakPositionType adBreakPositionType, boolean isUpdatedCuePoint) {}
+
+    default void setAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {}
 
     default void adControllerPreparePlayer() {}
 

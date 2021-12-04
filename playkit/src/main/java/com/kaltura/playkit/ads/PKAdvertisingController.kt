@@ -4,6 +4,8 @@ import android.text.TextUtils
 import androidx.annotation.Nullable
 import com.kaltura.playkit.*
 import com.kaltura.playkit.plugins.ads.AdEvent
+import com.kaltura.playkit.plugins.ads.AdInfo
+import com.kaltura.playkit.utils.Consts
 import java.util.*
 
 /**
@@ -992,13 +994,45 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     }
 
     /**
+     * Create AdInfo object for IMAPlugin
+     */
+    private fun getAdInfo(): PKAdvertisingAdInfo? {
+        log.d("createAdInfoForAdvertisingConfig")
+        if (currentAdBreakIndexPosition == Int.MIN_VALUE) {
+            log.d("currentAdBreakIndexPosition is not valid")
+            return null
+        }
+
+        var pkAdvertisingAdInfo: PKAdvertisingAdInfo? = null
+
+        val adDescription = "Advertising Configured Ads description"
+        val adTitle = "Advertising Configured Ads title"
+        var adPodTimeOffset = 0L
+        var podIndex = 0
+        var podCount = 0
+
+        adsConfigMap?.let { adsMap ->
+            cuePointsList?.let { cuePoints ->
+                adPodTimeOffset = cuePoints[currentAdBreakIndexPosition]
+                podIndex = currentAdBreakIndexPosition + 1
+                podCount = cuePoints.size
+            }
+
+            pkAdvertisingAdInfo = PKAdvertisingAdInfo(adDescription, adTitle, adPodTimeOffset, podIndex, podCount)
+        }
+
+        return pkAdvertisingAdInfo
+    }
+
+    /**
      * Ad Playback
      * Call the play Ad API on IMAPlugin
      */
     private fun playAd(adUrl: String) {
         log.d("playAd AdUrl is $adUrl")
         adPlaybackTriggered = !TextUtils.isEmpty(adUrl)
-        player?.pause()
+        adController?.setAdInfo(getAdInfo())
+        //player?.pause()
         adController?.playAdNow(adUrl)
     }
 
@@ -1009,7 +1043,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         log.d("playContent")
         adPlaybackTriggered = false
         adController?.adControllerPreparePlayer()
-        player?.play()
+        //player?.play()
     }
 
     /**

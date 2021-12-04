@@ -143,6 +143,13 @@ public class DefaultAdControllerImpl implements AdController {
             adsProvider.adControllerPreparePlayer();
         }
     }
+
+    @Override
+    public void setAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {
+        if (adsProvider != null) {
+            adsProvider.setAdInfo(pkAdvertisingAdInfo);
+        }
+    }
 }
 
 
