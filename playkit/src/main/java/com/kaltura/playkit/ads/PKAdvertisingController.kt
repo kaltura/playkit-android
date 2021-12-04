@@ -4,6 +4,7 @@ import android.text.TextUtils
 import androidx.annotation.Nullable
 import com.kaltura.playkit.*
 import com.kaltura.playkit.plugins.ads.AdEvent
+import com.kaltura.playkit.plugins.ads.AdEvent.AdBufferStart
 import com.kaltura.playkit.plugins.ads.AdInfo
 import com.kaltura.playkit.utils.Consts
 import java.util.*
@@ -521,10 +522,12 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             val ad = getAdFromAdConfigMap(currentAdBreakIndexPosition, false)
             if (ad.isNullOrEmpty()) {
                 log.d("Ad is completely errored $error")
+                messageBus?.post(AdEvent.AdWaterFallingFailed(getCurrentAdBreakConfig(currentAdBreakIndexPosition)))
                 changeAdState(AdState.ERROR, AdrollType.ADBREAK)
                 playContent()
             } else {
                 log.d("Playing next waterfalling ad")
+                messageBus?.post(AdEvent.AdWaterFalling(getCurrentAdBreakConfig(currentAdBreakIndexPosition)))
                 changeAdState(AdState.ERROR, AdrollType.ADPOD)
                 playAd(ad)
             }
@@ -540,6 +543,23 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             }
             playContent()
         }
+    }
+
+    @Nullable
+    private fun getCurrentAdBreakConfig(position: Int): AdBreakConfig? {
+        cuePointsList?.let { cuePointsList ->
+            if (cuePointsList.isNotEmpty()) {
+                val adPosition: Long = cuePointsList[position]
+                adsConfigMap?.let { adsMap ->
+                    return if (adsMap.isEmpty()) {
+                        null
+                    } else {
+                        adsMap[adPosition]
+                    }
+                }
+            }
+        }
+        return null
     }
 
     private fun handlePlayAdNowPlayback(adEventType: AdEvent.Type) {

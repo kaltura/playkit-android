@@ -26,17 +26,17 @@ data class AdBreak(@NonNull var adBreakPositionType: AdBreakPositionType = AdBre
                    @NonNull val ads: List<List<String>>)
 
 // Ad Break Config
-internal data class AdBreakConfig(val adBreakPositionType: AdBreakPositionType,
+data class AdBreakConfig(val adBreakPositionType: AdBreakPositionType,
                                   var adPosition: Long,
                                   var adBreakState: AdState,
                                   val adPodList: List<AdPodConfig>?)
 
 // Ad list contains waterfalling ads as well.
-internal data class AdPodConfig(var adPodState: AdState,
+data class AdPodConfig(var adPodState: AdState,
                                 val adList: List<Ad>?)
 
 // Single Ad
-internal data class Ad(var adState: AdState,
+data class Ad(var adState: AdState,
                        val ad: String)
 
 data class PKAdvertisingAdInfo(var adDescription: String,
@@ -63,7 +63,7 @@ enum class AdTimeUnit {
 }
 
 // Ad's State
-internal enum class AdState {
+enum class AdState {
     READY,
     PLAYING,
     PLAYED,
