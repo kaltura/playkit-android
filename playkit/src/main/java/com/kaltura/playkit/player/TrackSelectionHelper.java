@@ -890,7 +890,7 @@ public class TrackSelectionHelper {
                     continue;
                 }
 
-                boolean isExternalSubtitle = isExternalSubtitle(format.language, format.sampleMimeType);
+                boolean isExternalSubtitle = isExternalSubtitle(languageName, format.sampleMimeType);
                 if (isExternalSubtitle) {
                     languageName = getExternalSubtitleLanguage(format);
                     hasExternalSubtitlesInTracks = true;
