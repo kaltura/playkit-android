@@ -324,6 +324,13 @@ public class TrackSelectionHelper {
                                 break;
                             case TRACK_TYPE_TEXT:
                                 if (format.language != null && hasExternalSubtitles && discardTextTrackOnPreference(format)) {
+                                    int selectionFlag = format.selectionFlags;
+                                    if (selector != null && (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH)) {
+                                        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
+                                        parametersBuilder.clearSelectionOverrides(TRACK_TYPE_TEXT);
+                                        parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, true);
+                                        selector.setParameters(parametersBuilder);
+                                    }
                                     continue;
                                 }
 
