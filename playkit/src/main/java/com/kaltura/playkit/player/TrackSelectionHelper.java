@@ -637,6 +637,7 @@ public class TrackSelectionHelper {
         }
 
         if (subtitleListMap.containsKey(languageName) && subtitleListMap.get(languageName).size() > 1) {
+
             if ((subtitlePreference == PKSubtitlePreference.INTERNAL && isExternalSubtitle) ||
                     (subtitlePreference == PKSubtitlePreference.EXTERNAL && !isExternalSubtitle)) {
                 return true;
@@ -826,14 +827,27 @@ public class TrackSelectionHelper {
                         // If trackSelection contains a text which is an external text track, it means that either internal text track
                         // does not contain any track or there is no default track in internal text track. If there is no internal text track then
                         // forcing the preference to be External.
-                        if (trackSelection != null && trackSelection.getSelectedFormat() != null &&
-                                isExternalSubtitle(trackSelection.getSelectedFormat().language, trackSelection.getSelectedFormat().sampleMimeType)) {
-                            pkSubtitlePreference = PKSubtitlePreference.EXTERNAL;
+
+                        String languageName = null;
+                        if (trackSelection != null) {
+                            if (trackSelection.getSelectedFormat().language != null) {
+                                languageName = trackSelection.getSelectedFormat().language;
+
+                                if (!TextUtils.isEmpty(languageName) &&
+                                        trackSelection.getSelectedFormat().sampleMimeType != null &&
+                                        isExternalSubtitle(languageName, trackSelection.getSelectedFormat().sampleMimeType)) {
+                                    pkSubtitlePreference = PKSubtitlePreference.EXTERNAL;
+                                }
+                            }
                         }
 
                         TextTrack textTrack = (TextTrack) trackList.get(i);
                         boolean isExternalSubtitle = isExternalSubtitle(textTrack.getLanguage(), textTrack.getMimeType());
-                        if (isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.EXTERNAL) {
+
+                        if (subtitleListMap.containsKey(languageName) && subtitleListMap.get(languageName).size() == 1) {
+                            defaultTrackIndex = i;
+                            break;
+                        } else if (isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.EXTERNAL) {
                             defaultTrackIndex = i;
                             break;
                         } else if (!isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.INTERNAL) {
@@ -865,7 +879,12 @@ public class TrackSelectionHelper {
                 Format format = trackGroup.getFormat(trackIndex);
 
                 String languageName = format.language;
-                if (isExternalSubtitle(format.language, format.sampleMimeType)) {
+                if (TextUtils.isEmpty(languageName)) {
+                    continue;
+                }
+
+                boolean isExternalSubtitle = isExternalSubtitle(format.language, format.sampleMimeType);
+                if (isExternalSubtitle) {
                     languageName = getExternalSubtitleLanguage(format);
                     hasExternalSubtitlesInTracks = true;
                 }
