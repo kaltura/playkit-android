@@ -4,9 +4,6 @@ import android.text.TextUtils
 import androidx.annotation.Nullable
 import com.kaltura.playkit.*
 import com.kaltura.playkit.plugins.ads.AdEvent
-import com.kaltura.playkit.plugins.ads.AdEvent.AdBufferStart
-import com.kaltura.playkit.plugins.ads.AdInfo
-import com.kaltura.playkit.utils.Consts
 import java.util.*
 
 /**
@@ -49,6 +46,9 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     // PlayAdsAfterTime Setup
     private var isPlayAdsAfterTimeConfigured = false
     private var playAdsAfterTime: Long = Long.MIN_VALUE
+
+    // AdWaterfalling indication
+    private var hasWaterFallingAds = false
 
     /**
      * Set the AdController from PlayerLoader level
@@ -202,9 +202,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             if (it.position > 0) {
                 isPlayAdNowTriggered = true
                 val adPodConfig = advertisingContainer?.parseAdPodConfig(it)
-                playAdNowAdBreak = AdBreakConfig(it.adBreakPositionType, it.position, AdState.READY, adPodConfig)
+                playAdNowAdBreak = AdBreakConfig(it.adBreakPositionType, 0L, AdState.READY, adPodConfig)
                 val adUrl = fetchPlayableAdFromAdsList(playAdNowAdBreak, false)
                 adUrl?.let { url ->
+                    log.d("playAdNow")
                     playAd(url)
                 }
             } else {
@@ -468,7 +469,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         log.d("allAdsCompleted callback")
         adPlaybackTriggered = false
         if (isPlayAdNowTriggered) {
-            handlePlayAdNowPlayback(AdEvent.allAdsCompleted)
+            handlePlayAdNowPlayback(AdEvent.allAdsCompleted, null)
             return
         }
         changeAdState(AdState.PLAYED, AdrollType.AD)
@@ -515,23 +516,24 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         log.w("AdEvent.error callback $error")
         adPlaybackTriggered = false
         if (isPlayAdNowTriggered && error.error.errorType != PKAdErrorType.VIDEO_PLAY_ERROR) {
-            handlePlayAdNowPlayback(AdEvent.adBreakFetchError)
+            handlePlayAdNowPlayback(AdEvent.adBreakFetchError, error)
             return
         }
         if (error.error.errorType != PKAdErrorType.VIDEO_PLAY_ERROR) {
             val ad = getAdFromAdConfigMap(currentAdBreakIndexPosition, false)
             if (ad.isNullOrEmpty()) {
-                log.d("Ad is completely errored $error")
-                messageBus?.post(AdEvent.AdWaterFallingFailed(getCurrentAdBreakConfig(currentAdBreakIndexPosition)))
+                log.d("Ad is completely error $error")
+                handleErrorEvent(true, getCurrentAdBreakConfig(), error)
                 changeAdState(AdState.ERROR, AdrollType.ADBREAK)
                 playContent()
             } else {
                 log.d("Playing next waterfalling ad")
-                messageBus?.post(AdEvent.AdWaterFalling(getCurrentAdBreakConfig(currentAdBreakIndexPosition)))
+                handleErrorEvent(false, getCurrentAdBreakConfig(), error)
                 changeAdState(AdState.ERROR, AdrollType.ADPOD)
                 playAd(ad)
             }
         } else {
+            handleErrorEvent(null, getCurrentAdBreakConfig(), error)
             log.d("PKAdErrorType.VIDEO_PLAY_ERROR currentAdIndexPosition = $currentAdBreakIndexPosition")
             cuePointsList?.let { cueList ->
                 val adPosition: Long = cueList[currentAdBreakIndexPosition]
@@ -545,16 +547,49 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
     }
 
+    private fun handleErrorEvent(isAllAdsFailed: Boolean?, adBreakConfig: AdBreakConfig?, error: AdEvent.Error?) {
+        log.e("isAdWaterFallingOccurred $hasWaterFallingAds")
+        isAllAdsFailed?.let {
+            if (hasWaterFallingAds) {
+                if (it) {
+                    messageBus?.post(
+                        AdEvent.AdWaterFallingFailed(adBreakConfig)
+                    )
+                } else {
+                    messageBus?.post(
+                        AdEvent.AdWaterFalling(adBreakConfig)
+                    )
+                }
+                log.d("Firing WaterFalling event")
+            } else {
+                log.d("Firing AdError because there was no AdWaterFalling")
+                error?.let { err ->
+                    messageBus?.post(err)
+                }
+            }
+            hasWaterFallingAds = false
+            return
+        }
+        // else Fire AdError
+        error?.let { err ->
+            log.d("Firing AdError $err")
+            messageBus?.post(err)
+        }
+        hasWaterFallingAds = false
+    }
+
     @Nullable
-    private fun getCurrentAdBreakConfig(position: Int): AdBreakConfig? {
-        cuePointsList?.let { cuePointsList ->
-            if (cuePointsList.isNotEmpty()) {
-                val adPosition: Long = cuePointsList[position]
-                adsConfigMap?.let { adsMap ->
-                    return if (adsMap.isEmpty()) {
-                        null
-                    } else {
-                        adsMap[adPosition]
+    private fun getCurrentAdBreakConfig(): AdBreakConfig? {
+        if (currentAdBreakIndexPosition > DEFAULT_AD_INDEX) {
+            cuePointsList?.let { cuePointsList ->
+                if (cuePointsList.isNotEmpty()) {
+                    val adPosition: Long = cuePointsList[currentAdBreakIndexPosition]
+                    adsConfigMap?.let { adsMap ->
+                        return if (adsMap.isEmpty()) {
+                            null
+                        } else {
+                            adsMap[adPosition]
+                        }
                     }
                 }
             }
@@ -562,7 +597,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         return null
     }
 
-    private fun handlePlayAdNowPlayback(adEventType: AdEvent.Type) {
+    private fun handlePlayAdNowPlayback(adEventType: AdEvent.Type, error: AdEvent.Error?) {
+        log.d("handlePlayAdNowPlayback ${adEventType.name}")
         if (adEventType == AdEvent.allAdsCompleted) {
             changeAdBreakState(playAdNowAdBreak, AdrollType.AD, AdState.PLAYED)
             val adUrl = fetchPlayableAdFromAdsList(playAdNowAdBreak, false)
@@ -578,14 +614,21 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             val adUrl = fetchPlayableAdFromAdsList(playAdNowAdBreak, false)
             if (adUrl.isNullOrEmpty()) {
                 log.d("PlayAdNow Ad is completely errored")
+                handleErrorEvent(true, playAdNowAdBreak, error)
                 changeAdBreakState(playAdNowAdBreak , AdrollType.ADBREAK, AdState.ERROR)
+                isPlayAdNowTriggered = false
+                playAdNowAdBreak = null
                 playContent()
             } else {
                 log.d("Playing next waterfalling ad")
+                handleErrorEvent(false, playAdNowAdBreak, error)
                 changeAdBreakState(playAdNowAdBreak, AdrollType.ADPOD, AdState.ERROR)
                 playAd(adUrl)
             }
         } else {
+            handleErrorEvent(null, playAdNowAdBreak, error)
+            isPlayAdNowTriggered = false
+            playAdNowAdBreak = null
             playContent()
         }
     }
@@ -676,6 +719,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private fun fetchPlayableAdFromAdsList(adBreakConfig: AdBreakConfig?, isTriggeredFromPlayerPosition: Boolean): String? {
         log.d("fetchPlayableAdFromAdsList AdBreakConfig is $adBreakConfig")
         var adTagUrl: String? = null
+        hasWaterFallingAds = false
 
         when (adBreakConfig?.adBreakState) {
             AdState.READY -> {
@@ -727,6 +771,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         val adUrl: String? = null
         for (adPodConfig: AdPodConfig in adPodList) {
+            hasWaterFallingAds = adPodConfig.hasWaterFalling
+
             when(adPodConfig.adPodState) {
 
                 AdState.ERROR -> {
@@ -816,7 +862,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private fun changeAdBreakState(adBreakConfig: AdBreakConfig?, adrollType: AdrollType, adState: AdState) {
         adBreakConfig?.let { adBreak ->
             log.d("AdState is changed for AdPod position ${adBreak.adPosition}")
-            //TODO: Change internal ad index state which eventually was played after waterfalling
             if (adrollType == AdrollType.ADBREAK) {
                 adBreak.adBreakState = adState
             }
@@ -901,6 +946,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         isPlayAdsAfterTimeConfigured = false
         playAdsAfterTime = Long.MIN_VALUE
+
+        hasWaterFallingAds = false
     }
 
     /**

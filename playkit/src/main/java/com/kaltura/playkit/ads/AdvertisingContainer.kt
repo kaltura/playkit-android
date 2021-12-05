@@ -110,7 +110,8 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
         val adPodConfigList = mutableListOf<AdPodConfig>()
         for (adPod: List<String>? in singleAdBreak.ads) {
             val adsList = parseEachAdUrl(adPod)
-            val adPodConfig = AdPodConfig(AdState.READY, adsList)
+            val hasWaterFalling = adsList.size > 1
+            val adPodConfig = AdPodConfig(AdState.READY, adsList, hasWaterFalling)
             adPodConfigList.add(adPodConfig)
         }
         return adPodConfigList
