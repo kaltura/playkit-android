@@ -13,6 +13,7 @@ import androidx.annotation.NonNull
  */
 data class AdvertisingConfig(@NonNull val advertising: List<AdBreak?>?,
                              @NonNull val adTimeUnit: AdTimeUnit = AdTimeUnit.SECONDS,
+                             @NonNull val adType: AdType = AdType.AD_URL,
                              @NonNull val playAdsAfterTime: Long = Long.MIN_VALUE)
 
 /**
@@ -61,6 +62,11 @@ enum class AdBreakPositionType {
 enum class AdTimeUnit {
     SECONDS,
     MILISECONDS
+}
+
+enum class AdType {
+    AD_URL,
+    AD_RESPONSE
 }
 
 // Ad's State

@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.ads;
 
+import androidx.annotation.NonNull;
+
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 
@@ -31,11 +33,11 @@ public interface AdController extends PKController {
 
     default void setVolume(float volume) {}
 
-    void setAdvertisingConfig(boolean isConfigured, IMAEventsListener imaEventsListener);
+    void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener);
 
-    void playAdNow(String adTagUrl);
+    void playAdNow(String adTag);
     
-    void setCuePoints(List<Long> cuePoints, AdBreakPositionType adBreakPositionType, boolean isUpdatedCuePoint);
+    void setCuePoints(List<Long> cuePoints);
 
     void setAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo);
 

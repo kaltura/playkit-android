@@ -50,6 +50,9 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     // AdWaterfalling indication
     private var hasWaterFallingAds = false
 
+    // AdType
+    private var adType: AdType = AdType.AD_URL
+
     /**
      * Set the AdController from PlayerLoader level
      * Need to inform IMAPlugin that Advertising is configured
@@ -98,13 +101,14 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         log.d("initAdvertising")
 
         this.advertisingConfig = advertisingConfig
-        adController?.setAdvertisingConfig(true, this)
         advertisingContainer = AdvertisingContainer(this.advertisingConfig)
+        adType = advertisingContainer?.getAdType() ?: AdType.AD_URL
+        adController?.setAdvertisingConfig(true, adType, this)
         adsConfigMap = advertisingContainer?.getAdsConfigMap()
         checkTypeOfMidrollAdPresent(advertisingContainer?.getMidrollAdBreakPositionType(), 0L)
 
         cuePointsList = advertisingContainer?.getCuePointsList()
-        adController?.setCuePoints(cuePointsList, advertisingContainer?.getMidrollAdBreakPositionType(), false)
+        adController?.setCuePoints(cuePointsList)
         playAdsAfterTime = advertisingContainer?.getPlayAdsAfterTime() ?: Long.MIN_VALUE
 
         if (isAdsListEmpty()) {
@@ -917,7 +921,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 midrollFrequency = advertisingContainer?.getMidrollFrequency() ?: Long.MIN_VALUE
                 val updatedCuePoints: List<Long>? = advertisingContainer?.getEveryBasedCuePointsList(playerDuration, midrollFrequency)
                 updatedCuePoints?.let {
-                    adController?.setCuePoints(it, advertisingContainer?.getMidrollAdBreakPositionType(), true)
+                    adController?.setCuePoints(it)
                     log.d("Updated cuePointsList for EVERY based Midrolls $it")
                 }
             }
@@ -928,7 +932,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                         advertisingContainer?.updatePercentageBasedPosition(playerDuration)
                         adsConfigMap = advertisingContainer?.getAdsConfigMap()
                         cuePointsList = advertisingContainer?.getCuePointsList()
-                        adController?.setCuePoints(cuePointsList, advertisingContainer?.getMidrollAdBreakPositionType(), true)
+                        adController?.setCuePoints(cuePointsList)
                         log.d("Updated cuePointsList for PERCENTAGE based Midrolls $cuePointsList")
                     }
                 }
@@ -989,7 +993,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         this.messageBus?.removeListeners(this)
         this.messageBus = null
         this.mediaConfig = null
-        adController?.setAdvertisingConfig(false, null)
+        adController?.setAdvertisingConfig(false, adType, null)
     }
 
     /**
@@ -1117,12 +1121,12 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Ad Playback
      * Call the play Ad API on IMAPlugin
      */
-    private fun playAd(adUrl: String) {
-        log.d("playAd AdUrl is $adUrl")
-        adPlaybackTriggered = !TextUtils.isEmpty(adUrl)
+    private fun playAd(adTag: String) {
+        log.d("playAd AdUrl is $adTag")
+        adPlaybackTriggered = !TextUtils.isEmpty(adTag)
         adController?.setAdInfo(getAdInfo())
         //player?.pause()
-        adController?.playAdNow(adUrl)
+        adController?.playAdNow(adTag)
     }
 
     /**

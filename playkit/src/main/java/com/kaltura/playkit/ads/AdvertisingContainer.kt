@@ -18,6 +18,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
     private var midrollAdPositionType: AdBreakPositionType = AdBreakPositionType.POSITION
     private var midrollFrequency = Long.MIN_VALUE
     private var playAdsAfterTime = Long.MIN_VALUE
+    private var adType: AdType = AdType.AD_URL
 
     init {
         advertisingConfig?.let {
@@ -39,6 +40,10 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                 advertisingConfig.playAdsAfterTime * Consts.MILLISECONDS_MULTIPLIER
             } else {
                 advertisingConfig.playAdsAfterTime
+            }
+
+            if (advertisingConfig.adType != null) {
+                adType = advertisingConfig.adType
             }
 
             for (adBreak: AdBreak? in adBreaks) {
@@ -321,6 +326,10 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
      */
     fun getPlayAdsAfterTime(): Long {
         return playAdsAfterTime
+    }
+
+    fun getAdType(): AdType {
+        return adType
     }
 }
 
