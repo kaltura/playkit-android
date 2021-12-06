@@ -229,8 +229,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         messageBus?.addListener(this, PlayerEvent.playheadUpdated) { event ->
 
             if (isLiveMedia()) {
-                log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured and releasing the resources.")
-                release()
+                //log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
+               // release()
                 return@addListener
             }
 
@@ -307,15 +307,31 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         messageBus?.addListener(this, PlayerEvent.seeking) {
             log.d("Player seeking for player position = ${player?.currentPosition} - currentPosition ${it.currentPosition} - targetPosition ${it.targetPosition}" )
+            if (isLiveMedia()) {
+                //log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
+                // release()
+                return@addListener
+            }
             isPlayerSeeking = true
         }
 
         messageBus?.addListener(this, PlayerEvent.loadedMetadata) {
             log.d("loadedMetadata Player duration is = ${player?.duration}" )
+            if (isLiveMedia()) {
+                //log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
+                // release()
+                return@addListener
+            }
             checkTypeOfMidrollAdPresent(advertisingContainer?.getMidrollAdBreakPositionType(), player?.duration)
         }
 
         messageBus?.addListener(this, PlayerEvent.seeked) {
+            if (isLiveMedia()) {
+                //log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
+                // release()
+                return@addListener
+            }
+
             if (isAllAdsCompleted) {
                 log.d("Player seeked to position = ${player?.currentPosition} but All ads has completed its playback hence returning.")
                 return@addListener
@@ -376,91 +392,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 adPlaybackTriggered = false
             }
         }
-
-        messageBus?.addListener(this, AdEvent.started) {
-            log.d("started")
-        }
-
-        messageBus?.addListener(this, AdEvent.contentResumeRequested) {
-            log.d("contentResumeRequested ${player?.currentPosition}")
-        }
-
-        messageBus?.addListener(this, AdEvent.contentPauseRequested) {
-            log.d("contentPauseRequested")
-        }
-
-        messageBus?.addListener(this, AdEvent.adPlaybackInfoUpdated) {
-            log.d("adPlaybackInfoUpdated")
-        }
-
-        messageBus?.addListener(this, AdEvent.skippableStateChanged) {
-            log.d("skippableStateChanged")
-        }
-
-        messageBus?.addListener(this, AdEvent.adRequested) {
-            log.d("adRequested")
-        }
-
-        messageBus?.addListener(this, AdEvent.playHeadChanged) {
-            log.d("playHeadChanged")
-        }
-
-        messageBus?.addListener(this, AdEvent.adBreakStarted) {
-            log.d("adBreakStarted")
-        }
-
-        messageBus?.addListener(this, AdEvent.cuepointsChanged) {
-            log.d("cuepointsChanged")
-        }
-
-        messageBus?.addListener(this, AdEvent.loaded) {
-            log.d("loaded")
-        }
-
-        messageBus?.addListener(this, AdEvent.resumed) {
-            log.d("resumed")
-        }
-
-        messageBus?.addListener(this, AdEvent.paused) {
-            log.d("paused")
-        }
-
-        messageBus?.addListener(this, AdEvent.skipped) {
-            log.d("skipped")
-        }
-
-        messageBus?.addListener(this, AdEvent.allAdsCompleted) {
-            log.d("allAdsCompleted")
-        }
-
-        messageBus?.addListener(this, AdEvent.completed) {
-            //  isCustomAdTriggered = false
-            log.d("AdEvent.completed")
-        }
-
-        messageBus?.addListener(this, AdEvent.firstQuartile) {
-            log.d("firstQuartile")
-        }
-
-        messageBus?.addListener(this, AdEvent.midpoint) {
-            log.d("midpoint")
-        }
-
-        messageBus?.addListener(this, AdEvent.thirdQuartile) {
-            log.d("thirdQuartile")
-        }
-
-        messageBus?.addListener(this, AdEvent.adBreakEnded) {
-            log.d("adBreakEnded")
-        }
-
-        messageBus?.addListener(this, AdEvent.adClickedEvent) {
-            log.d("adClickedEvent")
-        }
-
-        messageBus?.addListener(this, AdEvent.error) {
-            log.d("AdEvent.error $it")
-        }
     }
 
     /**
@@ -502,28 +433,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             playPostrollAdBreak()
         }
         isPostrollLeftForPlaying = false
-    }
-
-    /**
-     * Mapping of CONTENT_RESUME_REQUESTED event from IMAPlugin
-     */
-    override fun contentResumeRequested() {
-        log.d("contentResumeRequested callback and PlayerPosition is${player?.currentPosition}")
-        //playContent() //TODO: Check it because after commenting it video frame between ad playback is gone
-    }
-
-    /**
-     * Mapping of CONTENT_PAUSE_REQUESTED event from IMAPlugin
-     */
-    override fun contentPauseRequested() {
-        log.d("contentPauseRequested callback")
-    }
-
-    /**
-     * Mapping of AD_COMPLETED event from IMAPlugin
-     */
-    override fun adCompleted() {
-        log.d("adCompleted callback")
     }
 
     /**
