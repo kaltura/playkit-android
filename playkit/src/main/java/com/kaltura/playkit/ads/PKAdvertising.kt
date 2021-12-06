@@ -11,5 +11,5 @@ interface PKAdvertising {
      * @param adBreak AdBreak to be played
      */
     fun playAdNow(adBreak: AdBreak?)
-
 }
+
