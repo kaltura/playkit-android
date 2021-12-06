@@ -1,5 +1,7 @@
 package com.kaltura.playkit.ads;
 
+import androidx.annotation.NonNull;
+
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
@@ -122,17 +124,17 @@ public class DefaultDAIAdControllerImpl implements AdController {
     }
 
     @Override
-    public void playAdNow(String adTagUrl) {
+    public void playAdNow(String adTag) {
         // Not supported for DAI
     }
 
     @Override
-    public void setAdvertisingConfig(boolean isConfigured, IMAEventsListener imaEventsListener) {
+    public void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener) {
         // Not supported for DAI
     }
 
     @Override
-    public void setCuePoints(List<Long> cuePoints, AdBreakPositionType adBreakPositionType, boolean isUpdatedCuePoint) {
+    public void setCuePoints(List<Long> cuePoints) {
         // Not supported for DAI
     }
 

@@ -258,23 +258,23 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
-    public void playAdNow(String adTagUrl) {
+    public void playAdNow(String adTag) {
         if (adsProvider != null) {
-            adsProvider.playAdNow(adTagUrl);
+            adsProvider.playAdNow(adTag);
         }
     }
 
     @Override
-    public void setAdvertisingConfig(boolean isConfigured, IMAEventsListener imaEventsListener) {
+    public void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener) {
         if (adsProvider != null) {
-            adsProvider.setAdvertisingConfig(isConfigured, imaEventsListener);
+            adsProvider.setAdvertisingConfig(isConfigured, adType, imaEventsListener);
         }
     }
 
     @Override
-    public void setCuePoints(List<Long> cuePoints, AdBreakPositionType adBreakPositionType, boolean isUpdatedCuePoint) {
+    public void setCuePoints(List<Long> cuePoints) {
         if (adsProvider != null) {
-            adsProvider.setCuePoints(cuePoints, adBreakPositionType, isUpdatedCuePoint);
+            adsProvider.setCuePoints(cuePoints);
         }
     }
 

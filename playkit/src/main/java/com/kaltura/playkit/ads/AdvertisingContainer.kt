@@ -18,6 +18,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
     private var midrollAdPositionType: AdBreakPositionType = AdBreakPositionType.POSITION
     private var midrollFrequency = Long.MIN_VALUE
     private var playAdsAfterTime = Long.MIN_VALUE
+    private var adType: AdType = AdType.AD_URL
 
     init {
         advertisingConfig?.let {
@@ -35,10 +36,14 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
             val adBreaksList = ArrayList<AdBreakConfig>()
             cuePointsList = LinkedList()
 
-            playAdsAfterTime = if (advertisingConfig.adTimeUnit == AdTimeUnit.SECONDS && (advertisingConfig.playAdsAfterTime != -1L || advertisingConfig.playAdsAfterTime >0)) {
+            playAdsAfterTime = if (advertisingConfig.adTimeUnit == AdTimeUnit.SECONDS && (advertisingConfig.playAdsAfterTime != -1L || advertisingConfig.playAdsAfterTime > 0)) {
                 advertisingConfig.playAdsAfterTime * Consts.MILLISECONDS_MULTIPLIER
             } else {
                 advertisingConfig.playAdsAfterTime
+            }
+
+            if (advertisingConfig.adType != null) {
+                adType = advertisingConfig.adType
             }
 
             for (adBreak: AdBreak? in adBreaks) {
@@ -110,7 +115,8 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
         val adPodConfigList = mutableListOf<AdPodConfig>()
         for (adPod: List<String>? in singleAdBreak.ads) {
             val adsList = parseEachAdUrl(adPod)
-            val adPodConfig = AdPodConfig(AdState.READY, adsList)
+            val hasWaterFalling = adsList.size > 1
+            val adPodConfig = AdPodConfig(AdState.READY, adsList, hasWaterFalling)
             adPodConfigList.add(adPodConfig)
         }
         return adPodConfigList
@@ -170,8 +176,8 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
         cuePointsList?.let {
             if (it.first == -1L) {
                 it.remove(-1)
+                it.addLast(-1)
             }
-            it.addLast(-1)
         }
     }
 
@@ -241,6 +247,45 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
         movePostRollAdToLastInList()
     }
 
+    fun getEveryBasedCuePointsList(playerDuration: Long?, frequency: Long): List<Long>? {
+        log.d("getEveryBasedCuePointsList PlayerDuration is $playerDuration")
+        playerDuration?.let {
+            if (it <= 0) {
+                return null
+            }
+        }
+
+        if (frequency > Long.MIN_VALUE) {
+            val updatedCuePointsList = mutableListOf<Long>()
+
+            playerDuration?.let { duration ->
+                val updatedRoundedOfDurationMs =
+                    (duration.div(Consts.MILLISECONDS_MULTIPLIER)) * Consts.MILLISECONDS_MULTIPLIER
+                val factor = updatedRoundedOfDurationMs / frequency
+                for (factorValue in 1..factor) {
+                    updatedCuePointsList.add(frequency * factorValue)
+                }
+            }
+
+            log.d("getEveryBasedCuePointsList ${updatedCuePointsList}")
+
+            if (updatedCuePointsList.isNotEmpty()) {
+                if (cuePointsList?.first == 0L) {
+                    updatedCuePointsList.add(0, 0)
+                }
+
+                if (cuePointsList?.last == -1L) {
+                    updatedCuePointsList.add(-1)
+                }
+            }
+
+            log.d(" final updatedCuePointsList = ${updatedCuePointsList}")
+            return updatedCuePointsList
+        }
+
+        return null
+    }
+
     /**
      * Get Midroll ad break position type (POSITION, PERCENTAGE, EVERY)
      */
@@ -282,11 +327,9 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
     fun getPlayAdsAfterTime(): Long {
         return playAdsAfterTime
     }
+
+    fun getAdType(): AdType {
+        return adType
+    }
 }
-
-
-
-
-
-
 

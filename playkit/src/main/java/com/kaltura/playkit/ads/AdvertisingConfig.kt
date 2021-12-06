@@ -13,6 +13,7 @@ import androidx.annotation.NonNull
  */
 data class AdvertisingConfig(@NonNull val advertising: List<AdBreak?>?,
                              @NonNull val adTimeUnit: AdTimeUnit = AdTimeUnit.SECONDS,
+                             @NonNull val adType: AdType = AdType.AD_URL,
                              @NonNull val playAdsAfterTime: Long = Long.MIN_VALUE)
 
 /**
@@ -27,17 +28,18 @@ data class AdBreak(@NonNull var adBreakPositionType: AdBreakPositionType = AdBre
 
 // Ad Break Config
 data class AdBreakConfig(val adBreakPositionType: AdBreakPositionType,
-                                  var adPosition: Long,
-                                  var adBreakState: AdState,
-                                  val adPodList: List<AdPodConfig>?)
+                         var adPosition: Long,
+                         var adBreakState: AdState,
+                         val adPodList: List<AdPodConfig>?)
 
 // Ad list contains waterfalling ads as well.
 data class AdPodConfig(var adPodState: AdState,
-                                val adList: List<Ad>?)
+                       val adList: List<Ad>?,
+                       val hasWaterFalling: Boolean = false)
 
 // Single Ad
 data class Ad(var adState: AdState,
-                       val ad: String)
+              val ad: String)
 
 data class PKAdvertisingAdInfo(var adDescription: String,
                                var adTitle: String,
@@ -60,6 +62,11 @@ enum class AdBreakPositionType {
 enum class AdTimeUnit {
     SECONDS,
     MILISECONDS
+}
+
+enum class AdType {
+    AD_URL,
+    AD_RESPONSE
 }
 
 // Ad's State
