@@ -233,12 +233,17 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             cuePointsList?.let { list ->
 
                 if (list.isEmpty()) {
-                    log.d("Ads are empty, dropping ad playback.")
+                    log.d("playheadUpdated: Ads are empty, dropping ad playback.")
                     return@addListener
                 }
 
                 if (adPlaybackTriggered) {
-                    log.d("Ad is playing or being loaded, dropping ad playback.")
+                    log.d("playheadUpdated: Ad is playing or being loaded, dropping ad playback.")
+                    return@addListener
+                }
+
+                if (hasOnlyPreRoll()) {
+                    log.d("playheadUpdated: Only Preroll ad is available hence returning from here.")
                     return@addListener
                 }
 
@@ -258,7 +263,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     adPlayedWithFrequency = 0
                 }
 
-                if (!isPlayerSeeking && (midrollAdBreakPositionType == AdBreakPositionType.EVERY) && midrollFrequency > Long.MIN_VALUE && adPlayedWithFrequency == 1 && list[nextAdBreakIndexForMonitoring] != list.last && !adPlaybackTriggered) {
+                if (!isPlayerSeeking && (midrollAdBreakPositionType == AdBreakPositionType.EVERY) && midrollFrequency > Long.MIN_VALUE && adPlayedWithFrequency == 1 && !adPlaybackTriggered) {
+                    if (hasPostRoll() && list[nextAdBreakIndexForMonitoring] == list.last) {
+                        log.d("PlayheadUpdated: postroll position")
+                        return@addListener
+                    }
                     log.d("playheadUpdated ${event.position} & nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring & nextAdForMonitoring ad position is = ${cuePointsList?.get(nextAdBreakIndexForMonitoring)}")
                     log.d("nextAdForMonitoring ad position is = $list")
                     // TODO: handle situation of player.pause or content_pause_requested
@@ -269,7 +278,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     return@let
                 }
 
-                if (!isPlayerSeeking && (midrollAdBreakPositionType != AdBreakPositionType.EVERY) && event.position >= list[nextAdBreakIndexForMonitoring] && list[nextAdBreakIndexForMonitoring] != list.last && !adPlaybackTriggered) {
+                if (!isPlayerSeeking && (midrollAdBreakPositionType != AdBreakPositionType.EVERY) && event.position >= list[nextAdBreakIndexForMonitoring] && !adPlaybackTriggered) {
+                    if (hasPostRoll() && list[nextAdBreakIndexForMonitoring] == list.last) {
+                        log.d("PlayheadUpdated: postroll position")
+                        return@addListener
+                    }
                     log.d("playheadUpdated ${event.position} & nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring & nextAdForMonitoring ad position is = ${list[nextAdBreakIndexForMonitoring]}")
                     log.d("nextAdForMonitoring ad position is = $list")
                     // TODO: handle situation of player.pause or content_pause_requested
@@ -309,12 +322,12 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             cuePointsList?.let { list ->
 
                 if (list.isEmpty()) {
-                    log.d("Ads are empty, dropping ad playback.")
+                    log.d("seeked: Ads are empty, dropping ad playback.")
                     return@addListener
                 }
 
                 if (adPlaybackTriggered) {
-                    log.d("Ad is playing or being loaded, dropping ad playback.")
+                    log.d("seeked: Ad is playing or being loaded, dropping ad playback.")
                     return@addListener
                 }
 
@@ -902,6 +915,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             AdBreakPositionType.EVERY -> {
                 midrollAdBreakPositionType = adBreakPositionType
                 midrollFrequency = advertisingContainer?.getMidrollFrequency() ?: Long.MIN_VALUE
+                val updatedCuePoints: List<Long>? = advertisingContainer?.getEveryBasedCuePointsList(playerDuration, midrollFrequency)
+                updatedCuePoints?.let {
+                    adController?.setCuePoints(it, advertisingContainer?.getMidrollAdBreakPositionType(), true)
+                    log.d("Updated cuePointsList for EVERY based Midrolls $it")
+                }
             }
 
             AdBreakPositionType.PERCENTAGE -> {
@@ -937,6 +955,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         isPlayerSeeking = false
         isPostrollLeftForPlaying = false
         isAllAdsCompleted = false
+        isAllAdsCompletedFired = false
 
         midrollAdBreakPositionType = AdBreakPositionType.POSITION
         midrollFrequency = Long.MIN_VALUE
@@ -955,6 +974,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     fun release() {
         log.d("release")
+        playContent()
         resetAdvertisingConfig()
         destroyConfigResources()
     }
@@ -982,7 +1002,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
 
         log.d("checkAllAdsArePlayed")
-        if (!hasPreRoll() && midRollAdsCount() <=0 && !hasPostRoll()) {
+        if (!hasPreRoll() && midRollAdsCount() <= 0 && !hasPostRoll()) {
             isAllAdsCompleted = true
         }
 
@@ -1023,6 +1043,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         log.d("fireAllAdsCompleteEvent")
         isAllAdsCompletedFired = true
         messageBus?.post(AdEvent(AdEvent.Type.ALL_ADS_COMPLETED))
+
+        release()
     }
     /**
      * Trigger Postroll ad playback
@@ -1109,8 +1131,13 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private fun playContent() {
         log.d("playContent")
         adPlaybackTriggered = false
-        adController?.adControllerPreparePlayer()
-        //player?.play()
+        player?.let {
+            adController?.adControllerPreparePlayer()
+            if (!it.isPlaying) {
+                it.play()
+            }
+        }
+
     }
 
     /**
@@ -1186,6 +1213,13 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
         log.d("MidRollAdsCount is $midrollAdsCount")
         return midrollAdsCount
+    }
+
+    private fun hasOnlyPreRoll(): Boolean {
+        if (hasPreRoll() && !hasPostRoll() && midRollAdsCount() <= 0) {
+            return true
+        }
+        return false
     }
 
     /**

@@ -35,7 +35,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
             val adBreaksList = ArrayList<AdBreakConfig>()
             cuePointsList = LinkedList()
 
-            playAdsAfterTime = if (advertisingConfig.adTimeUnit == AdTimeUnit.SECONDS && (advertisingConfig.playAdsAfterTime != -1L || advertisingConfig.playAdsAfterTime >0)) {
+            playAdsAfterTime = if (advertisingConfig.adTimeUnit == AdTimeUnit.SECONDS && (advertisingConfig.playAdsAfterTime != -1L || advertisingConfig.playAdsAfterTime > 0)) {
                 advertisingConfig.playAdsAfterTime * Consts.MILLISECONDS_MULTIPLIER
             } else {
                 advertisingConfig.playAdsAfterTime
@@ -171,8 +171,8 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
         cuePointsList?.let {
             if (it.first == -1L) {
                 it.remove(-1)
+                it.addLast(-1)
             }
-            it.addLast(-1)
         }
     }
 
@@ -240,6 +240,45 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
         log.d("sortCuePointsList")
         cuePointsList?.sort()
         movePostRollAdToLastInList()
+    }
+
+    fun getEveryBasedCuePointsList(playerDuration: Long?, frequency: Long): List<Long>? {
+        log.d("getEveryBasedCuePointsList PlayerDuration is $playerDuration")
+        playerDuration?.let {
+            if (it <= 0) {
+                return null
+            }
+        }
+
+        if (frequency > Long.MIN_VALUE) {
+            val updatedCuePointsList = mutableListOf<Long>()
+
+            playerDuration?.let { duration ->
+                val updatedRoundedOfDurationMs =
+                    (duration.div(Consts.MILLISECONDS_MULTIPLIER)) * Consts.MILLISECONDS_MULTIPLIER
+                val factor = updatedRoundedOfDurationMs / frequency
+                for (factorValue in 1..factor) {
+                    updatedCuePointsList.add(frequency * factorValue)
+                }
+            }
+
+            log.d("getEveryBasedCuePointsList ${updatedCuePointsList}")
+
+            if (updatedCuePointsList.isNotEmpty()) {
+                if (cuePointsList?.first == 0L) {
+                    updatedCuePointsList.add(0, 0)
+                }
+
+                if (cuePointsList?.last == -1L) {
+                    updatedCuePointsList.add(-1)
+                }
+            }
+
+            log.d(" final updatedCuePointsList = ${updatedCuePointsList}")
+            return updatedCuePointsList
+        }
+
+        return null
     }
 
     /**
