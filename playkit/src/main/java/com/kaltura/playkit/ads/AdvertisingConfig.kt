@@ -6,7 +6,7 @@ import androidx.annotation.NonNull
 
 /**
  * Advertising configuration
- * Pass the list the AdBreaks
+ * Pass the list of AdBreaks
  * @param advertising: List of AdBreaks
  * @param adTimeUnit: AdBreak position in Seconds or Milliseconds
  * @param playAdsAfterTime: Play ads only from a specific time
