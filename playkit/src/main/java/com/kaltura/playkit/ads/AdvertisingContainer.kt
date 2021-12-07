@@ -2,6 +2,7 @@ package com.kaltura.playkit.ads
 
 import androidx.annotation.Nullable
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import com.kaltura.playkit.PKLog
 import com.kaltura.playkit.utils.Consts
 import java.util.*
@@ -132,7 +133,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
             } else {
                 log.e("Malformed AdBreak Json")
             }
-        } catch (e: Exception) {
+        } catch (e: JsonSyntaxException) {
             log.e("Malformed AdBreak Json Exception: ${e.message}")
         }
         return null
