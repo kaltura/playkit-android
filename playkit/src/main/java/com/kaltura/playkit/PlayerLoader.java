@@ -54,7 +54,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
-    private AdvertisingConfig advertisingConfig;
+    private @Nullable AdvertisingConfig advertisingConfig;
     private PKAdvertisingController pkAdvertisingController;
     private final String kavaPluginKey = "kava";
     private boolean isKavaImpressionFired;
@@ -196,7 +196,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public void setAdvertising(@NonNull AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController) {
+    public void setAdvertising(@Nullable AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController) {
         if (!PKDeviceCapabilities.isKalturaPlayerAvailable()) {
             log.e("Advertising is being used to configure custom AdLayout. This feature is not available in Playkit SDK. " +
                     "It is only being used by Kaltura Player SDK.");

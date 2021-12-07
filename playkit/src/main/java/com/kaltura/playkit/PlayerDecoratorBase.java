@@ -40,7 +40,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void setAdvertising(@NonNull AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController) {
+    public void setAdvertising(@Nullable AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController) {
         player.setAdvertising(advertisingConfig, pkAdvertisingController);
     }
 

@@ -60,6 +60,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * before onUpdateMedia call
      */
     fun setAdController(adController: AdController) {
+        log.d("setAdController")
         this.adController = adController
     }
 
@@ -67,7 +68,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Set the actual advertising config object
      * and map it with our internal Advertising tree
      */
-    fun setAdvertising(advertisingConfig: AdvertisingConfig?) {
+    fun setAdvertising(@Nullable advertisingConfig: AdvertisingConfig?) {
         log.d("setAdvertising")
         resetAdvertisingConfig()
         if (advertisingConfig != null) {
@@ -82,6 +83,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Player configuration from KalturaPlayer
      */
     fun setPlayer(player: Player?, messageBus: MessageBus?, mediaConfig: PKMediaConfig) {
+        log.d("setPlayer")
         if (player == null || messageBus == null) {
             log.d("setPlayer: Player or MessageBus is null hence cleaning up the underlying controller resources.")
             resetAdvertisingConfig()
@@ -126,8 +128,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * After the Player prepare, starting point
      * to play the Advertising
      */
-    fun playAdvertising() {
-        log.d("playAdvertising")
+    fun loadAdvertising() {
+        log.d("loadAdvertising")
 
         if (isAdsListEmpty()) {
             log.d("All Ads are empty hence clearing the underlying resources")
@@ -425,6 +427,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             return
         }
         isPlayAdsAfterTimeConfigured = false
+        log.d("isPlayAdsAfterTimeConfigured : $isPlayAdsAfterTimeConfigured")
     }
 
     /**
@@ -523,6 +526,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
     @Nullable
     private fun getCurrentAdBreakConfig(): AdBreakConfig? {
+        log.d("getCurrentAdBreakConfig")
         if (currentAdBreakIndexPosition > DEFAULT_AD_INDEX) {
             cuePointsList?.let { cuePointsList ->
                 if (cuePointsList.isNotEmpty()) {
@@ -803,6 +807,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Change the internal state of AdBreak, AdPod or Ad
      */
     private fun changeAdBreakState(adBreakConfig: AdBreakConfig?, adrollType: AdrollType, adState: AdState) {
+        log.d("changeAdBreakState AdBreakConfig: $adBreakConfig")
         adBreakConfig?.let { adBreak ->
             log.d("AdState is changed for AdPod position ${adBreak.adPosition}")
             if (adrollType == AdrollType.ADBREAK) {
@@ -927,6 +932,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     private fun checkAllAdsArePlayed(): Boolean {
         if (isAllAdsCompleted) {
+            log.d("isAllAdsCompleted: $isAllAdsCompleted")
             fireAllAdsCompleteEvent()
             return true
         }
@@ -992,6 +998,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Check if the Ads config is empty
      */
     private fun isAdsListEmpty(): Boolean {
+        log.d("isAdsListEmpty")
         if (adController == null || adsConfigMap == null) {
             log.d("AdController or AdsConfigMap is null. hence discarding ad playback")
             return true
