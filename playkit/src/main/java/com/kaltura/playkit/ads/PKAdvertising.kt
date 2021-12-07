@@ -1,5 +1,7 @@
 package com.kaltura.playkit.ads
 
+import androidx.annotation.NonNull
+
 interface PKAdvertising {
 
     /**
@@ -10,6 +12,7 @@ interface PKAdvertising {
      *
      * @param adBreak AdBreak to be played
      */
-    fun playAdNow(adBreak: AdBreak?)
+    fun playAdNow(adBreak: Any?,
+                  @NonNull adType: AdType = AdType.AD_URL)
 }
 

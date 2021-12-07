@@ -1,6 +1,7 @@
 package com.kaltura.playkit.ads
 
 import androidx.annotation.Nullable
+import com.google.gson.Gson
 import com.kaltura.playkit.PKLog
 import com.kaltura.playkit.utils.Consts
 import java.util.*
@@ -120,6 +121,21 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
             adPodConfigList.add(adPodConfig)
         }
         return adPodConfigList
+    }
+
+    internal fun parseAdBreakGSON(singleAdBreak: String): AdBreak? {
+        log.d("parseAdBreakGSON")
+        try {
+            val adBreak = Gson().fromJson<AdBreak>(singleAdBreak, AdBreak::class.java)
+            if (adBreak != null) {
+                return adBreak
+            } else {
+                log.e("Malformed AdBreak Json")
+            }
+        } catch (e: Exception) {
+            log.e("Malformed AdBreak Json Exception: ${e.message}")
+        }
+        return null
     }
 
     /**

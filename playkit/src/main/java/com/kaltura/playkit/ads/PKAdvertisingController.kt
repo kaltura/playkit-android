@@ -1,6 +1,7 @@
 package com.kaltura.playkit.ads
 
 import android.text.TextUtils
+import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import com.kaltura.playkit.*
 import com.kaltura.playkit.plugins.ads.AdEvent
@@ -178,29 +179,43 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     /**
      * App may call it whenever it wants to play an AdBreak
      */
-    override fun playAdNow(adBreak: AdBreak?) {
+    override fun playAdNow(adBreak: Any?, @NonNull adType: AdType) {
         log.d("playAdNow AdBreak is $adBreak")
-        adBreak?.let adbreak@ {
-            if (it.adBreakPositionType == AdBreakPositionType.EVERY || it.adBreakPositionType == AdBreakPositionType.PERCENTAGE) {
-                log.e("For playAdNow, AdBreakPositionType can only be AdBreakPositionType.POSITION. Hence discarding the AdPlayback")
-                return@adbreak
-            }
 
+        var parsedAdBreak: AdBreak? = null
+
+        adBreak?.let {
+            if (it is String) {
+                parsedAdBreak = advertisingContainer?.parseAdBreakGSON(it)
+            } else if (it is AdBreak) {
+                parsedAdBreak = it
+            } else {
+                log.e("Malformed AdBreak Input. PlayAdNow API either support AdBreak Object or AdBreak JSON. Hence returning.")
+                return
+            }
+        }
+
+        parsedAdBreak?.let parsedAdbreak@ {
             if (advertisingContainer == null) {
                 log.d("AdvertisingContainer is null. Hence discarding the AdPlayback")
-                return@adbreak
+                return@parsedAdbreak
             }
 
             player?.let { plyr ->
                 if (plyr.currentPosition <= 0) {
                     log.e("PlayAdNow API can be used once the content playback starts.")
-                    return@adbreak
+                    return@parsedAdbreak
                 }
             }
 
             if (adPlaybackTriggered) {
                 log.e("Currently another Ad is either loading or being played, hence discarding PlayAdNow API request.")
-                return@adbreak
+                return@parsedAdbreak
+            }
+
+            if (it.adBreakPositionType == AdBreakPositionType.EVERY || it.adBreakPositionType == AdBreakPositionType.PERCENTAGE) {
+                log.e("For playAdNow, AdBreakPositionType can only be AdBreakPositionType.POSITION. Hence discarding the AdPlayback")
+                return@parsedAdbreak
             }
 
             if (it.position > 0) {
