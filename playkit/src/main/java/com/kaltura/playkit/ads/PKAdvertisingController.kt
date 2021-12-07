@@ -153,6 +153,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     if (preRollAdUrl != null) {
                         playAd(preRollAdUrl)
                     }
+                } else if (playAdsAfterTime > 0L) {
+                    prepareContentPlayer()
                 }
             } else {
                 val preRollAdUrl = getAdFromAdConfigMap(PREROLL_AD_INDEX, false)
