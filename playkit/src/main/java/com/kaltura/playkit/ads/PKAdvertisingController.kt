@@ -1057,7 +1057,9 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private fun playAd(adTag: String) {
         log.d("playAd AdUrl is $adTag")
         adPlaybackTriggered = !TextUtils.isEmpty(adTag)
-        adController?.setAdInfo(getAdInfo())
+        if (!TextUtils.isEmpty(adTag)) {
+            adController?.setAdInfo(getAdInfo())
+        }
         //player?.pause()
         adController?.playAdNow(adTag)
     }
