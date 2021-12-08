@@ -83,7 +83,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Player configuration from KalturaPlayer
      */
     fun setPlayer(player: Player?, messageBus: MessageBus?, mediaConfig: PKMediaConfig) {
-        log.d("setPlayer")
         if (player == null || messageBus == null) {
             log.d("setPlayer: Player or MessageBus is null hence cleaning up the underlying controller resources.")
             resetAdvertisingConfig()
