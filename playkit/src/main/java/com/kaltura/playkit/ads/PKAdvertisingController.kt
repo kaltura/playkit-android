@@ -5,6 +5,7 @@ import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import com.kaltura.playkit.*
 import com.kaltura.playkit.plugins.ads.AdEvent
+import com.kaltura.playkit.utils.Consts
 import java.util.*
 
 /**
@@ -279,10 +280,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     log.d("adPlaybackTriggered = $adPlaybackTriggered")
                     log.d("event.position = ${event.position}")
                     log.d("midrollFrequency = ${midrollFrequency}")
-                    log.d("(event.position > 1000L && event.position % midrollFrequency < 999L) = ${(event.position > 1000L && event.position % midrollFrequency < 1000L)}")
+                    log.d("(event.position > 1000L && event.position % midrollFrequency < 1000L) = ${(event.position > Consts.MILLISECONDS_MULTIPLIER && event.position % midrollFrequency < Consts.MILLISECONDS_MULTIPLIER)}")
                 }
 
-                if ((event.position > 1000L && (event.position % midrollFrequency) < 1000L)) {
+                if ((event.position > Consts.MILLISECONDS_MULTIPLIER && (event.position % midrollFrequency) < Consts.MILLISECONDS_MULTIPLIER)) {
                     if (adPlayedWithFrequency < 3) {
                         adPlayedWithFrequency++
                     }
