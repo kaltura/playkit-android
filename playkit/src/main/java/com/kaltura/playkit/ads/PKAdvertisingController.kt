@@ -188,10 +188,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         var parsedAdBreak: AdBreak? = null
 
         adBreak?.let {
-            if (it is String) {
-                parsedAdBreak = advertisingContainer?.parseAdBreakGSON(it)
+            parsedAdBreak = if (it is String) {
+                advertisingContainer?.parseAdBreakGSON(it)
             } else if (it is AdBreak) {
-                parsedAdBreak = it
+                it
             } else {
                 log.e("Malformed AdBreak Input. PlayAdNow API either support AdBreak Object or AdBreak JSON. Hence returning.")
                 return
@@ -246,6 +246,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         var adPlayedWithFrequency = 0
         messageBus?.addListener(this, PlayerEvent.playheadUpdated) { event ->
 
+            if (isAllAdsCompletedFired) {
+                log.d("All ads has completed its playback hence returning.")
+                return@addListener
+            }
+
             if (isLiveMedia()) {
                 //log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
                // release()
@@ -254,7 +259,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
             cuePointsList?.let { list ->
 
-                if (list.isEmpty()) {
+                if (list.isEmpty() || nextAdBreakIndexForMonitoring == DEFAULT_AD_INDEX) {
                     log.d("playheadUpdated: Ads are empty, dropping ad playback.")
                     return@addListener
                 }
@@ -350,7 +355,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 return@addListener
             }
 
-            if (isAllAdsCompleted) {
+            if (isAllAdsCompletedFired) {
                 log.d("Player seeked to position = ${player?.currentPosition} but All ads has completed its playback hence returning.")
                 return@addListener
             }
@@ -359,7 +364,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
             cuePointsList?.let { list ->
 
-                if (list.isEmpty()) {
+                if (list.isEmpty() || nextAdBreakIndexForMonitoring == DEFAULT_AD_INDEX) {
                     log.d("seeked: Ads are empty, dropping ad playback.")
                     return@addListener
                 }
@@ -481,11 +486,13 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             handleErrorEvent(null, getCurrentAdBreakConfig(), error)
             log.d("PKAdErrorType.VIDEO_PLAY_ERROR currentAdIndexPosition = $currentAdBreakIndexPosition")
             cuePointsList?.let { cueList ->
-                val adPosition: Long = cueList[currentAdBreakIndexPosition]
-                if (currentAdBreakIndexPosition < cueList.size - 1 && adPosition != -1L) {
-                    // Update next Ad index for monitoring
-                    nextAdBreakIndexForMonitoring = currentAdBreakIndexPosition + 1
-                    log.d("nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring")
+                if (currentAdBreakIndexPosition != DEFAULT_AD_INDEX) {
+                    val adPosition: Long = cueList[currentAdBreakIndexPosition]
+                    if (currentAdBreakIndexPosition < cueList.size - 1 && adPosition != -1L) {
+                        // Update next Ad index for monitoring
+                        nextAdBreakIndexForMonitoring = currentAdBreakIndexPosition + 1
+                        log.d("nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring")
+                    }
                 }
             }
             playContent()
@@ -587,13 +594,20 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private fun getAdFromAdConfigMap(adIndex: Int, isTriggeredFromPlayerPosition: Boolean): String? {
         log.d("getAdFromAdConfigMap")
 
-        if (isAllAdsCompleted) {
+        if (isAllAdsCompletedFired) {
             log.d("All ads have completed its playback. Hence returning null from here.")
             return null
         }
 
         var adUrl: String? = null
         cuePointsList?.let { cuePointsList ->
+
+            if (adIndex == cuePointsList.size || adIndex == DEFAULT_AD_INDEX) {
+                currentAdBreakIndexPosition = DEFAULT_AD_INDEX
+                nextAdBreakIndexForMonitoring = DEFAULT_AD_INDEX
+                return null
+            }
+
             if (cuePointsList.isNotEmpty()) {
                 val adPosition: Long = cuePointsList[adIndex]
                 adsConfigMap?.let { adsMap ->
