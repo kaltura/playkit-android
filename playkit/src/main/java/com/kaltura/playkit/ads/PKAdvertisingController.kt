@@ -459,6 +459,14 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         isPostrollLeftForPlaying = false
     }
 
+    override fun contentPauseRequested() {
+        adPlaybackTriggered = true
+    }
+
+    override fun contentResumeRequested() {
+        adPlaybackTriggered = false
+    }
+
     /**
      * Mapping of AD_ERROR event from IMAPlugin
      */
