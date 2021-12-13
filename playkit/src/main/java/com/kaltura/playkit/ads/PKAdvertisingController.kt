@@ -809,7 +809,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     private fun changeAdState(adState: AdState, adrollType: AdrollType) {
         log.d("changeAdPodState AdState is $adState and AdrollType is $adrollType")
-        advertisingContainer?.let { _ ->
+        advertisingContainer?.let advertisingContainer@ { _ ->
             cuePointsList?.let { cuePointsList ->
                 if (cuePointsList.isNotEmpty()) {
                     adsConfigMap?.let { adsMap ->
@@ -817,12 +817,18 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                             val adPosition: Long = cuePointsList[currentAdBreakIndexPosition]
                             val adBreakConfig: AdBreakConfig? = adsMap[adPosition]
                             changeAdBreakState(adBreakConfig, adrollType, adState)
+                            if (!isAllAdsCompleted && adPosition == -1L && adState == AdState.PLAYED && adrollType == AdrollType.ADBREAK) {
+                                log.d("It's PostRoll and it is played completely, firing allAdsCompleted from here.")
+                                fireAllAdsCompleteEvent()
+                                return@advertisingContainer
+                            } else {
+                                checkAllAdsArePlayed()
+                            }
                         }
                     }
                 }
             }
         }
-        checkAllAdsArePlayed()
     }
 
     /**
