@@ -199,7 +199,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void setAdvertising(@Nullable AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController) {
+    public void setAdvertising(@NonNull PKAdvertisingController pkAdvertisingController, @Nullable AdvertisingConfig advertisingConfig) {
         Assert.shouldNeverHappen();
     }
 

@@ -401,7 +401,7 @@ public interface Player {
      */
     void prepare(@NonNull PKMediaConfig playerConfig);
     
-    void setAdvertising(@Nullable AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController);
+    void setAdvertising(@NonNull PKAdvertisingController pkAdvertisingController, @Nullable AdvertisingConfig advertisingConfig);
 
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
     

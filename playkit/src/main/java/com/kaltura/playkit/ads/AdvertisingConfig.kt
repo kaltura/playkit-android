@@ -9,6 +9,7 @@ import androidx.annotation.NonNull
  * Pass the list of AdBreaks
  * @param advertising: List of AdBreaks
  * @param adTimeUnit: AdBreak position in Seconds or Milliseconds
+ * @param adType: If it is AdUrl or VAST response
  * @param playAdsAfterTime: Play ads only from a specific time
  */
 data class AdvertisingConfig(@NonNull val advertising: List<AdBreak?>?,
@@ -41,6 +42,9 @@ data class AdPodConfig(var adPodState: AdState,
 data class Ad(var adState: AdState,
               val ad: String)
 
+/**
+ * AdInfo for the Advertising Controller
+ */
 data class PKAdvertisingAdInfo(var adDescription: String,
                                var adTitle: String,
                                var adPodTimeOffset: Long,
@@ -78,7 +82,7 @@ enum class AdState {
 }
 
 // Adroll type
-internal enum class AdrollType {
+internal enum class AdRollType {
     ADBREAK,
     ADPOD,
     AD

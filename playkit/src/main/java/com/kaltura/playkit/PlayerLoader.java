@@ -196,14 +196,14 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public void setAdvertising(@Nullable AdvertisingConfig advertisingConfig, @NonNull PKAdvertisingController pkAdvertisingController) {
+    public void setAdvertising(@NonNull PKAdvertisingController pkAdvertisingController, @Nullable AdvertisingConfig advertisingConfig) {
         if (!PKDeviceCapabilities.isKalturaPlayerAvailable()) {
             log.e("Advertising is being used to configure custom AdLayout. This feature is not available in Playkit SDK. " +
                     "It is only being used by Kaltura Player SDK.");
             return;
         }
-        this.advertisingConfig = advertisingConfig;
         this.pkAdvertisingController = pkAdvertisingController;
+        this.advertisingConfig = advertisingConfig;
     }
 
     private void releasePlugins() {

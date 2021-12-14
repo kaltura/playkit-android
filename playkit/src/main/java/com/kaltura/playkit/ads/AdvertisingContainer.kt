@@ -44,8 +44,8 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                 advertisingConfig.playAdsAfterTime
             }
 
-            if (advertisingConfig.adType != null) {
-                adType = advertisingConfig.adType
+            advertisingConfig.adType?.let {
+                adType = it
             }
 
             for (adBreak: AdBreak? in adBreaks) {
@@ -53,8 +53,6 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                 adBreak?.let adBreakLoop@{ singleAdBreak ->
 
                     // Only one ad can be configured for Every AdBreakPositionType
-
-                    // TODO: Check pre/post is not passed apart from position
 
                     if ((singleAdBreak.position == 0L || singleAdBreak.position == -1L) &&
                         (singleAdBreak.adBreakPositionType == AdBreakPositionType.EVERY || singleAdBreak.adBreakPositionType == AdBreakPositionType.PERCENTAGE)) {
@@ -124,6 +122,9 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
         return adPodConfigList
     }
 
+    /**
+     * PlayAdNow JSON parsing
+     */
     internal fun parseAdBreakGSON(singleAdBreak: String): AdBreak? {
         log.d("parseAdBreakGSON")
         try {
@@ -131,10 +132,10 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
             if (adBreak != null) {
                 return adBreak
             } else {
-                log.e("Malformed AdBreak Json")
+                log.e("AdBreak Json is invalid")
             }
-        } catch (e: JsonSyntaxException) {
-            log.e("Malformed AdBreak Json Exception: ${e.message}")
+        } catch (e: Exception) {
+            log.e("AdBreak Json Exception: ${e.message}")
         }
         return null
     }
