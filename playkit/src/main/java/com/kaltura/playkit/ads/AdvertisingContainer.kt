@@ -15,7 +15,7 @@ import kotlin.collections.HashMap
 internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
 
     private val log = PKLog.get(AdvertisingContainer::class.java.simpleName)
-    private var adsConfigMap: MutableMap<Long, AdBreakConfig?>? = null // TODO: Check the condition having 0sec -> 1sec (how video view is getting removed)
+    private var adsConfigMap: MutableMap<Long, AdBreakConfig?>? = null
     private var cuePointsList: LinkedList<Long>? = null
     private var midrollAdPositionType: AdBreakPositionType = AdBreakPositionType.POSITION
     private var midrollFrequency = Long.MIN_VALUE
@@ -96,9 +96,6 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                     val adPodConfigList = parseAdPodConfig(singleAdBreak)
                     // Create ad break list and mark them ready
                     val adBreakConfig = AdBreakConfig(singleAdBreak.adBreakPositionType, singleAdBreak.position, AdState.READY, adPodConfigList)
-                    // TODO: If some one gives midroll equal to duration with postroll
-
-                    // TODO: When I am dropping the every feature. may be 5 second before the media end
                     adBreaksList.add(adBreakConfig)
                 }
             }

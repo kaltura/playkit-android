@@ -89,7 +89,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             log.d("setPlayer: Player or MessageBus is null hence cleaning up the underlying controller resources.")
             resetAdvertisingConfig()
             destroyConfigResources()
-            // TODO: What happened to the content player
             return
         }
         log.d("setPlayer")
@@ -120,7 +119,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             log.d("All Ads are empty hence clearing the underlying resources")
             resetAdvertisingConfig()
             destroyConfigResources()
-            // TODO: What happened to the content player
             return
         }
 
@@ -138,7 +136,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             log.d("All Ads are empty hence clearing the underlying resources")
             resetAdvertisingConfig()
             destroyConfigResources()
-            // TODO: Check what happened to content player
             return
         }
 
@@ -809,7 +806,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 }
             }
         }
-        //TODO: Check te case of bg/fg, calling, network on/off
         return adUrl
     }
 
@@ -976,7 +972,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     fun release() {
         log.d("release")
-        playContent() // TODO: SEPARATE it
         resetAdvertisingConfig()
         destroyConfigResources()
     }
@@ -1046,6 +1041,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         log.d("fireAllAdsCompleteEvent")
         isAllAdsCompletedFired = true
         messageBus?.post(AdEvent(AdEvent.Type.ALL_ADS_COMPLETED))
+        playContent()
 
         release()
     }
@@ -1217,7 +1213,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 midrollAdsCount = it.size
             }
         }
-        log.d("MidRollAdsCount is $midrollAdsCount")
+        log.v("MidRollAdsCount is $midrollAdsCount")
         return midrollAdsCount
     }
 
