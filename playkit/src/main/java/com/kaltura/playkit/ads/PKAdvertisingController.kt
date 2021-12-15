@@ -247,8 +247,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     private fun subscribeToPlayerEvents() {
         log.d("subscribeToPlayerEvents")
-
         var adPlayedWithFrequency = 0
+
         messageBus?.addListener(this, PlayerEvent.playheadUpdated) { event ->
 
             if (isAllAdsCompletedFired) {
@@ -287,9 +287,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     log.v("(event.position > 1000L && event.position % midrollFrequency < 1000L) = ${(event.position > Consts.MILLISECONDS_MULTIPLIER && event.position % midrollFrequency < Consts.MILLISECONDS_MULTIPLIER)}")
                 }
 
-                //TODO: CHECK this why 3
                 if ((event.position > Consts.MILLISECONDS_MULTIPLIER && (event.position % midrollFrequency) < Consts.MILLISECONDS_MULTIPLIER)) {
-                    if (adPlayedWithFrequency < 3) {
+                    // Multiple playhead updated event can come in between 1000 ms
+                    // Condition to avoid multiple ad playback triggers in 1000 ms
+                    if (adPlayedWithFrequency > Int.MIN_VALUE) {
                         adPlayedWithFrequency++
                     }
                 } else {
