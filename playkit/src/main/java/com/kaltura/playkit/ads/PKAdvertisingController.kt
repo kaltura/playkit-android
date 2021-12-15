@@ -247,7 +247,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     private fun subscribeToPlayerEvents() {
         log.d("subscribeToPlayerEvents")
-        var adPlayedWithFrequency = 0
+        var triggerAdPlaybackCounter = 0
 
         messageBus?.addListener(this, PlayerEvent.playheadUpdated) { event ->
 
@@ -284,35 +284,34 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     log.v("adPlaybackTriggered = $adPlaybackTriggered")
                     log.v("event.position = ${event.position}")
                     log.v("midrollFrequency = ${midrollFrequency}")
-                    log.v("(event.position > 1000L && event.position % midrollFrequency < 1000L) = ${(event.position > Consts.MILLISECONDS_MULTIPLIER && event.position % midrollFrequency < Consts.MILLISECONDS_MULTIPLIER)}")
+                    log.v("midrollAdBreakPositionType = ${midrollAdBreakPositionType}")
                 }
 
-                if ((event.position > Consts.MILLISECONDS_MULTIPLIER && (event.position % midrollFrequency) < Consts.MILLISECONDS_MULTIPLIER)) {
-                    // Multiple playhead updated event can come in between 1000 ms
-                    // Condition to avoid multiple ad playback triggers in 1000 ms
-                    if (adPlayedWithFrequency > Int.MIN_VALUE) {
-                        adPlayedWithFrequency++
+                if (midrollAdBreakPositionType == AdBreakPositionType.EVERY) {
+                    if (midrollFrequency > Long.MIN_VALUE &&
+                        event.position > Consts.MILLISECONDS_MULTIPLIER &&
+                        ((event.position % midrollFrequency) < Consts.MILLISECONDS_MULTIPLIER)) {
+
+                        triggerAdPlaybackCounter++
+                    } else {
+                        triggerAdPlaybackCounter = 0
                     }
                 } else {
-                    adPlayedWithFrequency = 0
+                    if (list[nextAdBreakIndexForMonitoring] > 0 &&
+                        event.position >= list[nextAdBreakIndexForMonitoring] &&
+                        (event.position > Consts.MILLISECONDS_MULTIPLIER &&
+                                (event.position % list[nextAdBreakIndexForMonitoring]) < Consts.MILLISECONDS_MULTIPLIER)) {
+
+                        triggerAdPlaybackCounter++
+                    } else {
+                        triggerAdPlaybackCounter = 0
+                    }
                 }
 
-                if (!isPlayerSeeking && (midrollAdBreakPositionType == AdBreakPositionType.EVERY) && midrollFrequency > Long.MIN_VALUE && adPlayedWithFrequency == 1 && !adPlaybackTriggered) {
-                    if (hasPostRoll() && list[nextAdBreakIndexForMonitoring] == list.last) {
-                        log.d("PlayheadUpdated: postroll position")
-                        return@addListener
-                    }
-                    log.d("playheadUpdated ${event.position} & nextAdIndexForMonitoring is $nextAdBreakIndexForMonitoring & nextAdForMonitoring ad position is = ${cuePointsList?.get(nextAdBreakIndexForMonitoring)}")
-                    log.d("nextAdForMonitoring ad position is = $list")
-                    // TODO: handle situation of player.pause or content_pause_requested // TODO: OPEN A TICKET
-                    // because there is a delay while loading the ad
-                    getAdFromAdConfigMap(nextAdBreakIndexForMonitoring)?.let { adUrl ->
-                        playAd(adUrl)
-                    }
-                    return@let
-                }
+                if (!isPlayerSeeking &&
+                    !adPlaybackTriggered &&
+                    triggerAdPlaybackCounter == 1) {
 
-                if (!isPlayerSeeking && (midrollAdBreakPositionType != AdBreakPositionType.EVERY) && event.position >= list[nextAdBreakIndexForMonitoring] && !adPlaybackTriggered) {
                     if (hasPostRoll() && list[nextAdBreakIndexForMonitoring] == list.last) {
                         log.d("PlayheadUpdated: postroll position")
                         return@addListener
@@ -321,7 +320,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     log.d("nextAdForMonitoring ad position is = $list")
                     // TODO: handle situation of player.pause or content_pause_requested
                     // because there is a delay while loading the ad
-                    if (isPlayAdsAfterTimeConfigured && ((playAdsAfterTime == -1L && list[nextAdBreakIndexForMonitoring] < (event.position - ONE_SECOND_WINDOW)) || event.position < playAdsAfterTime)) {
+                    if (midrollAdBreakPositionType != AdBreakPositionType.EVERY &&
+                        isPlayAdsAfterTimeConfigured &&
+                        ((playAdsAfterTime == -1L && list[nextAdBreakIndexForMonitoring] < (event.position - ONE_SECOND_WINDOW)) ||
+                                event.position < playAdsAfterTime)) {
+
                         log.d("Discarding ad playback from playheadUpdated. \n" +
                                 "Player position is = ${event.position} \n" +
                                 "But configured isPlayAdsAfterTimeConfigured = $playAdsAfterTime is greater or equal to ${event.position}.")
@@ -892,7 +895,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 } else if (adBreak.adBreakPositionType == AdBreakPositionType.EVERY &&
                     adState == AdState.PLAYED &&
                     adRollType == AdRollType.ADBREAK) {
-                        
+
                     // NOTE: Continuation of method Javadoc:
                     // If All the ads of AdBreak completed then mark AdPod to READY
                     it.adPodState = AdState.READY
