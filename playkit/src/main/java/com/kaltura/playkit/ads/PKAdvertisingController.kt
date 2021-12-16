@@ -72,6 +72,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     fun setAdvertising(@Nullable advertisingConfig: AdvertisingConfig?) {
         log.d("setAdvertising")
+        advertisingContainer = null
         resetAdvertisingConfig()
         if (advertisingConfig != null) {
             initAdvertising(advertisingConfig)
@@ -87,8 +88,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     fun setPlayer(player: Player?, messageBus: MessageBus?, mediaConfig: PKMediaConfig) {
         if (player == null || messageBus == null) {
             log.d("setPlayer: Player or MessageBus is null hence cleaning up the underlying controller resources.")
-            resetAdvertisingConfig()
-            destroyConfigResources()
+            release()
             return
         }
         log.d("setPlayer")
@@ -117,8 +117,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         if (isAdsListEmpty()) {
             log.d("All Ads are empty hence clearing the underlying resources")
-            resetAdvertisingConfig()
-            destroyConfigResources()
+            release()
             return
         }
 
@@ -134,8 +133,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         if (isAdsListEmpty()) {
             log.d("All Ads are empty hence clearing the underlying resources")
-            resetAdvertisingConfig()
-            destroyConfigResources()
+            release()
             return
         }
 
@@ -941,9 +939,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private fun resetAdvertisingConfig() {
         log.d("resetAdvertisingConfig")
         advertisingConfig = null
-        advertisingContainer = null
+
         cuePointsList = null
         adsConfigMap = null
+
         DEFAULT_AD_INDEX = Int.MIN_VALUE
         PREROLL_AD_INDEX = 0
         POSTROLL_AD_INDEX = 0
@@ -971,9 +970,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Releasing the underlying resources
      */
     fun release() {
-        log.d("release")
+        advertisingContainer = null
         resetAdvertisingConfig()
         destroyConfigResources()
+        log.d("Advertising Controller resources have been released completely")
     }
 
     /**
@@ -987,6 +987,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         this.messageBus = null
         this.mediaConfig = null
         adController?.setAdvertisingConfig(false, adType, null)
+        adController = null
     }
 
     /**
@@ -1043,7 +1044,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         messageBus?.post(AdEvent(AdEvent.Type.ALL_ADS_COMPLETED))
         playContent()
 
-        release()
+        if (isLiveMedia()) {
+            resetAdvertisingConfig()
+        } else {
+            release()
+        }
     }
     /**
      * Trigger Postroll ad playback
@@ -1087,6 +1092,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     private fun getAdInfo(): PKAdvertisingAdInfo? {
         log.d("createAdInfoForAdvertisingConfig")
+        if (isPlayAdNowTriggered) {
+            log.d("PlayAdNow ad is there, hence no need of AdInfo object")
+            return null
+        }
+
         if (currentAdBreakIndexPosition == Int.MIN_VALUE) {
             log.d("currentAdBreakIndexPosition is not valid")
             return null
