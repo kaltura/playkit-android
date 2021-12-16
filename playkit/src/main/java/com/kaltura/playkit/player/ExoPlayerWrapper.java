@@ -615,13 +615,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                         .setClipStartPositionMs(0L)
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
 
-        if (playerSettings.getPKLowLatencyConfig() != null &&
-                (isLiveMediaWithDvr() || isLiveMediaWithoutDvr())) {
-            builder.setLiveTargetOffsetMs(playerSettings.getPKLowLatencyConfig().getTargetOffsetMs())
-                    .setLiveMinOffsetMs(playerSettings.getPKLowLatencyConfig().getMinOffsetMs())
-                    .setLiveMaxOffsetMs(playerSettings.getPKLowLatencyConfig().getMaxOffsetMs())
-                    .setLiveMinPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed())
-                    .setLiveMaxPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed());
+        if (playerSettings.getPKLowLatencyConfig() != null && (isLiveMediaWithDvr() || isLiveMediaWithoutDvr())) {
+            if (playerSettings.getPKLowLatencyConfig().getTargetOffsetMs() >= 0) {
+                builder.setLiveTargetOffsetMs(playerSettings.getPKLowLatencyConfig().getTargetOffsetMs());
+            }
+            if (playerSettings.getPKLowLatencyConfig().getMinOffsetMs() >= 0) {
+                builder.setLiveMinOffsetMs(playerSettings.getPKLowLatencyConfig().getMinOffsetMs());
+            }
+            if (playerSettings.getPKLowLatencyConfig().getMaxOffsetMs() >= 0) {
+                builder.setLiveMaxOffsetMs(playerSettings.getPKLowLatencyConfig().getMaxOffsetMs());
+            }
+            if (playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed() >= 0) {
+                builder.setLiveMinPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed())
+            }
+            if (playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed() >= 0) {
+                builder.setLiveMaxPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed());
+            }
         }
 
         if ((format == PKMediaFormat.dash || format == PKMediaFormat.hls) && sourceConfig.mediaSource.hasDrmParams()) {
@@ -1748,6 +1757,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
         playerSettings.setPKLowLatencyConfig(pkLowLatencyConfig);
         if (player != null && player.getCurrentMediaItem() != null) {
+            
             player.setMediaItem(player.getCurrentMediaItem().buildUpon()
                     .setLiveTargetOffsetMs(playerSettings.getPKLowLatencyConfig().getTargetOffsetMs())
                     .setLiveMinOffsetMs(playerSettings.getPKLowLatencyConfig().getMinOffsetMs())
