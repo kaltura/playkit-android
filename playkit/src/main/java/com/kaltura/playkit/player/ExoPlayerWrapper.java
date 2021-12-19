@@ -1775,19 +1775,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (pkLowLatencyConfig == null) {
             pkLowLatencyConfig = PKLowLatencyConfig.UNSET;
         } else {
-            if (pkLowLatencyConfig.getTargetOffsetMs() < 0) {
+            if (pkLowLatencyConfig.getTargetOffsetMs() <= 0) {
                 pkLowLatencyConfig.setTargetOffsetMs(PKLowLatencyConfig.UNSET.getTargetOffsetMs());
             }
-            if (pkLowLatencyConfig.getMinOffsetMs() < 0) {
+            if (pkLowLatencyConfig.getMinOffsetMs() <= 0) {
                 pkLowLatencyConfig.setMinOffsetMs(PKLowLatencyConfig.UNSET.getMinOffsetMs());
             }
-            if (playerSettings.getPKLowLatencyConfig().getMaxOffsetMs() < 0) {
+            if (playerSettings.getPKLowLatencyConfig().getMaxOffsetMs() <= 0) {
                 pkLowLatencyConfig.setMaxOffsetMs(PKLowLatencyConfig.UNSET.getMaxOffsetMs());
             }
-            if (playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed() < 0) {
+            if (playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed() <= 0) {
                 pkLowLatencyConfig.setMinPlaybackSpeed(PKLowLatencyConfig.UNSET.getMinPlaybackSpeed());
             }
-            if (playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed() < 0) {
+            if (playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed() <= 0) {
                 pkLowLatencyConfig.setMaxPlaybackSpeed(PKLowLatencyConfig.UNSET.getMaxPlaybackSpeed());
             }
         }
