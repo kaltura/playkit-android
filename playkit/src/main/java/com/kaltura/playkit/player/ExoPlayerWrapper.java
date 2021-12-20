@@ -1772,23 +1772,24 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private PKLowLatencyConfig validatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
 
+        PKLowLatencyConfig unsetPKLowLatencyConfig = PKLowLatencyConfig.UNSET;
         if (pkLowLatencyConfig == null) {
-            pkLowLatencyConfig = PKLowLatencyConfig.UNSET;
+            pkLowLatencyConfig = unsetPKLowLatencyConfig;
         } else {
             if (pkLowLatencyConfig.getTargetOffsetMs() <= 0) {
-                pkLowLatencyConfig.setTargetOffsetMs(PKLowLatencyConfig.UNSET.getTargetOffsetMs());
+                pkLowLatencyConfig.setTargetOffsetMs(unsetPKLowLatencyConfig.getTargetOffsetMs());
             }
             if (pkLowLatencyConfig.getMinOffsetMs() <= 0) {
-                pkLowLatencyConfig.setMinOffsetMs(PKLowLatencyConfig.UNSET.getMinOffsetMs());
+                pkLowLatencyConfig.setMinOffsetMs(unsetPKLowLatencyConfig.getMinOffsetMs());
             }
             if (playerSettings.getPKLowLatencyConfig().getMaxOffsetMs() <= 0) {
-                pkLowLatencyConfig.setMaxOffsetMs(PKLowLatencyConfig.UNSET.getMaxOffsetMs());
+                pkLowLatencyConfig.setMaxOffsetMs(unsetPKLowLatencyConfig.getMaxOffsetMs());
             }
             if (playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed() <= 0) {
-                pkLowLatencyConfig.setMinPlaybackSpeed(PKLowLatencyConfig.UNSET.getMinPlaybackSpeed());
+                pkLowLatencyConfig.setMinPlaybackSpeed(unsetPKLowLatencyConfig.getMinPlaybackSpeed());
             }
             if (playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed() <= 0) {
-                pkLowLatencyConfig.setMaxPlaybackSpeed(PKLowLatencyConfig.UNSET.getMaxPlaybackSpeed());
+                pkLowLatencyConfig.setMaxPlaybackSpeed(unsetPKLowLatencyConfig.getMaxPlaybackSpeed());
             }
         }
         return pkLowLatencyConfig;
