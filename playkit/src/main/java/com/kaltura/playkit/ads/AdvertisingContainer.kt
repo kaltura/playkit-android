@@ -87,15 +87,17 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                         midrollAdPositionType = AdBreakPositionType.PERCENTAGE
                     }
 
+                    var singleAdBreakPosition = singleAdBreak.position
+
                     if (advertisingConfig.adTimeUnit == AdTimeUnit.SECONDS &&
                         (singleAdBreak.adBreakPositionType == AdBreakPositionType.POSITION || singleAdBreak.adBreakPositionType == AdBreakPositionType.EVERY)) {
-
-                        singleAdBreak.position = if (singleAdBreak.position > 0) (singleAdBreak.position * Consts.MILLISECONDS_MULTIPLIER) else singleAdBreak.position // Convert to miliseconds
+                        // Convert to milliseconds
+                        singleAdBreakPosition = if (singleAdBreak.position > 0) (singleAdBreak.position * Consts.MILLISECONDS_MULTIPLIER) else singleAdBreak.position
                     }
 
                     val adPodConfigList = parseAdPodConfig(singleAdBreak)
                     // Create ad break list and mark them ready
-                    val adBreakConfig = AdBreakConfig(singleAdBreak.adBreakPositionType, singleAdBreak.position, AdState.READY, adPodConfigList)
+                    val adBreakConfig = AdBreakConfig(singleAdBreak.adBreakPositionType, singleAdBreakPosition, AdState.READY, adPodConfigList)
                     adBreaksList.add(adBreakConfig)
                 }
             }
