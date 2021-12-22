@@ -384,8 +384,16 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 isPlayerSeeking = false
                 adPlaybackTriggered = false
                 log.d("Player seeked to position = ${seekedPosition}")
-                if (midrollAdBreakPositionType == AdBreakPositionType.EVERY && midrollFrequency > Long.MIN_VALUE) {
-                    log.d("Because Midroll is EVERY(Frequency based) hence will not play immediate last. Will play the upcoming ad.")
+                if (midrollAdBreakPositionType == AdBreakPositionType.EVERY &&
+                    midrollFrequency > Long.MIN_VALUE &&
+                    seekedPosition > midrollFrequency &&
+                    ((seekedPosition % midrollFrequency) == 0L || (seekedPosition % midrollFrequency) < midrollFrequency)) {
+
+                    getAdFromAdConfigMap(nextAdBreakIndexForMonitoring)?.let { adUrl ->
+                        log.d("Midroll is EVERY(Frequency based) hence playing the last Ad.")
+                        playAd(adUrl)
+                    }
+
                     return@addListener
                 }
 
