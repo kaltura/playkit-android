@@ -12,7 +12,7 @@ import kotlin.collections.HashMap
 /**
  * Class to map the Advertising object to our internal helper DataStructure
  */
-internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
+internal class AdvertisingContainer {
 
     private val log = PKLog.get(AdvertisingContainer::class.java.simpleName)
     private var adsConfigMap: MutableMap<Long, AdBreakConfig?>? = null
@@ -22,7 +22,7 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
     private var playAdsAfterTime = Long.MIN_VALUE
     private var adType: AdType = AdType.AD_URL
 
-    init {
+    internal fun setAdvertisingConfig(advertisingConfig: AdvertisingConfig?) {
         advertisingConfig?.let {
             parseAdTypes(it)
         }

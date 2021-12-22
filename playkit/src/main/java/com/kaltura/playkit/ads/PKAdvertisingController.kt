@@ -74,6 +74,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         log.d("setAdvertising")
         advertisingContainer = null
         resetAdvertisingConfig()
+        advertisingContainer = AdvertisingContainer()
+
         if (advertisingConfig != null) {
             initAdvertising(advertisingConfig)
         } else {
@@ -105,7 +107,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         log.d("initAdvertising")
 
         this.advertisingConfig = advertisingConfig
-        advertisingContainer = AdvertisingContainer(this.advertisingConfig)
+        advertisingContainer?.setAdvertisingConfig(this.advertisingConfig)
         adType = advertisingContainer?.getAdType() ?: AdType.AD_URL
         adController?.setAdvertisingConfig(true, adType, this)
         adsConfigMap = advertisingContainer?.getAdsConfigMap()
@@ -117,7 +119,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         if (isAdsListEmpty()) {
             log.d("All Ads are empty hence clearing the underlying resources")
-            release()
+            resetAdvertisingConfig()
+            destroyConfigResources()
             return
         }
 
@@ -133,7 +136,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         if (isAdsListEmpty()) {
             log.d("All Ads are empty hence clearing the underlying resources")
-            release()
+            resetAdvertisingConfig()
+            destroyConfigResources()
             return
         }
 
@@ -228,6 +232,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 val adUrl = fetchPlayableAdFromAdsList(playAdNowAdBreak, false)
                 adUrl?.let { url ->
                     log.d("playAdNow")
+                    adController?.setAdvertisingConfig(true, adType, this)
                     playAd(url)
                 }
             } else {
@@ -970,9 +975,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Releasing the underlying resources
      */
     fun release() {
-        advertisingContainer = null
+        advertisingContainer = null // Don't change the position of this
         resetAdvertisingConfig()
         destroyConfigResources()
+        adController = null // Don't change the position of this
         log.d("Advertising Controller resources have been released completely")
     }
 
@@ -987,7 +993,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         this.messageBus = null
         this.mediaConfig = null
         adController?.setAdvertisingConfig(false, adType, null)
-        adController = null
     }
 
     /**
@@ -1044,11 +1049,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         messageBus?.post(AdEvent(AdEvent.Type.ALL_ADS_COMPLETED))
         playContent()
 
-        if (isLiveMedia()) {
-            resetAdvertisingConfig()
-        } else {
-            release()
-        }
+        resetAdvertisingConfig()
+        destroyConfigResources()
     }
     /**
      * Trigger Postroll ad playback
@@ -1270,6 +1272,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                         upperIndex = midIndex - 1
                     }
                 }
+            } else if (it.size == 1) {
+                adPosition = 0
             }
         }
 
