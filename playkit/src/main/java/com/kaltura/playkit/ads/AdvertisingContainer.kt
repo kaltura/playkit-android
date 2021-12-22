@@ -55,8 +55,8 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                     // Only one ad can be configured for Every AdBreakPositionType
 
                     if ((singleAdBreak.position == 0L || singleAdBreak.position == -1L) &&
-                        (singleAdBreak.adBreakPositionType == AdBreakPositionType.EVERY || singleAdBreak.adBreakPositionType == AdBreakPositionType.PERCENTAGE)) {
-                        log.w("Preroll or Postroll ad should not be configured with AdBreakPositionType.EVERY or AdBreakPositionType.PERCENTAGE\n" +
+                        (singleAdBreak.adBreakPositionType == AdBreakPositionType.EVERY)) {
+                        log.w("Preroll or Postroll ad should not be configured with AdBreakPositionType.EVERY\n" +
                                 "Dropping such AdBreak")
                         return@adBreakLoop
                     }
@@ -77,10 +77,10 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                             log.w("There should not be a combination of PERCENTAGE and EVERY.")
                             return@adBreakLoop
                         }
-                        if (singleAdBreak.position <= 0 || singleAdBreak.position >= 100) {
+                        if (singleAdBreak.position < 0 || singleAdBreak.position > 100) {
                             log.w("AdBreak having PERCENTAGE type \n " +
-                                    "should neither give percentage values less than or equal to 0 nor \n " +
-                                    "greater than or equal to 100.")
+                                    "should neither give percentage values less than 0 nor \n " +
+                                    "greater than 100.")
                             return@adBreakLoop
                         }
 
@@ -95,9 +95,24 @@ internal class AdvertisingContainer(advertisingConfig: AdvertisingConfig?) {
                         singleAdBreakPosition = if (singleAdBreak.position > 0) (singleAdBreak.position * Consts.MILLISECONDS_MULTIPLIER) else singleAdBreak.position
                     }
 
+                    var singleAdBreakPositionType = singleAdBreak.adBreakPositionType
+
+                    // Special case when Pre/Post AdBreak is configured with PERCENTAGE
+                    // Changing 100 percentage to -1 and setting type as Position
+                    // so that further percentage to position logic will not get hampered
+                    if (singleAdBreak.adBreakPositionType == AdBreakPositionType.PERCENTAGE) {
+                        if (singleAdBreak.position == 100L) {
+                            singleAdBreakPosition = -1L
+                        }
+
+                        if (singleAdBreak.position == 0L || singleAdBreak.position == 100L) {
+                            singleAdBreakPositionType = AdBreakPositionType.POSITION
+                        }
+                    }
+
                     val adPodConfigList = parseAdPodConfig(singleAdBreak)
                     // Create ad break list and mark them ready
-                    val adBreakConfig = AdBreakConfig(singleAdBreak.adBreakPositionType, singleAdBreakPosition, AdState.READY, adPodConfigList)
+                    val adBreakConfig = AdBreakConfig(singleAdBreakPositionType, singleAdBreakPosition, AdState.READY, adPodConfigList)
                     adBreaksList.add(adBreakConfig)
                 }
             }
