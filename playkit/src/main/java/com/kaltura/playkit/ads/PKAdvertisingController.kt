@@ -79,8 +79,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         if (advertisingConfig != null) {
             initAdvertising(advertisingConfig)
         } else {
-            log.d("setAdvertising: AdvertisingConfig is null hence cleaning up existing objects.")
-            destroyConfigResources()
+            log.d("setAdvertising: AdvertisingConfig is null")
         }
     }
 
@@ -120,7 +119,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         if (isAdsListEmpty()) {
             log.d("All Ads are empty hence clearing the underlying resources")
             resetAdvertisingConfig()
-            destroyConfigResources()
             return
         }
 
@@ -137,7 +135,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         if (isAdsListEmpty()) {
             log.d("All Ads are empty hence clearing the underlying resources")
             resetAdvertisingConfig()
-            destroyConfigResources()
             return
         }
 
@@ -265,7 +262,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             cuePointsList?.let { list ->
 
                 if (list.isEmpty() || nextAdBreakIndexForMonitoring == DEFAULT_AD_INDEX) {
-                    log.d("playheadUpdated: Ads are empty, dropping ad playback.")
+                    log.v("playheadUpdated: Ads are empty, dropping ad playback.")
                     return@addListener
                 }
 
@@ -275,7 +272,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 }
 
                 if (hasOnlyPreRoll()) {
-                    log.d("playheadUpdated: Only Preroll ad is available hence returning from here.")
+                    log.v("playheadUpdated: Only Preroll ad is available hence returning from here.")
                     return@addListener
                 }
 
@@ -945,6 +942,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         log.d("resetAdvertisingConfig")
         advertisingConfig = null
 
+        adController?.setAdvertisingConfig(false, adType, null)
+
         cuePointsList = null
         adsConfigMap = null
 
@@ -992,7 +991,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         this.messageBus?.removeListeners(this)
         this.messageBus = null
         this.mediaConfig = null
-        adController?.setAdvertisingConfig(false, adType, null)
     }
 
     /**
@@ -1050,7 +1048,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         playContent()
 
         resetAdvertisingConfig()
-        destroyConfigResources()
     }
     /**
      * Trigger Postroll ad playback
