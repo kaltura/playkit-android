@@ -1144,10 +1144,16 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private fun playAd(adTag: String) {
         log.d("playAd AdUrl is $adTag")
         adPlaybackTriggered = !TextUtils.isEmpty(adTag)
+
+        // If Ad is empty, it means the content will be loaded using IMAPlugin
         if (!TextUtils.isEmpty(adTag)) {
-            adController?.setAdInfo(getAdInfo())
+            player?.let {
+                adController?.setAdInfo(getAdInfo())
+                if (it.isPlaying) {
+                    it.pause()
+                }
+            }
         }
-        //player?.pause()
         adController?.playAdNow(adTag)
     }
 
