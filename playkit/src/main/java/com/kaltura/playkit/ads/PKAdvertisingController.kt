@@ -389,6 +389,13 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     seekedPosition > midrollFrequency &&
                     ((seekedPosition % midrollFrequency) == 0L || (seekedPosition % midrollFrequency) < midrollFrequency)) {
 
+                        if (isPlayAdsAfterTimeConfigured && playAdsAfterTime > Long.MIN_VALUE && seekedPosition <= playAdsAfterTime) {
+                            log.d("Discarding ad playback from PlayerEvent.seeked. \n" +
+                                    "Player position is = $seekedPosition \n" +
+                                    "But configured isPlayAdsAfterTimeConfigured = $playAdsAfterTime is greater or equal to $seekedPosition.")
+                            return@addListener
+                        }
+
                     getAdFromAdConfigMap(nextAdBreakIndexForMonitoring)?.let { adUrl ->
                         log.d("Midroll is EVERY(Frequency based) hence playing the last Ad.")
                         playAd(adUrl)
