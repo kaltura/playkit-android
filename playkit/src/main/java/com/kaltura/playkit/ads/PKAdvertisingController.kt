@@ -471,6 +471,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         val adUrl = getAdFromAdConfigMap(currentAdBreakIndexPosition)
         if (adUrl != null) {
             playAd(adUrl)
+            return
         } else {
             changeAdState(AdState.PLAYED, AdRollType.ADBREAK)
             playContent()
