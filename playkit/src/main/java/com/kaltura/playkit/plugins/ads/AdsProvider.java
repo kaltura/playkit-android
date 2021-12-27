@@ -37,16 +37,6 @@ public interface AdsProvider {
     default void setVolume(float volume) {}
 
     void contentCompleted();
-    
-    default void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener) {}
-
-    default void playAdNow(String adTag) {}
-
-    default void setCuePoints(List<Long> cuePoints) {}
-
-    default void setAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {}
-
-    default void adControllerPreparePlayer() {}
 
     PKAdInfo getAdInfo();
 
@@ -91,4 +81,14 @@ public interface AdsProvider {
     default PKAdPluginType getAdPluginType() { return PKAdPluginType.client; }
 
     boolean isContentPrepared();
+    
+    default void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener) {}
+
+    default void advertisingPlayAdNow(String adTag) {}
+
+    default void advertisingSetCuePoints(List<Long> cuePoints) {}
+
+    default void advertisingSetAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {}
+
+    default void advertisingPreparePlayer() {}
 }

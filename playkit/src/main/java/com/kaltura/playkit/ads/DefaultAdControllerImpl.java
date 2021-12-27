@@ -119,9 +119,9 @@ public class DefaultAdControllerImpl implements AdController {
     }
 
     @Override
-    public void playAdNow(String adTag) {
+    public void advertisingPlayAdNow(String adTag) {
         if (adsProvider != null) {
-            adsProvider.playAdNow(adTag);
+            adsProvider.advertisingPlayAdNow(adTag);
         }
     }
 
@@ -133,23 +133,23 @@ public class DefaultAdControllerImpl implements AdController {
     }
 
     @Override
-    public void setCuePoints(List<Long> cuePoints) {
+    public void advertisingSetCuePoints(List<Long> cuePoints) {
         if (adsProvider != null) {
-            adsProvider.setCuePoints(cuePoints);
+            adsProvider.advertisingSetCuePoints(cuePoints);
         }
     }
 
     @Override
-    public void adControllerPreparePlayer() {
+    public void advertisingPreparePlayer() {
         if (adsProvider != null) {
-            adsProvider.adControllerPreparePlayer();
+            adsProvider.advertisingPreparePlayer();
         }
     }
 
     @Override
-    public void setAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {
+    public void advertisingSetAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {
         if (adsProvider != null) {
-            adsProvider.setAdInfo(pkAdvertisingAdInfo);
+            adsProvider.advertisingSetAdInfo(pkAdvertisingAdInfo);
         }
     }
 }

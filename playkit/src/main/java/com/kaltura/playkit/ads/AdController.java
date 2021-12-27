@@ -33,16 +33,6 @@ public interface AdController extends PKController {
 
     default void setVolume(float volume) {}
 
-    void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener);
-
-    void playAdNow(String adTag);
-    
-    void setCuePoints(List<Long> cuePoints);
-
-    void setAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo);
-
-    void adControllerPreparePlayer();
-
     long getAdCurrentPosition();
 
     long getAdDuration();
@@ -60,4 +50,15 @@ public interface AdController extends PKController {
     AdCuePoints getCuePoints();
 
     PKAdPluginType getAdPluginType();
+
+    // APIs for internal use (AdLayout)
+    void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener);
+
+    void advertisingPlayAdNow(String adTag);
+
+    void advertisingSetCuePoints(List<Long> cuePoints);
+
+    void advertisingSetAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo);
+
+    void advertisingPreparePlayer();
 }
