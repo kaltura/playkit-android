@@ -45,9 +45,7 @@ data class Ad(var adState: AdState,
 /**
  * AdInfo for the Advertising Controller
  */
-data class PKAdvertisingAdInfo(var adDescription: String,
-                               var adTitle: String,
-                               var adPodTimeOffset: Long,
+data class PKAdvertisingAdInfo(var adPodTimeOffset: Long,
                                var podIndex: Int,
                                var podCount: Int)
 

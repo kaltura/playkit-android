@@ -1149,8 +1149,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         var pkAdvertisingAdInfo: PKAdvertisingAdInfo? = null
 
-        val adDescription = "Advertising Configured Ads description"
-        val adTitle = "Advertising Configured Ads title"
         var adPodTimeOffset = 0L
         var podIndex = 0
         var podCount = 0
@@ -1162,7 +1160,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 podCount = cuePoints.size
             }
 
-            pkAdvertisingAdInfo = PKAdvertisingAdInfo(adDescription, adTitle, adPodTimeOffset, podIndex, podCount)
+            pkAdvertisingAdInfo = PKAdvertisingAdInfo(adPodTimeOffset, podIndex, podCount)
         }
 
         return pkAdvertisingAdInfo
