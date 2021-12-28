@@ -113,7 +113,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         checkTypeOfMidrollAdPresent(advertisingContainer?.getMidrollAdBreakPositionType(), 0L)
 
         cuePointsList = advertisingContainer?.getCuePointsList()
-        adController?.setCuePoints(cuePointsList)
+        adController?.advertisingSetCuePoints(cuePointsList)
         playAdsAfterTime = advertisingContainer?.getPlayAdsAfterTime() ?: Long.MIN_VALUE
 
         if (isAdsListEmpty()) {
@@ -961,7 +961,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 midrollFrequency = advertisingContainer?.getMidrollFrequency() ?: Long.MIN_VALUE
                 val updatedCuePoints: List<Long>? = advertisingContainer?.getEveryBasedCuePointsList(playerDuration, midrollFrequency)
                 updatedCuePoints?.let {
-                    adController?.setCuePoints(it)
+                    adController?.advertisingSetCuePoints(it)
                     log.d("Updated cuePointsList for EVERY based Midrolls $it")
                 }
             }
@@ -972,7 +972,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                         advertisingContainer?.updatePercentageBasedPosition(playerDuration)
                         adsConfigMap = advertisingContainer?.getAdsConfigMap()
                         cuePointsList = advertisingContainer?.getCuePointsList()
-                        adController?.setCuePoints(cuePointsList)
+                        adController?.advertisingSetCuePoints(cuePointsList)
                         log.d("Updated cuePointsList for PERCENTAGE based Midrolls $cuePointsList")
                     }
                 }
@@ -1177,13 +1177,13 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         // If Ad is empty, it means the content will be loaded using IMAPlugin
         if (!TextUtils.isEmpty(adTag)) {
             player?.let {
-                adController?.setAdInfo(getAdInfo())
+                adController?.advertisingSetAdInfo(getAdInfo())
                 if (it.isPlaying) {
                     it.pause()
                 }
             }
         }
-        adController?.playAdNow(adTag)
+        adController?.advertisingPlayAdNow(adTag)
     }
 
     /**
@@ -1193,7 +1193,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         log.d("playContent")
         adPlaybackTriggered = false
         player?.let {
-            adController?.adControllerPreparePlayer()
+            adController?.advertisingPreparePlayer()
             if (!it.isPlaying) {
                 it.play()
             }
