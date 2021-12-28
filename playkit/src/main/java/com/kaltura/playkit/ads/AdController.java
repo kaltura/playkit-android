@@ -12,12 +12,8 @@
 
 package com.kaltura.playkit.ads;
 
-import androidx.annotation.NonNull;
-
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
-
-import java.util.List;
 
 /**
  * Created by Noam Tamim @ Kaltura on 14/12/2016.
@@ -50,15 +46,4 @@ public interface AdController extends PKController {
     AdCuePoints getCuePoints();
 
     PKAdPluginType getAdPluginType();
-
-    // APIs for internal use (AdLayout)
-    void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener);
-
-    void advertisingPlayAdNow(String adTag);
-
-    void advertisingSetCuePoints(List<Long> cuePoints);
-
-    void advertisingSetAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo);
-
-    void advertisingPreparePlayer();
 }
