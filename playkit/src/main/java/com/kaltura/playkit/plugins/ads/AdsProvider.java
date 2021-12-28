@@ -84,6 +84,7 @@ public interface AdsProvider {
     
     default void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener) {}
 
+    // @param adTag Ad url or Ad response
     default void advertisingPlayAdNow(String adTag) {}
 
     default void advertisingSetCuePoints(List<Long> cuePoints) {}
