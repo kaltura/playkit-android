@@ -22,8 +22,6 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
-import java.util.List;
-
 
 public class AdEnabledPlayerController extends PlayerDecorator implements AdController, PKAdProviderListener, PKController {
 
@@ -254,41 +252,6 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         prepare(mediaConfig);
         if (adsProvider != null) {
             adsProvider.removeAdProviderListener();
-        }
-    }
-
-    @Override
-    public void advertisingPlayAdNow(String adTag) {
-        if (adsProvider != null) {
-            adsProvider.advertisingPlayAdNow(adTag);
-        }
-    }
-
-    @Override
-    public void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener) {
-        if (adsProvider != null) {
-            adsProvider.setAdvertisingConfig(isConfigured, adType, imaEventsListener);
-        }
-    }
-
-    @Override
-    public void advertisingSetCuePoints(List<Long> cuePoints) {
-        if (adsProvider != null) {
-            adsProvider.advertisingSetCuePoints(cuePoints);
-        }
-    }
-
-    @Override
-    public void advertisingSetAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {
-        if (adsProvider != null) {
-            adsProvider.advertisingSetAdInfo(pkAdvertisingAdInfo);
-        }
-    }
-
-    @Override
-    public void advertisingPreparePlayer() {
-        if (adsProvider != null) {
-            adsProvider.advertisingPreparePlayer();
         }
     }
 }

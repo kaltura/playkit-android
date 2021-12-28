@@ -20,8 +20,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
-import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.ads.AdvertisingConfig;
+import com.kaltura.playkit.ads.AdvertisingController;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
@@ -169,8 +169,8 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         super.prepare(mediaConfig);
 
-        if (pkAdvertisingController != null && playerController.getController(AdController.class) != null) {
-            pkAdvertisingController.setAdController(playerController.getController(AdController.class));
+        if (pkAdvertisingController != null && playerController.getController(AdvertisingController.class) != null) {
+            pkAdvertisingController.setAdController(playerController.getController(AdvertisingController.class));
             pkAdvertisingController.setAdvertising(advertisingConfig);
         }
 

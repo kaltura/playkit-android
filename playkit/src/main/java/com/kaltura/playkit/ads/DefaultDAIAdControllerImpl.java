@@ -1,12 +1,8 @@
 package com.kaltura.playkit.ads;
 
-import androidx.annotation.NonNull;
-
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
-
-import java.util.List;
 
 public class DefaultDAIAdControllerImpl implements AdController {
 
@@ -47,7 +43,7 @@ public class DefaultDAIAdControllerImpl implements AdController {
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public void seekTo(long position) {
-       //seeking operation during ad is blocked
+        //seeking operation during ad is blocked
     }
 
     @Override
@@ -121,31 +117,6 @@ public class DefaultDAIAdControllerImpl implements AdController {
             return !adsProvider.isAdPaused();
         }
         return false;
-    }
-
-    @Override
-    public void advertisingPlayAdNow(String adTag) {
-        // Not supported for DAI
-    }
-
-    @Override
-    public void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener) {
-        // Not supported for DAI
-    }
-
-    @Override
-    public void advertisingSetCuePoints(List<Long> cuePoints) {
-        // Not supported for DAI
-    }
-
-    @Override
-    public void advertisingPreparePlayer() {
-        // Not supported for DAI
-    }
-
-    @Override
-    public void advertisingSetAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {
-        // Not supported for DAI
     }
 }
 

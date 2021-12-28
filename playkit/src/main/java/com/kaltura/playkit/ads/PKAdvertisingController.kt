@@ -17,13 +17,13 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private var player: Player? = null
     private var messageBus: MessageBus? = null
     private var mediaConfig: PKMediaConfig? = null
-    private var adController: AdController? = null
+    private var adController: AdvertisingController? = null
     private var advertisingConfig: AdvertisingConfig? = null
     private var advertisingContainer: AdvertisingContainer? = null
 
     // List containing the Ads' position (Sorted list, Preroll is moved to 0th position and Postoll, is moved to the last)
     private var cuePointsList: LinkedList<Long>? = null
-    // Map containg the actual ads with position as key in the Map (Insertion order of app maintained)
+    // Map containing the actual ads with position as key in the Map (Insertion order of app maintained)
     private var adsConfigMap: MutableMap<Long, AdBreakConfig?>? = null
 
     private var playerStartPosition: Long = 0L
@@ -61,7 +61,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Need to inform IMAPlugin that Advertising is configured
      * before onUpdateMedia call
      */
-    fun setAdController(adController: AdController) {
+    fun setAdController(adController: AdvertisingController) {
         log.d("setAdController")
         this.adController = adController
     }
@@ -152,27 +152,49 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         if (hasPreRoll()) {
             log.d("Config has Preroll")
-            getPlayAdsAfterTimeConfiguration(playerStartPosition)
+            getPlayAdsAfterTimeConfiguration()
             if (isPlayAdsAfterTimeConfigured) {
                 if (playAdsAfterTime == -1L) {
                     val preRollAdUrl = getAdFromAdConfigMap(PREROLL_AD_INDEX)
+                    // Case when preroll is there then play preroll and then play immediate last ad as per player start position
                     if (preRollAdUrl != null) {
                         playAd(preRollAdUrl)
                         if (playerStartPosition > 0 && midrollAdBreakPositionType != AdBreakPositionType.EVERY) {
+                            //Get the immediate last ad and play once preroll completes
                             nextAdBreakIndexForMonitoring = getImmediateLastAdPosition(playerStartPosition)
                         }
                     } else {
                         prepareContentPlayer()
                     }
-                } else if (playAdsAfterTime > 0L) {
-                    prepareContentPlayer()
+                } else {
+                    if (midRollAdsCount() > 0 && playAdsAfterTime < playerStartPosition) {
+                        // If playAdsAfterTime is smaller than playerStartPosition then play the immediate last ad from the map as per startposition
+                        // It will skip the preroll
+                        nextAdBreakIndexForMonitoring = getImmediateLastAdPosition(playerStartPosition)
+                        if (nextAdBreakIndexForMonitoring > 0) {
+                            val playAbleAdUrl = getAdFromAdConfigMap(nextAdBreakIndexForMonitoring)
+                            if (playAbleAdUrl != null) {
+                                playAd(playAbleAdUrl)
+                            }
+                        } else {
+                            prepareContentPlayer()
+                        }
+                    } else {
+                        // If playAdsAfterTime is greater than startPosition then prepare the content player
+                        prepareContentPlayer()
+                    }
                 }
             } else {
-                val preRollAdUrl = getAdFromAdConfigMap(PREROLL_AD_INDEX)
-                if (preRollAdUrl != null) {
-                    playAd(preRollAdUrl)
-                } else {
+                if (playerStartPosition > 0L) {
+                    nextAdBreakIndexForMonitoring = getImmediateNextAdPosition(playerStartPosition)
                     prepareContentPlayer()
+                } else {
+                    val preRollAdUrl = getAdFromAdConfigMap(PREROLL_AD_INDEX)
+                    if (preRollAdUrl != null) {
+                        playAd(preRollAdUrl)
+                    } else {
+                        prepareContentPlayer()
+                    }
                 }
             }
         } else {
@@ -181,11 +203,15 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 cuePointsList?.let {
                     if (it.isNotEmpty()) {
                         // Update next Ad index for monitoring
-                        nextAdBreakIndexForMonitoring = 0
+                        if (playerStartPosition > 0L) {
+                            nextAdBreakIndexForMonitoring = getImmediateNextAdPosition(playerStartPosition)
+                        } else {
+                            nextAdBreakIndexForMonitoring = 0
+                        }
                     }
                 }
             }
-            getPlayAdsAfterTimeConfiguration(playerStartPosition)
+            getPlayAdsAfterTimeConfiguration()
             // In case if there is no Preroll ad
             // prepare the content player
             prepareContentPlayer()
@@ -296,11 +322,14 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     log.v("midrollAdBreakPositionType = ${midrollAdBreakPositionType}")
                 }
 
+                if (!isPlayAdsAfterTimeConfigured && playerStartPosition > 0 && event.position < playerStartPosition) {
+                    return@addListener
+                }
+
                 if (midrollAdBreakPositionType == AdBreakPositionType.EVERY) {
                     if (midrollFrequency > Long.MIN_VALUE &&
                         event.position > Consts.MILLISECONDS_MULTIPLIER &&
-                        ((event.position % midrollFrequency) < Consts.MILLISECONDS_MULTIPLIER) &&
-                        event.position >= playAdsAfterTime) {
+                        ((event.position % midrollFrequency) < Consts.MILLISECONDS_MULTIPLIER)) {
 
                         triggerAdPlaybackCounter++
                     } else {
@@ -310,8 +339,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     if (list[nextAdBreakIndexForMonitoring] > 0 &&
                         event.position >= list[nextAdBreakIndexForMonitoring] &&
                         (event.position > Consts.MILLISECONDS_MULTIPLIER &&
-                                (event.position % list[nextAdBreakIndexForMonitoring]) < Consts.MILLISECONDS_MULTIPLIER) &&
-                        event.position >= playAdsAfterTime) {
+                                (event.position % list[nextAdBreakIndexForMonitoring]) < Consts.MILLISECONDS_MULTIPLIER)) {
 
                         triggerAdPlaybackCounter++
                     } else {
@@ -358,6 +386,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
 
         messageBus?.addListener(this, PlayerEvent.seeked) {
+            isPlayerSeeking = false
+
             if (isLiveMedia()) {
                 //log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
                 // release()
@@ -383,7 +413,12 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     return@addListener
                 }
 
-                isPlayerSeeking = false
+                // In case, if playAdsAfterTime is not configured and user seeked before the start Position then don't play the Ads.
+                // On the other hand if playAdsAfterTime is configured then let the ad play in the normal fashion
+                if (!isPlayAdsAfterTimeConfigured && playerStartPosition > 0 && seekedPosition < playerStartPosition) {
+                    return@addListener
+                }
+
                 adPlaybackTriggered = false
                 log.d("Player seeked to position = ${seekedPosition}")
                 if (midrollAdBreakPositionType == AdBreakPositionType.EVERY &&
@@ -410,7 +445,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                         log.d("No Ad found on the left side of ad list, finding on right side")
                         // Trying to get the immediate Next ad from pod
                         val nextAdPosition = getImmediateNextAdPosition(seekedPosition)
-                        if (nextAdPosition > 0) {
+                        if ((hasPreRoll() && nextAdPosition > 0) || (!hasPreRoll() && nextAdPosition >= 0)) {
                             log.d("Ad found on the right side of ad list, update the current and next ad Index")
                             nextAdBreakIndexForMonitoring = nextAdPosition
                         } else if (seekedPosition == 0L && nextAdPosition == -1) {
@@ -445,15 +480,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     /**
      * Check of the PlayAdsAfter time is configured by the app
      */
-    private fun getPlayAdsAfterTimeConfiguration(@Nullable playerStartPosition: Long?) {
+    private fun getPlayAdsAfterTimeConfiguration() {
         if (playAdsAfterTime == -1L || playAdsAfterTime > 0L) {
-
-            playerStartPosition?.let {
-                if (it > 0 && playAdsAfterTime > 0 && it > playAdsAfterTime) {
-                    playAdsAfterTime = it
-                }
-            }
-
             val nextAdPosition = getImmediateNextAdPosition(playAdsAfterTime)
             if (nextAdPosition > 0) {
                 nextAdBreakIndexForMonitoring = nextAdPosition
@@ -612,6 +640,9 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         return null
     }
 
+    /**
+     * Handle the PlayAdNow AdBreak/AdPod/Waterfalling playback
+     */
     private fun handlePlayAdNowPlayback(adEventType: AdEvent.Type, error: AdEvent.Error?) {
         log.d("handlePlayAdNowPlayback ${adEventType.name}")
         if (adEventType == AdEvent.allAdsCompleted) {
@@ -1083,6 +1114,9 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         return isAllAdsCompleted
     }
 
+    /**
+     * Firing AllAdsCompleted event
+     */
     private fun fireAllAdsCompleteEvent() {
         if (isAllAdsCompletedFired) {
             log.d("AllAdsCompleted event as already been fired.")
@@ -1301,6 +1335,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         var adPosition = -1
 
+        if (cuePointsList?.size == 1) {
+            adPosition = 0
+            return adPosition
+        }
+
         cuePointsList?.let {
             if (seekPosition > 0 && it.isNotEmpty() && it.size > 1) {
                 var lowerIndex: Int = if (it.first == 0L) 1 else 0
@@ -1342,6 +1381,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
 
         var adPosition = -1
+
+        if (cuePointsList?.size == 1) {
+            adPosition = 0
+            return adPosition
+        }
 
         cuePointsList?.let {
             if (seekPosition > 0 && it.isNotEmpty() && it.size > 1) {

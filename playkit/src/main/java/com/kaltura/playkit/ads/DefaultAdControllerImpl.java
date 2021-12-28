@@ -1,12 +1,8 @@
 package com.kaltura.playkit.ads;
 
-import androidx.annotation.NonNull;
-
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
-
-import java.util.List;
 
 public class DefaultAdControllerImpl implements AdController {
 
@@ -47,7 +43,7 @@ public class DefaultAdControllerImpl implements AdController {
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public void seekTo(long position) {
-       //seeking operation during ad is blocked
+        //seeking operation during ad is blocked
     }
 
     @Override
@@ -116,41 +112,6 @@ public class DefaultAdControllerImpl implements AdController {
             return adsProvider.getAdPluginType();
         }
         return null;
-    }
-
-    @Override
-    public void advertisingPlayAdNow(String adTag) {
-        if (adsProvider != null) {
-            adsProvider.advertisingPlayAdNow(adTag);
-        }
-    }
-
-    @Override
-    public void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener) {
-        if (adsProvider != null) {
-            adsProvider.setAdvertisingConfig(isConfigured, adType, imaEventsListener);
-        }
-    }
-
-    @Override
-    public void advertisingSetCuePoints(List<Long> cuePoints) {
-        if (adsProvider != null) {
-            adsProvider.advertisingSetCuePoints(cuePoints);
-        }
-    }
-
-    @Override
-    public void advertisingPreparePlayer() {
-        if (adsProvider != null) {
-            adsProvider.advertisingPreparePlayer();
-        }
-    }
-
-    @Override
-    public void advertisingSetAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {
-        if (adsProvider != null) {
-            adsProvider.advertisingSetAdInfo(pkAdvertisingAdInfo);
-        }
     }
 }
 
