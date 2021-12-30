@@ -292,8 +292,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             }
 
             if (isLiveMedia()) {
-                //log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
-                // release()
+                log.v("PlayheadUpdated Event. For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
                 return@addListener
             }
 
@@ -323,6 +322,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 }
 
                 if (!isPlayAdsAfterTimeConfigured && playerStartPosition > 0 && event.position < playerStartPosition) {
+                    return@addListener
+                }
+
+                if (nextAdBreakIndexForMonitoring < 0 || nextAdBreakIndexForMonitoring >= list.size) {
+                    log.d("playheadUpdated: Invalid nextAdBreakIndexForMonitoring")
                     return@addListener
                 }
 
@@ -367,19 +371,17 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         messageBus?.addListener(this, PlayerEvent.seeking) {
             log.d("Player seeking for player position = ${player?.currentPosition} - currentPosition ${it.currentPosition} - targetPosition ${it.targetPosition}" )
+            isPlayerSeeking = true
             if (isLiveMedia()) {
-                //log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
-                // release()
+                log.v("Seeking Event. For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
                 return@addListener
             }
-            isPlayerSeeking = true
         }
 
         messageBus?.addListener(this, PlayerEvent.loadedMetadata) {
             log.d("loadedMetadata Player duration is = ${player?.duration}" )
             if (isLiveMedia()) {
-                //log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
-                // release()
+                log.v("Loaded MetaData Event. For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
                 return@addListener
             }
             checkTypeOfMidrollAdPresent(advertisingContainer?.getMidrollAdBreakPositionType(), player?.duration)
@@ -389,8 +391,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             isPlayerSeeking = false
 
             if (isLiveMedia()) {
-                //log.d("For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
-                // release()
+                log.v("Seeked Event. For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
                 return@addListener
             }
 
@@ -405,6 +406,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
                 if (list.isEmpty() || nextAdBreakIndexForMonitoring == DEFAULT_AD_INDEX) {
                     log.d("seeked: Ads are empty, dropping ad playback.")
+                    return@addListener
+                }
+
+                if (nextAdBreakIndexForMonitoring < 0 || nextAdBreakIndexForMonitoring >= list.size) {
+                    log.d("seeked: Invalid nextAdBreakIndexForMonitoring")
                     return@addListener
                 }
 
@@ -470,6 +476,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     isPostrollLeftForPlaying = true
                 }
             } else {
+                // Resetting the index position for the replay case after the player event ended
                 currentAdBreakIndexPosition = DEFAULT_AD_INDEX
                 nextAdBreakIndexForMonitoring = DEFAULT_AD_INDEX
                 adPlaybackTriggered = false
@@ -1325,10 +1332,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Used only if the user seeked the Ad cue point
      * Mimicking the SNAPBACK feature
      */
-    private fun getImmediateLastAdPosition(seekPosition: Long?): Int {
+    private fun getImmediateLastAdPosition(position: Long?): Int {
         log.d("getImmediateLastAdPosition")
 
-        if (seekPosition == null || cuePointsList == null || cuePointsList.isNullOrEmpty()) {
+        if (position == null || cuePointsList == null || cuePointsList.isNullOrEmpty()) {
             log.d("Error in getImmediateLastAdPosition returning DEFAULT_AD_POSITION")
             return DEFAULT_AD_INDEX
         }
@@ -1341,20 +1348,20 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
 
         cuePointsList?.let {
-            if (seekPosition > 0 && it.isNotEmpty() && it.size > 1) {
+            if (position > 0 && it.isNotEmpty() && it.size > 1) {
                 var lowerIndex: Int = if (it.first == 0L) 1 else 0
                 var upperIndex: Int = if (it.last == -1L) it.size -2 else (it.size - 1)
 
                 while (lowerIndex <= upperIndex) {
                     val midIndex = lowerIndex + (upperIndex - lowerIndex) / 2
 
-                    if (it[midIndex] == seekPosition) {
+                    if (it[midIndex] == position) {
                         adPosition = midIndex
                         break
-                    } else if (it[midIndex] < seekPosition) {
+                    } else if (it[midIndex] < position) {
                         adPosition = midIndex
                         lowerIndex = midIndex + 1
-                    } else if (it[midIndex] > seekPosition) {
+                    } else if (it[midIndex] > position) {
                         upperIndex = midIndex - 1
                     }
                 }
@@ -1372,10 +1379,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Used only if the user seeked the Ad cue point
      * Mimicking the SNAPBACK feature
      */
-    private fun getImmediateNextAdPosition(seekPosition: Long?): Int {
+    private fun getImmediateNextAdPosition(position: Long?): Int {
         log.d("getImmediateNextAdPosition")
 
-        if (seekPosition == null || cuePointsList == null || cuePointsList.isNullOrEmpty()) {
+        if (position == null || cuePointsList == null || cuePointsList.isNullOrEmpty()) {
             log.d("Error in getImmediateNextAdPosition returning DEFAULT_AD_POSITION")
             return DEFAULT_AD_INDEX
         }
@@ -1388,19 +1395,19 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
 
         cuePointsList?.let {
-            if (seekPosition > 0 && it.isNotEmpty() && it.size > 1) {
+            if (position > 0 && it.isNotEmpty() && it.size > 1) {
                 var lowerIndex: Int = if (it.first == 0L) 1 else 0
                 var upperIndex: Int = if (it.last == -1L) it.size -2 else (it.size - 1)
 
                 while (lowerIndex <= upperIndex) {
                     val midIndex = lowerIndex + (upperIndex - lowerIndex) / 2
 
-                    if (it[midIndex] == seekPosition) {
+                    if (it[midIndex] == position) {
                         adPosition = midIndex
                         break
-                    } else if (it[midIndex] < seekPosition) {
+                    } else if (it[midIndex] < position) {
                         lowerIndex = midIndex + 1
-                    } else if (it[midIndex] > seekPosition) {
+                    } else if (it[midIndex] > position) {
                         adPosition = midIndex
                         upperIndex = midIndex - 1
                     }
