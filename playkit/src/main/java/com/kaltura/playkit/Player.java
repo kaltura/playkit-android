@@ -400,7 +400,12 @@ public interface Player {
      * @param playerConfig - media configurations to apply on the player.
      */
     void prepare(@NonNull PKMediaConfig playerConfig);
-    
+
+    /**
+     * Used by Kaltura-Player SDK internally for AdvertisingConfiguration.
+     * @param pkAdvertisingController Controller, it resides in Kaltura-Player
+     * @param advertisingConfig AdvertisingConfig
+     */
     void setAdvertising(@NonNull PKAdvertisingController pkAdvertisingController, @Nullable AdvertisingConfig advertisingConfig);
 
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);

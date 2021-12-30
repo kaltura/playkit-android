@@ -7,6 +7,7 @@ import androidx.annotation.NonNull
 /**
  * Advertising configuration
  * Pass the list of AdBreaks
+ *
  * @param advertising: List of AdBreaks
  * @param adTimeUnit: AdBreak position in Seconds or Milliseconds
  * @param adType: If it is AdUrl or VAST response
@@ -53,8 +54,9 @@ data class PKAdvertisingAdInfo(var adPodTimeOffset: Long,
                                var podCount: Int)
 
 /**
- * For Preroll and Postroll, always configure POSITION
- * For Midroll, PERCENTAGE or EVERY can be configured
+ * For Preroll and Postroll, always configure POSITION or PERCENTAGE (0% = Preroll, 100% = Postroll)
+ * For Midroll, POSITION, PERCENTAGE or EVERY can be configured.
+ *
  * PERCENTAGE and EVERY can not be mixed in one configuration (Only one can be configured at a time)
  * For EVERY: Only one Midroll ad should be configured (Because the adbreak will be played every X seconds)
  */
@@ -64,17 +66,26 @@ enum class AdBreakPositionType {
     EVERY // Play AdBreak at every n seconds (60 means on every 1 min ad will be played)
 }
 
+/**
+ * AdBreak time value can be passed as SECONDS (10 means 10 seconds) OR MILISECONDS (10000 means 10 seconds)
+ */
 enum class AdTimeUnit {
     SECONDS,
     MILISECONDS
 }
 
+/**
+ * Passing Ad type
+ * It could be Ad's VAST Url or Ad's VAST XML Response
+ */
 enum class AdType {
     AD_URL,
     AD_RESPONSE
 }
 
-// Ad's State
+/**
+ * Ad's State
+ */
 enum class AdState {
     READY,
     PLAYING,
