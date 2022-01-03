@@ -74,4 +74,6 @@ dependencies {
 
 if (!ext.playkitVersion.contains('dev')) {
     apply from: './gradle-mvn-push.gradle'
+} else {
+    apply from: './gradle-mvn-local.gradle'
 }
