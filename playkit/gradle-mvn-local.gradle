@@ -1,13 +1,19 @@
 apply plugin: 'maven-publish'
-apply plugin: 'signing'
 
-afterEvaluate { project ->
+task androidSourcesJar(type: Jar) {
+    classifier 'sources'
+    from android.sourceSets.main.java.sourceFiles
+}
+
+project.afterEvaluate {
     publishing {
         publications {
-            release(MavenPublication) {
+            mavenJava(MavenPublication) {
                 from components.release
-                artifact androidSourcesJar // optional sources
             }
+        }
+        repositories {
+            mavenLocal()
         }
     }
 }
