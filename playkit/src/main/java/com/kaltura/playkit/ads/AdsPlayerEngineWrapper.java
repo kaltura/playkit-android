@@ -32,11 +32,13 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     private AdsProvider adsProvider;
     private PKMediaSourceConfig mediaSourceConfig;
     private DefaultAdControllerImpl defaultAdController;
+    private DefaultAdvertisingControllerImpl defaultAdvertisingController;
 
     public AdsPlayerEngineWrapper(final Context context, AdsProvider adsProvider) {
         this.context = context;
         this.adsProvider = adsProvider;
         this.defaultAdController = new DefaultAdControllerImpl(adsProvider);
+        this.defaultAdvertisingController = new DefaultAdvertisingControllerImpl(adsProvider);
     }
 
     @Override
@@ -168,6 +170,11 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         if (type == AdController.class && defaultAdController != null) {
             return (T) this.defaultAdController;
         }
+        
+        if (type == AdvertisingController.class && defaultAdvertisingController != null) {
+            return (T) this.defaultAdvertisingController;
+        }
+        
         return super.getController(type);
     }
 

@@ -23,7 +23,6 @@ import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
 
-
 public class AdEnabledPlayerController extends PlayerDecorator implements AdController, PKAdProviderListener, PKController {
 
     private static final PKLog log = PKLog.get("AdEnablController");

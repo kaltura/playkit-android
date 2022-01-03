@@ -12,9 +12,16 @@
 
 package com.kaltura.playkit.plugins.ads;
 
+import androidx.annotation.NonNull;
+
+import com.kaltura.playkit.ads.AdType;
+import com.kaltura.playkit.ads.IMAEventsListener;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdPluginType;
 import com.kaltura.playkit.ads.PKAdProviderListener;
+import com.kaltura.playkit.ads.PKAdvertisingAdInfo;
+
+import java.util.List;
 
 
 public interface AdsProvider {
@@ -73,4 +80,15 @@ public interface AdsProvider {
     default PKAdPluginType getAdPluginType() { return PKAdPluginType.client; }
 
     boolean isContentPrepared();
+    
+    default void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener) {}
+
+    // @param adTag Ad url or Ad response
+    default void advertisingPlayAdNow(String adTag) {}
+
+    default void advertisingSetCuePoints(List<Long> cuePoints) {}
+
+    default void advertisingSetAdInfo(PKAdvertisingAdInfo pkAdvertisingAdInfo) {}
+
+    default void advertisingPreparePlayer() {}
 }

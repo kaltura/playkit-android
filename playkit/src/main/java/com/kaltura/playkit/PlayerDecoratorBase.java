@@ -16,6 +16,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.playkit.ads.AdvertisingConfig;
+import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKLowLatencyConfig;
@@ -35,6 +37,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
         player.prepare(mediaConfig);
+    }
+
+    @Override
+    public void setAdvertising(@NonNull PKAdvertisingController pkAdvertisingController, @Nullable AdvertisingConfig advertisingConfig) {
+        player.setAdvertising(pkAdvertisingController, advertisingConfig);
     }
 
     @Override

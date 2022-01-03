@@ -16,6 +16,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.playkit.ads.AdvertisingConfig;
+import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.MulticastSettings;
@@ -399,8 +401,15 @@ public interface Player {
      */
     void prepare(@NonNull PKMediaConfig playerConfig);
 
-    void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
+    /**
+     * Used by Kaltura-Player SDK internally for AdvertisingConfiguration.
+     * @param pkAdvertisingController Controller, it resides in Kaltura-Player
+     * @param advertisingConfig AdvertisingConfig
+     */
+    void setAdvertising(@NonNull PKAdvertisingController pkAdvertisingController, @Nullable AdvertisingConfig advertisingConfig);
 
+    void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
+    
     /**
      * Used by Kaltura-Player SDK internally for ExoOffline provider.
      * This feature is blocked for being used directly by Playkit SDK.

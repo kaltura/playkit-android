@@ -43,7 +43,7 @@ public class DefaultDAIAdControllerImpl implements AdController {
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public void seekTo(long position) {
-       //seeking operation during ad is blocked
+        //seeking operation during ad is blocked
     }
 
     @Override

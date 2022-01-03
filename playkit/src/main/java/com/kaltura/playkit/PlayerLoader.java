@@ -20,6 +20,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
+import com.kaltura.playkit.ads.AdvertisingConfig;
+import com.kaltura.playkit.ads.AdvertisingController;
+import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
@@ -51,6 +54,8 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
+    private @Nullable AdvertisingConfig advertisingConfig;
+    private PKAdvertisingController pkAdvertisingController;
     private final String kavaPluginKey = "kava";
     private boolean isKavaImpressionFired;
 
@@ -164,6 +169,11 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         super.prepare(mediaConfig);
 
+        if (pkAdvertisingController != null && playerController.getController(AdvertisingController.class) != null) {
+            pkAdvertisingController.setAdController(playerController.getController(AdvertisingController.class));
+            pkAdvertisingController.setAdvertising(advertisingConfig);
+        }
+
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
             loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
         }
@@ -183,6 +193,17 @@ class PlayerLoader extends PlayerDecoratorBase {
 //                }
 //            }
 //        });
+    }
+
+    @Override
+    public void setAdvertising(@NonNull PKAdvertisingController pkAdvertisingController, @Nullable AdvertisingConfig advertisingConfig) {
+        if (!PKDeviceCapabilities.isKalturaPlayerAvailable()) {
+            log.e("Advertising is being used to configure custom AdLayout. This feature is not available in Playkit SDK. " +
+                    "It is only being used by Kaltura Player SDK.");
+            return;
+        }
+        this.pkAdvertisingController = pkAdvertisingController;
+        this.advertisingConfig = advertisingConfig;
     }
 
     private void releasePlugins() {
