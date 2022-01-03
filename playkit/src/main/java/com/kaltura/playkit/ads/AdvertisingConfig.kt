@@ -24,8 +24,6 @@ data class AdvertisingConfig(@NonNull val advertising: List<AdBreak?>?,
  * Each AdPod may contain a list of Ads (List of Ads is being used to do waterfalling)
  *
  * For PlayAdNow API, if app is passing AdBreak then position is irrelevant.
- *
- * @see <a href="Ad Waterfalling">https://github.com/kaltura/kaltura-player-js/blob/master/docs/advertisement-layout-management.md#waterfalling</a>
  */
 data class AdBreak(@NonNull var adBreakPositionType: AdBreakPositionType = AdBreakPositionType.POSITION,
                    @NonNull var position: Long,
@@ -93,7 +91,14 @@ enum class AdState {
     ERROR
 }
 
-// Adroll type
+/**
+ * Adroll type
+ * 
+ * AdLayout may contain different AdBreaks
+ * Each AdBreak will contain at least 1 or more than 1 AdPod
+ * Ead AdPod will contain ad least 1 Ad
+ */
+
 internal enum class AdRollType {
     ADBREAK,
     ADPOD,

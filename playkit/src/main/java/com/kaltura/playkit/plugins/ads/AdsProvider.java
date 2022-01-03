@@ -14,7 +14,6 @@ package com.kaltura.playkit.plugins.ads;
 
 import androidx.annotation.NonNull;
 
-import com.kaltura.playkit.ads.AdBreakPositionType;
 import com.kaltura.playkit.ads.AdType;
 import com.kaltura.playkit.ads.IMAEventsListener;
 import com.kaltura.playkit.ads.PKAdInfo;

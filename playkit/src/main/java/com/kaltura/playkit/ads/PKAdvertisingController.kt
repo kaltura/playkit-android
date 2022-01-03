@@ -810,6 +810,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
             AdState.PLAYED -> {
                 if (isTriggeredFromPlayerPosition && adBreakConfig.adBreakPositionType == AdBreakPositionType.EVERY) {
+                    // We are not resetting the AdBreak, only the internal adPod or ad are being reset.
                     log.d("fetchPlayableAdFromAdsList -> I am in Played State only for adBreakPositionType EVERY \n " +
                             "and checking for the PLAYED ad Tag.")
                     adBreakConfig.adPodList?.let { adPodList ->
@@ -853,6 +854,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
                 AdState.PLAYING, AdState.PLAYED -> {
                     if (adPodConfig.adPodState == AdState.PLAYED)  {
+                        // Move AdState.PLAYED to outside on top level
                         continue
                     }
 
@@ -867,7 +869,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
                                     AdState.PLAYED -> {
                                         if (adBreakPositionType == AdBreakPositionType.EVERY && isTriggeredFromPlayerPosition) {
-                                            // ONLY in case of EVERY if there is an Ad wuth PLAYED state return this ad.
+                                            // ONLY in case of EVERY if there is an Ad with PLAYED state return this ad.
                                             return specificAd.ad
                                         } else {
                                             continue
@@ -926,7 +928,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      *
      * *NOTE*: For EVERY based midrolls AdPod State will be changed to READY
      * This is important because for the next EVERY based midroll, we will pick those AdPods
-     * again and mark it Played/Erroed accordingly [This will only be set when the all the AdPods
+     * again and mark it Played/Errored accordingly [This will only be set when the all the AdPods
      * of the AdBreak are done with playback]
      *
      */
