@@ -1,0 +1,13 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+afterEvaluate { project ->
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                artifact androidSourcesJar // optional sources
+            }
+        }
+    }
+}
