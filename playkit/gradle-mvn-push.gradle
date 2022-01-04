@@ -28,7 +28,6 @@ afterEvaluate { project ->
         publications {
             mavenJava(MavenPublication) {
                 from components.release
-                artifact androidSourcesJar
                 groupId = GROUP
                 artifactId = POM_ARTIFACT_ID
                 
@@ -105,5 +104,10 @@ afterEvaluate { project ->
     task androidSourcesJar(type: Jar) {
         classifier = 'sources'
         from android.sourceSets.main.java.sourceFiles
+    }
+
+    artifacts {
+        archives androidSourcesJar
+        //archives androidJavadocsJar
     }
 }
