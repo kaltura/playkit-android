@@ -596,6 +596,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
     }
 
+    /**
+     * Handle Error event for AdvertisingConfig
+     * Send AD_WATERFALLING, AD_WATERFALLING_FAILED and ERROR event to the client apps.
+     */
     private fun handleErrorEvent(isAllAdsFailed: Boolean?, adBreakConfig: AdBreakConfig?, error: AdEvent.Error?) {
         log.e("isAdWaterFallingOccurred $hasWaterFallingAds")
         isAllAdsFailed?.let {
