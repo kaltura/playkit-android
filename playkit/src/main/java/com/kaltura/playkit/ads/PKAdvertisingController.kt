@@ -601,17 +601,25 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         isAllAdsFailed?.let {
             if (hasWaterFallingAds) {
                 if (it) {
+                    log.e("Firing AdWaterFallingFailed event")
                     messageBus?.post(
                         AdEvent.AdWaterFallingFailed(adBreakConfig)
                     )
+                    // When the all ads in the waterfalling list fail then with `AdWaterFallingFailed`, we need to fire
+                    // AdEvent.error as well so that Analytics behaves as usual
+                    log.e("Firing AdEvent.error after AdWaterFallingFailed")
+                    error?.let { err ->
+                        messageBus?.post(err)
+                    }
+
                 } else {
+                    log.d("Firing AdWaterFalling event")
                     messageBus?.post(
                         AdEvent.AdWaterFalling(adBreakConfig)
                     )
                 }
-                log.d("Firing WaterFalling event")
             } else {
-                log.d("Firing AdError because there was no AdWaterFalling")
+                log.e("Firing AdError because there was no AdWaterFalling")
                 error?.let { err ->
                     messageBus?.post(err)
                 }
