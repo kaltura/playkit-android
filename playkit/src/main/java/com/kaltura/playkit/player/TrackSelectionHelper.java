@@ -774,7 +774,7 @@ public class TrackSelectionHelper {
 
 
         AudioCodecSettings preferredAudioCodecSettings = playerSettings.getPreferredAudioCodecSettings();
-        if (preferredAudioCodecSettings.getAllowMixedCodecs()) {
+        if (!preferredAudioCodecSettings.getAllowMixedCodecs()) {
             return filteredAudioTracks;
         }
 
