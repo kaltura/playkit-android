@@ -359,7 +359,7 @@ public class TrackSelectionHelper {
         //add disable option to the text tracks.
         maybeAddDisabledTextTrack();
         videoTracks = filterVideoTracks();
-        //Leave only adaptive audio tracks for user selection if no  extra config is set.
+        //Leave only adaptive audio tracks for user selection if no extra config is set.
         ArrayList<AudioTrack> filteredAudioTracks = filterAdaptiveAudioTracks();
         int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks, lastSelectedTrackIds[TRACK_TYPE_VIDEO]);
         int defaultAudioTrackIndex = getDefaultTrackIndex(filteredAudioTracks, lastSelectedTrackIds[TRACK_TYPE_AUDIO]);
