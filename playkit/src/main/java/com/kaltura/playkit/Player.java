@@ -19,6 +19,7 @@ import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.ads.AdvertisingConfig;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.DRMSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -369,6 +370,9 @@ public interface Player {
          * @return - Player Settings
          */
         Settings forceWidevineL3Playback(boolean forceWidevineL3Playback);
+
+
+        Settings setDRMSettings(DRMSettings drmSettings);
 
         /**
          * Creates a Low Latency Live playback configuration.

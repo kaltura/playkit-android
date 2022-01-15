@@ -45,7 +45,9 @@ public abstract class DrmAdapter {
             case WidevineClassic:
                 return new WidevineClassicAdapter(context);
             case PlayReadyCENC:
-                log.d("Unsupported scheme PlayReady");
+                log.d("PlayReadyCENC will work using exoplayer default flow");
+                //return new PlayreadyAdapter(context, localDataStore);
+            default:
                 break;
         }
 

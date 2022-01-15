@@ -402,8 +402,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                     drmConfiguration != null &&
                     drmConfiguration.licenseUri != null &&
                     !TextUtils.isEmpty(drmConfiguration.licenseUri.toString())) {
-                drmSessionManager = getDeferredDRMSessionManager();
-                drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
+                if (playerSettings.getDRMSettings().getDrmScheme() != PKDrmParams.Scheme.PlayReadyCENC) {
+                    drmSessionManager = getDeferredDRMSessionManager();
+                    drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
+                }
             }
         }
 
@@ -445,54 +447,61 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         MediaSource mediaSource;
         switch (format) {
             case dash:
-                final DataSource.Factory teedDtaSourceFactory = () -> {
-                    dashManifestString = null;
-                    dashLastDataSink = new ByteArrayDataSink();
-                    TeeDataSource teeDataSource = new TeeDataSource(dataSourceFactory.createDataSource(), dashLastDataSink);
-                    teeDataSource.addTransferListener(new TransferListener() {
-                        @Override
-                        public void onTransferInitializing(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
+                if (playerSettings.getDRMSettings().getDrmScheme() == PKDrmParams.Scheme.PlayReadyCENC) {
+                    mediaSource = new DefaultMediaSourceFactory(dataSourceFactory)
+                            .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
+                            .createMediaSource(mediaItem);
+                } else {
+                    final DataSource.Factory teedDtaSourceFactory = () -> {
+                        dashManifestString = null;
+                        dashLastDataSink = new ByteArrayDataSink();
+                        TeeDataSource teeDataSource = new TeeDataSource(dataSourceFactory.createDataSource(), dashLastDataSink);
+                        teeDataSource.addTransferListener(new TransferListener() {
+                            @Override
+                            public void onTransferInitializing(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
 
-                        }
-
-                        @Override
-                        public void onTransferStart(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
-
-                        }
-
-                        @Override
-                        public void onBytesTransferred(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b, int i) {
-
-                        }
-
-                        @Override
-                        public void onTransferEnd(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
-                            log.d("teeDataSource onTransferEnd");
-                            if (dashManifestString != null) {
-                                return;
-                            }
-                            if (dashLastDataSink == null) {
-                                return;
                             }
 
-                            byte[] bytes = dashLastDataSink.getData();
-                            if (bytes == null) {
-                                return;
+                            @Override
+                            public void onTransferStart(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
+
                             }
 
-                            dashManifestString = new String(bytes, Charsets.UTF_8);
-                            //log.d("teeDataSource manifest  " + dashManifestString);
-                        }
-                    });
-                    return teeDataSource;
-                };
+                            @Override
+                            public void onBytesTransferred(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b, int i) {
 
-                mediaSource = new DashMediaSource.Factory(
-                        new DefaultDashChunkSource.Factory(dataSourceFactory), teedDtaSourceFactory)
-                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
-                        .setManifestParser(new DashManifestParserForThumbnail())
-                        .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
-                        .createMediaSource(mediaItem);
+                            }
+
+                            @Override
+                            public void onTransferEnd(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
+                                log.d("teeDataSource onTransferEnd");
+                                if (dashManifestString != null) {
+                                    return;
+                                }
+                                if (dashLastDataSink == null) {
+                                    return;
+                                }
+
+                                byte[] bytes = dashLastDataSink.getData();
+                                if (bytes == null) {
+                                    return;
+                                }
+
+                                dashManifestString = new String(bytes, Charsets.UTF_8);
+                                //log.d("teeDataSource manifest  " + dashManifestString);
+                            }
+                        });
+                        return teeDataSource;
+                    };
+
+                    mediaSource = new DashMediaSource.Factory(
+                            new DefaultDashChunkSource.Factory(dataSourceFactory), teedDtaSourceFactory)
+                            .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
+                            .setManifestParser(new DashManifestParserForThumbnail())
+                            .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
+                            .createMediaSource(mediaItem);
+                }
+
                 break;
 
             case hls:
@@ -647,8 +656,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     private void setMediaItemBuilderDRMParams(PKMediaSourceConfig sourceConfig, MediaItem.Builder builder) {
-        // selecting WidevineCENC as default right now
-        PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
+        PKDrmParams.Scheme scheme = playerSettings.getDRMSettings().getDrmScheme();
         String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
 
         if (licenseUri != null) {
@@ -663,8 +671,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             builder
                     .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
                     .setDrmLicenseUri(licenseUri)
-                    .setDrmMultiSession(false)
-                    .setDrmForceDefaultLicenseUri(false)
+                    .setDrmMultiSession(playerSettings.getDRMSettings().getIsMultiSession())
+                    .setDrmForceDefaultLicenseUri(playerSettings.getDRMSettings().getIsForceDefaultLicenseUri())
                     .setDrmLicenseRequestHeaders(licenseRequestParamsHeaders);
         }
     }

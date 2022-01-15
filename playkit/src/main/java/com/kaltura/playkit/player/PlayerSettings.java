@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestConfig;
 import com.kaltura.playkit.PKRequestParams;
@@ -28,7 +29,6 @@ public class PlayerSettings implements Player.Settings {
     private boolean cea608CaptionsEnabled;
     private boolean mpgaAudioFormatEnabled;
     private boolean enableDecoderFallback;
-    private boolean allowClearLead = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
@@ -55,8 +55,7 @@ public class PlayerSettings implements Player.Settings {
      * Only if IMA plugin is there then only this flag is set to true.
      */
     private boolean forceSinglePlayerEngine = false;
-    private boolean forceWidevineL3Playback = false;
-
+    private DRMSettings drmSettings = new DRMSettings(PKDrmParams.Scheme.WidevineCENC);
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
     private PKMediaFormat preferredMediaFormat = PKMediaFormat.dash;
@@ -77,7 +76,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     public boolean allowClearLead() {
-        return allowClearLead;
+        return (drmSettings != null) ? drmSettings.getAllowClearlead() : true;
     }
 
     public boolean enableDecoderFallback() {
@@ -193,7 +192,11 @@ public class PlayerSettings implements Player.Settings {
     }
 
     public boolean isForceWidevineL3Playback() {
-        return forceWidevineL3Playback;
+        return (drmSettings != null) ? drmSettings.getIsForceWidevineL3Playback() : false;
+    }
+
+    public DRMSettings getDRMSettings() {
+        return drmSettings;
     }
 
     public PKLowLatencyConfig getPKLowLatencyConfig() {
@@ -281,7 +284,9 @@ public class PlayerSettings implements Player.Settings {
 
     @Override
     public Player.Settings allowClearLead(boolean allowClearLead) {
-        this.allowClearLead = allowClearLead;
+        if (drmSettings != null) {
+            drmSettings.setIsAllowClearlead(allowClearLead);
+        }
         return this;
     }
 
@@ -437,7 +442,15 @@ public class PlayerSettings implements Player.Settings {
 
     @Override
     public Player.Settings forceWidevineL3Playback(boolean forceWidevineL3Playback) {
-        this.forceWidevineL3Playback = forceWidevineL3Playback;
+        if (drmSettings != null) {
+            drmSettings.setIsForceWidevineL3Playback(forceWidevineL3Playback);
+        }
+        return this;
+    }
+
+    @Override
+    public Player.Settings setDRMSettings(DRMSettings drmSettings) {
+        this.drmSettings = drmSettings;
         return this;
     }
 

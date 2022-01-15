@@ -244,7 +244,7 @@ public class MediaSupport {
     }
 
     public static boolean playReady() {
-        return Boolean.FALSE;   // Not yet.
+        return Boolean.TRUE;
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
