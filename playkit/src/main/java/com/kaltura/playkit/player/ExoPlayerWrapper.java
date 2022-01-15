@@ -657,6 +657,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private void setMediaItemBuilderDRMParams(PKMediaSourceConfig sourceConfig, MediaItem.Builder builder) {
         PKDrmParams.Scheme scheme = playerSettings.getDRMSettings().getDrmScheme();
+        log.d("PKDrmParams.Scheme = " + scheme);
+
         String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
 
         if (licenseUri != null) {
