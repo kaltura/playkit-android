@@ -727,6 +727,8 @@ public class TrackSelectionHelper {
                 } else if ((!atleastOneCodecSupportedInHardware || playerSettings.getPreferredVideoCodecSettings().isAllowSoftwareDecoder()) &&
                         (codecVideoTrack.getCodecName() != null && isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, true))) {
                     videoTracks.add(codecVideoTrack);
+                } else if (codecVideoTrack.getCodecName() == null && codecVideoTrack.getCodecType() == PKVideoCodec.AVC && codecVideoTrack.getBitrate() >= 0) {
+                    videoTracks.add(codecVideoTrack);
                 }
             }
         }
