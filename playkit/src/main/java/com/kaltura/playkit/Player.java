@@ -371,7 +371,12 @@ public interface Player {
          */
         Settings forceWidevineL3Playback(boolean forceWidevineL3Playback);
 
-
+        /**
+         * Creates a DRM playback configuration.
+         *
+         * @param drmSettings - Configuration for DRM playback Widevine/Playready default is Widevine
+         * @return - Player Settings
+         */
         Settings setDRMSettings(DRMSettings drmSettings);
 
         /**
