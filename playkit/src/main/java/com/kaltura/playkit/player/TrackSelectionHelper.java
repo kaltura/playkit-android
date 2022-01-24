@@ -773,8 +773,7 @@ public class TrackSelectionHelper {
             }
         }
         currentCodecMap.clear();
-
-
+        
         AudioCodecSettings preferredAudioCodecSettings = playerSettings.getPreferredAudioCodecSettings();
         if (preferredAudioCodecSettings.getAllowMixedCodecs() && preferredAudioCodecSettings.getAllowMixedBitrates()) {
             return new ArrayList<>(audioTracks);
