@@ -773,7 +773,7 @@ public class TrackSelectionHelper {
             }
         }
         currentCodecMap.clear();
-        
+
         AudioCodecSettings preferredAudioCodecSettings = playerSettings.getPreferredAudioCodecSettings();
         if (preferredAudioCodecSettings.getAllowMixedCodecs() && preferredAudioCodecSettings.getAllowMixedBitrates()) {
             return new ArrayList<>(audioTracks);
@@ -787,15 +787,13 @@ public class TrackSelectionHelper {
             for (PKAudioCodec pkAudioCodec : preferredAudioCodecSettings.getCodecPriorityList()) {
                 if (audioTracksCodecsMap.containsKey(pkAudioCodec) && audioTracksCodecsMap.get(pkAudioCodec) != null) {
                     if (preferredAudioCodecSettings.getAllowMixedBitrates()) {
-                        ArrayList preferredCodecMixedBitrates = new ArrayList<AudioTrack>();
+                        ArrayList<AudioTrack> preferredCodecMixedBitrates = new ArrayList<>();
                         for (AudioTrack audioTrack : audioTracks) {
                             if (audioTrack.getCodecType() == pkAudioCodec) {
                                 preferredCodecMixedBitrates.add(audioTrack);
                             }
                         }
-                        if (audioTracksCodecsMap.get(pkAudioCodec) != null) {
-                            return new ArrayList<>(preferredCodecMixedBitrates);
-                        }
+                        return new ArrayList<>(preferredCodecMixedBitrates);
                     } else {
                         for (AudioTrack filteredTrack : filteredAudioTracks) {
                             if (filteredTrack.getCodecType() == pkAudioCodec) {
