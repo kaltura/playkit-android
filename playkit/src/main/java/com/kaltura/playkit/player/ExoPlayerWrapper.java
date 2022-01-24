@@ -447,61 +447,58 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         MediaSource mediaSource;
         switch (format) {
             case dash:
-                if (playerSettings.getDRMSettings().getDrmScheme() == PKDrmParams.Scheme.PlayReadyCENC) {
-                    mediaSource = new DefaultMediaSourceFactory(dataSourceFactory)
-                            .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
-                            .createMediaSource(mediaItem);
-                } else {
-                    final DataSource.Factory teedDtaSourceFactory = () -> {
-                        dashManifestString = null;
-                        dashLastDataSink = new ByteArrayDataSink();
-                        TeeDataSource teeDataSource = new TeeDataSource(dataSourceFactory.createDataSource(), dashLastDataSink);
-                        teeDataSource.addTransferListener(new TransferListener() {
-                            @Override
-                            public void onTransferInitializing(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
 
+                final DataSource.Factory teedDtaSourceFactory = () -> {
+                    dashManifestString = null;
+                    dashLastDataSink = new ByteArrayDataSink();
+                    TeeDataSource teeDataSource = new TeeDataSource(dataSourceFactory.createDataSource(), dashLastDataSink);
+                    teeDataSource.addTransferListener(new TransferListener() {
+                        @Override
+                        public void onTransferInitializing(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
+
+                        }
+
+                        @Override
+                        public void onTransferStart(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
+
+                        }
+
+                        @Override
+                        public void onBytesTransferred(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b, int i) {
+
+                        }
+
+                        @Override
+                        public void onTransferEnd(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
+                            log.d("teeDataSource onTransferEnd");
+                            if (dashManifestString != null) {
+                                return;
+                            }
+                            if (dashLastDataSink == null) {
+                                return;
                             }
 
-                            @Override
-                            public void onTransferStart(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
-
+                            byte[] bytes = dashLastDataSink.getData();
+                            if (bytes == null) {
+                                return;
                             }
 
-                            @Override
-                            public void onBytesTransferred(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b, int i) {
+                            dashManifestString = new String(bytes, Charsets.UTF_8);
+                            //log.d("teeDataSource manifest  " + dashManifestString);
+                        }
+                    });
+                    return teeDataSource;
+                };
 
-                            }
+                DashMediaSource.Factory dashMediaSourceFactory = new DashMediaSource.Factory(
+                        new DefaultDashChunkSource.Factory(dataSourceFactory), teedDtaSourceFactory)
+                        .setManifestParser(new DashManifestParserForThumbnail())
+                        .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy);
 
-                            @Override
-                            public void onTransferEnd(@NonNull DataSource dataSource, @NonNull DataSpec dataSpec, boolean b) {
-                                log.d("teeDataSource onTransferEnd");
-                                if (dashManifestString != null) {
-                                    return;
-                                }
-                                if (dashLastDataSink == null) {
-                                    return;
-                                }
-
-                                byte[] bytes = dashLastDataSink.getData();
-                                if (bytes == null) {
-                                    return;
-                                }
-
-                                dashManifestString = new String(bytes, Charsets.UTF_8);
-                                //log.d("teeDataSource manifest  " + dashManifestString);
-                            }
-                        });
-                        return teeDataSource;
-                    };
-
-                    mediaSource = new DashMediaSource.Factory(
-                            new DefaultDashChunkSource.Factory(dataSourceFactory), teedDtaSourceFactory)
-                            .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
-                            .setManifestParser(new DashManifestParserForThumbnail())
-                            .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
-                            .createMediaSource(mediaItem);
+                if (playerSettings.getDRMSettings().getDrmScheme() != PKDrmParams.Scheme.PlayReadyCENC) {
+                    dashMediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED);
                 }
-
+                mediaSource = dashMediaSourceFactory.createMediaSource(mediaItem);
                 break;
 
             case hls:
