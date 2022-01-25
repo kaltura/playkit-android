@@ -39,7 +39,7 @@ public class PKDrmParams implements Parcelable {
                         supported = MediaSupport.widevineModular();
                         break;
                     case PlayReadyCENC:
-                        supported = MediaSupport.playReady();
+                        supported = MediaSupport.playready();
                         break;
                     case WidevineClassic:
                         supported = MediaSupport.widevineClassic();

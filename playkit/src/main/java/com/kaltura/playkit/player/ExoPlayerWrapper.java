@@ -402,8 +402,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                     drmConfiguration != null &&
                     drmConfiguration.licenseUri != null &&
                     !TextUtils.isEmpty(drmConfiguration.licenseUri.toString())) {
-                drmSessionManager = getDeferredDRMSessionManager();
-                drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
+                if (playerSettings.getDRMSettings().getDrmScheme() != PKDrmParams.Scheme.PlayReadyCENC) {
+                    drmSessionManager = getDeferredDRMSessionManager();
+                    drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
+                }
             }
         }
 
@@ -445,6 +447,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         MediaSource mediaSource;
         switch (format) {
             case dash:
+
                 final DataSource.Factory teedDtaSourceFactory = () -> {
                     dashManifestString = null;
                     dashLastDataSink = new ByteArrayDataSink();
@@ -487,12 +490,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                     return teeDataSource;
                 };
 
-                mediaSource = new DashMediaSource.Factory(
+                DashMediaSource.Factory dashMediaSourceFactory = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), teedDtaSourceFactory)
-                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
                         .setManifestParser(new DashManifestParserForThumbnail())
-                        .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
-                        .createMediaSource(mediaItem);
+                        .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy);
+
+                if (playerSettings.getDRMSettings().getDrmScheme() != PKDrmParams.Scheme.PlayReadyCENC) {
+                    dashMediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED);
+                }
+                mediaSource = dashMediaSourceFactory.createMediaSource(mediaItem);
                 break;
 
             case hls:
@@ -647,8 +653,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     private void setMediaItemBuilderDRMParams(PKMediaSourceConfig sourceConfig, MediaItem.Builder builder) {
-        // selecting WidevineCENC as default right now
-        PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
+        PKDrmParams.Scheme scheme = playerSettings.getDRMSettings().getDrmScheme();
+        log.d("PKDrmParams.Scheme = " + scheme);
+
         String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
 
         if (licenseUri != null) {
@@ -663,8 +670,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             builder
                     .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
                     .setDrmLicenseUri(licenseUri)
-                    .setDrmMultiSession(false)
-                    .setDrmForceDefaultLicenseUri(false)
+                    .setDrmMultiSession(playerSettings.getDRMSettings().getIsMultiSession())
+                    .setDrmForceDefaultLicenseUri(playerSettings.getDRMSettings().getIsForceDefaultLicenseUri())
                     .setDrmLicenseRequestHeaders(licenseRequestParamsHeaders);
         }
     }
