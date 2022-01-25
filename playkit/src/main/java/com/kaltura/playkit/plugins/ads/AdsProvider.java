@@ -81,6 +81,8 @@ public interface AdsProvider {
 
     boolean isContentPrepared();
     
+    default boolean isAdvertisingConfigured() { return false; }
+    
     default void setAdvertisingConfig(boolean isConfigured, @NonNull AdType adType, IMAEventsListener imaEventsListener) {}
 
     // @param adTag Ad url or Ad response

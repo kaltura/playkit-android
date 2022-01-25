@@ -6,6 +6,7 @@ import androidx.annotation.Nullable
 import com.kaltura.playkit.*
 import com.kaltura.playkit.plugins.ads.AdEvent
 import com.kaltura.playkit.utils.Consts
+import com.kaltura.playkit.utils.ResumableCountDownTimer
 import java.util.*
 
 /**
@@ -25,6 +26,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private var cuePointsList: LinkedList<Long>? = null
     // Map containing the actual ads with position as key in the Map (Insertion order of app maintained)
     private var adsConfigMap: MutableMap<Long, AdBreakConfig?>? = null
+
+    // LiveMedia handler
+    var liveMediaCountdownTimer: ResumableCountDownTimer? = null
+    var isLiveMediaCountdownStarted: Boolean = false
+    var isLiveMediaMidrollAdPlayback: Boolean = false
 
     private var playerStartPosition: Long = 0L
     private var DEFAULT_AD_INDEX: Int = Int.MIN_VALUE
@@ -292,8 +298,17 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             }
 
             if (isLiveMedia()) {
-                log.v("PlayheadUpdated Event. For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
-                return@addListener
+                if (midRollAdsCount() > 0 && midrollAdBreakPositionType != AdBreakPositionType.EVERY || midrollFrequency <= Long.MIN_VALUE) {
+                    return@addListener
+                }
+
+                if (!isLiveMediaCountdownStarted && !adPlaybackTriggered) {
+                    isLiveMediaCountdownStarted = true
+                    createTimerForLiveMedias()
+                    return@addListener
+                } else if (isLiveMediaCountdownStarted && !isLiveMediaMidrollAdPlayback && !adPlaybackTriggered) {
+                    return@addListener
+                }
             }
 
             cuePointsList?.let { list ->
@@ -331,7 +346,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 }
 
                 if (midrollAdBreakPositionType == AdBreakPositionType.EVERY) {
-                    if (midrollFrequency > Long.MIN_VALUE &&
+                    if (!isLiveMedia() && midrollFrequency > Long.MIN_VALUE &&
                         event.position > Consts.MILLISECONDS_MULTIPLIER &&
                         ((event.position % midrollFrequency) < Consts.MILLISECONDS_MULTIPLIER)) {
 
@@ -339,8 +354,16 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     } else {
                         triggerAdPlaybackCounter = 0
                     }
+
+                    if (isLiveMedia() && isLiveMediaMidrollAdPlayback && midrollFrequency > Long.MIN_VALUE) {
+                        triggerAdPlaybackCounter++
+                    } else {
+                        triggerAdPlaybackCounter = 0
+                    }
+
                 } else {
-                    if (list[nextAdBreakIndexForMonitoring] > 0 &&
+                    if (!isLiveMedia() &&
+                        list[nextAdBreakIndexForMonitoring] > 0 &&
                         event.position >= list[nextAdBreakIndexForMonitoring] &&
                         (event.position > Consts.MILLISECONDS_MULTIPLIER &&
                                 (event.position % list[nextAdBreakIndexForMonitoring]) < Consts.MILLISECONDS_MULTIPLIER)) {
@@ -363,9 +386,24 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     log.d("nextAdForMonitoring ad position is = $list")
 
                     getAdFromAdConfigMap(nextAdBreakIndexForMonitoring)?.let { adUrl ->
+                        resetTimerForLiveMedias()
                         playAd(adUrl)
                     }
                 }
+            }
+        }
+
+        messageBus?.addListener(this, PlayerEvent.pause) {
+            log.d("PlayerEvent pause")
+            if (isLiveMediaCountdownStarted) {
+                liveMediaCountdownTimer?.pause()
+            }
+        }
+
+        messageBus?.addListener(this, PlayerEvent.playing) {
+            log.d("PlayerEvent play")
+            if (isLiveMediaCountdownStarted) {
+                liveMediaCountdownTimer?.resume()
             }
         }
 
@@ -379,11 +417,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
 
         messageBus?.addListener(this, PlayerEvent.loadedMetadata) {
-            log.d("loadedMetadata Player duration is = ${player?.duration}" )
-            if (isLiveMedia()) {
-                log.v("Loaded MetaData Event. For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
-                return@addListener
-            }
+            log.d("loadedMetadata Player duration is = ${player?.duration}")
             checkTypeOfMidrollAdPresent(advertisingContainer?.getMidrollAdBreakPositionType(), player?.duration)
         }
 
@@ -391,7 +425,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             isPlayerSeeking = false
 
             if (isLiveMedia()) {
-                log.v("Seeked Event. For Live Medias only Preroll ad will be played. Hence dropping other Ads if configured.")
+                resetTimerForLiveMedias()
                 return@addListener
             }
 
@@ -482,6 +516,30 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 adPlaybackTriggered = false
             }
         }
+    }
+
+    private fun createTimerForLiveMedias() {
+        log.d("createTimerForLiveMedias")
+        liveMediaCountdownTimer = object: ResumableCountDownTimer(midrollFrequency, 100) {
+            override fun onTick(millisUntilFinished: Long) {
+                log.v("Live CountdownTimer millisUntilFinished $millisUntilFinished")
+            }
+
+            override fun onFinish() {
+                log.v("CountdownTimer onFinish")
+                isLiveMediaMidrollAdPlayback = true
+            }
+        }
+
+        liveMediaCountdownTimer?.start()
+    }
+
+    private fun resetTimerForLiveMedias() {
+        log.d("resetTimerForLiveMedias")
+        liveMediaCountdownTimer?.cancel()
+        isLiveMediaMidrollAdPlayback = false
+        isLiveMediaCountdownStarted = false
+        liveMediaCountdownTimer = null
     }
 
     /**
@@ -1064,6 +1122,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         resetAdvertisingConfig()
         destroyConfigResources()
         adController = null // Don't change the position of this
+        liveMediaCountdownTimer?.cancel()
+        liveMediaCountdownTimer = null
         log.d("Advertising Controller resources have been released completely")
     }
 
@@ -1234,6 +1294,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     private fun playContent() {
         log.d("playContent")
+        if (isLiveMedia()) {
+            resetTimerForLiveMedias()
+        }
+
         adPlaybackTriggered = false
         player?.let {
             adController?.advertisingPreparePlayer()
