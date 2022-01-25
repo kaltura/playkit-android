@@ -34,7 +34,6 @@ public class DRMSettings {
 
     /**
      * Sets whether the DRM configuration is multi session enabled.
-     *
      */
     public DRMSettings setIsMultiSession(boolean isMultiSession) {
         this.isMultiSession = isMultiSession;
@@ -58,6 +57,10 @@ public class DRMSettings {
         return isAllowClearlead;
     }
 
+    /**
+     * Sets whether clear samples within protected content should be played when keys for the
+     * encrypted part of the content have yet to be loaded.
+     */
     public DRMSettings setIsAllowClearlead(boolean isAllowClearlead) {
         this.isAllowClearlead = isAllowClearlead;
         return this;
