@@ -32,6 +32,10 @@ public class DRMSettings {
         return isMultiSession;
     }
 
+    /**
+     * Sets whether the DRM configuration is multi session enabled.
+     *
+     */
     public DRMSettings setIsMultiSession(boolean isMultiSession) {
         this.isMultiSession = isMultiSession;
         return this;
@@ -41,6 +45,10 @@ public class DRMSettings {
         return isForceDefaultLicenseUri;
     }
 
+    /**
+     * Sets whether to force use the default DRM license server URI even if the media specifies its
+     * own DRM license server URI.
+     */
     public DRMSettings setIsForceDefaultLicenseUri(boolean isForceDefaultLicenseUri) {
         this.isForceDefaultLicenseUri = isForceDefaultLicenseUri;
         return this;
