@@ -358,16 +358,21 @@ public class TrackSelectionHelper {
 
         //add disable option to the text tracks.
         maybeAddDisabledTextTrack();
+
+        // We intend to sort the video and audio tracks after filtration so that
+        // while taking the default track index. Indexing of track will not get any impact.
         videoTracks = filterVideoTracks();
+        Collections.sort(videoTracks);
+
         //Leave only adaptive audio tracks for user selection if no extra config is set.
         ArrayList<AudioTrack> filteredAudioTracks = filterAdaptiveAudioTracks();
+        Collections.sort(filteredAudioTracks);
+
         int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks, lastSelectedTrackIds[TRACK_TYPE_VIDEO]);
         int defaultAudioTrackIndex = getDefaultTrackIndex(filteredAudioTracks, lastSelectedTrackIds[TRACK_TYPE_AUDIO]);
         int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[TRACK_TYPE_TEXT]);
         int defaultImageTrackIndex = getDefaultTrackIndex(imageTracks, lastSelectedTrackIds[TRACK_TYPE_IMAGE]);
 
-        Collections.sort(videoTracks);
-        Collections.sort(filteredAudioTracks);
         return new PKTracks(videoTracks, filteredAudioTracks, textTracks, imageTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex, defaultImageTrackIndex);
     }
 
