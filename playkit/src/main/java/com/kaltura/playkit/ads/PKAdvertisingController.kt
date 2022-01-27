@@ -654,6 +654,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
     }
 
+    /**
+     * Handle Error event for AdvertisingConfig
+     * Send AD_WATERFALLING, AD_WATERFALLING_FAILED and ERROR event to the client apps.
+     */
     private fun handleErrorEvent(isAllAdsFailed: Boolean?, adBreakConfig: AdBreakConfig?, error: AdEvent.Error?) {
         log.e("isAdWaterFallingOccurred $hasWaterFallingAds")
         isAllAdsFailed?.let {
@@ -662,17 +666,23 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     messageBus?.post(
                         AdEvent.AdWaterFallingFailed(adBreakConfig)
                     )
+                    // When the all ads in the waterfalling list fail then with `AdWaterFallingFailed`, we need to fire
+                    // AdEvent.error as well so that Analytics behaves as usual
+                    error?.let { err ->
+                        messageBus?.post(err)
+                    }
+                    log.e("Firing AdEvent.error after AdWaterFallingFailed event")
                 } else {
                     messageBus?.post(
                         AdEvent.AdWaterFalling(adBreakConfig)
                     )
+                    log.d("Firing AdWaterFalling event")
                 }
-                log.d("Firing WaterFalling event")
             } else {
-                log.d("Firing AdError because there was no AdWaterFalling")
                 error?.let { err ->
                     messageBus?.post(err)
                 }
+                log.e("Firing AdError because there was no AdWaterFalling")
             }
             hasWaterFallingAds = false
             return

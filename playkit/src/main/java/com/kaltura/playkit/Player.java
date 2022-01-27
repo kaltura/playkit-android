@@ -19,6 +19,7 @@ import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.ads.AdvertisingConfig;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.DRMSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -95,14 +96,12 @@ public interface Player {
         Settings useTextureView(boolean useTextureView);
 
         /**
-         * This method is deprecated.
-         * Please use {@link com.kaltura.playkit.PKRequestConfig} to set crossProtocolRedirect
-         *
          * Decide if player should do cross protocol redirect or not. By default it will be always set
          * to false.
          *
          * @param crossProtocolRedirectEnabled - true if should do cross protocol redirect.
          * @return - Player Settings.
+         * @deprecated Please use {@link com.kaltura.playkit.PKRequestConfig} to set crossProtocolRedirect
          */
         @Deprecated
         Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled);
@@ -112,7 +111,9 @@ public interface Player {
          *
          * @param allowClearLead - should enable/disable clear lead playback default true (enabled)
          * @return - Player Settings.
+         * @deprecated Please use {@link #setDRMSettings(DRMSettings)} to set allowClearLead.
          */
+        @Deprecated
         Settings allowClearLead(boolean allowClearLead);
 
         /**
@@ -309,9 +310,6 @@ public interface Player {
         Settings setSubtitlePreference(PKSubtitlePreference subtitlePreference);
 
         /**
-         * This method is deprecated.
-         * Please use {@link #setABRSettings(ABRSettings)} to set max video size.
-         *
          * Sets the maximum allowed video width and height.
          * to set the maximum allowed video bitrate to sd resolution call:
          * setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(1279).setMaxVideoHeight(719)
@@ -320,18 +318,18 @@ public interface Player {
          *
          * @param maxVideoSize - Max allowed video width and height
          * @return - Player Settings
+         * @deprecated Please use {@link #setABRSettings(ABRSettings)} to set max video size.
          */
         @Deprecated
         Settings setMaxVideoSize(@NonNull PKMaxVideoSize maxVideoSize);
 
         /**
-         * This method is deprecated.
-         * Please use {@link #setABRSettings(ABRSettings)} to set max video bitrate.
          *
          * Sets the maximum allowed video bitrate.
          *
          * @param maxVideoBitrate Maximum allowed video bitrate in bits per second.
          * @return - Player Settings
+          @deprecated Please use {@link #setABRSettings(ABRSettings)} to set max video bitrate.
          */
         @Deprecated
         Settings setMaxVideoBitrate(@NonNull Integer maxVideoBitrate);
@@ -367,8 +365,18 @@ public interface Player {
          *
          * @param forceWidevineL3Playback - force the L3 Playback. Default is false
          * @return - Player Settings
+         * @deprecated Please use {@link #setDRMSettings(DRMSettings)} to forceWidevineL3Playback.
          */
+        @Deprecated
         Settings forceWidevineL3Playback(boolean forceWidevineL3Playback);
+
+        /**
+         * Creates a DRM playback configuration.
+         *
+         * @param drmSettings - Configuration for DRM playback Widevine/Playready default is Widevine
+         * @return - Player Settings
+         */
+        Settings setDRMSettings(DRMSettings drmSettings);
 
         /**
          * Creates a Low Latency Live playback configuration.
@@ -699,7 +707,7 @@ public interface Player {
      * Add state changed listener to the player.
      *
      * @param listener - state changed listener
-     * @deprecated Use {@link #addListener(Object, Class, PKEvent.Listener)} with {@link PlayerEvent#stateChanged}
+     * @deprecated Please use {@link #addListener(Object, Class, PKEvent.Listener)} with {@link PlayerEvent#stateChanged}
      * and remove with {@link #removeListeners(Object)}.
      */
     @Deprecated
