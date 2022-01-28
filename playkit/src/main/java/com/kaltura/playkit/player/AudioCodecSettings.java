@@ -8,6 +8,7 @@ import java.util.List;
 public class AudioCodecSettings {
     private List<PKAudioCodec> codecPriorityList = new ArrayList<>();
     private boolean allowMixedCodecs = false;
+    private boolean allowMixedBitrates = false;
 
     public AudioCodecSettings() {
         codecPriorityList = getDefaultCodecsPriorityList();
@@ -28,6 +29,10 @@ public class AudioCodecSettings {
 
     public boolean getAllowMixedCodecs() {
         return allowMixedCodecs;
+    }
+
+    public boolean getAllowMixedBitrates() {
+        return allowMixedBitrates;
     }
 
     private List<PKAudioCodec> getDefaultCodecsPriorityList() {
@@ -54,6 +59,11 @@ public class AudioCodecSettings {
 
     public AudioCodecSettings setAllowMixedCodecs(boolean allowMixedCodecs) {
         this.allowMixedCodecs = allowMixedCodecs;
+        return this;
+    }
+
+    public AudioCodecSettings setAllowMixedBitrates(boolean allowMixedBitrates) {
+        this.allowMixedBitrates = allowMixedBitrates;
         return this;
     }
 }
