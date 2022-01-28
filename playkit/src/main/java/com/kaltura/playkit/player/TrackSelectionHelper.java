@@ -358,16 +358,21 @@ public class TrackSelectionHelper {
 
         //add disable option to the text tracks.
         maybeAddDisabledTextTrack();
+
+        // We intend to sort the video and audio tracks after filtration so that
+        // while taking the default track index. Indexing of track will not get any impact.
         videoTracks = filterVideoTracks();
-        //Leave only adaptive audio tracks for user selection.
+        Collections.sort(videoTracks);
+
+        //Leave only adaptive audio tracks for user selection if no extra config is set.
         ArrayList<AudioTrack> filteredAudioTracks = filterAdaptiveAudioTracks();
+        Collections.sort(filteredAudioTracks);
 
         int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks, lastSelectedTrackIds[TRACK_TYPE_VIDEO]);
         int defaultAudioTrackIndex = getDefaultTrackIndex(filteredAudioTracks, lastSelectedTrackIds[TRACK_TYPE_AUDIO]);
         int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[TRACK_TYPE_TEXT]);
         int defaultImageTrackIndex = getDefaultTrackIndex(imageTracks, lastSelectedTrackIds[TRACK_TYPE_IMAGE]);
 
-        Collections.sort(videoTracks);
         return new PKTracks(videoTracks, filteredAudioTracks, textTracks, imageTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex, defaultImageTrackIndex);
     }
 
@@ -774,15 +779,34 @@ public class TrackSelectionHelper {
         }
         currentCodecMap.clear();
 
-
         AudioCodecSettings preferredAudioCodecSettings = playerSettings.getPreferredAudioCodecSettings();
-        if (preferredAudioCodecSettings.getAllowMixedCodecs()) {
+        if (preferredAudioCodecSettings.getAllowMixedCodecs() && preferredAudioCodecSettings.getAllowMixedBitrates()) {
+            return new ArrayList<>(audioTracks);
+        }
+
+        if (preferredAudioCodecSettings.getAllowMixedCodecs() && !preferredAudioCodecSettings.getAllowMixedBitrates()) {
             return filteredAudioTracks;
         }
 
-        for (PKAudioCodec pkAudioCodec : preferredAudioCodecSettings.getCodecPriorityList()) {
-            if (audioTracksCodecsMap.containsKey(pkAudioCodec) && audioTracksCodecsMap.get(pkAudioCodec) != null) {
-                return new ArrayList<>(audioTracksCodecsMap.get(pkAudioCodec));
+        if (audioTracksCodecsMap.size() > 1) {
+            for (PKAudioCodec pkAudioCodec : preferredAudioCodecSettings.getCodecPriorityList()) {
+                if (audioTracksCodecsMap.containsKey(pkAudioCodec) && audioTracksCodecsMap.get(pkAudioCodec) != null) {
+                    if (preferredAudioCodecSettings.getAllowMixedBitrates()) {
+                        ArrayList<AudioTrack> preferredCodecMixedBitrates = new ArrayList<>();
+                        for (AudioTrack audioTrack : audioTracks) {
+                            if (audioTrack.getCodecType() == pkAudioCodec) {
+                                preferredCodecMixedBitrates.add(audioTrack);
+                            }
+                        }
+                        return new ArrayList<>(preferredCodecMixedBitrates);
+                    } else {
+                        for (AudioTrack filteredTrack : filteredAudioTracks) {
+                            if (filteredTrack.getCodecType() == pkAudioCodec) {
+                                return new ArrayList<>(Collections.singletonList(filteredTrack));
+                            }
+                        }
+                    }
+                }
             }
         }
 
