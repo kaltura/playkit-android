@@ -20,6 +20,7 @@ internal class AdvertisingContainer {
     private var midrollFrequency = Long.MIN_VALUE
     private var playAdsAfterTime = Long.MIN_VALUE
     private var adType: AdType = AdType.AD_URL
+    private var returnToLive: Boolean = false
 
     internal fun setAdvertisingConfig(advertisingConfig: AdvertisingConfig?) {
         advertisingConfig?.let {
@@ -46,6 +47,8 @@ internal class AdvertisingContainer {
             advertisingConfig.adType?.let {
                 adType = it
             }
+
+            returnToLive = advertisingConfig.returnToLive
 
             for (adBreak: AdBreak? in adBreaks) {
 
@@ -359,8 +362,19 @@ internal class AdvertisingContainer {
         return playAdsAfterTime
     }
 
+    /**
+     * Get adType (VAST URL or VAST response)
+     */
     fun getAdType(): AdType {
         return adType
+    }
+
+    /**
+     * Only for LIVE Media
+     * After the AdPlayback, player will seek to the live edge or not
+     */
+    fun isReturnToLive(): Boolean {
+        return returnToLive
     }
 }
 
