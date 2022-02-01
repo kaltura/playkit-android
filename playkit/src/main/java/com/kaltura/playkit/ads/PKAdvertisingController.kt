@@ -176,7 +176,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     }
                 } else {
                     if (midRollAdsCount() > 0 && playAdsAfterTime < playerStartPosition) {
-                        // If playAdsAfterTime is smaller than playerStartPosition then play the immediate last ad from the map as per startposition
+                        // If playAdsAfterTime is less than playerStartPosition then play the immediate last ad from the map as per startposition
                         // It will skip the preroll
                         nextAdBreakIndexForMonitoring = getImmediateLastAdPosition(playerStartPosition)
                         if (nextAdBreakIndexForMonitoring > 0) {
@@ -189,12 +189,23 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                         }
                     } else {
                         // If playAdsAfterTime is greater than startPosition then prepare the content player
+                        if (midRollAdsCount() > 0 && playAdsAfterTime > playerStartPosition) {
+                            if (midrollFrequency > Long.MIN_VALUE && midrollAdBreakPositionType == AdBreakPositionType.EVERY) {
+                                nextAdBreakIndexForMonitoring = if (hasPreRoll()) { 1 } else { 0 }
+                            } else {
+                                nextAdBreakIndexForMonitoring = getImmediateNextAdPosition(playAdsAfterTime)
+                            }
+                        }
                         prepareContentPlayer()
                     }
                 }
             } else {
                 if (playerStartPosition > 0L) {
-                    nextAdBreakIndexForMonitoring = getImmediateNextAdPosition(playerStartPosition)
+                    nextAdBreakIndexForMonitoring = if (midRollAdsCount() > 0 && midrollFrequency > Long.MIN_VALUE && midrollAdBreakPositionType == AdBreakPositionType.EVERY) {
+                        if (hasPreRoll()) { 1 } else { 0 }
+                    } else {
+                        getImmediateNextAdPosition(playerStartPosition)
+                    }
                     prepareContentPlayer()
                 } else {
                     val preRollAdUrl = getAdFromAdConfigMap(PREROLL_AD_INDEX)
@@ -342,6 +353,11 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     return@addListener
                 }
 
+                if (isPlayAdsAfterTimeConfigured && playAdsAfterTime > Long.MIN_VALUE && event.position < playAdsAfterTime) {
+                    log.v("playheadUpdated: current position = ${event.position} is less than the playAdsAfterTime = $playAdsAfterTime. Hence returning.")
+                    return@addListener
+                }
+
                 if (nextAdBreakIndexForMonitoring < 0 || nextAdBreakIndexForMonitoring >= list.size) {
                     log.d("playheadUpdated: Invalid nextAdBreakIndexForMonitoring")
                     return@addListener
@@ -351,16 +367,17 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     if (!isLiveMedia() && midrollFrequency > Long.MIN_VALUE &&
                         event.position > Consts.MILLISECONDS_MULTIPLIER &&
                         ((event.position % midrollFrequency) < Consts.MILLISECONDS_MULTIPLIER)) {
-
                         triggerAdPlaybackCounter++
                     } else {
                         triggerAdPlaybackCounter = 0
                     }
 
-                    if (isLiveMedia() && isLiveMediaMidrollAdPlayback && midrollFrequency > Long.MIN_VALUE) {
-                        triggerAdPlaybackCounter++
-                    } else {
-                        triggerAdPlaybackCounter = 0
+                    if (isLiveMedia()) {
+                        if (isLiveMediaMidrollAdPlayback && midrollFrequency > Long.MIN_VALUE) {
+                            triggerAdPlaybackCounter++
+                        } else {
+                            triggerAdPlaybackCounter = 0
+                        }
                     }
 
                 } else {
