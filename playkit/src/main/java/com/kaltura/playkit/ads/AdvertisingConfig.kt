@@ -13,7 +13,7 @@ import androidx.annotation.NonNull
  * @param adType: If it is AdUrl or VAST response
  * @param playAdsAfterTime: Play ads only from a specific time
  * @param returnToLive: Default is false - Only for Live Medias (If true then after ad playback,
- * player will go to the live edge else it will try to resume from the same position)
+ * player will go to the live edge else it will try to resume from the same position, if possible)
  */
 data class AdvertisingConfig(@NonNull val advertising: List<AdBreak?>?,
                              @NonNull val adTimeUnit: AdTimeUnit = AdTimeUnit.SECONDS,

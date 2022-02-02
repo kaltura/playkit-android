@@ -32,8 +32,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private var isLiveMediaCountdownStarted: Boolean = false
     private var isLiveMediaMidrollAdPlayback: Boolean = false
     private var isReturnToLiveEdgeAfterAdPlayback: Boolean = false
-
-    private var firstPlayTime: Long = Long.MIN_VALUE
+    private var firstPlayHeadUpdatedTimeForLive: Long = Long.MIN_VALUE
 
     private var playerStartPosition: Long = 0L
     private var DEFAULT_AD_INDEX: Int = Int.MIN_VALUE
@@ -312,24 +311,24 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 return@addListener
             }
 
-            if (firstPlayTime == Long.MIN_VALUE && isPlayAdsAfterTimeConfigured && playAdsAfterTime > Long.MIN_VALUE) {
-                firstPlayTime = System.currentTimeMillis()
+            if (isLiveMedia() && firstPlayHeadUpdatedTimeForLive == Long.MIN_VALUE && isPlayAdsAfterTimeConfigured && playAdsAfterTime > Long.MIN_VALUE) {
+                firstPlayHeadUpdatedTimeForLive = System.currentTimeMillis()
             }
 
             if (isLiveMedia()) {
-                if (midRollAdsCount() <= 0 || midrollFrequency == Long.MIN_VALUE) {
+                if (midRollAdsCount() <= 0 || midrollAdBreakPositionType != AdBreakPositionType.EVERY || midrollFrequency <= Long.MIN_VALUE) {
+                    log.v("For Live Media, either midrolls are not there or midrolls are not based on EVERY. Hence returning.")
                     return@addListener
                 }
 
                 if (hasOnlyPreRoll() ||
                     (!hasPreRoll() && midRollAdsCount() <= 0 && hasPostRoll()) ||
                     (midRollAdsCount() > 0 && (midrollAdBreakPositionType != AdBreakPositionType.EVERY || midrollFrequency <= Long.MIN_VALUE))) {
-
                     return@addListener
                 }
 
                 if (!isLiveMediaCountdownStarted && !adPlaybackTriggered) {
-                    if (isPlayAdsAfterTimeConfigured && (firstPlayTime + playAdsAfterTime) >= System.currentTimeMillis()) {
+                    if (isPlayAdsAfterTimeConfigured && (firstPlayHeadUpdatedTimeForLive + playAdsAfterTime) >= System.currentTimeMillis()) {
                         log.v("For Live Media, playAdsAfterTime is less than the current time. Hence returning.")
                         return@addListener
                     }
