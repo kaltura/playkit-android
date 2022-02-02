@@ -28,10 +28,12 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
     private var adsConfigMap: MutableMap<Long, AdBreakConfig?>? = null
 
     // LiveMedia handler
-    var liveMediaCountdownTimer: ResumableCountDownTimer? = null
-    var isLiveMediaCountdownStarted: Boolean = false
-    var isLiveMediaMidrollAdPlayback: Boolean = false
-    var isReturnToLiveEdgeAfterAdPlayback: Boolean = false
+    private var liveMediaCountdownTimer: ResumableCountDownTimer? = null
+    private var isLiveMediaCountdownStarted: Boolean = false
+    private var isLiveMediaMidrollAdPlayback: Boolean = false
+    private var isReturnToLiveEdgeAfterAdPlayback: Boolean = false
+
+    private var firstPlayTime: Long = Long.MIN_VALUE
 
     private var playerStartPosition: Long = 0L
     private var DEFAULT_AD_INDEX: Int = Int.MIN_VALUE
@@ -310,12 +312,28 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 return@addListener
             }
 
-            if (isLiveMedia() && midRollAdsCount() > 0 && midrollFrequency > Long.MIN_VALUE) {
-                if (midRollAdsCount() > 0 && midrollAdBreakPositionType != AdBreakPositionType.EVERY || midrollFrequency <= Long.MIN_VALUE) {
+            if (firstPlayTime == Long.MIN_VALUE && isPlayAdsAfterTimeConfigured && playAdsAfterTime > Long.MIN_VALUE) {
+                firstPlayTime = System.currentTimeMillis()
+            }
+
+            if (isLiveMedia()) {
+                if (midRollAdsCount() <= 0 || midrollFrequency == Long.MIN_VALUE) {
+                    return@addListener
+                }
+
+                if (hasOnlyPreRoll() ||
+                    (!hasPreRoll() && midRollAdsCount() <= 0 && hasPostRoll()) ||
+                    (midRollAdsCount() > 0 && (midrollAdBreakPositionType != AdBreakPositionType.EVERY || midrollFrequency <= Long.MIN_VALUE))) {
+
                     return@addListener
                 }
 
                 if (!isLiveMediaCountdownStarted && !adPlaybackTriggered) {
+                    if (isPlayAdsAfterTimeConfigured && (firstPlayTime + playAdsAfterTime) >= System.currentTimeMillis()) {
+                        log.v("For Live Media, playAdsAfterTime is less than the current time. Hence returning.")
+                        return@addListener
+                    }
+
                     isLiveMediaCountdownStarted = true
                     createTimerForLiveMedias()
                     return@addListener
@@ -353,7 +371,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     return@addListener
                 }
 
-                if (isPlayAdsAfterTimeConfigured && playAdsAfterTime > Long.MIN_VALUE && event.position < playAdsAfterTime) {
+                if (!isLiveMedia() && isPlayAdsAfterTimeConfigured && playAdsAfterTime > Long.MIN_VALUE && event.position < playAdsAfterTime) {
                     log.v("playheadUpdated: current position = ${event.position} is less than the playAdsAfterTime = $playAdsAfterTime. Hence returning.")
                     return@addListener
                 }
