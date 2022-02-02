@@ -562,6 +562,12 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         }
     }
 
+    /**
+     * Countdown timer only for Live medias
+     * This timer helps to calculate the time left for the next midroll
+     * Timer has a flag which becomes true when the timer finishes
+     * This flag is being used in `playHeadUpdated` event to trigger the midroll
+     */
     private fun createTimerForLiveMedias() {
         log.d("createTimerForLiveMedias")
         liveMediaCountdownTimer = object: ResumableCountDownTimer(midrollFrequency, 100) {
@@ -578,6 +584,9 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         liveMediaCountdownTimer?.start()
     }
 
+    /**
+     * Reset the countdown timer
+     */
     private fun resetTimerForLiveMedias() {
         log.d("resetTimerForLiveMedias")
         liveMediaCountdownTimer?.cancel()
@@ -1164,6 +1173,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
         isPlayAdsAfterTimeConfigured = false
         playAdsAfterTime = Long.MIN_VALUE
+        resetTimerForLiveMedias()
+        isReturnToLiveEdgeAfterAdPlayback = false
+        isReturnToLiveEdgeAfterAdPlayback = false
+        firstPlayHeadUpdatedTimeForLive = Long.MIN_VALUE
 
         hasWaterFallingAds = false
     }
@@ -1176,10 +1189,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         resetAdvertisingConfig()
         destroyConfigResources()
         adController = null // Don't change the position of this
-
-        resetTimerForLiveMedias()
-        isReturnToLiveEdgeAfterAdPlayback = false
-
         log.d("Advertising Controller resources have been released completely")
     }
 
