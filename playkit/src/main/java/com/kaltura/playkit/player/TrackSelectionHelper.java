@@ -1150,7 +1150,8 @@ public class TrackSelectionHelper {
         int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
-        requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
+        requestedChangeTrackIds[rendererIndex] = (NONE.equals(lastSelectedTrackIds[rendererIndex])) ?
+                 uniqueIds.get(0) : lastSelectedTrackIds[rendererIndex];
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
 
