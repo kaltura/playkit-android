@@ -1,5 +1,6 @@
 package com.kaltura.android.exoplayer2.dashmanifestparser;
 
+import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.source.dash.manifest.Descriptor;
 import com.kaltura.android.exoplayer2.source.dash.manifest.Representation;
 
@@ -22,11 +23,8 @@ public class CustomAdaptationSet {
      */
     public final int id;
 
-    /**
-     * The type of the adaptation set. One of the {@link com.kaltura.android.exoplayer2.C}
-     * {@code TRACK_TYPE_*} constants.
-     */
-    public final int type;
+    /** The {@link C.TrackType track type} of the adaptation set. */
+    public final @C.TrackType int type;
 
     /**
      * {@link Representation}s in the adaptation set.
@@ -47,8 +45,7 @@ public class CustomAdaptationSet {
     /**
      * @param id A non-negative identifier for the adaptation set that's unique in the scope of its
      *     containing period, or {@link #ID_UNSET} if not specified.
-     * @param type The type of the adaptation set. One of the {@link com.kaltura.android.exoplayer2.C}
-     *     {@code TRACK_TYPE_*} constants.
+     * @param type The {@link C.TrackType track type} of the adaptation set.
      * @param representations {@link Representation}s in the adaptation set.
      * @param accessibilityDescriptors Accessibility descriptors in the adaptation set.
      * @param essentialProperties Essential properties in the adaptation set.
@@ -56,7 +53,7 @@ public class CustomAdaptationSet {
      */
     public CustomAdaptationSet(
             int id,
-            int type,
+            @C.TrackType int type,
             List<CustomRepresentation> representations,
             List<Descriptor> accessibilityDescriptors,
             List<Descriptor> essentialProperties,

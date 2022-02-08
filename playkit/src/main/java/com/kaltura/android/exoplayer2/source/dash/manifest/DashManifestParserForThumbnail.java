@@ -742,6 +742,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 drmSchemeType,
                 drmSchemeDatas,
                 inbandEventStreams,
+                essentialProperties,
+                supplementalProperties,
                 Representation.REVISION_ID_DEFAULT);
     }
 
@@ -764,7 +766,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         if (MimeTypes.AUDIO_E_AC3.equals(sampleMimeType)) {
             sampleMimeType = parseEac3SupplementalProperties(supplementalProperties);
             if (MimeTypes.AUDIO_E_AC3_JOC.equals(sampleMimeType)) {
-                codecs = Ac3Util.E_AC3_JOC_CODEC_STRING;
+                codecs = MimeTypes.CODEC_E_AC3_JOC;
             }
         }
         @C.SelectionFlags int selectionFlags = parseSelectionFlagsFromRoleDescriptors(roleDescriptors);
@@ -828,7 +830,10 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 formatBuilder.build(),
                 representationInfo.baseUrls,
                 representationInfo.segmentBase,
-                inbandEventStreams);
+                inbandEventStreams,
+                representationInfo.essentialProperties,
+                representationInfo.supplementalProperties,
+                /* cacheKey= */ null);
     }
 
     // SegmentBase, SegmentList and SegmentTemplate parsing.
@@ -1902,6 +1907,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         public final ArrayList<SchemeData> drmSchemeDatas;
         public final ArrayList<Descriptor> inbandEventStreams;
         public final long revisionId;
+        public final List<Descriptor> essentialProperties;
+        public final List<Descriptor> supplementalProperties;
 
         public RepresentationInfo(
                 Format format,
@@ -1910,6 +1917,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 @Nullable String drmSchemeType,
                 ArrayList<SchemeData> drmSchemeDatas,
                 ArrayList<Descriptor> inbandEventStreams,
+                List<Descriptor> essentialProperties,
+                List<Descriptor> supplementalProperties,
                 long revisionId) {
             this.format = format;
             this.baseUrls = ImmutableList.copyOf(baseUrls);
@@ -1917,6 +1926,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             this.drmSchemeType = drmSchemeType;
             this.drmSchemeDatas = drmSchemeDatas;
             this.inbandEventStreams = inbandEventStreams;
+            this.essentialProperties = essentialProperties;
+            this.supplementalProperties = supplementalProperties;
             this.revisionId = revisionId;
         }
     }

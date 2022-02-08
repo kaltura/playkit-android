@@ -486,8 +486,9 @@ public abstract class CustomSegmentBase {
         @Nullable
         public RangedUri getInitialization(CustomRepresentation representation) {
             if (initializationTemplate != null) {
-                String urlString = initializationTemplate.buildUri(representation.format.id, 0,
-                        representation.format.bitrate, 0);
+                String urlString =
+                        initializationTemplate.buildUri(
+                                representation.format.id, 0, representation.format.bitrate, 0);
                 return new RangedUri(urlString, 0, C.LENGTH_UNSET);
             } else {
                 return super.getInitialization(representation);
@@ -502,8 +503,9 @@ public abstract class CustomSegmentBase {
             } else {
                 time = (sequenceNumber - startNumber) * duration;
             }
-            String uriString = mediaTemplate.buildUri(representation.format.id, sequenceNumber,
-                    representation.format.bitrate, time);
+            String uriString =
+                    mediaTemplate.buildUri(
+                            representation.format.id, sequenceNumber, representation.format.bitrate, time);
             return new RangedUri(uriString, 0, C.LENGTH_UNSET);
         }
 
