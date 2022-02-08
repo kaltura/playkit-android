@@ -5,14 +5,16 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Pair;
 import android.util.Xml;
+
 import androidx.annotation.Nullable;
 
 import com.google.common.base.Ascii;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.ParserException;
-import com.kaltura.android.exoplayer2.audio.Ac3Util;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmInitData.SchemeData;
 import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
@@ -28,8 +30,14 @@ import com.kaltura.android.exoplayer2.util.MimeTypes;
 import com.kaltura.android.exoplayer2.util.UriUtil;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.android.exoplayer2.util.XmlPullParserUtil;
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
+
+import org.checkerframework.checker.nullness.compatqual.NullableType;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+import org.xmlpull.v1.XmlSerializer;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,12 +46,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.nullness.compatqual.NullableType;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
-import org.xmlpull.v1.XmlSerializer;
 
 /**
  * A parser of media presentation description files.
@@ -959,8 +961,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 timeline,
                 availabilityTimeOffsetUs,
                 segments,
-                C.msToUs(timeShiftBufferDepthMs),
-                C.msToUs(periodStartUnixTimeMs));
+                Util.msToUs(timeShiftBufferDepthMs),
+                Util.msToUs(periodStartUnixTimeMs));
     }
 
     protected SegmentTemplate parseSegmentTemplate(
@@ -1049,8 +1051,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 availabilityTimeOffsetUs,
                 initializationTemplate,
                 mediaTemplate,
-                C.msToUs(timeShiftBufferDepthMs),
-                C.msToUs(periodStartUnixTimeMs));
+                Util.msToUs(timeShiftBufferDepthMs),
+                Util.msToUs(periodStartUnixTimeMs));
     }
 
     /**

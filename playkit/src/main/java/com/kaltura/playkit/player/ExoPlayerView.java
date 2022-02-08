@@ -29,7 +29,6 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.android.exoplayer2.ExoPlayer;
 import com.kaltura.android.exoplayer2.Player;
-import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.text.Cue;
 import com.kaltura.android.exoplayer2.text.TextOutput;
 import com.kaltura.android.exoplayer2.ui.AspectRatioFrameLayout;
@@ -54,7 +53,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private SubtitleView subtitleView;
     private AspectRatioFrameLayout contentFrame;
 
-    private SimpleExoPlayer player;
+    private ExoPlayer player;
     private ComponentListener componentListener;
     private Player.Listener playerEventListener;
     private int textureViewRotation;
@@ -115,14 +114,14 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     /**
-     * Set the {@link SimpleExoPlayer} to use. If ExoplayerView instance already has
+     * Set the {@link ExoPlayer} to use. If ExoplayerView instance already has
      * player attached to it, it will remove and clear videoSurface first.
      *
-     * @param player           - The {@link SimpleExoPlayer} to use.
+     * @param player           - The {@link ExoPlayer} to use.
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
     @Override
-    public void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews) {
+    public void setPlayer(ExoPlayer player, boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews) {
         if (this.player == player) {
             return;
         }
@@ -158,22 +157,19 @@ class ExoPlayerView extends BaseExoplayerView {
         resetViews();
         createVideoSurface(useTextureView);
 
-        ExoPlayer.VideoComponent newVideoComponent = player.getVideoComponent();
         player.addListener(playerEventListener);
 
         //Decide which type of videoSurface should be set.
-        if (newVideoComponent != null) {
-            if (videoSurface instanceof TextureView) {
-                newVideoComponent.setVideoTextureView((TextureView) videoSurface);
-            } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    ((SurfaceView) videoSurface).setSecure(isSurfaceSecured);
-                }
-                newVideoComponent.setVideoSurfaceView((SurfaceView) videoSurface);
+        if (videoSurface instanceof TextureView) {
+            player.setVideoTextureView((TextureView) videoSurface);
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                ((SurfaceView) videoSurface).setSecure(isSurfaceSecured);
             }
-            //Set listeners
-            player.addListener(componentListener);
+            player.setVideoSurfaceView((SurfaceView) videoSurface);
         }
+        //Set listeners
+        player.addListener(componentListener);
 
         contentFrame.addView(videoSurface, 0);
 
@@ -189,27 +185,20 @@ class ExoPlayerView extends BaseExoplayerView {
      * Clear all the listeners and detach Surface from view hierarchy.
      */
     private void removeVideoSurface() {
-        ExoPlayer.VideoComponent oldVideoComponent = player.getVideoComponent();
-        ExoPlayer.TextComponent oldTextComponent = player.getTextComponent();
+
         if (playerEventListener != null) {
             player.removeListener(playerEventListener);
         }
         //Remove existed videoSurface from player.
-        if (oldVideoComponent != null) {
-
-            if (videoSurface instanceof SurfaceView) {
-                oldVideoComponent.clearVideoSurfaceView((SurfaceView) videoSurface);
-            } else if (videoSurface instanceof TextureView) {
-                oldVideoComponent.clearVideoTextureView((TextureView) videoSurface);
-            }
-
-            //Clear listeners.
-            player.removeListener(componentListener);
+        if (videoSurface instanceof SurfaceView) {
+            player.clearVideoSurfaceView((SurfaceView) videoSurface);
+        } else if (videoSurface instanceof TextureView) {
+            player.clearVideoTextureView((TextureView) videoSurface);
         }
 
-        if (oldTextComponent != null) {
-            player.removeListener(componentListener);
-        }
+        //Clear listeners.
+        player.removeListener(componentListener);
+
         lastReportedCues = null;
         contentFrame.removeView(videoSurface);
     }

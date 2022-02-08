@@ -25,7 +25,6 @@ import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmSession;
 import com.kaltura.android.exoplayer2.drm.DrmSessionEventListener;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
-import com.kaltura.android.exoplayer2.drm.ExoMediaCrypto;
 import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
 import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
@@ -168,13 +167,12 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         return drmSessionManager;
     }
 
-    @Nullable
     @Override
-    public Class<? extends ExoMediaCrypto> getExoMediaCryptoType(Format format) {
+    public int getCryptoType(Format format) {
         if (drmSessionManager != null) {
-            return drmSessionManager.getExoMediaCryptoType(format);
+            return drmSessionManager.getCryptoType(format);
         }
-        return null;
+        return 0;
     }
 
     @Override
