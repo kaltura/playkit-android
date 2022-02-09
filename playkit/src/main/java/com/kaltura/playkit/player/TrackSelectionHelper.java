@@ -603,6 +603,13 @@ public class TrackSelectionHelper {
         return trackType;
     }
 
+    /**
+     * Get the language from format (Audio/Video)
+     * Convert the language to ISO3 language if required
+     *
+     * @param format Track's format
+     * @return String language
+     */
     private String getLanguageFromFormat(Format format) {
 
         String language = format.language;
@@ -610,23 +617,89 @@ public class TrackSelectionHelper {
             return LANGUAGE_UNKNOWN;
         }
 
-        if (!C.LANGUAGE_UNDETERMINED.equals(language) && language.length() > 2) {
+        if ((!C.LANGUAGE_UNDETERMINED.equals(language) &&
+                !isExternalSubtitle(format.language, format.sampleMimeType) &&
+                language.length() > 2) ||
+                isIso3LanguageRequired(format)) {
+
             Locale locale = Util.SDK_INT >= 21 ? Locale.forLanguageTag(language) : new Locale(language);
-            return locale.getISO3Language();
+
+            try {
+                String iso3Language = locale.getISO3Language();
+                if (isExternalSubtitle(format.language, format.sampleMimeType)) {
+                    // Append the mimetype to iso3language again with '-'
+                    String mimeType = getExternalSubtitleMimeType(format);
+                    if (!TextUtils.isEmpty(mimeType)) {
+                        iso3Language = iso3Language.concat(mimeType);
+                    }
+                }
+                return iso3Language;
+            } catch (MissingResourceException exception) {
+                log.e("No language code found" + exception.getMessage());
+            }
         }
+
         return language;
     }
 
+    /**
+     * Check if the text track is external subtitle
+     *
+     * @param language track's langauge
+     * @param sampleMimeType track's mimeType
+     *
+     * @return boolean
+     */
     private boolean isExternalSubtitle(String language, String sampleMimeType) {
         return language != null && (language.contains("-" + sampleMimeType) || language.contains("-" + "Unknown"));
     }
 
+    /**
+     * Only used for External Subtitles
+     * Get the external subtitle language
+     *
+     * @param format External Subtitle's format
+     * @return String language
+     */
+    @Nullable
     private String getExternalSubtitleLanguage(Format format) {
         if (format.language != null) {
             return format.language.substring(0, format.language.indexOf("-"));
-        } else {
-            return null;
         }
+        return null;
+    }
+
+    /**
+     * Only used for External Subtitles
+     * If language length is greater than 2 then ISO3 code is required
+     *
+     * @return boolean if required
+     */
+    private boolean isIso3LanguageRequired(Format format) {
+        if (isExternalSubtitle(format.language, format.sampleMimeType)) {
+            String language = getExternalSubtitleLanguage(format);
+            return !C.LANGUAGE_UNDETERMINED.equals(language) && !TextUtils.isEmpty(language) && language.length() > 2;
+        }
+        return false;
+    }
+
+    /**
+     * Only used for External Subtitles
+     *
+     * We can not rely on Format's sample mimeType because
+     * for external subtitles we can concatenating 'unknown' as well
+     * in case if the mimeType is empty
+     *
+     * It includes '-' with the mimeType
+     *
+     * @return String subtitle mimeType
+     */
+    @Nullable
+    private String getExternalSubtitleMimeType(Format format) {
+        if (format.language != null) {
+            return format.language.substring(format.language.indexOf("-"));
+        }
+        return null;
     }
 
     private boolean discardTextTrackOnPreference(Format format) {
