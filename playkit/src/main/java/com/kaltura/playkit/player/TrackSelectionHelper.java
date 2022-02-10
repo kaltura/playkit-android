@@ -611,7 +611,6 @@ public class TrackSelectionHelper {
      * @return String language
      */
     private String getLanguageFromFormat(Format format) {
-
         String language = format.language;
         if (TextUtils.isEmpty(format.language)) {
             return LANGUAGE_UNKNOWN;
@@ -634,8 +633,8 @@ public class TrackSelectionHelper {
                     }
                 }
                 return iso3Language;
-            } catch (MissingResourceException exception) {
-                log.e("No language code found" + exception.getMessage());
+            } catch (MissingResourceException | NullPointerException ex) {
+                log.e(ex.getMessage());
             }
         }
 
