@@ -1635,7 +1635,7 @@ public class TrackSelectionHelper {
 
     private boolean isFormatSupported(int rendererCount, int groupIndex, int trackIndex) {
         return mappedTrackInfo.getTrackSupport(rendererCount, groupIndex, trackIndex)
-                == Consts.FORMAT_HANDLED;
+                == C.FORMAT_HANDLED;
     }
 
     private boolean isAdaptive(int rendererIndex, int groupIndex) {
