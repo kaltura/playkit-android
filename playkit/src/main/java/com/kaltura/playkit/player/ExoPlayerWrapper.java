@@ -730,7 +730,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
                 MediaItem.SubtitleConfiguration.Builder builder = new MediaItem.SubtitleConfiguration.Builder(Uri.parse(pkExternalSubtitle.getUrl()));
                 builder.setMimeType(subtitleMimeType);
+
+                // "-" is important to be added between lang and mimetype
+                // This is how we understand that this is external subtitle in TrackSelectionHelper
                 builder.setLanguage(pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType);
+
                 builder.setSelectionFlags(pkExternalSubtitle.getSelectionFlags());
                 builder.setRoleFlags(pkExternalSubtitle.getRoleFlag());
                 builder.setLabel(pkExternalSubtitle.getLabel());

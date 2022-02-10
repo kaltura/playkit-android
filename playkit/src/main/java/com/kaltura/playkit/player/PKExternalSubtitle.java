@@ -7,14 +7,13 @@ import androidx.annotation.NonNull;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.playkit.PKSubtitleFormat;
-import com.kaltura.playkit.utils.Consts;
 
 public class PKExternalSubtitle implements Parcelable {
 
     private String url;
     private String id;
     private String mimeType;
-    private int selectionFlags = Consts.TRACK_UNSELECTED_FLAG;
+    private @C.SelectionFlags int selectionFlags = C.SELECTION_FLAG_AUTOSELECT;
     /**
      * Indicates the track contains subtitles. This flag may be set on video tracks to indicate the
      * presence of burned in subtitles.
@@ -49,7 +48,7 @@ public class PKExternalSubtitle implements Parcelable {
         return url;
     }
 
-    public int getSelectionFlags() {
+    public @C.SelectionFlags int getSelectionFlags() {
         return selectionFlags;
     }
 
@@ -93,11 +92,11 @@ public class PKExternalSubtitle implements Parcelable {
 
     public PKExternalSubtitle setDefault() {
         this.isDefault = true;
-        setSelectionFlags(Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS);
+        setSelectionFlags(C.SELECTION_FLAG_DEFAULT | C.SELECTION_FLAG_AUTOSELECT);
         return this;
     }
 
-    private void setSelectionFlags(int selectionFlags) {
+    private void setSelectionFlags(@C.SelectionFlags int selectionFlags) {
         this.selectionFlags = selectionFlags;
     }
 
