@@ -4,10 +4,13 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.C;
+import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
+import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
 import com.kaltura.android.exoplayer2.source.LoadEventInfo;
 import com.kaltura.android.exoplayer2.source.MediaLoadData;
 import com.kaltura.playkit.PKLog;
@@ -28,6 +31,11 @@ import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
 
 class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener {
 
+    public interface InputFormatChangedListener {
+        void onVideoInputFormatChanged(@NonNull Format format);
+        void onAudioInputFormatChanged(@NonNull Format format);
+    }
+
     private static final PKLog log = PKLog.get("ExoAnalyticsAggregator");
     private final Map<String, URIConnectionAcquiredInfo> urlCallTimeMap = new ConcurrentHashMap<>();
     private long totalDroppedFrames;
@@ -36,6 +44,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     private int skippedOutputBufferCount;
 
     private PlayerEngine.AnalyticsListener listener;
+    private InputFormatChangedListener inputFormatChangedListener;
 
     void reset() {
         totalDroppedFrames = 0;
@@ -60,7 +69,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
             listener.onDecoderDisabled(skippedOutputBufferCount, renderedOutputBufferCount);
         }
     }
-    
+
     @Override
     public void onLoadCompleted(@NonNull EventTime eventTime, LoadEventInfo loadEventInfo, @NonNull MediaLoadData mediaLoadData) {
         if (loadEventInfo.bytesLoaded > 0) {
@@ -95,6 +104,10 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
 
     public void setListener(PlayerEngine.AnalyticsListener listener) {
         this.listener = listener;
+    }
+
+    public void setInputFormatChangedListener(InputFormatChangedListener inputFormatChangedListener) {
+        this.inputFormatChangedListener = inputFormatChangedListener;
     }
 
     @Override // OKHTTTP
@@ -189,6 +202,20 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
 
     private boolean isLoadedURLExists(String loadedURL) {
         return loadedURL != null && urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null;
+    }
+
+    @Override
+    public void onVideoInputFormatChanged(@NonNull EventTime eventTime, @NonNull Format format, @Nullable DecoderReuseEvaluation decoderReuseEvaluation) {
+        if (inputFormatChangedListener != null) {
+            inputFormatChangedListener.onVideoInputFormatChanged(format);
+        }
+    }
+
+    @Override
+    public void onAudioInputFormatChanged(@NonNull EventTime eventTime, @NonNull Format format, @Nullable DecoderReuseEvaluation decoderReuseEvaluation) {
+        if (inputFormatChangedListener != null) {
+            inputFormatChangedListener.onAudioInputFormatChanged(format);
+        }
     }
 }
 

@@ -27,12 +27,14 @@ import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlayer;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.Timeline;
+import com.kaltura.android.exoplayer2.TracksInfo;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifestParser;
@@ -119,7 +121,7 @@ import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
-public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, MetadataOutput, BandwidthMeter.EventListener {
+public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, MetadataOutput, BandwidthMeter.EventListener, ExoAnalyticsAggregator.InputFormatChangedListener {
 
     private ByteArrayDataSink dashLastDataSink;
     private String dashManifestString;
@@ -425,14 +427,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         }
 
         if (drmSessionManager != null) {
-            DrmSessionManagerProvider drmSessionManagerProvider = drmMediaItem -> {
-                if (sourceConfig.mediaSource.hasDrmParams()) {
-                    return drmSessionManager;
-                } else {
-                    return DrmSessionManager.DRM_UNSUPPORTED;
-                }
-            };
-            mediaSourceFactory.setDrmSessionManagerProvider(drmSessionManagerProvider);
+            mediaSourceFactory.setDrmSessionManagerProvider(getDrmSessionManagerProvider(sourceConfig.mediaSource));
         }
 
         return mediaItem;
@@ -441,6 +436,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private DeferredDrmSessionManager getDeferredDRMSessionManager() {
         final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
         return new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead(), playerSettings.isForceWidevineL3Playback());
+    }
+
+    private DrmSessionManagerProvider getDrmSessionManagerProvider(PKMediaSource pkMediaSource) {
+        return drmMediaItem -> {
+            if (pkMediaSource.hasDrmParams()) {
+                return drmSessionManager;
+            } else {
+                return DrmSessionManager.DRM_UNSUPPORTED;
+            }
+        };
     }
 
     private MediaSource buildInternalExoMediaSource(MediaItem mediaItem, PKMediaSourceConfig sourceConfig) {
@@ -511,14 +516,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                         .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy);
 
                 if (playerSettings.getDRMSettings().getDrmScheme() != PKDrmParams.Scheme.PlayReadyCENC) {
-                    dashMediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED);
+                    dashMediaSourceFactory.setDrmSessionManagerProvider(getDrmSessionManagerProvider(sourceConfig.mediaSource));
                 }
                 mediaSource = dashMediaSourceFactory.createMediaSource(mediaItem);
                 break;
 
             case hls:
                 mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
-                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
+                        .setDrmSessionManagerProvider(getDrmSessionManagerProvider(sourceConfig.mediaSource))
                         .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
                         .createMediaSource(mediaItem);
                 break;
@@ -991,9 +996,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     @Override
-    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-
-        log.d("onTracksChanged");
+    public void onTracksInfoChanged(@NonNull TracksInfo tracksInfo) {
+        log.d("onTracksInfoChanged ");
 
         //if onTracksChanged happened when application went background, do not update the tracks.
         if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
@@ -1001,12 +1005,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
                 CustomDashManifest customDashManifest = null;
-                MediaItem.PlaybackProperties playbackProperties = player.getMediaItemAt(0).playbackProperties;
+                // Local Configuration includes the local playback properties
+                MediaItem.LocalConfiguration localConfiguration = player.getMediaItemAt(0).localConfiguration;
                 if (!TextUtils.isEmpty(dashManifestString) && dashLastDataSink != null
-                        && player.getCurrentManifest() instanceof DashManifest && playbackProperties != null) {
+                        && player.getCurrentManifest() instanceof DashManifest && localConfiguration != null) {
                     // byte[] bytes = dashLastDataSink.getData();
                     try {
-                        customDashManifest = new CustomDashManifestParser().parse(playbackProperties.uri, dashManifestString);
+                        customDashManifest = new CustomDashManifestParser().parse(localConfiguration.uri, dashManifestString);
                     } catch (IOException e) {
                         log.e("imageTracks assemble error " + e.getMessage());
                     } finally {
@@ -1014,13 +1019,27 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                         dashManifestString = null;
                     }
                 }
-                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(trackSelections, sourceConfig.getExternalVttThumbnailUrl() ,customDashManifest);
+                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(tracksInfo, sourceConfig.getExternalVttThumbnailUrl() ,customDashManifest);
             }
         }
 
-        trackSelectionHelper.notifyAboutTrackChange(trackSelections);
+        trackSelectionHelper.notifyAboutTrackChange(tracksInfo);
     }
 
+    @Override
+    public void onVideoInputFormatChanged(@NonNull Format format) {
+        if (assertTrackSelectionIsNotNull("onVideoInputFormatChanged")) {
+            trackSelectionHelper.setCurrentVideoFormat(format);
+        }
+    }
+
+    @Override
+    public void onAudioInputFormatChanged(@NonNull Format format) {
+        if (assertTrackSelectionIsNotNull("onVideoInputFormatChanged")) {
+            trackSelectionHelper.setCurrentAudioFormat(format);
+        }
+    }
+    
     @Override
     public void onMetadata(Metadata metadata) {
         this.metadataList = MetadataConverter.convert(metadata);
@@ -1368,6 +1387,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     @Override
     public void setAnalyticsListener(AnalyticsListener analyticsListener) {
         this.analyticsAggregator.setListener(analyticsListener);
+        this.analyticsAggregator.setInputFormatChangedListener(analyticsListener != null ? this : null);
     }
 
     @Override
