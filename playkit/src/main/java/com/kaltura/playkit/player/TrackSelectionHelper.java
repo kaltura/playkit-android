@@ -36,6 +36,8 @@ import com.kaltura.android.exoplayer2.text.webvtt.WebvttCueInfo;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
+import com.kaltura.android.exoplayer2.trackselection.TrackSelectionOverrides;
+import com.kaltura.android.exoplayer2.trackselection.TrackSelectionParameters;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.PKAbrFilter;
 import com.kaltura.playkit.PKAudioCodec;
@@ -108,6 +110,8 @@ public class TrackSelectionHelper {
     private @Nullable Format currentVideoFormat;
     private @Nullable Format currentAudioFormat;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
+    private @NonNull TrackSelectionParameters trackSelectionParameters;
+    private @NonNull TrackSelectionOverrides.Builder trackSelectionOverridesBuilder;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<VideoTrack> originalVideoTracks;
@@ -115,7 +119,6 @@ public class TrackSelectionHelper {
     private List<TextTrack> textTracks = new ArrayList<>();
     private List<ImageTrack> imageTracks = new ArrayList<>();
     Map<Pair<Long,Long>, ThumbnailInfo> externalVttThumbnailRangesInfo;
-
 
     private Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
     private Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
@@ -173,6 +176,8 @@ public class TrackSelectionHelper {
         this.selector = selector;
         this.lastSelectedTrackIds = lastSelectedTrackIds;
         this.requestedChangeTrackIds = Arrays.copyOf(lastSelectedTrackIds, lastSelectedTrackIds.length);
+        trackSelectionParameters = TrackSelectionParameters.getDefaults(context);
+        trackSelectionOverridesBuilder = trackSelectionParameters.trackSelectionOverrides.buildUpon();
     }
 
     public void setMappedTrackInfo(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
@@ -327,7 +332,7 @@ public class TrackSelectionHelper {
                                     int selectionFlag = format.selectionFlags;
                                     if (selector != null && (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH)) {
                                         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
-                                        parametersBuilder.clearSelectionOverrides(TRACK_TYPE_TEXT);
+                                        trackSelectionOverridesBuilder.clearOverridesOfType(C.TRACK_TYPE_TEXT);
                                         parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, true);
                                         selector.setParameters(parametersBuilder);
                                     }
@@ -1089,6 +1094,7 @@ public class TrackSelectionHelper {
 
         int[] uniqueTrackId = validateUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+        int groupIndex = uniqueTrackId[GROUP_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = uniqueId;
 
@@ -1106,8 +1112,9 @@ public class TrackSelectionHelper {
         }
 
 
-        SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
-        overrideTrack(rendererIndex, override, parametersBuilder);
+//        SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
+        List<Integer> selectedTrackIndices = retrieveOverrideSelection(uniqueTrackId);
+        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices, parametersBuilder);
     }
 
     protected void overrideMediaVideoCodec() {
@@ -1128,13 +1135,15 @@ public class TrackSelectionHelper {
 
         int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+        int groupIndex = uniqueTrackId[GROUP_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
 
-        SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
-        overrideTrack(rendererIndex, override, parametersBuilder);
+        //SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
+        List<Integer> selectedTrackIndices = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
+        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices, parametersBuilder);
     }
 
     protected void overrideMediaDefaultABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
@@ -1148,14 +1157,16 @@ public class TrackSelectionHelper {
 
         int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+        int groupIndex = uniqueTrackId[GROUP_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = (NONE.equals(lastSelectedTrackIds[rendererIndex])) ?
                 uniqueIds.get(0) : lastSelectedTrackIds[rendererIndex];
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
 
-        SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
-        overrideTrack(rendererIndex, override, parametersBuilder);
+        //SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
+        List<Integer> selectedTrackIndices = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
+        overrideTrack(rendererIndex,groupIndex, selectedTrackIndices, parametersBuilder);
     }
 
     private List<String> getVideoTracksUniqueIds() {
@@ -1273,12 +1284,14 @@ public class TrackSelectionHelper {
         return uniqueIds;
     }
 
-    private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
+    private List<Integer> retrieveOverrideSelectionList(int[][] uniqueIds) {
         if (uniqueIds == null || uniqueIds[0] == null) {
             throw new IllegalArgumentException("Track selection with uniqueId = null");
         }
 
         // Only for video tracks : RENDERER_INDEX is always 0 means video
+        List<Integer> selectedIndices = new ArrayList<>();
+
         SelectionOverride override;
         int rendererIndex = uniqueIds[0][RENDERER_INDEX];
         int groupIndex = uniqueIds[0][GROUP_INDEX];
@@ -1287,17 +1300,17 @@ public class TrackSelectionHelper {
         boolean isAdaptive = trackIndex == TRACK_ADAPTIVE;
 
         if (uniqueIds.length == 1 && isAdaptive) {
-            override = overrideAutoABRTracks(rendererIndex, groupIndex);
+            selectedIndices.addAll(overrideAutoABRTracks(rendererIndex, groupIndex));
         } else if (uniqueIds.length > 1) {
-            override = overrideMediaDefaultABR(uniqueIds, rendererIndex, groupIndex);
+            selectedIndices.addAll(overrideMediaDefaultABR(uniqueIds, rendererIndex, groupIndex));
         } else {
-            override = new SelectionOverride(groupIndex, trackIndex);
+            selectedIndices.add(trackIndex);
         }
-        return override;
+        return selectedIndices;
     }
 
     @NonNull
-    private SelectionOverride overrideMediaDefaultABR(int[][] uniqueIds, int rendererIndex, int groupIndex) {
+    private List<Integer> overrideMediaDefaultABR(int[][] uniqueIds, int rendererIndex, int groupIndex) {
         SelectionOverride override;
         int[] adaptiveTrackIndexes;
         List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
@@ -1308,9 +1321,9 @@ public class TrackSelectionHelper {
                 createAdaptiveTrackIndexList(uniqueIds, groupIndex, adaptiveTrackIndexesList);
                 break;
         }
-        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-        override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
-        return override;
+        //adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+        //override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
+        return adaptiveTrackIndexesList;
     }
 
     private void createAdaptiveTrackIndexList(int[][] uniqueIds, int groupIndex, List<Integer> adaptiveTrackIndexesList) {
@@ -1372,9 +1385,11 @@ public class TrackSelectionHelper {
      * @param uniqueId - the unique id of the track that will override the existing one.
      * @return - the {@link SelectionOverride} which will override the existing selection.
      */
-    private SelectionOverride retrieveOverrideSelection(int[] uniqueId) {
+    private List<Integer> retrieveOverrideSelection(int[] uniqueId) {
 
         SelectionOverride override;
+
+        List<Integer> selectedIndices = new ArrayList<>();
 
         int rendererIndex = uniqueId[RENDERER_INDEX];
         int groupIndex = uniqueId[GROUP_INDEX];
@@ -1432,18 +1447,21 @@ public class TrackSelectionHelper {
                     break;
             }
 
-            adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
+    //        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+//            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
+            selectedIndices.addAll(adaptiveTrackIndexesList);
         } else {
-            override = new SelectionOverride(groupIndex, trackIndex);
+//            override = new SelectionOverride(groupIndex, trackIndex);
+            selectedIndices.add(trackIndex);
         }
 
-        return override;
+        return selectedIndices;
     }
 
     @NonNull
-    private SelectionOverride overrideAutoABRTracks(int rendererIndex, int groupIndex) {
-        SelectionOverride override;List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
+    private List<Integer> overrideAutoABRTracks(int rendererIndex, int groupIndex) {
+        SelectionOverride override;
+        List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
         int[] adaptiveTrackIndexes;
 
         switch (rendererIndex) {
@@ -1483,27 +1501,51 @@ public class TrackSelectionHelper {
                 break;
         }
 
-        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-        override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
-        return override;
+       // adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+        //override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
+        return adaptiveTrackIndexesList;
     }
 
     /**
      * Actually doing the override action on the track.
      *
      * @param rendererIndex - renderer index on which we want to apply the change.
-     * @param override      - the new selection with which we want to override the currently active track.
+    //  * @param override      - the new selection with which we want to override the currently active track.
      */
-    private void overrideTrack(int rendererIndex, SelectionOverride override, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
-        if (override != null) {
-            //actually change track.
-            TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
-            parametersBuilder.setSelectionOverride(rendererIndex, trackGroups, override);
+    private void overrideTrack(int rendererIndex, int groupIndex, List<Integer> selectedIndices, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
+        //actually change track.
+        TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
+        if (!selectedIndices.isEmpty()) {
+            if (rendererIndex == TRACK_TYPE_TEXT && selectedIndices.get(0) == TRACK_DISABLED) {
+                trackGroup = getTextTrackFormats();
+                selectedIndices.clear();
+            }
+
+            TrackSelectionOverrides.TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverrides.TrackSelectionOverride(trackGroup, selectedIndices);
+
+            TrackSelectionOverrides trackSelectionOverrides = trackSelectionOverridesBuilder
+                    .setOverrideForType(trackSelectionOverride)
+                    .build();
+
+            parametersBuilder.setTrackSelectionOverrides(trackSelectionOverrides);
         } else {
             //clear all the selections if the override is null.
-            parametersBuilder.clearSelectionOverrides(rendererIndex);
+            trackSelectionOverridesBuilder.clearOverride(trackGroup).build();
         }
         selector.setParameters(parametersBuilder);
+    }
+
+    private TrackGroup getTextTrackFormats() {
+        TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(TRACK_TYPE_TEXT);
+        Format[] textFormats = new Format[trackGroupArray.length];
+        for (int i = 0; i < trackGroupArray.length; i++) {
+            textFormats[i] = trackGroupArray.get(i).getFormat(0);
+        }
+        return new TrackGroup(textFormats);
+    }
+
+    protected void setTrackSelectionParameters(TrackSelectionParameters parameters) {
+        trackSelectionParameters = parameters;
     }
 
     public void updateTrackSelectorParameter(PlayerSettings playerSettings, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
@@ -1822,13 +1864,6 @@ public class TrackSelectionHelper {
     protected void setCurrentAudioFormat(@NonNull Format audioFormat) {
         currentAudioFormat = audioFormat;
     }
-
-//    private ExoTrackSelection getTrackSelection(TrackSelection trackSelection) {
-//        if (trackSelection instanceof ExoTrackSelection) {
-//            return (ExoTrackSelection) trackSelection;
-//        }
-//        return null;
-//    }
 
     @Nullable
     private Format getSelectedTextTrackFormat() {

@@ -52,14 +52,13 @@ import com.kaltura.android.exoplayer2.source.MediaSourceFactory;
 import com.kaltura.android.exoplayer2.source.MergingMediaSource;
 import com.kaltura.android.exoplayer2.source.ProgressiveMediaSource;
 import com.kaltura.android.exoplayer2.source.SingleSampleMediaSource;
-import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
 import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParserForThumbnail;
 import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.kaltura.android.exoplayer2.trackselection.TrackSelectionParameters;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.ByteArrayDataSink;
@@ -1039,7 +1038,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             trackSelectionHelper.setCurrentAudioFormat(format);
         }
     }
-    
+
+    @Override
+    public void onTrackSelectionParametersChanged(@NonNull TrackSelectionParameters parameters) {
+        log.d("onTrackSelectionParametersChanged");
+        if (assertTrackSelectionIsNotNull("onTrackSelectionParametersChanged")) {
+            trackSelectionHelper.setTrackSelectionParameters(parameters);
+        }
+    }
+
     @Override
     public void onMetadata(Metadata metadata) {
         this.metadataList = MetadataConverter.convert(metadata);
