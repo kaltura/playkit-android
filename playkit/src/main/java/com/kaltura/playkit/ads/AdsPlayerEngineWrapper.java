@@ -75,6 +75,13 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
                 adsProvider.getPlaybackStartPosition() != null && adsProvider.getPlaybackStartPosition() > 0 && !adsProvider.isAlwaysStartWithPreroll();
     }
 
+    /**
+     * This check is only for Live Medias
+     * Because for live media, player always seeks to live edge
+     * when app comes from background which results the getCurrentPosition to 0
+     *
+     * @return boolean player preparation required or not
+     */
     private boolean preparePlayerForPlaybackIfLiveMedia() {
         return isLiveMediaWithoutDvr() && getCurrentPosition() == 0 &&
                 adsProvider.isAdvertisingConfigured() && adsProvider.isAdRequested() && !adsProvider.isAdDisplayed();
