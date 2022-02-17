@@ -928,7 +928,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     @Override
-    public void onTimelineChanged(Timeline timeline, int reason) {
+    public void onTimelineChanged(@NonNull Timeline timeline, int reason) {
         log.d("onTimelineChanged reason = " + reason + " duration = " + getDuration());
         if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
             isLoadedMetaDataFired = false;
