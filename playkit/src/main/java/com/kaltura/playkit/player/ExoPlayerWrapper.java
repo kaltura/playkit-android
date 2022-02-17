@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import com.google.common.base.Charsets;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultLoadControl;
+
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.LoadControl;
@@ -73,6 +74,7 @@ import com.kaltura.android.exoplayer2.upstream.TransferListener;
 import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
+import com.kaltura.android.exoplayer2.util.EventLogger;
 import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 
@@ -219,9 +221,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context);
+        CustomRenderersFactory renderersFactory = new CustomRenderersFactory(context);
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
+        renderersFactory.experimentalSetAsynchronousBufferQueueingEnabled(true);
+        //renderersFactory.experimentalSetForceAsyncQueueingSynchronizationWorkaround(true);
 
         addCustomLoadErrorPolicy();
         mediaSourceFactory = new DefaultMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
@@ -238,7 +242,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         player.setWakeMode(playerSettings.getWakeMode().ordinal());
 
         window = new Timeline.Window();
-        setPlayerListeners();
+        setPlayerListeners(trackSelector);
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured, playerSettings.isVideoViewHidden());
 
@@ -267,7 +271,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         }
     }
 
-    private void setPlayerListeners() {
+    private void setPlayerListeners(DefaultTrackSelector trackSelector) {
         log.v("setPlayerListeners");
         if (assertPlayerIsNotNull("setPlayerListeners()")) {
             player.addListener(this);
@@ -280,7 +284,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 //            });
 //            player.addAnalyticsListener(playbackStatsListener);
 
-            player.addAnalyticsListener(analyticsAggregator);
+            //player.addAnalyticsListener(analyticsAggregator);
+            player.addAnalyticsListener(new EventLogger(trackSelector));
             final com.kaltura.android.exoplayer2.analytics.AnalyticsListener exoAnalyticsListener = profiler.getExoAnalyticsListener();
             if (exoAnalyticsListener != null) {
                 player.addAnalyticsListener(exoAnalyticsListener);
