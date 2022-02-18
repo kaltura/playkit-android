@@ -191,10 +191,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     } else {
                         // If playAdsAfterTime is greater than startPosition then prepare the content player
                         if (midRollAdsCount() > 0 && playAdsAfterTime > playerStartPosition) {
-                            if (midrollFrequency > Long.MIN_VALUE && midrollAdBreakPositionType == AdBreakPositionType.EVERY) {
-                                nextAdBreakIndexForMonitoring = if (hasPreRoll()) { 1 } else { 0 }
+                            nextAdBreakIndexForMonitoring = if (midrollFrequency > Long.MIN_VALUE && midrollAdBreakPositionType == AdBreakPositionType.EVERY) {
+                                if (hasPreRoll()) { 1 } else { 0 }
                             } else {
-                                nextAdBreakIndexForMonitoring = getImmediateNextAdPosition(playAdsAfterTime)
+                                getImmediateNextAdPosition(playAdsAfterTime)
                             }
                         }
                         prepareContentPlayer()
