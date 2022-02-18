@@ -29,6 +29,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
     // LiveMedia handler
     private var liveMediaCountdownTimer: ResumableCountDownTimer? = null
+    private val liveMediaCountdownTimerInterval: Long = 100
     private var isLiveMediaCountdownStarted: Boolean = false
     private var isLiveMediaMidrollAdPlayback: Boolean = false
     private var isReturnToLiveEdgeAfterAdPlayback: Boolean = false
@@ -570,7 +571,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     private fun createTimerForLiveMedias() {
         log.d("createTimerForLiveMedias")
-        liveMediaCountdownTimer = object: ResumableCountDownTimer(midrollFrequency, 100) {
+        liveMediaCountdownTimer = object: ResumableCountDownTimer(midrollFrequency, liveMediaCountdownTimerInterval) {
             override fun onTick(millisUntilFinished: Long) {
                 log.v("Live CountdownTimer millisUntilFinished $millisUntilFinished")
             }
