@@ -98,6 +98,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
 import okhttp3.OkHttpClient;
 
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
@@ -733,7 +734,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                     builder.eventListenerFactory(okListenerFactory);
                 }
             }
-            httpDataSourceFactory = new OkHttpDataSource.Factory(builder.build()).setUserAgent(userAgent);
+            httpDataSourceFactory = new OkHttpDataSource.Factory((Call.Factory) builder.build()).setUserAgent(userAgent);
         } else {
 
             httpDataSourceFactory = new DefaultHttpDataSource.Factory().setUserAgent(userAgent)
