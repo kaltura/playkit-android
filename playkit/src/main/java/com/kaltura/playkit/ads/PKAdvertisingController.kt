@@ -1121,6 +1121,10 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             AdBreakPositionType.EVERY -> {
                 midrollAdBreakPositionType = adBreakPositionType
                 midrollFrequency = advertisingContainer?.getMidrollFrequency() ?: Long.MIN_VALUE
+                if (isLiveMedia()) {
+                    log.d("For Live medias no cue point update is required.")
+                    return
+                }
                 val updatedCuePoints: List<Long>? = advertisingContainer?.getEveryBasedCuePointsList(playerDuration, midrollFrequency)
                 updatedCuePoints?.let {
                     adController?.advertisingSetCuePoints(it)
