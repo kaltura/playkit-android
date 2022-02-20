@@ -15,6 +15,7 @@ package com.kaltura.playkit.player;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKMediaConfig;
@@ -88,6 +89,11 @@ public class PKMediaSourceConfig {
 
     public String getExternalVttThumbnailUrl() {
         return externalVttThumbnailUrl;
+    }
+
+    @NonNull
+    public PKMediaEntry.MediaEntryType getMediaEntryType() {
+        return mediaEntryType;
     }
 
     @Override
