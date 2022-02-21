@@ -76,22 +76,7 @@ import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
-import com.kaltura.playkit.LocalAssetsManager;
-import com.kaltura.playkit.LocalAssetsManagerExo;
-import com.kaltura.playkit.PKAbrFilter;
-import com.kaltura.playkit.PKDrmParams;
-import com.kaltura.playkit.PKError;
-import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PKPlaybackException;
-import com.kaltura.playkit.PKRequestConfig;
-import com.kaltura.playkit.PKRequestParams;
-import com.kaltura.playkit.PlaybackInfo;
-import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
@@ -1036,14 +1021,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     public void onAudioInputFormatChanged(@NonNull Format format) {
         if (assertTrackSelectionIsNotNull("onVideoInputFormatChanged")) {
             trackSelectionHelper.setCurrentAudioFormat(format);
-        }
-    }
-
-    @Override
-    public void onTrackSelectionParametersChanged(@NonNull TrackSelectionParameters parameters) {
-        log.d("onTrackSelectionParametersChanged");
-        if (assertTrackSelectionIsNotNull("onTrackSelectionParametersChanged")) {
-            trackSelectionHelper.setTrackSelectionParameters(parameters);
         }
     }
 

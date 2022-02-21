@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 
@@ -168,7 +169,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     }
 
     @Override
-    public int getCryptoType(Format format) {
+    public int getCryptoType(@NonNull Format format) {
         if (drmSessionManager != null) {
             return drmSessionManager.getCryptoType(format);
         }

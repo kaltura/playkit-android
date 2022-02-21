@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit.player;
 
-
 import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
@@ -108,8 +107,6 @@ public class TrackSelectionHelper {
     private final Context context;
     private final DefaultTrackSelector selector;
     private TracksInfo trackSelectionArray;
-    private @Nullable Format currentVideoFormat;
-    private @Nullable Format currentAudioFormat;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private TrackSelectionParameters trackSelectionParameters;
     private TrackSelectionOverrides.Builder trackSelectionOverridesBuilder;
@@ -119,7 +116,9 @@ public class TrackSelectionHelper {
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
     private List<ImageTrack> imageTracks = new ArrayList<>();
-    Map<Pair<Long,Long>, ThumbnailInfo> externalVttThumbnailRangesInfo;
+    private @Nullable Format currentVideoFormat;
+    private @Nullable Format currentAudioFormat;
+    private Map<Pair<Long,Long>, ThumbnailInfo> externalVttThumbnailRangesInfo;
 
     private Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
     private Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
@@ -1184,8 +1183,6 @@ public class TrackSelectionHelper {
             parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, uniqueTrackId[TRACK_INDEX] == TRACK_DISABLED);
         }
 
-
-//        SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
         List<Integer> selectedTrackIndices = retrieveOverrideSelection(uniqueTrackId);
         overrideTrack(rendererIndex, groupIndex, selectedTrackIndices, parametersBuilder);
     }
@@ -1214,7 +1211,6 @@ public class TrackSelectionHelper {
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
 
-        //SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
         List<Integer> selectedTrackIndices = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
         overrideTrack(rendererIndex, groupIndex, selectedTrackIndices, parametersBuilder);
     }
@@ -1237,7 +1233,6 @@ public class TrackSelectionHelper {
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
 
-        //SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
         List<Integer> selectedTrackIndices = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
         overrideTrack(rendererIndex,groupIndex, selectedTrackIndices, parametersBuilder);
     }
@@ -1384,8 +1379,6 @@ public class TrackSelectionHelper {
 
     @NonNull
     private List<Integer> overrideMediaDefaultABR(int[][] uniqueIds, int rendererIndex, int groupIndex) {
-        SelectionOverride override;
-        int[] adaptiveTrackIndexes;
         List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
 
         switch (rendererIndex) {
@@ -1394,8 +1387,6 @@ public class TrackSelectionHelper {
                 createAdaptiveTrackIndexList(uniqueIds, groupIndex, adaptiveTrackIndexesList);
                 break;
         }
-        //adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-        //override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
         return adaptiveTrackIndexesList;
     }
 
@@ -1459,9 +1450,6 @@ public class TrackSelectionHelper {
      * @return - the {@link SelectionOverride} which will override the existing selection.
      */
     private List<Integer> retrieveOverrideSelection(int[] uniqueId) {
-
-        SelectionOverride override;
-
         List<Integer> selectedIndices = new ArrayList<>();
 
         int rendererIndex = uniqueId[RENDERER_INDEX];
@@ -1473,7 +1461,6 @@ public class TrackSelectionHelper {
         if (isAdaptive) {
 
             List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
-            int[] adaptiveTrackIndexes;
 
             switch (rendererIndex) {
                 case TRACK_TYPE_VIDEO:
@@ -1520,11 +1507,8 @@ public class TrackSelectionHelper {
                     break;
             }
 
-            //        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-//            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
             selectedIndices.addAll(adaptiveTrackIndexesList);
         } else {
-//            override = new SelectionOverride(groupIndex, trackIndex);
             selectedIndices.add(trackIndex);
         }
 
@@ -1533,9 +1517,7 @@ public class TrackSelectionHelper {
 
     @NonNull
     private List<Integer> overrideAutoABRTracks(int rendererIndex, int groupIndex) {
-        SelectionOverride override;
         List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
-        int[] adaptiveTrackIndexes;
 
         switch (rendererIndex) {
             case TRACK_TYPE_VIDEO:
@@ -1574,8 +1556,6 @@ public class TrackSelectionHelper {
                 break;
         }
 
-        // adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-        //override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
         return adaptiveTrackIndexesList;
     }
 
@@ -1583,7 +1563,13 @@ public class TrackSelectionHelper {
      * Actually doing the override action on the track.
      *
      * @param rendererIndex - renderer index on which we want to apply the change.
-    //  * @param override      - the new selection with which we want to override the currently active track.
+     * @param groupIndex - Group index of the track
+     * @param selectedIndices - Indexes of the tracks which are actually needs to be overrides.
+     *                        This index is of the selected `Format` inside the `mappedTrackInfo`
+     *                        Generally all the Formats come in one `Trackgroup` but for TEXT,
+     *                        it comes individual `TrackGroup` for each TEXT `Format`
+     *
+     * @param parametersBuilder `DefaultTrackSelector` parameter builder object
      */
     private void overrideTrack(int rendererIndex, int groupIndex, List<Integer> selectedIndices, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
         //actually change track.
@@ -1603,11 +1589,18 @@ public class TrackSelectionHelper {
             parametersBuilder.setTrackSelectionOverrides(trackSelectionOverrides);
         } else {
             //clear all the selections if the override is null.
-            trackSelectionOverridesBuilder.clearOverride(trackGroup).build();
+            trackSelectionOverridesBuilder.clearOverride(trackGroup);
         }
         selector.setParameters(parametersBuilder);
     }
 
+    /**
+     * Get all the track groups present
+     * In this method, we know that mapped track info
+     * has at least one text track
+     *
+     * @return TrackGroup having all the Text Formats
+     */
     private TrackGroup getTextTrackFormats() {
         TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(TRACK_TYPE_TEXT);
         Format[] textFormats = new Format[trackGroupArray.length];
@@ -1615,10 +1608,6 @@ public class TrackSelectionHelper {
             textFormats[i] = trackGroupArray.get(i).getFormat(0);
         }
         return new TrackGroup(textFormats);
-    }
-
-    protected void setTrackSelectionParameters(TrackSelectionParameters parameters) {
-        trackSelectionParameters = parameters;
     }
 
     public void updateTrackSelectorParameter(PlayerSettings playerSettings, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
@@ -1891,15 +1880,21 @@ public class TrackSelectionHelper {
     protected void release() {
         tracksInfoListener.onRelease(lastSelectedTrackIds);
         tracksInfoListener = null;
-        // trackSelectionParameters = null;
-        //  trackSelectionOverridesBuilder = null;
+        trackSelectionParameters = null;
+        trackSelectionOverridesBuilder = null;
         clearTracksLists();
     }
 
     protected boolean isAudioOnlyStream() {
         if (trackSelectionArray != null && !trackSelectionArray.getTrackGroupInfos().isEmpty()) {
-            // Check the first index of the TrackGroup Info list because for audio only 0 will be allocated for Audio TrackGroup
-            return trackSelectionArray.getTrackGroupInfos().get(0).getTrackType() == C.TRACK_TYPE_AUDIO;
+            boolean isVideoFormatAvailable = false;
+            for (TracksInfo.TrackGroupInfo trackGroupInfo: trackSelectionArray.getTrackGroupInfos()) {
+                if (trackGroupInfo.getTrackType() == C.TRACK_TYPE_VIDEO) {
+                    isVideoFormatAvailable = true;
+                    break;
+                }
+            }
+            return !isVideoFormatAvailable;
         }
         return false;
     }
