@@ -328,15 +328,23 @@ public class TrackSelectionHelper {
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
-                                if (format.language != null && hasExternalSubtitles && discardTextTrackOnPreference(format)) {
+                                if (format.language != null && hasExternalSubtitles) {
                                     int selectionFlag = format.selectionFlags;
                                     if (selector != null && (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH)) {
                                         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
-                                        trackSelectionOverridesBuilder.clearOverridesOfType(C.TRACK_TYPE_TEXT);
-                                        parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, true);
+
+                                        if (discardTextTrackOnPreference(format)) {
+                                            trackSelectionOverridesBuilder.clearOverride(trackGroup);
+                                            parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, true);
+                                            continue;
+                                        } else {
+                                            TrackSelectionOverrides.TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverrides.TrackSelectionOverride(trackGroup, Collections.singletonList(trackIndex));
+                                            TrackSelectionOverrides trackSelectionOverrides = trackSelectionOverridesBuilder.setOverrideForType(trackSelectionOverride).build();
+                                            parametersBuilder.setTrackSelectionOverrides(trackSelectionOverrides);
+                                        }
+
                                         selector.setParameters(parametersBuilder);
                                     }
-                                    continue;
                                 }
 
                                 if (CEA_608.equals(format.sampleMimeType)) {
