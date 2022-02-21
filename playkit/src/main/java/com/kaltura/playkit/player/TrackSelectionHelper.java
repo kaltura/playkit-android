@@ -21,6 +21,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.RendererCapabilities;
@@ -110,8 +111,8 @@ public class TrackSelectionHelper {
     private @Nullable Format currentVideoFormat;
     private @Nullable Format currentAudioFormat;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
-    private @NonNull TrackSelectionParameters trackSelectionParameters;
-    private @NonNull TrackSelectionOverrides.Builder trackSelectionOverridesBuilder;
+    private TrackSelectionParameters trackSelectionParameters;
+    private TrackSelectionOverrides.Builder trackSelectionOverridesBuilder;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<VideoTrack> originalVideoTracks;
@@ -1519,7 +1520,7 @@ public class TrackSelectionHelper {
                     break;
             }
 
-    //        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+            //        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
 //            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
             selectedIndices.addAll(adaptiveTrackIndexesList);
         } else {
@@ -1573,7 +1574,7 @@ public class TrackSelectionHelper {
                 break;
         }
 
-       // adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+        // adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
         //override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
         return adaptiveTrackIndexesList;
     }
@@ -1890,6 +1891,8 @@ public class TrackSelectionHelper {
     protected void release() {
         tracksInfoListener.onRelease(lastSelectedTrackIds);
         tracksInfoListener = null;
+        // trackSelectionParameters = null;
+        //  trackSelectionOverridesBuilder = null;
         clearTracksLists();
     }
 
@@ -2029,9 +2032,40 @@ public class TrackSelectionHelper {
         audioTracks.clear();
         textTracks.clear();
         imageTracks.clear();
+        currentVideoFormat = null;
+        currentAudioFormat = null;
+
+        clearCurrentTracksOverrides();
 
         if (originalVideoTracks != null) {
             originalVideoTracks.clear();
+        }
+    }
+
+    /**
+     * For the current media, check if there is any track overrides
+     * Track overrides remain on `selector` and `trackSelectionOverridesBuilder` level
+     * not on `trackSelectionParameters` level.
+     *
+     * So before going to the next media, clear all those overrides otherwise
+     * the next media will not be playing because it has current overrides and will try
+     * to apply the same for the next media. Which internally may cause the incorrect track/period
+     * selection
+     */
+    private void clearCurrentTracksOverrides() {
+        if (trackSelectionParameters != null) {
+            ImmutableList<TrackSelectionOverrides.TrackSelectionOverride> trackOverridesList = selector.getParameters().trackSelectionOverrides.asList();
+            if (trackOverridesList.isEmpty()) {
+                log.d("There are no TrackSelection overrides, hence returning.");
+                return;
+            }
+
+            for (TrackSelectionOverrides.TrackSelectionOverride trackSelectionOverride : trackOverridesList) {
+                trackSelectionOverridesBuilder.clearOverride(trackSelectionOverride.trackGroup);
+            }
+
+            DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.buildUponParameters().setTrackSelectionOverrides(TrackSelectionOverrides.EMPTY);
+            selector.setParameters(parametersBuilder);
         }
     }
 
