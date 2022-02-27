@@ -1946,6 +1946,7 @@ public class TrackSelectionHelper {
     @Nullable
     private Format getSelectedTextTrackFormat() {
         if (tracksInfo != null && !tracksInfo.getTrackGroupInfos().isEmpty()) {
+
             for (TracksInfo.TrackGroupInfo trackGroupInfo : tracksInfo.getTrackGroupInfos()) {
                 if (trackGroupInfo.getTrackType() == C.TRACK_TYPE_TEXT &&
                         trackGroupInfo.isSelected() &&

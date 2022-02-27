@@ -1018,7 +1018,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     @Override
     public void onAudioInputFormatChanged(@NonNull Format format) {
-        if (assertTrackSelectionIsNotNull("onVideoInputFormatChanged")) {
+        if (assertTrackSelectionIsNotNull("onAudioInputFormatChanged")) {
             trackSelectionHelper.setCurrentAudioFormat(format);
         }
     }
