@@ -106,7 +106,7 @@ public class TrackSelectionHelper {
 
     private final Context context;
     private final DefaultTrackSelector selector;
-    private TracksInfo trackSelectionArray;
+    private TracksInfo tracksInfo;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private TrackSelectionParameters trackSelectionParameters;
     private TrackSelectionOverrides.Builder trackSelectionOverridesBuilder;
@@ -196,7 +196,7 @@ public class TrackSelectionHelper {
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
     boolean prepareTracks(TracksInfo trackSelections, String externalThumbnailWebVttUrl, CustomDashManifest customDashManifest) {
-        trackSelectionArray = trackSelections;
+        tracksInfo = trackSelections;
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
@@ -1040,7 +1040,7 @@ public class TrackSelectionHelper {
                 trackType = TRACK_TYPE_TEXT;
             }
 
-            if (trackType == TRACK_TYPE_AUDIO && currentAudioFormat != null && trackSelectionArray != null) {
+            if (trackType == TRACK_TYPE_AUDIO && currentAudioFormat != null && tracksInfo != null) {
                 defaultTrackIndex = findDefaultTrackIndex(currentAudioFormat.language, trackList, defaultTrackIndex);
             }
         }
@@ -1894,9 +1894,9 @@ public class TrackSelectionHelper {
     }
 
     protected boolean isAudioOnlyStream() {
-        if (trackSelectionArray != null && !trackSelectionArray.getTrackGroupInfos().isEmpty()) {
+        if (tracksInfo != null && !tracksInfo.getTrackGroupInfos().isEmpty()) {
             boolean isVideoFormatAvailable = false;
-            for (TracksInfo.TrackGroupInfo trackGroupInfo: trackSelectionArray.getTrackGroupInfos()) {
+            for (TracksInfo.TrackGroupInfo trackGroupInfo: tracksInfo.getTrackGroupInfos()) {
                 if (trackGroupInfo.getTrackType() == C.TRACK_TYPE_VIDEO) {
                     isVideoFormatAvailable = true;
                     break;
@@ -1945,8 +1945,8 @@ public class TrackSelectionHelper {
 
     @Nullable
     private Format getSelectedTextTrackFormat() {
-        if (trackSelectionArray != null && !trackSelectionArray.getTrackGroupInfos().isEmpty()) {
-            for (TracksInfo.TrackGroupInfo trackGroupInfo : trackSelectionArray.getTrackGroupInfos()) {
+        if (tracksInfo != null && !tracksInfo.getTrackGroupInfos().isEmpty()) {
+            for (TracksInfo.TrackGroupInfo trackGroupInfo : tracksInfo.getTrackGroupInfos()) {
                 if (trackGroupInfo.getTrackType() == C.TRACK_TYPE_TEXT &&
                         trackGroupInfo.isSelected() &&
                         trackGroupInfo.getTrackGroup().length > 0) {
@@ -1960,7 +1960,7 @@ public class TrackSelectionHelper {
 
     protected void notifyAboutTrackChange(TracksInfo trackSelections) {
 
-        this.trackSelectionArray = trackSelections;
+        this.tracksInfo = trackSelections;
         if (tracksInfoListener == null) {
             return;
         }
@@ -2029,7 +2029,7 @@ public class TrackSelectionHelper {
     protected void stop() {
         lastSelectedTrackIds = new String[]{NONE, NONE, NONE, NONE};
         requestedChangeTrackIds = new String[]{NONE, NONE, NONE, NONE};
-        trackSelectionArray = null;
+        tracksInfo = null;
         mappedTrackInfo = null;
         videoTracks.clear();
         audioTracks.clear();
