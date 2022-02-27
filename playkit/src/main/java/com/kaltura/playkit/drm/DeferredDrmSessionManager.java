@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 
+import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
@@ -173,7 +174,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         if (drmSessionManager != null) {
             return drmSessionManager.getCryptoType(format);
         }
-        return 0;
+        return C.CRYPTO_TYPE_NONE;
     }
 
     @Override
