@@ -45,6 +45,12 @@ public class CustomPeriod {
         this(id, startMs, adaptationSets, Collections.emptyList(), /* assetIdentifier= */ null);
     }
 
+    /**
+     * @param id The period identifier. May be null.
+     * @param startMs The start time of the period in milliseconds.
+     * @param adaptationSets The adaptation sets belonging to the period.
+     * @param eventStreams The {@link EventStream}s belonging to the period.
+     */
     public CustomPeriod(
             @Nullable String id,
             long startMs,
