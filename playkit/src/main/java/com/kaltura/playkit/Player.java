@@ -515,9 +515,9 @@ public interface Player {
 
     /**
      * Change the volume of the current audio track.
-     * Accept values between 0 and 1. Where 0 is mute and 1 is maximum volume.
-     * If the volume parameter is higher then 1, it will be converted to 1.
-     * If the volume parameter is lower then 0, it be converted to 0.
+     * Accept values between 0.0 and 1.0. Where 0.0 is mute and 1.0 is maximum volume.
+     * If the volume parameter is higher then 1.0, it will be converted to 1.0.
+     * If the volume parameter is lower then 0.0, it be converted to 0.0.
      *
      * @param volume - volume to set.
      */

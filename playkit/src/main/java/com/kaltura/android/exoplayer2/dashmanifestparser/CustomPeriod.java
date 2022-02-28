@@ -51,8 +51,11 @@ public class CustomPeriod {
      * @param adaptationSets The adaptation sets belonging to the period.
      * @param eventStreams The {@link EventStream}s belonging to the period.
      */
-    public CustomPeriod(@Nullable String id, long startMs, List<CustomAdaptationSet> adaptationSets,
-                  List<EventStream> eventStreams) {
+    public CustomPeriod(
+            @Nullable String id,
+            long startMs,
+            List<CustomAdaptationSet> adaptationSets,
+            List<EventStream> eventStreams) {
         this(id, startMs, adaptationSets, eventStreams, /* assetIdentifier= */ null);
     }
 

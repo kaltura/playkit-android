@@ -5,14 +5,16 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Pair;
 import android.util.Xml;
+
 import androidx.annotation.Nullable;
 
 import com.google.common.base.Ascii;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.ParserException;
-import com.kaltura.android.exoplayer2.audio.Ac3Util;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmInitData.SchemeData;
 import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
@@ -28,8 +30,14 @@ import com.kaltura.android.exoplayer2.util.MimeTypes;
 import com.kaltura.android.exoplayer2.util.UriUtil;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.android.exoplayer2.util.XmlPullParserUtil;
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
+
+import org.checkerframework.checker.nullness.compatqual.NullableType;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+import org.xmlpull.v1.XmlSerializer;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,12 +46,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.nullness.compatqual.NullableType;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
-import org.xmlpull.v1.XmlSerializer;
 
 /**
  * A parser of media presentation description files.
@@ -742,6 +744,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 drmSchemeType,
                 drmSchemeDatas,
                 inbandEventStreams,
+                essentialProperties,
+                supplementalProperties,
                 Representation.REVISION_ID_DEFAULT);
     }
 
@@ -764,7 +768,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         if (MimeTypes.AUDIO_E_AC3.equals(sampleMimeType)) {
             sampleMimeType = parseEac3SupplementalProperties(supplementalProperties);
             if (MimeTypes.AUDIO_E_AC3_JOC.equals(sampleMimeType)) {
-                codecs = Ac3Util.E_AC3_JOC_CODEC_STRING;
+                codecs = MimeTypes.CODEC_E_AC3_JOC;
             }
         }
         @C.SelectionFlags int selectionFlags = parseSelectionFlagsFromRoleDescriptors(roleDescriptors);
@@ -828,7 +832,10 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 formatBuilder.build(),
                 representationInfo.baseUrls,
                 representationInfo.segmentBase,
-                inbandEventStreams);
+                inbandEventStreams,
+                representationInfo.essentialProperties,
+                representationInfo.supplementalProperties,
+                /* cacheKey= */ null);
     }
 
     // SegmentBase, SegmentList and SegmentTemplate parsing.
@@ -954,8 +961,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 timeline,
                 availabilityTimeOffsetUs,
                 segments,
-                C.msToUs(timeShiftBufferDepthMs),
-                C.msToUs(periodStartUnixTimeMs));
+                Util.msToUs(timeShiftBufferDepthMs),
+                Util.msToUs(periodStartUnixTimeMs));
     }
 
     protected SegmentTemplate parseSegmentTemplate(
@@ -1044,8 +1051,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 availabilityTimeOffsetUs,
                 initializationTemplate,
                 mediaTemplate,
-                C.msToUs(timeShiftBufferDepthMs),
-                C.msToUs(periodStartUnixTimeMs));
+                Util.msToUs(timeShiftBufferDepthMs),
+                Util.msToUs(periodStartUnixTimeMs));
     }
 
     /**
@@ -1902,6 +1909,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         public final ArrayList<SchemeData> drmSchemeDatas;
         public final ArrayList<Descriptor> inbandEventStreams;
         public final long revisionId;
+        public final List<Descriptor> essentialProperties;
+        public final List<Descriptor> supplementalProperties;
 
         public RepresentationInfo(
                 Format format,
@@ -1910,6 +1919,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 @Nullable String drmSchemeType,
                 ArrayList<SchemeData> drmSchemeDatas,
                 ArrayList<Descriptor> inbandEventStreams,
+                List<Descriptor> essentialProperties,
+                List<Descriptor> supplementalProperties,
                 long revisionId) {
             this.format = format;
             this.baseUrls = ImmutableList.copyOf(baseUrls);
@@ -1917,6 +1928,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             this.drmSchemeType = drmSchemeType;
             this.drmSchemeDatas = drmSchemeDatas;
             this.inbandEventStreams = inbandEventStreams;
+            this.essentialProperties = essentialProperties;
+            this.supplementalProperties = supplementalProperties;
             this.revisionId = revisionId;
         }
     }

@@ -15,7 +15,6 @@ import com.google.common.collect.Lists;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.ParserException;
-import com.kaltura.android.exoplayer2.audio.Ac3Util;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmInitData.SchemeData;
 import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
@@ -517,7 +516,7 @@ public class CustomDashManifestParser extends DefaultHandler {
 
     protected CustomAdaptationSet buildAdaptationSet(
             int id,
-            int contentType,
+            @C.TrackType int contentType,
             List<CustomRepresentation> representations,
             List<Descriptor> accessibilityDescriptors,
             List<Descriptor> essentialProperties,
@@ -531,7 +530,7 @@ public class CustomDashManifestParser extends DefaultHandler {
                 supplementalProperties);
     }
 
-    protected int parseContentType(XmlPullParser xpp) {
+    protected @C.TrackType int parseContentType(XmlPullParser xpp) {
         String contentType = xpp.getAttributeValue(null, "contentType");
         return TextUtils.isEmpty(contentType) ? C.TRACK_TYPE_UNKNOWN
                 : MimeTypes.BASE_TYPE_AUDIO.equals(contentType) ? C.TRACK_TYPE_AUDIO
@@ -758,6 +757,8 @@ public class CustomDashManifestParser extends DefaultHandler {
                 drmSchemeType,
                 drmSchemeDatas,
                 inbandEventStreams,
+                essentialProperties,
+                supplementalProperties,
                 CustomRepresentation.REVISION_ID_DEFAULT);
     }
 
@@ -782,7 +783,7 @@ public class CustomDashManifestParser extends DefaultHandler {
         if (MimeTypes.AUDIO_E_AC3.equals(sampleMimeType)) {
             sampleMimeType = parseEac3SupplementalProperties(supplementalProperties);
             if (MimeTypes.AUDIO_E_AC3_JOC.equals(sampleMimeType)) {
-                codecs = Ac3Util.E_AC3_JOC_CODEC_STRING;
+                codecs = MimeTypes.CODEC_E_AC3_JOC;
             }
         }
 
@@ -825,6 +826,8 @@ public class CustomDashManifestParser extends DefaultHandler {
                 accessibilityChannel = parseCea708AccessibilityChannel(accessibilityDescriptors);
             }
             formatBuilder.setAccessibilityChannel(accessibilityChannel);
+        } else if (MimeTypes.isImage(sampleMimeType)) {
+            formatBuilder.setWidth(width).setHeight(height);
         }
 
         return formatBuilder.build();
@@ -886,7 +889,10 @@ public class CustomDashManifestParser extends DefaultHandler {
                 formatBuilder.build(),
                 representationInfo.baseUrls,
                 representationInfo.segmentBase,
-                inbandEventStreams);
+                inbandEventStreams,
+                representationInfo.essentialProperties,
+                representationInfo.supplementalProperties,
+                /* cacheKey= */ null);
     }
 
     private CustomFormat.FormatThumbnailInfo buildFormatThumbnailInfo(String baseURL, String id, int bitrate, CustomSegmentBase segmentBase, List<Descriptor> essentialProperties) {
@@ -1054,8 +1060,8 @@ public class CustomDashManifestParser extends DefaultHandler {
                 timeline,
                 availabilityTimeOffsetUs,
                 segments,
-                C.msToUs(timeShiftBufferDepthMs),
-                C.msToUs(periodStartUnixTimeMs));
+                Util.msToUs(timeShiftBufferDepthMs),
+                Util.msToUs(periodStartUnixTimeMs));
     }
 
     protected SegmentTemplate parseSegmentTemplate(
@@ -1144,8 +1150,8 @@ public class CustomDashManifestParser extends DefaultHandler {
                 availabilityTimeOffsetUs,
                 initializationTemplate,
                 mediaTemplate,
-                C.msToUs(timeShiftBufferDepthMs),
-                C.msToUs(periodStartUnixTimeMs));
+                Util.msToUs(timeShiftBufferDepthMs),
+                Util.msToUs(periodStartUnixTimeMs));
     }
 
     /**
@@ -1765,7 +1771,8 @@ public class CustomDashManifestParser extends DefaultHandler {
      * @param secondType The second type.
      * @return The consistent type.
      */
-    private static int checkContentTypeConsistency(int firstType, int secondType) {
+    private static int checkContentTypeConsistency(
+            @C.TrackType int firstType, @C.TrackType int secondType) {
         if (firstType == C.TRACK_TYPE_UNKNOWN) {
             return secondType;
         } else if (secondType == C.TRACK_TYPE_UNKNOWN) {
@@ -2002,6 +2009,8 @@ public class CustomDashManifestParser extends DefaultHandler {
         public final ArrayList<SchemeData> drmSchemeDatas;
         public final ArrayList<Descriptor> inbandEventStreams;
         public final long revisionId;
+        public final List<Descriptor> essentialProperties;
+        public final List<Descriptor> supplementalProperties;
 
         public RepresentationInfo(
                 CustomFormat format,
@@ -2010,6 +2019,8 @@ public class CustomDashManifestParser extends DefaultHandler {
                 @Nullable String drmSchemeType,
                 ArrayList<SchemeData> drmSchemeDatas,
                 ArrayList<Descriptor> inbandEventStreams,
+                List<Descriptor> essentialProperties,
+                List<Descriptor> supplementalProperties,
                 long revisionId) {
             this.format = format;
             this.baseUrls = ImmutableList.copyOf(baseUrls);
@@ -2017,6 +2028,8 @@ public class CustomDashManifestParser extends DefaultHandler {
             this.drmSchemeType = drmSchemeType;
             this.drmSchemeDatas = drmSchemeDatas;
             this.inbandEventStreams = inbandEventStreams;
+            this.essentialProperties = essentialProperties;
+            this.supplementalProperties = supplementalProperties;
             this.revisionId = revisionId;
         }
     }
