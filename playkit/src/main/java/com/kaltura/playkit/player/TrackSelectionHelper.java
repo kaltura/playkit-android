@@ -1368,7 +1368,6 @@ public class TrackSelectionHelper {
         // Only for video tracks : RENDERER_INDEX is always 0 means video
         List<Integer> selectedIndices = new ArrayList<>();
 
-        SelectionOverride override;
         int rendererIndex = uniqueIds[0][RENDERER_INDEX];
         int groupIndex = uniqueIds[0][GROUP_INDEX];
         int trackIndex = uniqueIds[0][TRACK_INDEX];
@@ -1870,6 +1869,8 @@ public class TrackSelectionHelper {
         audioTracks.clear();
         textTracks.clear();
         imageTracks.clear();
+        currentVideoFormat = null;
+        currentAudioFormat = null;
         for (Map.Entry<PKVideoCodec,List<VideoTrack>> videoTrackEntry : videoTracksCodecsMap.entrySet()) {
             videoTrackEntry.getValue().clear();
         }
@@ -1883,10 +1884,12 @@ public class TrackSelectionHelper {
             externalVttThumbnailRangesInfo.clear();
             externalVttThumbnailRangesInfo = null;
         }
+        clearCurrentTracksOverrides();
     }
 
     protected void release() {
         tracksInfoListener.onRelease(lastSelectedTrackIds);
+        clearCurrentTracksOverrides();
         tracksInfoListener = null;
         trackSelectionParameters = null;
         trackSelectionOverridesBuilder = null;
@@ -2057,7 +2060,7 @@ public class TrackSelectionHelper {
      * selection
      */
     private void clearCurrentTracksOverrides() {
-        if (trackSelectionParameters != null) {
+        if (selector != null && trackSelectionOverridesBuilder != null) {
             ImmutableList<TrackSelectionOverrides.TrackSelectionOverride> trackOverridesList = selector.getParameters().trackSelectionOverrides.asList();
             if (trackOverridesList.isEmpty()) {
                 log.d("There are no TrackSelection overrides, hence returning.");
