@@ -980,7 +980,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     @Override
     public void onTracksInfoChanged(@NonNull TracksInfo tracksInfo) {
-        log.d("onTracksInfoChanged ");
+        log.d("onTracksInfoChanged");
 
         //if onTracksChanged happened when application went background, do not update the tracks.
         if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
