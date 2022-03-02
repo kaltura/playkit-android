@@ -251,6 +251,7 @@ public class TrackSelectionHelper {
     public PKTracks buildTracks(String externalThumbnailWebVttUrl, List<CustomFormat> rawImageTracks) {
 
         clearTracksLists();
+        clearCurrentTracksOverrides();
 
         TrackGroupArray trackGroupArray;
         TrackGroup trackGroup;
@@ -1884,12 +1885,10 @@ public class TrackSelectionHelper {
             externalVttThumbnailRangesInfo.clear();
             externalVttThumbnailRangesInfo = null;
         }
-        clearCurrentTracksOverrides();
     }
 
     protected void release() {
         tracksInfoListener.onRelease(lastSelectedTrackIds);
-        clearCurrentTracksOverrides();
         tracksInfoListener = null;
         trackSelectionParameters = null;
         trackSelectionOverridesBuilder = null;
@@ -2059,7 +2058,7 @@ public class TrackSelectionHelper {
      * to apply the same for the next media. Which internally may cause the incorrect track/period
      * selection
      */
-    private void clearCurrentTracksOverrides() {
+    protected void clearCurrentTracksOverrides() {
         if (selector != null && trackSelectionOverridesBuilder != null) {
             ImmutableList<TrackSelectionOverrides.TrackSelectionOverride> trackOverridesList = selector.getParameters().trackSelectionOverrides.asList();
             if (trackOverridesList.isEmpty()) {
