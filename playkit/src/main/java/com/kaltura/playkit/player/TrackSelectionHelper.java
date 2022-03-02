@@ -2058,7 +2058,7 @@ public class TrackSelectionHelper {
      * to apply the same for the next media. Which internally may cause the incorrect track/period
      * selection
      */
-    protected void clearCurrentTracksOverrides() {
+    private void clearCurrentTracksOverrides() {
         if (selector != null && trackSelectionOverridesBuilder != null) {
             ImmutableList<TrackSelectionOverrides.TrackSelectionOverride> trackOverridesList = selector.getParameters().trackSelectionOverrides.asList();
             if (trackOverridesList.isEmpty()) {

@@ -1217,9 +1217,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         log.v("release");
         if (assertPlayerIsNotNull("release()")) {
             savePlayerPosition();
-            if (assertPlayerIsNotNull("release()")) {
-                trackSelectionHelper.clearCurrentTracksOverrides();
-            }
             player.release();
             player = null;
             if (bandwidthMeter != null) {
