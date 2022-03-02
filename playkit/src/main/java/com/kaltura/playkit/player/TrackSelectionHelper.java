@@ -196,6 +196,7 @@ public class TrackSelectionHelper {
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
     boolean prepareTracks(TracksInfo trackSelections, String externalThumbnailWebVttUrl, CustomDashManifest customDashManifest) {
+        clearCurrentTracksOverrides();
         tracksInfo = trackSelections;
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
@@ -251,7 +252,6 @@ public class TrackSelectionHelper {
     public PKTracks buildTracks(String externalThumbnailWebVttUrl, List<CustomFormat> rawImageTracks) {
 
         clearTracksLists();
-        clearCurrentTracksOverrides();
 
         TrackGroupArray trackGroupArray;
         TrackGroup trackGroup;
