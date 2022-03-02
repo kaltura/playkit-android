@@ -1,5 +1,5 @@
 // PlayKit Library Version
-ext.playkitVersion = '4.19.0'
+ext.playkitVersion = '4.19.4'
 
 // Append short commit hash to dev builds, i.e. "dev.a1b2c3d"
 if (playkitVersion == 'dev') {
