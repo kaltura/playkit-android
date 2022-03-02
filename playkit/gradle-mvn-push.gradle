@@ -84,7 +84,8 @@ afterEvaluate { project ->
     task androidJavadocs(type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
         classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-        exclude '**/PlayKitManager.java'
+        include '**/BuildConfig.java'
+        //exclude '**/PlayKitManager.java'
         exclude '**/*.kt'
     }
 
