@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.analytics.PlayerId;
 import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmSession;
@@ -109,9 +110,14 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         }
     }
 
+    @Override
+    public void setPlayer(Looper looper, PlayerId playerId) {
+        // FIX ME
+    }
+
     @Nullable
     @Override
-    public DrmSession acquireSession(Looper playbackLooper, @Nullable EventDispatcher eventDispatcher, Format format) {
+    public DrmSession acquireSession(@Nullable EventDispatcher eventDispatcher, Format format) {
         if (drmSessionManager == null) {
             return null;
         }
@@ -134,8 +140,8 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
                 drmSessionListener.onError(error);
             }
         }
-
-        return drmSessionManager.acquireSession(playbackLooper, eventDispatcher, format);
+        //FIXME
+        return drmSessionManager.acquireSession(eventDispatcher, format);
     }
 
     private DrmSessionManager getDRMSessionManager(DrmCallback drmCallback) {
