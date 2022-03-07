@@ -44,7 +44,7 @@ internal class AdvertisingContainer {
                 advertisingConfig.playAdsAfterTime
             }
 
-            advertisingConfig.adType?.let {
+            advertisingConfig.adType.let {
                 adType = it
             }
 
@@ -144,7 +144,7 @@ internal class AdvertisingContainer {
     internal fun parseAdBreakGSON(singleAdBreak: String): AdBreak? {
         log.d("parseAdBreakGSON")
         try {
-            val adBreak = Gson().fromJson<AdBreak>(singleAdBreak, AdBreak::class.java)
+            val adBreak = Gson().fromJson(singleAdBreak, AdBreak::class.java)
             if (adBreak != null) {
                 return adBreak
             } else {
@@ -301,7 +301,7 @@ internal class AdvertisingContainer {
                 }
             }
 
-            log.d("getEveryBasedCuePointsList ${updatedCuePointsList}")
+            log.d("getEveryBasedCuePointsList $updatedCuePointsList")
 
             if (updatedCuePointsList.isNotEmpty()) {
                 if (cuePointsList?.first == 0L) {
@@ -313,7 +313,7 @@ internal class AdvertisingContainer {
                 }
             }
 
-            log.d(" final updatedCuePointsList = ${updatedCuePointsList}")
+            log.d(" final updatedCuePointsList = $updatedCuePointsList")
             return updatedCuePointsList
         }
 

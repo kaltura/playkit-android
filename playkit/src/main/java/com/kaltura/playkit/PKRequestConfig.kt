@@ -12,7 +12,7 @@ data class PKRequestConfig @JvmOverloads constructor(@NonNull var crossProtocolR
                                                      @NonNull var connectTimeoutMs: Int = DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                                                      /* Maximum number of times to retry a load in the case of a load error, before propagating the error.*/
                                                      @NonNull var maxRetries: Int = CustomLoadErrorHandlingPolicy.LOADABLE_RETRY_COUNT_UNSET) {
-    class Builder() {
+    class Builder {
 
         private var crossProtocolRedirectEnabled: Boolean = false
         private var readTimeoutMs: Int = DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS
