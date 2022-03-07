@@ -55,17 +55,19 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
 
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
 
-    private String WIDEVINE_SECURITY_LEVEL_1 = "L1";
-    private String WIDEVINE_SECURITY_LEVEL_3 = "L3";
-    private String SECURITY_LEVEL_PROPERTY = "securityLevel";
+    private final String WIDEVINE_SECURITY_LEVEL_1 = "L1";
+    private final String WIDEVINE_SECURITY_LEVEL_3 = "L3";
+    private final String SECURITY_LEVEL_PROPERTY = "securityLevel";
 
     private Handler mainHandler;
     private final DrmCallback drmCallback;
     private DrmSessionListener drmSessionListener;
     private LocalAssetsManager.LocalMediaSource localMediaSource = null;
     private DrmSessionManager drmSessionManager;
-    private boolean allowClearLead;
-    private boolean forceWidevineL3Playback;
+    private final boolean allowClearLead;
+    private final boolean forceWidevineL3Playback;
+    private Looper playbackLooper;
+    private PlayerId playbackPlayerId;
 
     public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead, boolean forceWidevineL3Playback) {
         this.mainHandler = mainHandler;
@@ -111,13 +113,14 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     }
 
     @Override
-    public void setPlayer(Looper looper, PlayerId playerId) {
-        // FIX ME
+    public void setPlayer(@NonNull Looper looper, @NonNull PlayerId playerId) {
+        playbackLooper = looper;
+        playbackPlayerId = playerId;
     }
 
     @Nullable
     @Override
-    public DrmSession acquireSession(@Nullable EventDispatcher eventDispatcher, Format format) {
+    public DrmSession acquireSession(@Nullable EventDispatcher eventDispatcher, @NonNull Format format) {
         if (drmSessionManager == null) {
             return null;
         }
@@ -140,7 +143,8 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
                 drmSessionListener.onError(error);
             }
         }
-        //FIXME
+
+        drmSessionManager.setPlayer(playbackLooper, playbackPlayerId);
         return drmSessionManager.acquireSession(eventDispatcher, format);
     }
 
