@@ -196,7 +196,6 @@ public class TrackSelectionHelper {
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
     boolean prepareTracks(TracksInfo trackSelections, String externalThumbnailWebVttUrl, CustomDashManifest customDashManifest) {
-        clearCurrentTracksOverrides();
         tracksInfo = trackSelections;
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
@@ -2041,37 +2040,8 @@ public class TrackSelectionHelper {
         currentVideoFormat = null;
         currentAudioFormat = null;
 
-        clearCurrentTracksOverrides();
-
         if (originalVideoTracks != null) {
             originalVideoTracks.clear();
-        }
-    }
-
-    /**
-     * For the current media, check if there is any track overrides
-     * Track overrides remain on `selector` and `trackSelectionOverridesBuilder` level
-     * not on `trackSelectionParameters` level.
-     *
-     * So before going to the next media, clear all those overrides otherwise
-     * the next media will not be playing because it has current overrides and will try
-     * to apply the same for the next media. Which internally may cause the incorrect track/period
-     * selection
-     */
-    private void clearCurrentTracksOverrides() {
-        if (selector != null && trackSelectionOverridesBuilder != null) {
-            ImmutableList<TrackSelectionOverrides.TrackSelectionOverride> trackOverridesList = selector.getParameters().trackSelectionOverrides.asList();
-            if (trackOverridesList.isEmpty()) {
-                log.d("There are no TrackSelection overrides, hence returning.");
-                return;
-            }
-
-            for (TrackSelectionOverrides.TrackSelectionOverride trackSelectionOverride : trackOverridesList) {
-                trackSelectionOverridesBuilder.clearOverride(trackSelectionOverride.trackGroup);
-            }
-
-            DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.buildUponParameters().setTrackSelectionOverrides(TrackSelectionOverrides.EMPTY);
-            selector.setParameters(parametersBuilder);
         }
     }
 
