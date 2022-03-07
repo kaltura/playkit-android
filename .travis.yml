@@ -2,7 +2,7 @@ language: android
 dist: trusty
 sudo: required
 jdk:
-  - openjdk11
+  - oraclejdk11
 android:
   components:
     - tools
