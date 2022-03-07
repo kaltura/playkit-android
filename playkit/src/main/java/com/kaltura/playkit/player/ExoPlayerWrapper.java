@@ -1369,7 +1369,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     @Override
     public void setAnalyticsListener(AnalyticsListener analyticsListener) {
         this.analyticsAggregator.setListener(analyticsListener);
-        this.analyticsAggregator.setInputFormatChangedListener(analyticsListener != null ? this : null);
+    }
+
+    @Override
+    public void setInputFormatChangedListener(Boolean enableListener) {
+        this.analyticsAggregator.setInputFormatChangedListener(enableListener != null ? this : null);
     }
 
     @Override

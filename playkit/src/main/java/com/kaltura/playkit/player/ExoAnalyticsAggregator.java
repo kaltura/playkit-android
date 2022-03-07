@@ -44,7 +44,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     private int skippedOutputBufferCount;
 
     private PlayerEngine.AnalyticsListener listener;
-    private InputFormatChangedListener inputFormatChangedListener;
+    private @Nullable InputFormatChangedListener inputFormatChangedListener;
 
     void reset() {
         totalDroppedFrames = 0;
@@ -106,7 +106,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
         this.listener = listener;
     }
 
-    public void setInputFormatChangedListener(InputFormatChangedListener inputFormatChangedListener) {
+    public void setInputFormatChangedListener(@Nullable InputFormatChangedListener inputFormatChangedListener) {
         this.inputFormatChangedListener = inputFormatChangedListener;
     }
 
