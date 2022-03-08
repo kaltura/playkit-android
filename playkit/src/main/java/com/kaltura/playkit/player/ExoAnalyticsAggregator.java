@@ -43,14 +43,30 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     private int renderedOutputBufferCount;
     private int skippedOutputBufferCount;
 
-    private PlayerEngine.AnalyticsListener listener;
-    private @Nullable InputFormatChangedListener inputFormatChangedListener;
+    @Nullable private PlayerEngine.AnalyticsListener listener;
+    @Nullable private InputFormatChangedListener inputFormatChangedListener;
 
     void reset() {
         totalDroppedFrames = 0;
         totalBytesLoaded = 0;
         renderedOutputBufferCount = 0;
         skippedOutputBufferCount = 0;
+    }
+
+    /**
+     * Listener for extra info. Being used to send the events
+     * @param listener listener for PlayerController
+     */
+    public void setListener(@Nullable PlayerEngine.AnalyticsListener listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * Listener to get the selected Video/Audio format by the Player
+     * @param inputFormatChangedListener listener for ExoPlayerWrapper
+     */
+    public void setInputFormatChangedListener(@Nullable InputFormatChangedListener inputFormatChangedListener) {
+        this.inputFormatChangedListener = inputFormatChangedListener;
     }
 
     @Override
@@ -100,14 +116,6 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
         if (listener != null) {
             listener.onLoadError(error, wasCanceled);
         }
-    }
-
-    public void setListener(PlayerEngine.AnalyticsListener listener) {
-        this.listener = listener;
-    }
-
-    public void setInputFormatChangedListener(@Nullable InputFormatChangedListener inputFormatChangedListener) {
-        this.inputFormatChangedListener = inputFormatChangedListener;
     }
 
     @Override // OKHTTTP
