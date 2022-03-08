@@ -2,7 +2,7 @@ language: android
 dist: trusty
 sudo: required
 jdk:
-  - openjdk8
+  - openjdk11
 android:
   components:
     - tools
@@ -10,6 +10,7 @@ android:
     - android-31
 before_script:
   - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
+  - wget https://github.com/sormuras/bach/blob/releases/11/install-jdk.sh && . ./install-jdk.sh -F 11 -L GPL
 script:
   - ./gradlew playkit:build
 after_failure:
