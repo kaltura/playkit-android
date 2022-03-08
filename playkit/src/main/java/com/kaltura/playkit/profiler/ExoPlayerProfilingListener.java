@@ -12,6 +12,7 @@ import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
+import com.kaltura.android.exoplayer2.TracksInfo;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
 import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
@@ -238,6 +239,11 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         Pair<PKPlayerErrorType, String> exceptionPair = PKPlaybackException.getPlaybackExceptionType(playbackException);
         String type = exceptionPair.first.toString();
         log("PlayerError", field("type", type), "cause={" + playbackException.getCause() + "}");
+    }
+
+    @Override
+    public void onTracksInfoChanged(EventTime eventTime, TracksInfo tracksInfo) {
+
     }
 
     @Override
