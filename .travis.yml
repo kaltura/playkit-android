@@ -1,8 +1,8 @@
 language: android
 dist: trusty
 sudo: required
-#jdk:
-#  - openjdk11
+jdk:
+  - openjdk11
 android:
   components:
     - tools
@@ -10,10 +10,6 @@ android:
     - android-31
 before_script:
   - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
-  - curl -s "https://get.sdkman.io" | bash
-  - source "$HOME/.sdkman/bin/sdkman-init.sh"
-  - sdk install java 11.0.12-open
-  - sdk use java 11.0.12-open
 script:
   - ./gradlew playkit:build
 after_failure:

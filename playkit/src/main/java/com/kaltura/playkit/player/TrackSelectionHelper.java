@@ -1582,7 +1582,6 @@ public class TrackSelectionHelper {
         TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
         if (!selectedIndices.isEmpty()) {
             if (rendererIndex == TRACK_TYPE_TEXT && selectedIndices.get(0) == TRACK_DISABLED) {
-                trackGroup = getTextTrackFormats();
                 selectedIndices.clear();
             }
 
@@ -1598,22 +1597,6 @@ public class TrackSelectionHelper {
             trackSelectionOverridesBuilder.clearOverride(trackGroup);
         }
         selector.setParameters(parametersBuilder);
-    }
-
-    /**
-     * Get all the track groups present
-     * In this method, we know that mapped track info
-     * has at least one text track
-     *
-     * @return TrackGroup having all the Text Formats
-     */
-    private TrackGroup getTextTrackFormats() {
-        TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(TRACK_TYPE_TEXT);
-        Format[] textFormats = new Format[trackGroupArray.length];
-        for (int i = 0; i < trackGroupArray.length; i++) {
-            textFormats[i] = trackGroupArray.get(i).getFormat(0);
-        }
-        return new TrackGroup(textFormats);
     }
 
     public void updateTrackSelectorParameter(PlayerSettings playerSettings, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
