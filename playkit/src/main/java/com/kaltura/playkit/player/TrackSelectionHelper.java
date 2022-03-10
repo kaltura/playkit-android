@@ -1582,6 +1582,8 @@ public class TrackSelectionHelper {
         TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
         if (!selectedIndices.isEmpty()) {
             if (rendererIndex == TRACK_TYPE_TEXT && selectedIndices.get(0) == TRACK_DISABLED) {
+                // Just clear the selected indices,
+                // it will let exoplayer know that no tracks from trackGroup should be played
                 selectedIndices.clear();
             }
 
