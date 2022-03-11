@@ -20,7 +20,6 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.common.collect.ImmutableList;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.RendererCapabilities;
@@ -196,7 +195,6 @@ public class TrackSelectionHelper {
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
     boolean prepareTracks(TracksInfo trackSelections, String externalThumbnailWebVttUrl, CustomDashManifest customDashManifest) {
-        clearCurrentTracksOverrides();
         tracksInfo = trackSelections;
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
@@ -1584,7 +1582,8 @@ public class TrackSelectionHelper {
         TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
         if (!selectedIndices.isEmpty()) {
             if (rendererIndex == TRACK_TYPE_TEXT && selectedIndices.get(0) == TRACK_DISABLED) {
-                trackGroup = getTextTrackFormats();
+                // Just clear the selected indices,
+                // it will let exoplayer know that no tracks from trackGroup should be played
                 selectedIndices.clear();
             }
 
@@ -1600,22 +1599,6 @@ public class TrackSelectionHelper {
             trackSelectionOverridesBuilder.clearOverride(trackGroup);
         }
         selector.setParameters(parametersBuilder);
-    }
-
-    /**
-     * Get all the track groups present
-     * In this method, we know that mapped track info
-     * has at least one text track
-     *
-     * @return TrackGroup having all the Text Formats
-     */
-    private TrackGroup getTextTrackFormats() {
-        TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(TRACK_TYPE_TEXT);
-        Format[] textFormats = new Format[trackGroupArray.length];
-        for (int i = 0; i < trackGroupArray.length; i++) {
-            textFormats[i] = trackGroupArray.get(i).getFormat(0);
-        }
-        return new TrackGroup(textFormats);
     }
 
     public void updateTrackSelectorParameter(PlayerSettings playerSettings, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
@@ -2041,37 +2024,8 @@ public class TrackSelectionHelper {
         currentVideoFormat = null;
         currentAudioFormat = null;
 
-        clearCurrentTracksOverrides();
-
         if (originalVideoTracks != null) {
             originalVideoTracks.clear();
-        }
-    }
-
-    /**
-     * For the current media, check if there is any track overrides
-     * Track overrides remain on `selector` and `trackSelectionOverridesBuilder` level
-     * not on `trackSelectionParameters` level.
-     *
-     * So before going to the next media, clear all those overrides otherwise
-     * the next media will not be playing because it has current overrides and will try
-     * to apply the same for the next media. Which internally may cause the incorrect track/period
-     * selection
-     */
-    private void clearCurrentTracksOverrides() {
-        if (selector != null && trackSelectionOverridesBuilder != null) {
-            ImmutableList<TrackSelectionOverrides.TrackSelectionOverride> trackOverridesList = selector.getParameters().trackSelectionOverrides.asList();
-            if (trackOverridesList.isEmpty()) {
-                log.d("There are no TrackSelection overrides, hence returning.");
-                return;
-            }
-
-            for (TrackSelectionOverrides.TrackSelectionOverride trackSelectionOverride : trackOverridesList) {
-                trackSelectionOverridesBuilder.clearOverride(trackSelectionOverride.trackGroup);
-            }
-
-            DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.buildUponParameters().setTrackSelectionOverrides(TrackSelectionOverrides.EMPTY);
-            selector.setParameters(parametersBuilder);
         }
     }
 

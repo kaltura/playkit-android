@@ -363,8 +363,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     log.v("nextAdBreakIndexForMonitoring = $nextAdBreakIndexForMonitoring")
                     log.v("adPlaybackTriggered = $adPlaybackTriggered")
                     log.v("event.position = ${event.position}")
-                    log.v("midrollFrequency = ${midrollFrequency}")
-                    log.v("midrollAdBreakPositionType = ${midrollAdBreakPositionType}")
+                    log.v("midrollFrequency = $midrollFrequency")
+                    log.v("midrollAdBreakPositionType = $midrollAdBreakPositionType")
                 }
 
                 if (!isPlayAdsAfterTimeConfigured && playerStartPosition > 0 && event.position < playerStartPosition) {
@@ -505,7 +505,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                 }
 
                 adPlaybackTriggered = false
-                log.d("Player seeked to position = ${seekedPosition}")
+                log.d("Player seeked to position = $seekedPosition")
                 if (midrollAdBreakPositionType == AdBreakPositionType.EVERY &&
                     midrollFrequency > Long.MIN_VALUE &&
                     seekedPosition > midrollFrequency &&
@@ -832,7 +832,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
 
             if (cuePointsList.isNotEmpty()) {
                 val adPosition: Long = cuePointsList[adIndex]
-                adsConfigMap?.let { adsMap ->
+                adsConfigMap?.let {
                     getAdPodConfigMap(adPosition)?.let {
                         if (it.adBreakPositionType == AdBreakPositionType.EVERY) {
                             // For EVERY based midrolls always send 'isTriggeredFromPlayerPosition' true
@@ -847,7 +847,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                             adUrl = fetchPlayableAdFromAdsList(it, false)
                             adUrl?.let {
                                 currentAdBreakIndexPosition = adIndex
-                                log.d("currentAdIndexPosition is ${currentAdBreakIndexPosition}")
+                                log.d("currentAdIndexPosition is $currentAdBreakIndexPosition")
                                 if (currentAdBreakIndexPosition < cuePointsList.size - 1 && adPosition != -1L) {
                                     // Update next Ad index for monitoring
                                     nextAdBreakIndexForMonitoring = currentAdBreakIndexPosition + 1
@@ -1023,7 +1023,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      */
     private fun changeAdState(adState: AdState, adRollType: AdRollType) {
         log.d("changeAdPodState AdState is $adState and AdrollType is $adRollType")
-        advertisingContainer?.let advertisingContainer@ { _ ->
+        advertisingContainer?.let advertisingContainer@ {
             cuePointsList?.let { cuePointsList ->
                 if (cuePointsList.isNotEmpty()) {
                     adsConfigMap?.let { adsMap ->
@@ -1326,7 +1326,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
         var podIndex = 0
         var podCount = 0
 
-        adsConfigMap?.let { adsMap ->
+        adsConfigMap?.let {
             cuePointsList?.let { cuePoints ->
                 adPodTimeOffset = cuePoints[currentAdBreakIndexPosition]
                 podIndex = currentAdBreakIndexPosition + 1
@@ -1407,11 +1407,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
      * Get the PKMediaEntry from PKMediaConfig
      */
     private fun getMediaEntry(): PKMediaEntry? {
-        return mediaConfig?.let { pkMediaConfig ->
-            pkMediaConfig.mediaEntry?.let { pkMediaEntry ->
-                pkMediaEntry
-            }
-        }
+        return mediaConfig?.mediaEntry
     }
 
     /**
@@ -1506,7 +1502,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             }
         }
 
-        log.d("Immediate Last Ad Position ${adPosition}")
+        log.d("Immediate Last Ad Position $adPosition")
         return adPosition
     }
 
@@ -1551,7 +1547,7 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
             }
         }
 
-        log.d("Immediate Next Ad Position ${adPosition}")
+        log.d("Immediate Next Ad Position $adPosition")
         return adPosition
     }
 }

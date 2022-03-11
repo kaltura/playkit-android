@@ -1,6 +1,5 @@
 package com.kaltura.android.exoplayer2.dashmanifestparser;
 
-
 import android.net.Uri;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -203,7 +202,7 @@ public abstract class CustomRepresentation {
                     new RangedUri(null, initializationStart, initializationEnd - initializationStart + 1);
             CustomSegmentBase.SingleSegmentBase segmentBase =
                     new CustomSegmentBase.SingleSegmentBase(rangedUri, 1, 0, indexStart, indexEnd - indexStart + 1);
-            List<BaseUrl> baseUrls = ImmutableList.of(new BaseUrl(uri));
+            ImmutableList<BaseUrl> baseUrls = ImmutableList.of(new BaseUrl(uri));
             return new SingleSegmentRepresentation(
                     revisionId,
                     format,

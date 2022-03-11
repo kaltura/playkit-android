@@ -48,7 +48,6 @@ import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
 import com.kaltura.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.kaltura.android.exoplayer2.source.MediaSource;
-import com.kaltura.android.exoplayer2.source.MediaSourceFactory;
 import com.kaltura.android.exoplayer2.source.MergingMediaSource;
 import com.kaltura.android.exoplayer2.source.ProgressiveMediaSource;
 import com.kaltura.android.exoplayer2.source.SingleSampleMediaSource;
@@ -132,7 +131,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private Timeline.Window window;
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
-    private MediaSourceFactory mediaSourceFactory;
+    private MediaSource.Factory mediaSourceFactory;
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE;
     private PlayerState previousState;
@@ -969,12 +968,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     @Override
-    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+    public void onPlaybackParametersChanged(@NonNull PlaybackParameters playbackParameters) {
         sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
     }
 
     @Override
-    public void onPositionDiscontinuity(Player.PositionInfo oldPosition, Player.PositionInfo newPosition, @Player.DiscontinuityReason int reason) {
+    public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition, @NonNull Player.PositionInfo newPosition, @Player.DiscontinuityReason int reason) {
         log.d("onPositionDiscontinuity reason = " + reason);
     }
 
@@ -982,8 +981,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     public void onTracksInfoChanged(@NonNull TracksInfo tracksInfo) {
         log.d("onTracksInfoChanged");
 
-        //if onTracksChanged happened when application went background, do not update the tracks.
-        if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
+        //if onTracksInfoChanged happened when application went background, do not update the tracks.
+        if (assertTrackSelectionIsNotNull("onTracksInfoChanged()")) {
 
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
@@ -1024,7 +1023,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     @Override
-    public void onMetadata(Metadata metadata) {
+    public void onMetadata(@NonNull Metadata metadata) {
         this.metadataList = MetadataConverter.convert(metadata);
         sendEvent(PlayerEvent.Type.METADATA_AVAILABLE);
     }
@@ -1370,7 +1369,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     @Override
     public void setAnalyticsListener(AnalyticsListener analyticsListener) {
         this.analyticsAggregator.setListener(analyticsListener);
-        this.analyticsAggregator.setInputFormatChangedListener(analyticsListener != null ? this : null);
+    }
+
+    @Override
+    public void setInputFormatChangedListener(Boolean enableListener) {
+        this.analyticsAggregator.setInputFormatChangedListener(enableListener != null ? this : null);
     }
 
     @Override

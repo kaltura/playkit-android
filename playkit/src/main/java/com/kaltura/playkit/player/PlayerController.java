@@ -523,9 +523,11 @@ public class PlayerController implements Player {
                         }
                     }
                 });
+                player.setInputFormatChangedListener(true);
             } else {
                 player.setEventListener(null);
                 player.setStateChangedListener(null);
+                player.setInputFormatChangedListener(null);
                 player.setAnalyticsListener(null);
             }
         }

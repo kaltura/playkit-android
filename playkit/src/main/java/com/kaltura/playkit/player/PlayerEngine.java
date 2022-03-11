@@ -260,6 +260,15 @@ public interface PlayerEngine {
 
     float getPlaybackRate();
 
+    /**
+     * Set the inputFormatChanged listener from AnalyticsListener
+     * This listener is being used to get Video and Audio format
+     * which is currently being played by the player.
+     *
+     * @param enableListener true to add / null to remove listener
+     */
+    default void setInputFormatChangedListener(Boolean enableListener) {}
+
     default void setProfiler(Profiler profiler) {}
 
     /**
