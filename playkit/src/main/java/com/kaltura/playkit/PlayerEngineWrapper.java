@@ -141,6 +141,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void setInputFormatChangedListener(Boolean enableListener) {
+        playerEngine.setInputFormatChangedListener(enableListener);
+    }
+
+    @Override
     public void release() {
         playerEngine.release();
     }

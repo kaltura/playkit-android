@@ -176,6 +176,11 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     }
 
     @Override
+    public void setInputFormatChangedListener(Boolean enableListener) {
+        super.setInputFormatChangedListener(enableListener);
+    }
+
+    @Override
     public void stop() {
         log.d("AdWrapper stop");
         if (adsProvider != null) {

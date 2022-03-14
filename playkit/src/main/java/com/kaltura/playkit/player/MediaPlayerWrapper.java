@@ -367,6 +367,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
+    public void setInputFormatChangedListener(Boolean enableListener) {
+        // Not implemented
+    }
+
+    @Override
     public void release() {
         log.d("release");
         appInBackground = true;
