@@ -202,6 +202,15 @@ public interface PlayerEngine {
     void setAnalyticsListener(AnalyticsListener analyticsListener);
 
     /**
+     * Set the inputFormatChanged listener from AnalyticsListener
+     * This listener is being used to get Video and Audio format
+     * which is currently being played by the player.
+     *
+     * @param enableListener true to add / null to remove listener
+     */
+    void setInputFormatChangedListener(Boolean enableListener);
+
+    /**
      * Release the current player.
      * Note, that {@link ExoPlayerWrapper} and {@link TrackSelectionHelper} objects, will be destroyed.
      * But first the last known playback position will be cached in order to restore it
@@ -259,15 +268,6 @@ public interface PlayerEngine {
     void setPlaybackRate(float rate);
 
     float getPlaybackRate();
-
-    /**
-     * Set the inputFormatChanged listener from AnalyticsListener
-     * This listener is being used to get Video and Audio format
-     * which is currently being played by the player.
-     *
-     * @param enableListener true to add / null to remove listener
-     */
-    default void setInputFormatChangedListener(Boolean enableListener) {}
 
     default void setProfiler(Profiler profiler) {}
 

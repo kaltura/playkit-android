@@ -1588,16 +1588,13 @@ public class TrackSelectionHelper {
             }
 
             TrackSelectionOverrides.TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverrides.TrackSelectionOverride(trackGroup, selectedIndices);
-
-            TrackSelectionOverrides trackSelectionOverrides = trackSelectionOverridesBuilder
-                    .setOverrideForType(trackSelectionOverride)
-                    .build();
-
-            parametersBuilder.setTrackSelectionOverrides(trackSelectionOverrides);
+            trackSelectionOverridesBuilder.setOverrideForType(trackSelectionOverride);
         } else {
-            //clear all the selections if the override is null.
+            //clear all the selections if selectedIndices are empty.
             trackSelectionOverridesBuilder.clearOverride(trackGroup);
         }
+
+        parametersBuilder.setTrackSelectionOverrides(trackSelectionOverridesBuilder.build());
         selector.setParameters(parametersBuilder);
     }
 
