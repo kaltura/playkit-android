@@ -172,7 +172,7 @@ public class PKDeviceCapabilities {
         return root;
     }
 
-    private boolean isKalturaPlayerAvailable() {
+    public static boolean isKalturaPlayerAvailable() {
         try {
             Class.forName( "com.kaltura.tvplayer.KalturaPlayer" );
             return true;

@@ -1,6 +1,13 @@
 package com.kaltura.playkit.player;
 
-// Sets the maximum allowed video width and height.
+/**
+ * This class is deprecated.
+ * Please Use {@link com.kaltura.playkit.Player.Settings#setABRSettings(ABRSettings)}
+ * to achieve this functionality.
+ *
+ * Sets the maximum allowed video width and height.
+ */
+@Deprecated
 public class PKMaxVideoSize {
 
     private int maxVideoWidth = Integer.MAX_VALUE;

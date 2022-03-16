@@ -14,6 +14,9 @@ package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.ads.PKAdInfo;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Created by gilad.nadav on 22/11/2016.
  */
@@ -37,6 +40,9 @@ public class AdInfo implements PKAdInfo {
     private String dealId;
     private String surveyUrl;
     private String traffickingParams;
+    private List<String> adWrapperCreativeIds;
+    private List<String> adWrapperIds;
+    private List<String> adWrapperSystems;
     private int adHeight;
     private int adWidth;
     private int mediaBitrate;
@@ -51,7 +57,9 @@ public class AdInfo implements PKAdInfo {
                   boolean isAdSkippable, long skipTimeOffset, String adContentType,
                   String adId, String adSystem, String creativeId, String creativeAdId,
                   String advertiserName, String dealId, String surveyUrl,
-                  String traffickingParams, int adHeight, int adWidth, int mediaBitrate,
+                  String traffickingParams, List<String> adWrapperCreativeIds,
+                  List<String> adWrapperIds, List<String> adWrapperSystems,
+                  int adHeight, int adWidth, int mediaBitrate,
                   int totalAdsInPod, int adIndexInPod, int currentPodIndex, int podCount,
                   boolean isBumper, long adPodTimeOffset) {
 
@@ -70,6 +78,9 @@ public class AdInfo implements PKAdInfo {
         this.dealId = dealId;
         this.surveyUrl = surveyUrl;
         this.traffickingParams = traffickingParams;
+        this.adWrapperCreativeIds = adWrapperCreativeIds;
+        this.adWrapperIds = adWrapperIds;
+        this.adWrapperSystems = adWrapperSystems;
         this.adHeight = adHeight;
         this.adWidth = adWidth;
         this.mediaBitrate = mediaBitrate;
@@ -175,6 +186,18 @@ public class AdInfo implements PKAdInfo {
 
     public String getTraffickingParams() {
         return traffickingParams;
+    }
+
+    public List<String> getAdWrapperCreativeIds() {
+        return adWrapperCreativeIds != null ? adWrapperCreativeIds : Collections.emptyList();
+    }
+
+    public List<String> getAdWrapperIds() {
+        return adWrapperIds != null ? adWrapperIds : Collections.emptyList();
+    }
+
+    public List<String> getAdWrapperSystems() {
+        return adWrapperSystems != null ? adWrapperSystems : Collections.emptyList();
     }
 
     @Override

@@ -12,9 +12,10 @@
 
 package com.kaltura.playkit.player;
 
-
 import android.content.Context;
+import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,25 +23,31 @@ import androidx.annotation.Nullable;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.RendererCapabilities;
+import com.kaltura.android.exoplayer2.TracksInfo;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomAdaptationSet;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomFormat;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomRepresentation;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
+import com.kaltura.android.exoplayer2.text.Subtitle;
+import com.kaltura.android.exoplayer2.text.webvtt.WebvttCueInfo;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
-import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
-import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.kaltura.android.exoplayer2.trackselection.TrackSelectionOverrides;
+import com.kaltura.android.exoplayer2.trackselection.TrackSelectionParameters;
+import com.kaltura.android.exoplayer2.util.Util;
+import com.kaltura.playkit.PKAbrFilter;
 import com.kaltura.playkit.PKAudioCodec;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PKVideoCodec;
+import com.kaltura.playkit.player.thumbnail.PKWebvttSubtitle;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
+import com.kaltura.playkit.player.thumbnail.VttThumbnailDownloader;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -48,10 +55,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static com.kaltura.android.exoplayer2.util.MimeTypes.AUDIO_AAC;
 import static com.kaltura.android.exoplayer2.util.MimeTypes.VIDEO_AV1;
@@ -69,7 +80,7 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
  * Created by anton.afanasiev on 22/11/2016.
  */
 
-class TrackSelectionHelper {
+public class TrackSelectionHelper {
 
     private static final PKLog log = PKLog.get("TrackSelectionHelper");
 
@@ -94,15 +105,19 @@ class TrackSelectionHelper {
 
     private final Context context;
     private final DefaultTrackSelector selector;
-    private TrackSelectionArray trackSelectionArray;
+    private TracksInfo tracksInfo;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
+    private TrackSelectionParameters trackSelectionParameters;
+    private TrackSelectionOverrides.Builder trackSelectionOverridesBuilder;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<VideoTrack> originalVideoTracks;
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
     private List<ImageTrack> imageTracks = new ArrayList<>();
-
+    private @Nullable Format currentVideoFormat;
+    private @Nullable Format currentAudioFormat;
+    private Map<Pair<Long,Long>, ThumbnailInfo> externalVttThumbnailRangesInfo;
 
     private Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
     private Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
@@ -154,12 +169,21 @@ class TrackSelectionHelper {
      * @param selector             The track selector.
      * @param lastSelectedTrackIds - last selected track id`s.
      */
-    TrackSelectionHelper(Context context, DefaultTrackSelector selector,
-                         String[] lastSelectedTrackIds) {
+    public TrackSelectionHelper(Context context, DefaultTrackSelector selector,
+                                String[] lastSelectedTrackIds) {
         this.context = context;
         this.selector = selector;
         this.lastSelectedTrackIds = lastSelectedTrackIds;
         this.requestedChangeTrackIds = Arrays.copyOf(lastSelectedTrackIds, lastSelectedTrackIds.length);
+        trackSelectionParameters = TrackSelectionParameters.getDefaults(context);
+        trackSelectionOverridesBuilder = trackSelectionParameters.trackSelectionOverrides.buildUpon();
+    }
+
+    public void setMappedTrackInfo(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
+        this.mappedTrackInfo = mappedTrackInfo;
+        if (playerSettings == null) {
+            this.playerSettings = new PlayerSettings();
+        }
     }
 
     /**
@@ -170,8 +194,8 @@ class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    boolean prepareTracks(TrackSelectionArray trackSelections, CustomDashManifest customDashManifest) {
-        trackSelectionArray = trackSelections;
+    boolean prepareTracks(TracksInfo trackSelections, String externalThumbnailWebVttUrl, CustomDashManifest customDashManifest) {
+        tracksInfo = trackSelections;
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
@@ -207,7 +231,7 @@ class TrackSelectionHelper {
             }
         }
 
-        PKTracks tracksInfo = buildTracks(rawImageTracks);
+        PKTracks tracksInfo = buildTracks(externalThumbnailWebVttUrl, rawImageTracks);
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
@@ -223,7 +247,7 @@ class TrackSelectionHelper {
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private PKTracks buildTracks(List<CustomFormat> rawImageTracks) {
+    public PKTracks buildTracks(String externalThumbnailWebVttUrl, List<CustomFormat> rawImageTracks) {
 
         clearTracksLists();
 
@@ -281,8 +305,8 @@ class TrackSelectionHelper {
                                 PKAudioCodec currentAudioTrackCodec = null;
                                 AudioTrack currentAudioTrack = null;
 
-                                if (format.language == null && format.codecs == null) {
-                                    if (playerSettings != null && playerSettings.mpgaAudioFormatEnabled() && format.id != null && format.id.matches("\\d+/\\d+")) {
+                                if (format.language == null && format.id != null && format.id.matches("\\d+/\\d+")) {
+                                    if (playerSettings != null && playerSettings.mpgaAudioFormatEnabled()) {
                                         currentAudioTrackCodec = PKAudioCodec.AAC;
                                         currentAudioTrack = new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false, currentAudioTrackCodec, AUDIO_AAC);
                                         audioTracks.add(currentAudioTrack);
@@ -303,8 +327,23 @@ class TrackSelectionHelper {
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
-                                if (format.language != null && hasExternalSubtitles && discardTextTrackOnPreference(format)) {
-                                    continue;
+                                if (format.language != null && hasExternalSubtitles) {
+                                    int selectionFlag = format.selectionFlags;
+                                    if (selector != null && (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH)) {
+                                        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
+
+                                        if (discardTextTrackOnPreference(format)) {
+                                            trackSelectionOverridesBuilder.clearOverride(trackGroup);
+                                            parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, true);
+                                            continue;
+                                        } else {
+                                            TrackSelectionOverrides.TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverrides.TrackSelectionOverride(trackGroup, Collections.singletonList(trackIndex));
+                                            TrackSelectionOverrides trackSelectionOverrides = trackSelectionOverridesBuilder.setOverrideForType(trackSelectionOverride).build();
+                                            parametersBuilder.setTrackSelectionOverrides(trackSelectionOverrides);
+                                        }
+
+                                        selector.setParameters(parametersBuilder);
+                                    }
                                 }
 
                                 if (CEA_608.equals(format.sampleMimeType)) {
@@ -323,46 +362,231 @@ class TrackSelectionHelper {
             }
         }
 
-        if (rawImageTracks != null && !rawImageTracks.isEmpty()) {
-            for (int trackIndex = 0; trackIndex < rawImageTracks.size(); trackIndex++) {
-                CustomFormat imageFormat = rawImageTracks.get(trackIndex);
-                CustomFormat.FormatThumbnailInfo formatThumbnailInfo = imageFormat.formatThumbnailInfo;
-                String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, trackIndex);
-                imageTracks.add(trackIndex, new DashImageTrack(uniqueId,
-                        imageFormat.id,
-                        imageFormat.bitrate,
-                        imageFormat.width,
-                        imageFormat.height,
-                        formatThumbnailInfo.tilesHorizontal,
-                        formatThumbnailInfo.tilesVertical,
-                        formatThumbnailInfo.segmentDuration * Consts.MILLISECONDS_MULTIPLIER,
-                        formatThumbnailInfo.imageTemplateUrl,
-                        formatThumbnailInfo.presentationTimeOffset,
-                        formatThumbnailInfo.timeScale,
-                        formatThumbnailInfo.startNumber,
-                        formatThumbnailInfo.endNumber
-                ));
-            }
-
-            if (NONE.equals(requestedChangeTrackIds[TRACK_TYPE_IMAGE])) {
-                log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
-                lastSelectedTrackIds[TRACK_TYPE_IMAGE] = imageTracks.get(0).getUniqueId();
-            }
+        if (!TextUtils.isEmpty(externalThumbnailWebVttUrl)) {
+            createVttThumbnailImageTrack(externalThumbnailWebVttUrl);
+        } else if (rawImageTracks != null && !rawImageTracks.isEmpty()) {
+            createDashThumbnailImageTracks(rawImageTracks);
         }
 
         //add disable option to the text tracks.
         maybeAddDisabledTextTrack();
+
+        // We intend to sort the video and audio tracks after filtration so that
+        // while taking the default track index. Indexing of track will not get any impact.
         videoTracks = filterVideoTracks();
-        //Leave only adaptive audio tracks for user selection.
+        Collections.sort(videoTracks);
+
+        //Leave only adaptive audio tracks for user selection if no extra config is set.
         ArrayList<AudioTrack> filteredAudioTracks = filterAdaptiveAudioTracks();
+        Collections.sort(filteredAudioTracks);
 
         int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks, lastSelectedTrackIds[TRACK_TYPE_VIDEO]);
         int defaultAudioTrackIndex = getDefaultTrackIndex(filteredAudioTracks, lastSelectedTrackIds[TRACK_TYPE_AUDIO]);
         int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[TRACK_TYPE_TEXT]);
         int defaultImageTrackIndex = getDefaultTrackIndex(imageTracks, lastSelectedTrackIds[TRACK_TYPE_IMAGE]);
 
-        Collections.sort(videoTracks);
         return new PKTracks(videoTracks, filteredAudioTracks, textTracks, imageTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex, defaultImageTrackIndex);
+    }
+
+    private void createDashThumbnailImageTracks(List<CustomFormat> rawImageTracks) {
+        for (int trackIndex = 0; trackIndex < rawImageTracks.size(); trackIndex++) {
+            CustomFormat imageFormat = rawImageTracks.get(trackIndex);
+            CustomFormat.FormatThumbnailInfo formatThumbnailInfo = imageFormat.formatThumbnailInfo;
+            String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, trackIndex);
+            imageTracks.add(trackIndex, new DashImageTrack(uniqueId,
+                    imageFormat.id,
+                    imageFormat.bitrate,
+                    imageFormat.width,
+                    imageFormat.height,
+                    formatThumbnailInfo.tilesHorizontal,
+                    formatThumbnailInfo.tilesVertical,
+                    formatThumbnailInfo.segmentDuration * Consts.MILLISECONDS_MULTIPLIER,
+                    formatThumbnailInfo.imageTemplateUrl,
+                    formatThumbnailInfo.presentationTimeOffset,
+                    formatThumbnailInfo.timeScale,
+                    formatThumbnailInfo.startNumber,
+                    formatThumbnailInfo.endNumber
+            ));
+        }
+
+        updateLastSelectedImageTrackIds();
+    }
+
+    private void createVttThumbnailImageTrack(String externalThumbnailWebVttUrl) {
+        externalVttThumbnailRangesInfo = new LinkedHashMap<>();
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        try {
+            Future<Subtitle> webVttThumbnails = executorService.submit(new VttThumbnailDownloader(externalThumbnailWebVttUrl));
+            if (webVttThumbnails != null) {
+                PKWebvttSubtitle vttSubtitle = (PKWebvttSubtitle) webVttThumbnails.get();
+                if (vttSubtitle != null) {
+                    List<WebvttCueInfo> webvttCueInfos = vttSubtitle.getCueInfos();
+                    if (webvttCueInfos != null && !webvttCueInfos.isEmpty()) {
+
+                        long firstThumbStartTime = webvttCueInfos.get(0).startTimeUs / Consts.MILLISECONDS_MULTIPLIER;
+                        long firstThumbEndTime = webvttCueInfos.get(0).endTimeUs / Consts.MILLISECONDS_MULTIPLIER;
+
+                        Uri uri = Uri.parse(externalThumbnailWebVttUrl);
+                        String baseUrl = uri.toString().replace(uri.getLastPathSegment(), "");
+
+                        for (int i = 0; i < webvttCueInfos.size(); i++) {
+                            Pair<Pair<Long, Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfos.get(i));
+                            if (thumbnailInfoPair == null) {
+                                continue;
+                            }
+
+                            externalVttThumbnailRangesInfo.put(new Pair<>(thumbnailInfoPair.first.first, thumbnailInfoPair.first.second), thumbnailInfoPair.second);
+                        }
+
+                        long imageDuration = firstThumbEndTime - firstThumbStartTime;
+                        List<Pair<Long, Long>> externalVttThumbnailRangesInfoKeySetList = new ArrayList<>(externalVttThumbnailRangesInfo.keySet());
+                        if (!externalVttThumbnailRangesInfoKeySetList.isEmpty()) {
+                            ThumbnailInfo firstThumbnailInfo = externalVttThumbnailRangesInfo.get(externalVttThumbnailRangesInfoKeySetList.get(0));
+                            if (firstThumbnailInfo != null) {
+
+                                int cols = getThumbnailColsCount(webvttCueInfos, baseUrl);
+                                cols = (cols > 0) ? cols : 1;
+
+                                int rows = getThumbnailRowsCount(webvttCueInfos, baseUrl);
+                                rows = (rows > 0) ? rows : 1;
+
+                                float width = (firstThumbnailInfo.getWidth() * (cols - 1)) <= 0 ? -1 : firstThumbnailInfo.getWidth() * (cols - 1);
+                                if (cols == 1) {
+                                    width = firstThumbnailInfo.getWidth();
+                                }
+
+                                float height = (firstThumbnailInfo.getHeight() * (rows - 1) <= 0) ? -1 : firstThumbnailInfo.getHeight() * (rows - 1);
+                                if (rows == 1) {
+                                    height = firstThumbnailInfo.getHeight();
+                                }
+
+                                imageDuration = (imageDuration * cols * rows);
+
+                                String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, 0);
+                                imageTracks.add(0, new ImageTrack(uniqueId, "externalVttThumbnail", -1, width, height, cols, rows, imageDuration, baseUrl));
+
+                                updateLastSelectedImageTrackIds();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch(Exception exception){
+            log.e("error " + exception.getMessage());
+        } finally{
+            executorService.shutdown();
+        }
+    }
+
+    private int getThumbnailColsCount(List<WebvttCueInfo> webvttCueInfos, String baseUrl) {
+        int cols = 0;
+        for (WebvttCueInfo webvttCueInfo : webvttCueInfos) {
+            Pair<Pair<Long, Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfo);
+
+            if (thumbnailInfoPair == null || thumbnailInfoPair.second == null) {
+                continue;
+            }
+
+            final ThumbnailInfo thumbnailInfoSecond = thumbnailInfoPair.second;
+
+            if (thumbnailInfoSecond.getHeight() == -1 || thumbnailInfoSecond.getWidth() == -1) {
+                break;
+            }
+
+            if (thumbnailInfoSecond.getX() == 0 && thumbnailInfoSecond.getY() == 0) {
+                cols++;
+            } else if (thumbnailInfoSecond.getX() > 0) {
+                cols++;
+            } else if (thumbnailInfoSecond.getX() == 0) {
+                break;
+            }
+        }
+        return cols;
+    }
+
+    private int getThumbnailRowsCount(List<WebvttCueInfo> webvttCueInfos, String baseUrl) {
+        int rows = 0;
+        boolean rowsFirst = true;
+        for (WebvttCueInfo webvttCueInfo : webvttCueInfos) {
+            Pair<Pair<Long, Long>, ThumbnailInfo> thumbnailInfoPair = getExternalVttThumbnailInfo(baseUrl, webvttCueInfo);
+
+            if (thumbnailInfoPair == null || thumbnailInfoPair.second == null) {
+                continue;
+            }
+
+            final ThumbnailInfo thumbnailInfoSecond = thumbnailInfoPair.second;
+            if (thumbnailInfoSecond.getHeight() == -1 || thumbnailInfoSecond.getWidth() == -1) {
+                break;
+            }
+
+            if (thumbnailInfoSecond.getX() == 0 && thumbnailInfoSecond.getY() == 0) {
+                if (rowsFirst) {
+                    rows++;
+                    rowsFirst = false;
+                } else {
+                    break;
+                }
+            } else if (thumbnailInfoSecond.getX() == 0) {
+                rows++;
+            }
+        }
+        return rows;
+    }
+
+    private void updateLastSelectedImageTrackIds() {
+        if (NONE.equals(requestedChangeTrackIds[TRACK_TYPE_IMAGE])) {
+            log.d("Image track changed to: " + requestedChangeTrackIds[TRACK_TYPE_IMAGE]);
+            lastSelectedTrackIds[TRACK_TYPE_IMAGE] = imageTracks.get(0).getUniqueId();
+        }
+    }
+
+    private Pair<Pair<Long,Long>, ThumbnailInfo> getExternalVttThumbnailInfo(String baseUrl, WebvttCueInfo cueInfo) {
+        if (cueInfo == null || TextUtils.isEmpty(cueInfo.cue.text)) {
+            return null;
+        }
+
+        String cueText = String.valueOf(cueInfo.cue.text);
+        String imageUrl = "";
+        long x = -1;
+        long y = -1;
+        long w = -1;
+        long h = -1;
+
+        if (!TextUtils.isEmpty(cueText)) {
+            String[] cueParts = cueText.split("#");
+            if (cueParts.length > 0) {
+                imageUrl = cueParts[0];
+                if (cueParts.length == 2 && cueParts[1].startsWith("xywh") && cueParts[1].contains("=")) {
+                    String[] xywh = cueParts[1].split("=")[1].split(",");
+                    if (xywh.length == 4) {
+                        x = Long.parseLong(xywh[0]);
+                        y = Long.parseLong(xywh[1]);
+                        w = Long.parseLong(xywh[2]);
+                        h = Long.parseLong(xywh[3]);
+                    }
+                }
+            }
+        }
+        long startTime = cueInfo.startTimeUs / Consts.MILLISECONDS_MULTIPLIER;
+        long endTime = cueInfo.endTimeUs / Consts.MILLISECONDS_MULTIPLIER;
+
+        if (imageUrl.startsWith("/")) {
+            imageUrl = imageUrl.replaceFirst("/", "");
+        }
+        String[] imageUrlSlices = imageUrl.split("/");
+
+        StringBuilder maybeRemoveString = new StringBuilder();
+        if (imageUrlSlices.length > 1) {
+            for (int i = 0 ; i < imageUrlSlices.length - 1 ; i++) {
+                maybeRemoveString.append("/").append(imageUrlSlices[i]).append("/");
+            }
+        }
+        if (!TextUtils.isEmpty(maybeRemoveString.toString()) && baseUrl.endsWith(maybeRemoveString.toString())) {
+            baseUrl = baseUrl.replace(maybeRemoveString.toString(), "");
+            baseUrl += "/";
+        }
+        ThumbnailInfo thumbnailInfo = new ThumbnailInfo(baseUrl + imageUrl, x, y, w, h);
+        return new Pair<>(new Pair<>(startTime, endTime), thumbnailInfo);
     }
 
     private boolean checkTracksUnavailability(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
@@ -391,23 +615,102 @@ class TrackSelectionHelper {
         return trackType;
     }
 
+    /**
+     * Get the language from format (Audio/Video)
+     * Convert the language to ISO3 language if required
+     *
+     * @param format Track's format
+     * @return String language
+     */
     private String getLanguageFromFormat(Format format) {
-        if (format.language == null) {
+        String language = format.language;
+        if (TextUtils.isEmpty(format.language)) {
             return LANGUAGE_UNKNOWN;
         }
-        return format.language;
+
+        if ((!C.LANGUAGE_UNDETERMINED.equals(language) &&
+                !isExternalSubtitle(format.language, format.sampleMimeType) &&
+                language.length() > 2) ||
+                isIso3LanguageRequired(format)) {
+
+            Locale locale = Util.SDK_INT >= 21 ? Locale.forLanguageTag(language) : new Locale(language);
+
+            try {
+                String iso3Language = locale.getISO3Language();
+                if (isExternalSubtitle(format.language, format.sampleMimeType)) {
+                    // Append the mimetype to iso3language again with '-'
+                    String mimeType = getExternalSubtitleMimeType(format);
+                    if (!TextUtils.isEmpty(mimeType)) {
+                        iso3Language = iso3Language.concat(mimeType);
+                    }
+                }
+                return iso3Language;
+            } catch (MissingResourceException | NullPointerException ex) {
+                log.e(ex.getMessage());
+            }
+        }
+
+        return language;
     }
 
+    /**
+     * Check if the text track is external subtitle
+     *
+     * @param language track's langauge
+     * @param sampleMimeType track's mimeType
+     *
+     * @return boolean
+     */
     private boolean isExternalSubtitle(String language, String sampleMimeType) {
         return language != null && (language.contains("-" + sampleMimeType) || language.contains("-" + "Unknown"));
     }
 
+    /**
+     * Only used for External Subtitles
+     * Get the external subtitle language
+     *
+     * @param format External Subtitle's format
+     * @return String language
+     */
+    @Nullable
     private String getExternalSubtitleLanguage(Format format) {
         if (format.language != null) {
             return format.language.substring(0, format.language.indexOf("-"));
-        } else {
-            return null;
         }
+        return null;
+    }
+
+    /**
+     * Only used for External Subtitles
+     * If language length is greater than 2 then ISO3 code is required
+     *
+     * @return boolean if required
+     */
+    private boolean isIso3LanguageRequired(Format format) {
+        if (isExternalSubtitle(format.language, format.sampleMimeType)) {
+            String language = getExternalSubtitleLanguage(format);
+            return !C.LANGUAGE_UNDETERMINED.equals(language) && !TextUtils.isEmpty(language) && language.length() > 2;
+        }
+        return false;
+    }
+
+    /**
+     * Only used for External Subtitles
+     *
+     * We can not rely on Format's sample mimeType because
+     * for external subtitles we can concatenating 'unknown' as well
+     * in case if the mimeType is empty
+     *
+     * It includes '-' with the mimeType
+     *
+     * @return String subtitle mimeType
+     */
+    @Nullable
+    private String getExternalSubtitleMimeType(Format format) {
+        if (format.language != null) {
+            return format.language.substring(format.language.indexOf("-"));
+        }
+        return null;
     }
 
     private boolean discardTextTrackOnPreference(Format format) {
@@ -430,6 +733,7 @@ class TrackSelectionHelper {
         }
 
         if (subtitleListMap.containsKey(languageName) && subtitleListMap.get(languageName).size() > 1) {
+
             if ((subtitlePreference == PKSubtitlePreference.INTERNAL && isExternalSubtitle) ||
                     (subtitlePreference == PKSubtitlePreference.EXTERNAL && !isExternalSubtitle)) {
                 return true;
@@ -512,6 +816,8 @@ class TrackSelectionHelper {
                 } else if ((!atleastOneCodecSupportedInHardware || playerSettings.getPreferredVideoCodecSettings().isAllowSoftwareDecoder()) &&
                         (codecVideoTrack.getCodecName() != null && isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, true))) {
                     videoTracks.add(codecVideoTrack);
+                } else if (codecVideoTrack.getCodecName() == null && codecVideoTrack.getCodecType() == PKVideoCodec.AVC && codecVideoTrack.getBitrate() >= 0) {
+                    videoTracks.add(codecVideoTrack);
                 }
             }
         }
@@ -526,33 +832,65 @@ class TrackSelectionHelper {
     private ArrayList<AudioTrack> filterAdaptiveAudioTracks() {
         ArrayList<AudioTrack> filteredAudioTracks = new ArrayList<>();
 
-        AudioTrack audioTrack;
         int[] parsedUniqueId;
         int currentGroup = -1;
 
-        for (int i = 0; i < audioTracks.size(); i++) {
-            audioTrack = audioTracks.get(i);
+
+        boolean allowMixedCodecs = playerSettings.getPreferredAudioCodecSettings().getAllowMixedCodecs();
+        HashMap<String, Boolean> currentCodecMap = new HashMap<>();
+        for (AudioTrack audioTrack : audioTracks) {
             parsedUniqueId = parseUniqueId(audioTrack.getUniqueId());
 
-            if (parsedUniqueId[TRACK_INDEX] == TRACK_ADAPTIVE) {
+            if (parsedUniqueId[TRACK_INDEX] == TRACK_ADAPTIVE || (allowMixedCodecs && !currentCodecMap.containsKey(audioTrack.getCodecName()))) {
                 filteredAudioTracks.add(audioTrack);
                 currentGroup = parsedUniqueId[GROUP_INDEX];
+                if (allowMixedCodecs) {
+                    currentCodecMap.put(audioTrack.getCodecName(), parsedUniqueId[TRACK_INDEX] == TRACK_ADAPTIVE);
+                }
             } else if (parsedUniqueId[GROUP_INDEX] != currentGroup) {
                 filteredAudioTracks.add(audioTrack);
                 currentGroup = -1;
+            } else {
+                if (allowMixedCodecs) {
+                    Boolean isAdaptive = currentCodecMap.get(audioTrack.getCodecName());
+                    if (isAdaptive != null && !isAdaptive) {
+                        // check if same codec track is not adaptive
+                        filteredAudioTracks.add(audioTrack);
+                        currentGroup = -1;
+                    }
+                }
             }
         }
+        currentCodecMap.clear();
 
         AudioCodecSettings preferredAudioCodecSettings = playerSettings.getPreferredAudioCodecSettings();
-        if (preferredAudioCodecSettings.getAllowMixedCodecs()) {
+        if (preferredAudioCodecSettings.getAllowMixedCodecs() && preferredAudioCodecSettings.getAllowMixedBitrates()) {
+            return new ArrayList<>(audioTracks);
+        }
+
+        if (preferredAudioCodecSettings.getAllowMixedCodecs() && !preferredAudioCodecSettings.getAllowMixedBitrates()) {
             return filteredAudioTracks;
         }
 
-        List<PKAudioCodec> audioCodecList = new ArrayList<>(Arrays.asList(PKAudioCodec.E_AC3, PKAudioCodec.AC3, PKAudioCodec.OPUS, PKAudioCodec.AAC));
-
-        for (PKAudioCodec pkAudioCodec : audioCodecList) {
-            if (audioTracksCodecsMap.containsKey(pkAudioCodec)) {
-                return new ArrayList<>(audioTracksCodecsMap.get(pkAudioCodec));
+        if (audioTracksCodecsMap.size() > 1) {
+            for (PKAudioCodec pkAudioCodec : preferredAudioCodecSettings.getCodecPriorityList()) {
+                if (audioTracksCodecsMap.containsKey(pkAudioCodec) && audioTracksCodecsMap.get(pkAudioCodec) != null) {
+                    if (preferredAudioCodecSettings.getAllowMixedBitrates()) {
+                        ArrayList<AudioTrack> preferredCodecMixedBitrates = new ArrayList<>();
+                        for (AudioTrack audioTrack : audioTracks) {
+                            if (audioTrack.getCodecType() == pkAudioCodec) {
+                                preferredCodecMixedBitrates.add(audioTrack);
+                            }
+                        }
+                        return new ArrayList<>(preferredCodecMixedBitrates);
+                    } else {
+                        for (AudioTrack filteredTrack : filteredAudioTracks) {
+                            if (filteredTrack.getCodecType() == pkAudioCodec) {
+                                return new ArrayList<>(Collections.singletonList(filteredTrack));
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -600,20 +938,35 @@ class TrackSelectionHelper {
                 if (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
                     if (trackList.get(i) instanceof TextTrack && hasExternalSubtitlesInTracks && playerSettings.getSubtitlePreference() != PKSubtitlePreference.OFF) {
                         PKSubtitlePreference pkSubtitlePreference = playerSettings.getSubtitlePreference();
-                        ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_TEXT));
+                        Format selectedTextFormat = getSelectedTextTrackFormat();
+
+                        if (selectedTextFormat == null) {
+                            continue;
+                        }
 
                         // TrackSelection is giving the default tracks for video, audio and text.
                         // If trackSelection contains a text which is an external text track, it means that either internal text track
                         // does not contain any track or there is no default track in internal text track. If there is no internal text track then
                         // forcing the preference to be External.
-                        if (trackSelection != null && trackSelection.getSelectedFormat() != null &&
-                                isExternalSubtitle(trackSelection.getSelectedFormat().language, trackSelection.getSelectedFormat().sampleMimeType)) {
-                            pkSubtitlePreference = PKSubtitlePreference.EXTERNAL;
+
+                        String languageName = null;
+                        if (selectedTextFormat.language != null) {
+                            languageName = selectedTextFormat.language;
+
+                            if (!TextUtils.isEmpty(languageName) &&
+                                    selectedTextFormat.sampleMimeType != null &&
+                                    isExternalSubtitle(languageName, selectedTextFormat.sampleMimeType)) {
+                                pkSubtitlePreference = PKSubtitlePreference.EXTERNAL;
+                            }
                         }
 
                         TextTrack textTrack = (TextTrack) trackList.get(i);
                         boolean isExternalSubtitle = isExternalSubtitle(textTrack.getLanguage(), textTrack.getMimeType());
-                        if (isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.EXTERNAL) {
+
+                        if (subtitleListMap.containsKey(languageName) && subtitleListMap.get(languageName).size() == 1) {
+                            defaultTrackIndex = i;
+                            break;
+                        } else if (isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.EXTERNAL) {
                             defaultTrackIndex = i;
                             break;
                         } else if (!isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.INTERNAL) {
@@ -645,7 +998,12 @@ class TrackSelectionHelper {
                 Format format = trackGroup.getFormat(trackIndex);
 
                 String languageName = format.language;
-                if (isExternalSubtitle(format.language, format.sampleMimeType)) {
+                if (TextUtils.isEmpty(languageName)) {
+                    continue;
+                }
+
+                boolean isExternalSubtitle = isExternalSubtitle(languageName, format.sampleMimeType);
+                if (isExternalSubtitle) {
                     languageName = getExternalSubtitleLanguage(format);
                     hasExternalSubtitlesInTracks = true;
                 }
@@ -681,11 +1039,8 @@ class TrackSelectionHelper {
                 trackType = TRACK_TYPE_TEXT;
             }
 
-            if (trackType == TRACK_TYPE_AUDIO && trackSelectionArray != null && trackType < trackSelectionArray.length) {
-                ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(trackType));
-                if (trackSelection != null && trackSelection.getSelectedFormat() != null) {
-                    defaultTrackIndex = findDefaultTrackIndex(trackSelection.getSelectedFormat().language, trackList, defaultTrackIndex);
-                }
+            if (trackType == TRACK_TYPE_AUDIO && currentAudioFormat != null && tracksInfo != null) {
+                defaultTrackIndex = findDefaultTrackIndex(currentAudioFormat.language, trackList, defaultTrackIndex);
             }
         }
 
@@ -818,6 +1173,7 @@ class TrackSelectionHelper {
 
         int[] uniqueTrackId = validateUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+        int groupIndex = uniqueTrackId[GROUP_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = uniqueId;
 
@@ -834,12 +1190,18 @@ class TrackSelectionHelper {
             parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, uniqueTrackId[TRACK_INDEX] == TRACK_DISABLED);
         }
 
-
-        SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
-        overrideTrack(rendererIndex, override, parametersBuilder);
+        List<Integer> selectedTrackIndices = retrieveOverrideSelection(uniqueTrackId);
+        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices, parametersBuilder);
     }
 
     protected void overrideMediaVideoCodec() {
+
+        if (videoTracksCodecsMap.size() == 1) {
+            // No need to execute further as override track ignores the parameters given to the trackselector
+            // so elemenating this behaviour
+            // We will execute this only in case when video tracks have more than one type of video codec available
+            return;
+        }
 
         List<String> uniqueIds = getVideoTracksUniqueIds();
 
@@ -850,18 +1212,19 @@ class TrackSelectionHelper {
 
         int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+        int groupIndex = uniqueTrackId[GROUP_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
 
-        SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
-        overrideTrack(rendererIndex, override, parametersBuilder);
+        List<Integer> selectedTrackIndices = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
+        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices, parametersBuilder);
     }
 
-    protected void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+    protected void overrideMediaDefaultABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
 
-        List<String> uniqueIds = getCodecUniqueIdsWithABR(minVideoBitrate, maxVideoBitrate);
+        List<String> uniqueIds = getCodecUniqueIdsWithABR(minAbr, maxAbr, pkAbrFilter);
 
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
@@ -870,13 +1233,15 @@ class TrackSelectionHelper {
 
         int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+        int groupIndex = uniqueTrackId[GROUP_INDEX];
 
-        requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
+        requestedChangeTrackIds[rendererIndex] = (NONE.equals(lastSelectedTrackIds[rendererIndex])) ?
+                uniqueIds.get(0) : lastSelectedTrackIds[rendererIndex];
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
 
-        SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
-        overrideTrack(rendererIndex, override, parametersBuilder);
+        List<Integer> selectedTrackIndices = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
+        overrideTrack(rendererIndex,groupIndex, selectedTrackIndices, parametersBuilder);
     }
 
     private List<String> getVideoTracksUniqueIds() {
@@ -890,26 +1255,12 @@ class TrackSelectionHelper {
         return uniqueIds;
     }
 
-    private List<String> getCodecUniqueIdsWithABR(long minVideoBitrate, long maxVideoBitrate) {
+    private List<String> getCodecUniqueIdsWithABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
         List<String> uniqueIds = new ArrayList<>();
 
         boolean isValidABRRange = true;
 
         if (videoTracks != null && !videoTracks.isEmpty()) {
-
-            Collections.sort(videoTracks);
-            if (videoTracks.size() >= 2) {
-
-                long minBitrateInStream = videoTracks.get(1).getBitrate();
-                long maxBitrateInStream = videoTracks.get(videoTracks.size() - 1).getBitrate();
-
-                if ((minVideoBitrate > maxBitrateInStream) || (maxVideoBitrate < minBitrateInStream)) {
-                    isValidABRRange = false;
-                    String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
-                    PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
-                    tracksErrorListener.onTracksOverrideABRError(currentError);
-                }
-            }
 
             if (originalVideoTracks == null) {
                 originalVideoTracks = new ArrayList<>(videoTracks);
@@ -920,10 +1271,79 @@ class TrackSelectionHelper {
                 videoTracks.addAll(originalVideoTracks);
             }
 
+            Collections.sort(videoTracks);
+            if (videoTracks.size() >= 2) {
+                long minValueInStream;
+                long maxValueInStream;
+
+                switch (pkAbrFilter) {
+                    case HEIGHT:
+                        Collections.sort(videoTracks, new VideoTrack.HeightComparator());
+                        minValueInStream = videoTracks.get(1).getHeight();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getHeight();
+                        break;
+                    case WIDTH:
+                        Collections.sort(videoTracks, new VideoTrack.WidthComparator());
+                        minValueInStream = videoTracks.get(1).getWidth();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getWidth();
+                        break;
+                    case PIXEL:
+                        Collections.sort(videoTracks, new VideoTrack.PixelComparator());
+                        minValueInStream = videoTracks.get(1).getWidth() * videoTracks.get(1).getHeight();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getWidth() * videoTracks.get(videoTracks.size() - 1).getHeight();
+                        break;
+                    case NONE:
+                    default:
+                        minValueInStream = videoTracks.get(1).getBitrate();
+                        maxValueInStream = videoTracks.get(videoTracks.size() - 1).getBitrate();
+                        break;
+                }
+
+                if ((minAbr > maxValueInStream) || (maxAbr < minValueInStream)) {
+                    isValidABRRange = false;
+                    minAbr = Long.MIN_VALUE;
+                    maxAbr = Long.MAX_VALUE;
+                    pkAbrFilter = PKAbrFilter.NONE;
+                    String errorMessage = "given minVideo ABR or maxVideo ABR is invalid";
+                    PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
+                    tracksErrorListener.onTracksOverrideABRError(currentError);
+                }
+            }
+
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
+            int currentIndex = 0;
+            int originalVideoTrackSize = originalVideoTracks.size();
             while (videoTrackIterator.hasNext()) {
                 VideoTrack currentVideoTrack = videoTrackIterator.next();
-                if ((currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate)) {
+                long currentAbrSelectedValue;
+                long nextAbrSelectedValue;
+                // Get the next track from the originalVideoTrack list
+                int nextIndex = (currentIndex == originalVideoTrackSize - 1) ? -1 : currentIndex + 1;
+
+                switch (pkAbrFilter) {
+                    case HEIGHT:
+                        currentAbrSelectedValue = currentVideoTrack.getHeight();
+                        nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getHeight() : -1;
+                        break;
+                    case WIDTH:
+                        currentAbrSelectedValue = currentVideoTrack.getWidth();
+                        nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getWidth() : -1;
+                        break;
+                    case PIXEL:
+                        currentAbrSelectedValue = currentVideoTrack.getWidth() * currentVideoTrack.getHeight();
+                        nextAbrSelectedValue = nextIndex != -1 ?
+                                originalVideoTracks.get(nextIndex).getWidth() * originalVideoTracks.get(nextIndex).getHeight() :
+                                -1;
+                        break;
+                    case NONE:
+                    default:
+                        currentAbrSelectedValue = currentVideoTrack.getBitrate();
+                        nextAbrSelectedValue = nextIndex != -1 ? originalVideoTracks.get(nextIndex).getBitrate() : -1;
+                        break;
+                }
+
+                if ((currentAbrSelectedValue >= minAbr && currentAbrSelectedValue <= maxAbr) ||
+                        (nextAbrSelectedValue != -1 && minAbr > currentAbrSelectedValue && maxAbr < nextAbrSelectedValue)) {
                     uniqueIds.add(currentVideoTrack.getUniqueId());
                 } else {
                     if (currentVideoTrack.isAdaptive() || !isValidABRRange) {
@@ -932,18 +1352,21 @@ class TrackSelectionHelper {
                         videoTrackIterator.remove();
                     }
                 }
+
+                currentIndex++;
             }
         }
         return uniqueIds;
     }
 
-    private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
+    private List<Integer> retrieveOverrideSelectionList(int[][] uniqueIds) {
         if (uniqueIds == null || uniqueIds[0] == null) {
             throw new IllegalArgumentException("Track selection with uniqueId = null");
         }
 
         // Only for video tracks : RENDERER_INDEX is always 0 means video
-        SelectionOverride override;
+        List<Integer> selectedIndices = new ArrayList<>();
+
         int rendererIndex = uniqueIds[0][RENDERER_INDEX];
         int groupIndex = uniqueIds[0][GROUP_INDEX];
         int trackIndex = uniqueIds[0][TRACK_INDEX];
@@ -951,19 +1374,17 @@ class TrackSelectionHelper {
         boolean isAdaptive = trackIndex == TRACK_ADAPTIVE;
 
         if (uniqueIds.length == 1 && isAdaptive) {
-            override = overrideAutoABRTracks(rendererIndex, groupIndex);
+            selectedIndices.addAll(overrideAutoABRTracks(rendererIndex, groupIndex));
         } else if (uniqueIds.length > 1) {
-            override = overrideMediaDefaultABR(uniqueIds, rendererIndex, groupIndex);
+            selectedIndices.addAll(overrideMediaDefaultABR(uniqueIds, rendererIndex, groupIndex));
         } else {
-            override = new SelectionOverride(groupIndex, trackIndex);
+            selectedIndices.add(trackIndex);
         }
-        return override;
+        return selectedIndices;
     }
 
     @NonNull
-    private SelectionOverride overrideMediaDefaultABR(int[][] uniqueIds, int rendererIndex, int groupIndex) {
-        SelectionOverride override;
-        int[] adaptiveTrackIndexes;
+    private List<Integer> overrideMediaDefaultABR(int[][] uniqueIds, int rendererIndex, int groupIndex) {
         List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
 
         switch (rendererIndex) {
@@ -972,9 +1393,7 @@ class TrackSelectionHelper {
                 createAdaptiveTrackIndexList(uniqueIds, groupIndex, adaptiveTrackIndexesList);
                 break;
         }
-        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-        override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
-        return override;
+        return adaptiveTrackIndexesList;
     }
 
     private void createAdaptiveTrackIndexList(int[][] uniqueIds, int groupIndex, List<Integer> adaptiveTrackIndexesList) {
@@ -1036,9 +1455,8 @@ class TrackSelectionHelper {
      * @param uniqueId - the unique id of the track that will override the existing one.
      * @return - the {@link SelectionOverride} which will override the existing selection.
      */
-    private SelectionOverride retrieveOverrideSelection(int[] uniqueId) {
-
-        SelectionOverride override;
+    private List<Integer> retrieveOverrideSelection(int[] uniqueId) {
+        List<Integer> selectedIndices = new ArrayList<>();
 
         int rendererIndex = uniqueId[RENDERER_INDEX];
         int groupIndex = uniqueId[GROUP_INDEX];
@@ -1049,7 +1467,6 @@ class TrackSelectionHelper {
         if (isAdaptive) {
 
             List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
-            int[] adaptiveTrackIndexes;
 
             switch (rendererIndex) {
                 case TRACK_TYPE_VIDEO:
@@ -1096,19 +1513,17 @@ class TrackSelectionHelper {
                     break;
             }
 
-            adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
+            selectedIndices.addAll(adaptiveTrackIndexesList);
         } else {
-            override = new SelectionOverride(groupIndex, trackIndex);
+            selectedIndices.add(trackIndex);
         }
 
-        return override;
+        return selectedIndices;
     }
 
     @NonNull
-    private SelectionOverride overrideAutoABRTracks(int rendererIndex, int groupIndex) {
-        SelectionOverride override;List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
-        int[] adaptiveTrackIndexes;
+    private List<Integer> overrideAutoABRTracks(int rendererIndex, int groupIndex) {
+        List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
 
         switch (rendererIndex) {
             case TRACK_TYPE_VIDEO:
@@ -1147,26 +1562,39 @@ class TrackSelectionHelper {
                 break;
         }
 
-        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-        override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
-        return override;
+        return adaptiveTrackIndexesList;
     }
 
     /**
      * Actually doing the override action on the track.
      *
      * @param rendererIndex - renderer index on which we want to apply the change.
-     * @param override      - the new selection with which we want to override the currently active track.
+     * @param groupIndex - Group index of the track
+     * @param selectedIndices - Indexes of the tracks which are actually needs to be overrides.
+     *                        This index is of the selected `Format` inside the `mappedTrackInfo`
+     *                        Generally all the Formats come in one `Trackgroup` but for TEXT,
+     *                        it comes individual `TrackGroup` for each TEXT `Format`
+     *
+     * @param parametersBuilder `DefaultTrackSelector` parameter builder object
      */
-    private void overrideTrack(int rendererIndex, SelectionOverride override, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
-        if (override != null) {
-            //actually change track.
-            TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
-            parametersBuilder.setSelectionOverride(rendererIndex, trackGroups, override);
+    private void overrideTrack(int rendererIndex, int groupIndex, List<Integer> selectedIndices, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
+        //actually change track.
+        TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
+        if (!selectedIndices.isEmpty()) {
+            if (rendererIndex == TRACK_TYPE_TEXT && selectedIndices.get(0) == TRACK_DISABLED) {
+                // Just clear the selected indices,
+                // it will let exoplayer know that no tracks from trackGroup should be played
+                selectedIndices.clear();
+            }
+
+            TrackSelectionOverrides.TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverrides.TrackSelectionOverride(trackGroup, selectedIndices);
+            trackSelectionOverridesBuilder.setOverrideForType(trackSelectionOverride);
         } else {
-            //clear all the selections if the override is null.
-            parametersBuilder.clearSelectionOverrides(rendererIndex);
+            //clear all the selections if selectedIndices are empty.
+            trackSelectionOverridesBuilder.clearOverride(trackGroup);
         }
+
+        parametersBuilder.setTrackSelectionOverrides(trackSelectionOverridesBuilder.build());
         selector.setParameters(parametersBuilder);
     }
 
@@ -1177,12 +1605,6 @@ class TrackSelectionHelper {
 
         if (playerSettings.isTunneledAudioPlayback() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             parametersBuilder.setTunnelingEnabled(playerSettings.isTunneledAudioPlayback());
-        }
-        if (playerSettings.getMaxVideoSize() != null) {
-            parametersBuilder.setMaxVideoSize(playerSettings.getMaxVideoSize().getMaxVideoWidth(), playerSettings.getMaxVideoSize().getMaxVideoHeight());
-        }
-        if (playerSettings.getMaxVideoBitrate() != null) {
-            parametersBuilder.setMaxVideoBitrate(playerSettings.getMaxVideoBitrate());
         }
         if (playerSettings.getMaxAudioBitrate() != null) {
             parametersBuilder.setMaxAudioBitrate(playerSettings.getMaxAudioBitrate());
@@ -1196,6 +1618,7 @@ class TrackSelectionHelper {
     }
 
     public ThumbnailInfo getThumbnailInfo(long positionMS) {
+
         if (imageTracks.isEmpty()) {
             return null;
         }
@@ -1212,18 +1635,34 @@ class TrackSelectionHelper {
             return null;
         }
 
-        long seq = (long)Math.floor(positionMS / imageTrack.getDuration());
-        double offset = positionMS % imageTrack.getDuration();
-        int thumbIndex = (int) Math.floor((offset * imageTrack.getCols() * imageTrack.getRows()) / imageTrack.getDuration());
-        long seqIdx = seq + ((DashImageTrack)imageTrack).getStartNumber();
-        float imageWidth = imageTrack.getWidth() / imageTrack.getCols();
-        float imageHeight = imageTrack.getHeight() / imageTrack.getRows();
-        float imageX = (float) Math.floor(thumbIndex % imageTrack.getCols()) * imageWidth;
-        float imageY = (float) Math.floor(thumbIndex / imageTrack.getCols()) * imageHeight;
+        if (externalVttThumbnailRangesInfo == null) {
 
-        long imageRealUrlTime = ((seqIdx - 1) * imageTrack.getDuration());
-        String realImageUrl = imageTrack.getUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$",  String.valueOf(imageRealUrlTime));
-        return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
+            long seq = (long) Math.floor(positionMS * 1.0 / imageTrack.getDuration());
+            double offset = positionMS % imageTrack.getDuration();
+            int thumbIndex = (int) Math.floor((offset * imageTrack.getCols() * imageTrack.getRows()) / imageTrack.getDuration());
+            long seqIdx = seq + ((DashImageTrack) imageTrack).getStartNumber();
+            float imageWidth = imageTrack.getWidth() / imageTrack.getCols();
+            float imageHeight = imageTrack.getHeight() / imageTrack.getRows();
+            float imageX = (float) Math.floor(thumbIndex % imageTrack.getCols()) * imageWidth;
+            float imageY = (float) Math.floor(thumbIndex / imageTrack.getCols()) * imageHeight;
+
+            long imageRealUrlTime = ((seqIdx - 1) * imageTrack.getDuration());
+            String realImageUrl = imageTrack.getUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$", String.valueOf(imageRealUrlTime));
+            return new ThumbnailInfo(realImageUrl, imageX, imageY, imageWidth, imageHeight);
+        } else if (externalVttThumbnailRangesInfo.size() > 0) {
+
+            List<Pair<Long, Long>> keySetList = new ArrayList<>(externalVttThumbnailRangesInfo.keySet());
+
+            long thumbIndex = findImageIndex(keySetList, externalVttThumbnailRangesInfo.size(), positionMS);
+
+            if (thumbIndex > externalVttThumbnailRangesInfo.size() - 1) {
+                thumbIndex = externalVttThumbnailRangesInfo.size() - 1;
+            } else if (thumbIndex < 0) {
+                thumbIndex = 0;
+            }
+            return externalVttThumbnailRangesInfo.get(keySetList.get((int) thumbIndex));
+        }
+        return null;
     }
 
     /**
@@ -1287,7 +1726,7 @@ class TrackSelectionHelper {
 
     private boolean isFormatSupported(int rendererCount, int groupIndex, int trackIndex) {
         return mappedTrackInfo.getTrackSupport(rendererCount, groupIndex, trackIndex)
-                == Consts.FORMAT_HANDLED;
+                == C.FORMAT_HANDLED;
     }
 
     private boolean isAdaptive(int rendererIndex, int groupIndex) {
@@ -1411,6 +1850,8 @@ class TrackSelectionHelper {
         audioTracks.clear();
         textTracks.clear();
         imageTracks.clear();
+        currentVideoFormat = null;
+        currentAudioFormat = null;
         for (Map.Entry<PKVideoCodec,List<VideoTrack>> videoTrackEntry : videoTracksCodecsMap.entrySet()) {
             videoTrackEntry.getValue().clear();
         }
@@ -1420,72 +1861,89 @@ class TrackSelectionHelper {
         if (originalVideoTracks != null) {
             originalVideoTracks.clear();
         }
+        if (externalVttThumbnailRangesInfo != null) {
+            externalVttThumbnailRangesInfo.clear();
+            externalVttThumbnailRangesInfo = null;
+        }
     }
 
     protected void release() {
         tracksInfoListener.onRelease(lastSelectedTrackIds);
         tracksInfoListener = null;
+        trackSelectionParameters = null;
+        trackSelectionOverridesBuilder = null;
         clearTracksLists();
     }
 
     protected boolean isAudioOnlyStream() {
-        if (trackSelectionArray != null) {
-            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
-            return trackSelection == null;
+        if (tracksInfo != null && !tracksInfo.getTrackGroupInfos().isEmpty()) {
+            boolean isVideoFormatAvailable = false;
+            for (TracksInfo.TrackGroupInfo trackGroupInfo: tracksInfo.getTrackGroupInfos()) {
+                if (trackGroupInfo.getTrackType() == C.TRACK_TYPE_VIDEO) {
+                    isVideoFormatAvailable = true;
+                    break;
+                }
+            }
+            return !isVideoFormatAvailable;
         }
         return false;
     }
 
     protected long getCurrentVideoBitrate() {
-        if (trackSelectionArray != null) {
-            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_VIDEO));
-            if (trackSelection != null) {
-                return trackSelection.getSelectedFormat().bitrate;
-            }
-        }
-        return -1;
-    }
-
-    protected long getCurrentAudioBitrate() {
-        if (trackSelectionArray != null) {
-            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_AUDIO));
-            if (trackSelection != null) {
-                return trackSelection.getSelectedFormat().bitrate;
-            }
+        if (currentVideoFormat != null) {
+            return currentVideoFormat.bitrate;
         }
         return -1;
     }
 
     protected long getCurrentVideoWidth() {
-        if (trackSelectionArray != null) {
-            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_VIDEO));
-            if (trackSelection != null) {
-                return trackSelection.getSelectedFormat().width;
-            }
+        if (currentVideoFormat != null) {
+            return currentVideoFormat.width;
         }
         return -1;
     }
 
     protected long getCurrentVideoHeight() {
-        if (trackSelectionArray != null) {
-            ExoTrackSelection trackSelection = getTrackSelection(trackSelectionArray.get(TRACK_TYPE_VIDEO));
-            if (trackSelection != null) {
-                return trackSelection.getSelectedFormat().height;
-            }
+        if (currentVideoFormat != null) {
+            return currentVideoFormat.height;
         }
         return -1;
     }
 
-    private ExoTrackSelection getTrackSelection(TrackSelection trackSelection) {
-        if (trackSelection instanceof ExoTrackSelection) {
-            return (ExoTrackSelection) trackSelection;
+    protected long getCurrentAudioBitrate() {
+        if (currentAudioFormat != null) {
+            return currentAudioFormat.bitrate;
         }
+        return -1;
+    }
+
+    protected void setCurrentVideoFormat(@NonNull Format videoFormat) {
+        currentVideoFormat = videoFormat;
+    }
+
+    protected void setCurrentAudioFormat(@NonNull Format audioFormat) {
+        currentAudioFormat = audioFormat;
+    }
+
+    @Nullable
+    private Format getSelectedTextTrackFormat() {
+        if (tracksInfo != null && !tracksInfo.getTrackGroupInfos().isEmpty()) {
+
+            for (TracksInfo.TrackGroupInfo trackGroupInfo : tracksInfo.getTrackGroupInfos()) {
+                if (trackGroupInfo.getTrackType() == C.TRACK_TYPE_TEXT &&
+                        trackGroupInfo.isSelected() &&
+                        trackGroupInfo.getTrackGroup().length > 0) {
+                    return trackGroupInfo.getTrackGroup().getFormat(0);
+                }
+            }
+        }
+
         return null;
     }
 
-    protected void notifyAboutTrackChange(TrackSelectionArray trackSelections) {
+    protected void notifyAboutTrackChange(TracksInfo trackSelections) {
 
-        this.trackSelectionArray = trackSelections;
+        this.tracksInfo = trackSelections;
         if (tracksInfoListener == null) {
             return;
         }
@@ -1554,12 +2012,14 @@ class TrackSelectionHelper {
     protected void stop() {
         lastSelectedTrackIds = new String[]{NONE, NONE, NONE, NONE};
         requestedChangeTrackIds = new String[]{NONE, NONE, NONE, NONE};
-        trackSelectionArray = null;
+        tracksInfo = null;
         mappedTrackInfo = null;
         videoTracks.clear();
         audioTracks.clear();
         textTracks.clear();
         imageTracks.clear();
+        currentVideoFormat = null;
+        currentAudioFormat = null;
 
         if (originalVideoTracks != null) {
             originalVideoTracks.clear();
@@ -1756,8 +2216,10 @@ class TrackSelectionHelper {
                 (preferredTextTrackConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredTextTrackConfig.getTrackLanguage() == null));
     }
 
-    protected void applyPlayerSettings(PlayerSettings settings) {
-        this.playerSettings = settings;
+    public void applyPlayerSettings(PlayerSettings settings) {
+        if (settings != null) {
+            this.playerSettings = settings;
+        }
     }
 
     protected void hasExternalSubtitles(boolean hasExternalSubtitles) {
@@ -1792,8 +2254,28 @@ class TrackSelectionHelper {
         }
     }
 
+    private int findImageIndex(List<Pair<Long, Long>> sortedRangesList, int listSize, long positionMS)
+    {
+        int low = 0, high = listSize - 1;
 
+        // Binary search
+        while (low <= high)
+        {
+            // Find the mid element
+            int mid = (low + high) >> 1;
+            // If element is found
+            if (positionMS >= sortedRangesList.get(mid).first &&
+                    positionMS <= sortedRangesList.get(mid).second)
+                return mid;
 
-
-
+                // Check in first half
+            else if (positionMS < sortedRangesList.get(mid).first)
+                high = mid - 1;
+                // Check in second half
+            else
+                low = mid + 1;
+        }
+        // Not found
+        return -1;
+    }
 }

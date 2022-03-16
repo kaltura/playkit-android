@@ -2,12 +2,12 @@ language: android
 dist: trusty
 sudo: required
 jdk:
-  - oraclejdk8
+  - openjdk11
 android:
   components:
     - tools
-    - build-tools-28.0.3
-    - android-28
+    - build-tools-31.0.3
+    - android-31
 before_script:
   - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
 script:

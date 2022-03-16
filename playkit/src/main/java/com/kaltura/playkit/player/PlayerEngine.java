@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.player;
 
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.playkit.PKAbrFilter;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlaybackInfo;
@@ -132,10 +134,10 @@ public interface PlayerEngine {
     /**
      * Override media for video tracks with ABR
      *
-     * @param minVideoBitrate - minVideoBitrate.
-     * @param maxVideoBitrate - maxVideoBitrate.
+     * @param minAbr - min ABR Value.
+     * @param maxAbr - max ABR Value.
      */
-    void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate);
+    void overrideMediaDefaultABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter);
 
     /**
      * Override codec for video tracks when more than 1 codec is available.
@@ -154,7 +156,7 @@ public interface PlayerEngine {
      * Seek player to Live Default Position.
      *
      */
-    default void seekToDefaultPosition() {};
+    default void seekToDefaultPosition() {}
     
     /**
      * Start players playback from the specified position.
@@ -198,6 +200,15 @@ public interface PlayerEngine {
 
 
     void setAnalyticsListener(AnalyticsListener analyticsListener);
+
+    /**
+     * Set the inputFormatChanged listener from AnalyticsListener
+     * This listener is being used to get Video and Audio format
+     * which is currently being played by the player.
+     *
+     * @param enableListener true to add / null to remove listener
+     */
+    void setInputFormatChangedListener(Boolean enableListener);
 
     /**
      * Release the current player.
@@ -298,6 +309,8 @@ public interface PlayerEngine {
      * Must be called by application when Android onConfigurationChanged triggered by system.
      */
     void onOrientationChanged();
+
+    default void setDownloadCache(Cache downloadCache) {}
 
     default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
 

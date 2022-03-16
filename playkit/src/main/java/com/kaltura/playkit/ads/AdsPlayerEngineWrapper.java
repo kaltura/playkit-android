@@ -16,6 +16,7 @@ import android.content.Context;
 
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
@@ -32,11 +33,13 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     private AdsProvider adsProvider;
     private PKMediaSourceConfig mediaSourceConfig;
     private DefaultAdControllerImpl defaultAdController;
+    private DefaultAdvertisingControllerImpl defaultAdvertisingController;
 
     public AdsPlayerEngineWrapper(final Context context, AdsProvider adsProvider) {
         this.context = context;
         this.adsProvider = adsProvider;
         this.defaultAdController = new DefaultAdControllerImpl(adsProvider);
+        this.defaultAdvertisingController = new DefaultAdvertisingControllerImpl(adsProvider);
     }
 
     @Override
@@ -53,7 +56,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
                 adsProvider.setAdRequested(true); // need to prepare immediately
             }
 
-            if (preparePlayerForPlayback()) {
+            if (preparePlayerForPlayback() || preparePlayerForPlaybackIfLiveMedia()) {
                 log.d("AdWrapper calling super.prepare");
                 super.load(mediaSourceConfig);
             } else {
@@ -65,11 +68,23 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     private boolean preparePlayerForPlayback() {
 
-        return  (adsProvider.isAdRequested() && adsProvider.isForceSinglePlayerRequired()) ||
+        return (adsProvider.isAdRequested() && adsProvider.isForceSinglePlayerRequired()) ||
                 (adsProvider.isAdRequested() && (adsProvider.getCuePoints() == null || adsProvider.getAdInfo() == null)) ||
                 adsProvider.isAllAdsCompleted() || adsProvider.isAdError() || adsProvider.isAdDisplayed() ||
                 adsProvider.isAdRequested() && adsProvider.getCuePoints() != null && (!adsProvider.getCuePoints().hasPreRoll() || getCurrentPosition() > 0) ||
                 adsProvider.getPlaybackStartPosition() != null && adsProvider.getPlaybackStartPosition() > 0 && !adsProvider.isAlwaysStartWithPreroll();
+    }
+
+    /**
+     * This check is only for Live Medias
+     * Because for live media, player always seeks to live edge
+     * when app comes from background which results the getCurrentPosition to 0
+     *
+     * @return boolean player preparation required or not
+     */
+    private boolean preparePlayerForPlaybackIfLiveMedia() {
+        return isLiveMediaWithoutDvr() && getCurrentPosition() == 0 &&
+                adsProvider.isAdvertisingConfigured() && adsProvider.isAdRequested() && !adsProvider.isAdDisplayed();
     }
 
     @Override
@@ -120,6 +135,13 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         return super.getCurrentPosition();
     }
 
+    private boolean isLiveMediaWithoutDvr() {
+        if (mediaSourceConfig != null) {
+            return mediaSourceConfig.getMediaEntryType() == PKMediaEntry.MediaEntryType.Live;
+        }
+        return false;
+    }
+
     @Override
     public long getProgramStartTime() {
         return super.getProgramStartTime();
@@ -154,6 +176,11 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     }
 
     @Override
+    public void setInputFormatChangedListener(Boolean enableListener) {
+        super.setInputFormatChangedListener(enableListener);
+    }
+
+    @Override
     public void stop() {
         log.d("AdWrapper stop");
         if (adsProvider != null) {
@@ -168,6 +195,11 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         if (type == AdController.class && defaultAdController != null) {
             return (T) this.defaultAdController;
         }
+
+        if (type == AdvertisingController.class && defaultAdvertisingController != null) {
+            return (T) this.defaultAdvertisingController;
+        }
+
         return super.getController(type);
     }
 

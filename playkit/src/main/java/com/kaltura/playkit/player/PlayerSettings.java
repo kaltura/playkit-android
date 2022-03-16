@@ -12,7 +12,9 @@
 
 package com.kaltura.playkit.player;
 
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKRequestConfig;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
@@ -26,9 +28,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean isSurfaceSecured;
     private boolean cea608CaptionsEnabled;
     private boolean mpgaAudioFormatEnabled;
-    private boolean crossProtocolRedirectEnabled;
     private boolean enableDecoderFallback;
-    private boolean allowClearLead = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
@@ -39,31 +39,29 @@ public class PlayerSettings implements Player.Settings {
     private PKWakeMode wakeMode = PKWakeMode.NONE;
     private boolean handleAudioFocus;
     private PKSubtitlePreference subtitlePreference = PKSubtitlePreference.INTERNAL;
-    private Integer maxVideoBitrate;
     private Integer maxAudioBitrate;
     private int maxAudioChannelCount = -1;
 
+    private MulticastSettings multicastSettings = new MulticastSettings();
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
     private VRSettings vrSettings;
     private PKLowLatencyConfig pkLowLatencyConfig;
+    private PKRequestConfig pkRequestConfig = new PKRequestConfig();
     /**
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
      */
     private boolean forceSinglePlayerEngine = false;
-    private boolean forceWidevineL3Playback = false;
-
+    private DRMSettings drmSettings = new DRMSettings(PKDrmParams.Scheme.WidevineCENC);
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
     private PKMediaFormat preferredMediaFormat = PKMediaFormat.dash;
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
     private Object customLoadControlStrategy = null;
-    private PKMaxVideoSize maxVideoSize;
-
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -77,12 +75,8 @@ public class PlayerSettings implements Player.Settings {
         return useTextureView;
     }
 
-    public boolean crossProtocolRedirectEnabled() {
-        return crossProtocolRedirectEnabled;
-    }
-
     public boolean allowClearLead() {
-        return allowClearLead;
+        return (drmSettings != null) ? drmSettings.getAllowClearlead() : true;
     }
 
     public boolean enableDecoderFallback() {
@@ -119,6 +113,10 @@ public class PlayerSettings implements Player.Settings {
 
     public PKTrackConfig getPreferredAudioTrackConfig() {
         return preferredAudioTrackConfig;
+    }
+
+    public MulticastSettings getMulticastSettings() {
+        return multicastSettings;
     }
 
     public PKMediaFormat getPreferredMediaFormat() {
@@ -184,13 +182,7 @@ public class PlayerSettings implements Player.Settings {
     public PKSubtitlePreference getSubtitlePreference() {
         return subtitlePreference;
     }
-
-    public PKMaxVideoSize getMaxVideoSize() { return maxVideoSize; }
-
-    public Integer getMaxVideoBitrate() {
-        return maxVideoBitrate;
-    }
-
+    
     public Integer getMaxAudioBitrate() {
         return maxAudioBitrate;
     }
@@ -200,11 +192,22 @@ public class PlayerSettings implements Player.Settings {
     }
 
     public boolean isForceWidevineL3Playback() {
-        return forceWidevineL3Playback;
+        return (drmSettings != null) ? drmSettings.getIsForceWidevineL3Playback() : false;
+    }
+
+    public DRMSettings getDRMSettings() {
+        return drmSettings;
     }
 
     public PKLowLatencyConfig getPKLowLatencyConfig() {
         return pkLowLatencyConfig;
+    }
+
+    public PKRequestConfig getPKRequestConfig() {
+        if (pkRequestConfig == null) {
+            pkRequestConfig = new PKRequestConfig();
+        }
+        return pkRequestConfig;
     }
 
     @Override
@@ -272,16 +275,18 @@ public class PlayerSettings implements Player.Settings {
         this.preferredMediaFormat = preferredMediaFormat;
         return this;
     }
-
+    
     @Override
     public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
-        this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
+        getPKRequestConfig().setCrossProtocolRedirectEnabled(crossProtocolRedirectEnabled);
         return this;
     }
 
     @Override
     public Player.Settings allowClearLead(boolean allowClearLead) {
-        this.allowClearLead = allowClearLead;
+        if (drmSettings != null) {
+            drmSettings.setIsAllowClearlead(allowClearLead);
+        }
         return this;
     }
 
@@ -396,13 +401,21 @@ public class PlayerSettings implements Player.Settings {
 
     @Override
     public Player.Settings setMaxVideoSize(PKMaxVideoSize maxVideoSize) {
-        this.maxVideoSize = maxVideoSize;
+        ABRSettings abrSettings = getAbrSettings();
+        if (maxVideoSize != null &&
+                (abrSettings.getMaxVideoHeight() == Long.MAX_VALUE || abrSettings.getMaxVideoWidth() == Long.MAX_VALUE)) {
+            abrSettings.setMaxVideoHeight(maxVideoSize.getMaxVideoHeight());
+            abrSettings.setMaxVideoWidth(maxVideoSize.getMaxVideoWidth());
+        }
         return this;
     }
 
     @Override
     public Player.Settings setMaxVideoBitrate(Integer maxVideoBitrate) {
-        this.maxVideoBitrate = maxVideoBitrate;
+        ABRSettings abrSettings = getAbrSettings();
+        if (maxVideoBitrate > 0 && abrSettings.getMaxVideoBitrate() == Long.MAX_VALUE) {
+            abrSettings.setMaxVideoBitrate(maxVideoBitrate);
+        }
         return this;
     }
 
@@ -412,6 +425,7 @@ public class PlayerSettings implements Player.Settings {
         return this;
     }
 
+    
     @Override
     public Player.Settings setMaxAudioChannelCount(int maxAudioChannelCount) {
         this.maxAudioChannelCount = maxAudioChannelCount;
@@ -419,8 +433,24 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
+    public Player.Settings setMulticastSettings(MulticastSettings multicastSettings) {
+        if (multicastSettings != null) {
+            this.multicastSettings = multicastSettings;
+        }
+        return this;
+    }
+
+    @Override
     public Player.Settings forceWidevineL3Playback(boolean forceWidevineL3Playback) {
-        this.forceWidevineL3Playback = forceWidevineL3Playback;
+        if (drmSettings != null) {
+            drmSettings.setIsForceWidevineL3Playback(forceWidevineL3Playback);
+        }
+        return this;
+    }
+
+    @Override
+    public Player.Settings setDRMSettings(DRMSettings drmSettings) {
+        this.drmSettings = drmSettings;
         return this;
     }
 
@@ -428,6 +458,14 @@ public class PlayerSettings implements Player.Settings {
     public Player.Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
         if (pkLowLatencyConfig != null) {
             this.pkLowLatencyConfig = pkLowLatencyConfig;
+        }
+        return this;
+    }
+
+    @Override
+    public Player.Settings setPKRequestConfig(PKRequestConfig pkRequestConfig) {
+        if (pkRequestConfig != null) {
+            this.pkRequestConfig = pkRequestConfig;
         }
         return this;
     }

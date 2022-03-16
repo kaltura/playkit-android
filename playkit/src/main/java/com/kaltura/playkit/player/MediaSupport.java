@@ -55,6 +55,7 @@ public class MediaSupport {
     private static boolean initSucceeded;
     @Nullable private static Boolean widevineClassic;
     @Nullable private static Boolean widevineModular;
+    @Nullable private static Boolean playreadyCenc;
     @Nullable private static String securityLevel;
 
     public static final String DEVICE_CHIPSET = getDeviceChipset();
@@ -82,6 +83,10 @@ public class MediaSupport {
         if (widevineModular == null) {
             checkWidevineModular();
         }
+        
+        if (playreadyCenc == null) {
+            checkPlayreadyCenc();
+        }
     }
 
     /**
@@ -104,7 +109,7 @@ public class MediaSupport {
         try {
             checkWidevineClassic(context);
             checkWidevineModular();
-
+            checkPlayreadyCenc();
             initSucceeded = true;
 
             runCallback(drmInitCallback, hardwareDrm(), false, null);
@@ -132,6 +137,12 @@ public class MediaSupport {
         }
     }
 
+    private static void checkPlayreadyCenc() throws DrmNotProvisionedException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            playreadyCenc = FrameworkMediaDrm.isCryptoSchemeSupported(PLAYREADY_UUID);
+        }
+    }
+    
     public static void provisionWidevineL3() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             WidevineModularUtil.provisionWidevineL3();
@@ -164,6 +175,7 @@ public class MediaSupport {
         checkWidevineClassic(context);
         try {
             checkWidevineModular();
+            checkPlayreadyCenc();
         } catch (DrmNotProvisionedException e) {
             log.e("Widevine Modular needs provisioning");
         }
@@ -183,7 +195,7 @@ public class MediaSupport {
             schemes.add(PKDrmParams.Scheme.WidevineClassic);
         }
 
-        if (playReady()) {
+        if (playready()) {
             schemes.add(PKDrmParams.Scheme.PlayReadyCENC);
         }
 
@@ -240,11 +252,17 @@ public class MediaSupport {
         if (widevineModular()) {
             return WIDEVINE_SECURITY_LEVEL_1.equals(securityLevel);
         }
+
         return false;
     }
 
-    public static boolean playReady() {
-        return Boolean.FALSE;   // Not yet.
+    public static boolean playready() {
+        if (playreadyCenc == null) {
+            log.w("PlayreadyCenc DRM is not initialized; assuming not supported");
+            return false;
+        }
+
+        return playreadyCenc;
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)

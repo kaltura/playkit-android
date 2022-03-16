@@ -13,11 +13,11 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.media.MediaCodec;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
@@ -25,39 +25,38 @@ import com.google.common.base.Charsets;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
-import com.kaltura.android.exoplayer2.ExoPlaybackException;
+import com.kaltura.android.exoplayer2.ExoPlayer;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.MediaItem;
+import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
-import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
+import com.kaltura.android.exoplayer2.TracksInfo;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifestParser;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManagerProvider;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
+import com.kaltura.android.exoplayer2.extractor.ExtractorsFactory;
+import com.kaltura.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory;
+import com.kaltura.android.exoplayer2.extractor.ts.TsExtractor;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
-import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
 import com.kaltura.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.kaltura.android.exoplayer2.source.MediaSource;
-import com.kaltura.android.exoplayer2.source.MediaSourceFactory;
 import com.kaltura.android.exoplayer2.source.MergingMediaSource;
 import com.kaltura.android.exoplayer2.source.ProgressiveMediaSource;
 import com.kaltura.android.exoplayer2.source.SingleSampleMediaSource;
-import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
 import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParserForThumbnail;
 import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.ByteArrayDataSink;
@@ -65,13 +64,16 @@ import com.kaltura.android.exoplayer2.upstream.DataSource;
 import com.kaltura.android.exoplayer2.upstream.DataSpec;
 import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
 import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.kaltura.android.exoplayer2.upstream.DefaultDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.TeeDataSource;
 import com.kaltura.android.exoplayer2.upstream.TransferListener;
+import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
+import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
-
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
@@ -85,22 +87,23 @@ import java.io.IOException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
 import okhttp3.OkHttpClient;
 
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
-public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
+public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, MetadataOutput, BandwidthMeter.EventListener, ExoAnalyticsAggregator.InputFormatChangedListener {
 
     private ByteArrayDataSink dashLastDataSink;
     private String dashManifestString;
@@ -119,7 +122,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private ExoAnalyticsAggregator analyticsAggregator = new ExoAnalyticsAggregator();
 
     private Context context;
-    private SimpleExoPlayer player;
+    private ExoPlayer player;
     private BaseExoplayerView exoPlayerView;
     private PlayerView rootView;
     private boolean rootViewUpdated;
@@ -128,7 +131,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private Timeline.Window window;
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
-    private MediaSourceFactory mediaSourceFactory;
+    private MediaSource.Factory mediaSourceFactory;
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE;
     private PlayerState previousState;
@@ -156,12 +159,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
-    private ExternalTextTrackLoadErrorPolicy externalTextTrackLoadErrorPolicy;
+    private CustomLoadErrorHandlingPolicy customLoadErrorHandlingPolicy;
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
     private PKMediaSourceConfig sourceConfig;
     @NonNull private Profiler profiler = Profiler.NOOP;
 
     private Timeline.Period period;
+
+    private Cache downloadCache;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
         this(context, new ExoPlayerView(context), playerSettings, rootPlayerView);
@@ -197,7 +202,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private LoadControlStrategy getCustomLoadControlStrategy() {
         Object loadControlStrategyObj = playerSettings.getCustomLoadControlStrategy();
-        if (loadControlStrategyObj != null && loadControlStrategyObj instanceof LoadControlStrategy) {
+        if (loadControlStrategyObj instanceof LoadControlStrategy) {
             return ((LoadControlStrategy) loadControlStrategyObj);
         } else {
             return null;
@@ -217,11 +222,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
-        addExternalTextTrackErrorListener();
+        addCustomLoadErrorPolicy();
         mediaSourceFactory = new DefaultMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
-        mediaSourceFactory.setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy);
+        mediaSourceFactory.setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy);
 
-        player = new SimpleExoPlayer.Builder(context, renderersFactory)
+        player = new ExoPlayer.Builder(context, renderersFactory)
                 .setTrackSelector(trackSelector)
                 .setLoadControl(getUpdatedLoadControl())
                 .setMediaSourceFactory(mediaSourceFactory)
@@ -265,11 +270,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.v("setPlayerListeners");
         if (assertPlayerIsNotNull("setPlayerListeners()")) {
             player.addListener(this);
-            player.addMetadataOutput(this);
 
 //            PlaybackStatsListener playbackStatsListener  = new PlaybackStatsListener(true, new PlaybackStatsListener.Callback() {
 //                @Override
-//                public void onPlaybackStatsReady(com.kaltura.android.exoplayer2.analytics.AnalyticsListener.EventTime eventTime, PlaybackStats playbackStats) {
+//            public void onPlaybackStatsReady(com.kaltura.android.exoplayer2.analytics.AnalyticsListener.EventTime eventTime, PlaybackStats playbackStats) {
 //                    log.d("PlaybackStatsListener playbackCount = " + playbackStats.playbackCount);
 //                }
 //            });
@@ -307,7 +311,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         MediaSource mediaSource = null;
         MediaItem mediaItem = buildExoMediaItem(sourceConfig);
-        if (!isLocalMediaItem(sourceConfig) && !isLocalMediaSource(sourceConfig)) {
+        if (mediaItem != null && !isLocalMediaItem(sourceConfig) && !isLocalMediaSource(sourceConfig)) {
             mediaSource = buildInternalExoMediaSource(mediaItem, sourceConfig);
         }
 
@@ -374,38 +378,38 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             }
         }
 
+        if (isLocalMediaSource(sourceConfig) && sourceConfig.mediaSource.hasDrmParams()) {
+            drmSessionManager = getDeferredDRMSessionManager();
+            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+        }
+
         MediaItem mediaItem;
         if (isLocalMediaItem(sourceConfig)) {
-            final LocalAssetsManagerExo.LocalExoMediaItem pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaItem) sourceConfig.mediaSource;
+            LocalAssetsManagerExo.LocalExoMediaItem pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaItem) sourceConfig.mediaSource;
             mediaItem = pkMediaSource.getExoMediaItem();
         } else {
-            if (isLocalMediaSource(sourceConfig) && sourceConfig.mediaSource.hasDrmParams()) {
-                drmSessionManager = getDeferredDRMSessionManager();
-                drmSessionManager.setMediaSource(sourceConfig.mediaSource);
-            }
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
         }
 
-        if (mediaItem.playbackProperties != null) {
-            MediaItem.DrmConfiguration drmConfiguration = mediaItem.playbackProperties.drmConfiguration;
+        if (mediaItem == null) {
+            return mediaItem;
+        }
+
+        if (mediaItem.localConfiguration != null) {
+            MediaItem.DrmConfiguration drmConfiguration = mediaItem.localConfiguration.drmConfiguration;
             if (!(sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource) &&
                     drmConfiguration != null &&
                     drmConfiguration.licenseUri != null &&
                     !TextUtils.isEmpty(drmConfiguration.licenseUri.toString())) {
-                drmSessionManager = getDeferredDRMSessionManager();
-                drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
+                if (playerSettings.getDRMSettings().getDrmScheme() != PKDrmParams.Scheme.PlayReadyCENC) {
+                    drmSessionManager = getDeferredDRMSessionManager();
+                    drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
+                }
             }
         }
 
         if (drmSessionManager != null) {
-            DrmSessionManagerProvider drmSessionManagerProvider = drmMediaItem -> {
-                if (sourceConfig.mediaSource.hasDrmParams()) {
-                    return drmSessionManager;
-                } else {
-                    return DrmSessionManager.DRM_UNSUPPORTED;
-                }
-            };
-            mediaSourceFactory.setDrmSessionManagerProvider(drmSessionManagerProvider);
+            mediaSourceFactory.setDrmSessionManagerProvider(getDrmSessionManagerProvider(sourceConfig.mediaSource));
         }
 
         return mediaItem;
@@ -414,6 +418,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private DeferredDrmSessionManager getDeferredDRMSessionManager() {
         final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
         return new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead(), playerSettings.isForceWidevineL3Playback());
+    }
+
+    private DrmSessionManagerProvider getDrmSessionManagerProvider(PKMediaSource pkMediaSource) {
+        return drmMediaItem -> {
+            if (pkMediaSource.hasDrmParams()) {
+                return drmSessionManager;
+            } else {
+                return DrmSessionManager.DRM_UNSUPPORTED;
+            }
+        };
     }
 
     private MediaSource buildInternalExoMediaSource(MediaItem mediaItem, PKMediaSourceConfig sourceConfig) {
@@ -432,10 +446,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         PKRequestParams requestParams = sourceConfig.getRequestParams();
         final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
-
         MediaSource mediaSource;
         switch (format) {
             case dash:
+
                 final DataSource.Factory teedDtaSourceFactory = () -> {
                     dashManifestString = null;
                     dashLastDataSink = new ByteArrayDataSink();
@@ -467,6 +481,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                             }
 
                             byte[] bytes = dashLastDataSink.getData();
+                            if (bytes == null) {
+                                return;
+                            }
+
                             dashManifestString = new String(bytes, Charsets.UTF_8);
                             //log.d("teeDataSource manifest  " + dashManifestString);
                         }
@@ -474,15 +492,21 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     return teeDataSource;
                 };
 
-                mediaSource = new DashMediaSource.Factory(
+                DashMediaSource.Factory dashMediaSourceFactory = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), teedDtaSourceFactory)
-                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.DRM_UNSUPPORTED)
                         .setManifestParser(new DashManifestParserForThumbnail())
-                        .createMediaSource(mediaItem);
+                        .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy);
+
+                if (playerSettings.getDRMSettings().getDrmScheme() != PKDrmParams.Scheme.PlayReadyCENC) {
+                    dashMediaSourceFactory.setDrmSessionManagerProvider(getDrmSessionManagerProvider(sourceConfig.mediaSource));
+                }
+                mediaSource = dashMediaSourceFactory.createMediaSource(mediaItem);
                 break;
 
             case hls:
                 mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
+                        .setDrmSessionManagerProvider(getDrmSessionManagerProvider(sourceConfig.mediaSource))
+                        .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
                         .createMediaSource(mediaItem);
                 break;
 
@@ -490,14 +514,33 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             case mp4:
             case mp3:
                 mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
                         .createMediaSource(mediaItem);
+                break;
+
+            case udp:
+                MulticastSettings multicastSettings = (playerSettings != null) ? playerSettings.getMulticastSettings() : new MulticastSettings();
+                if (multicastSettings.getUseExoDefaultSettings()) {
+                    mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                            .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
+                            .createMediaSource(mediaItem);
+                } else {
+                    DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(multicastSettings.getMaxPacketSize(), multicastSettings.getSocketTimeoutMillis());
+                    ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[]{
+                            new TsExtractor(multicastSettings.getExtractorMode().mode,
+                                    new TimestampAdjuster(multicastSettings.getFirstSampleTimestampUs()), new DefaultTsPayloadReaderFactory())
+                    };
+                    mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
+                            .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
+                            .createMediaSource(mediaItem);
+                }
                 break;
 
             default:
                 throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
         }
+
         if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
-            removeExternalTextTrackListener();
             return mediaSource;
         } else {
             addExternalTextTrackErrorListener();
@@ -513,7 +556,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private MediaSource[] buildMediaSourceList(MediaSource mediaSource, List<PKExternalSubtitle> externalSubtitleList) {
         List<MediaSource> streamMediaSources = new ArrayList<>();
-        List<MediaItem.Subtitle> mediaItemSubtitles = buildSubtitlesList(externalSubtitleList);
+        List<MediaItem.SubtitleConfiguration> mediaItemSubtitles = buildSubtitlesList(externalSubtitleList);
         if (externalSubtitleList != null && externalSubtitleList.size() > 0) {
             for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
                 MediaSource subtitleMediaSource = buildExternalSubtitleSource(mediaItemSubtitles.get(subtitlePosition));
@@ -532,60 +575,65 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
      */
 
     @NonNull
-    private MediaSource buildExternalSubtitleSource(MediaItem.Subtitle mediaItemSubtitle) {
+    private MediaSource buildExternalSubtitleSource(MediaItem.SubtitleConfiguration mediaItemSubtitle) {
         return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
-                .setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy)
+                .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
                 .setTreatLoadErrorsAsEndOfStream(true)
                 .createMediaSource(mediaItemSubtitle, C.TIME_UNSET);
     }
 
-    private void removeExternalTextTrackListener() {
-        if (externalTextTrackLoadErrorPolicy != null) {
-            externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(null);
-            externalTextTrackLoadErrorPolicy = null;
+    private void removeCustomLoadErrorPolicy() {
+        if (customLoadErrorHandlingPolicy != null) {
+            customLoadErrorHandlingPolicy.setOnTextTrackErrorListener(null);
+            customLoadErrorHandlingPolicy = null;
+        }
+    }
+
+    private void addCustomLoadErrorPolicy() {
+        if (customLoadErrorHandlingPolicy == null) {
+            customLoadErrorHandlingPolicy = new CustomLoadErrorHandlingPolicy(playerSettings.getPKRequestConfig().getMaxRetries());
         }
     }
 
     private void addExternalTextTrackErrorListener() {
-        if (externalTextTrackLoadErrorPolicy == null) {
-            externalTextTrackLoadErrorPolicy = new ExternalTextTrackLoadErrorPolicy();
-            externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(err -> {
-                currentError = err;
-                if (eventListener != null) {
-                    log.e("Error-Event sent, type = " + currentError.errorType);
-                    eventListener.onEvent(PlayerEvent.Type.ERROR);
-                }
-            });
-        }
+        addCustomLoadErrorPolicy();
+        customLoadErrorHandlingPolicy.setOnTextTrackErrorListener(err -> {
+            currentError = err;
+            if (eventListener != null) {
+                log.e("Error-Event sent, type = " + currentError.errorType);
+                eventListener.onEvent(PlayerEvent.Type.ERROR);
+            }
+        });
     }
 
     private MediaItem buildInternalExoMediaItem(PKMediaSourceConfig sourceConfig, List<PKExternalSubtitle> externalSubtitleList) {
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
         PKRequestParams requestParams = sourceConfig.getRequestParams();
 
-        if (format == null) {
-            throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
+        if (format == null || TextUtils.isEmpty(requestParams.url.toString())) {
+            return null; // No MediaItem will be created and returning null will send SOURCE_ERROR with Fatal severity
         }
+
+        MediaItem.ClippingConfiguration clippingConfiguration = new MediaItem.ClippingConfiguration
+                .Builder()
+                .setStartPositionMs(0L)
+                .setEndPositionMs(C.TIME_END_OF_SOURCE)
+                .build();
 
         Uri uri = requestParams.url;
         MediaItem.Builder builder =
                 new MediaItem.Builder()
                         .setUri(uri)
                         .setMimeType(format.mimeType)
-                        .setSubtitles(buildSubtitlesList(externalSubtitleList))
-                        .setClipStartPositionMs(0L)
-                        .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
+                        .setSubtitleConfigurations(buildSubtitlesList(externalSubtitleList))
+                        .setClippingConfiguration(clippingConfiguration);
 
-        if (playerSettings.getPKLowLatencyConfig() != null &&
-                (isLiveMediaWithDvr() || isLiveMediaWithoutDvr())) {
-            builder.setLiveTargetOffsetMs(playerSettings.getPKLowLatencyConfig().getTargetOffsetMs())
-                    .setLiveMinOffsetMs(playerSettings.getPKLowLatencyConfig().getMinOffsetMs())
-                    .setLiveMaxOffsetMs(playerSettings.getPKLowLatencyConfig().getMaxOffsetMs())
-                    .setLiveMinPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed())
-                    .setLiveMaxPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed());
+        if (playerSettings.getPKLowLatencyConfig() != null && (isLiveMediaWithDvr() || isLiveMediaWithoutDvr())) {
+            MediaItem.LiveConfiguration lowLatencyConfiguration = getLowLatencyConfigFromPlayerSettings();
+            builder.setLiveConfiguration(lowLatencyConfiguration);
         }
 
-        if (format == PKMediaFormat.dash && sourceConfig.mediaSource.hasDrmParams()) {
+        if ((format == PKMediaFormat.dash || format == PKMediaFormat.hls) && sourceConfig.mediaSource.hasDrmParams()) {
             setMediaItemBuilderDRMParams(sourceConfig, builder);
         } else  if (format == PKMediaFormat.udp) {
             builder.setMimeType(null);
@@ -593,9 +641,33 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return builder.build();
     }
 
+    @NonNull
+    private MediaItem.LiveConfiguration getLowLatencyConfigFromPlayerSettings() {
+        MediaItem.LiveConfiguration.Builder liveConfigurationBuilder = new MediaItem.LiveConfiguration.Builder();
+
+        if (playerSettings.getPKLowLatencyConfig().getTargetOffsetMs() > 0) {
+            liveConfigurationBuilder.setTargetOffsetMs(playerSettings.getPKLowLatencyConfig().getTargetOffsetMs());
+        }
+        if (playerSettings.getPKLowLatencyConfig().getMinOffsetMs() > 0) {
+            liveConfigurationBuilder.setMinOffsetMs(playerSettings.getPKLowLatencyConfig().getMinOffsetMs());
+        }
+        if (playerSettings.getPKLowLatencyConfig().getMaxOffsetMs() > 0) {
+            liveConfigurationBuilder.setMaxOffsetMs(playerSettings.getPKLowLatencyConfig().getMaxOffsetMs());
+        }
+        if (playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed() > 0) {
+            liveConfigurationBuilder.setMinPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed());
+        }
+        if (playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed() > 0) {
+            liveConfigurationBuilder.setMaxPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed());
+        }
+
+        return liveConfigurationBuilder.build();
+    }
+
     private void setMediaItemBuilderDRMParams(PKMediaSourceConfig sourceConfig, MediaItem.Builder builder) {
-        // selecting WidevineCENC as default right now
-        PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
+        PKDrmParams.Scheme scheme = playerSettings.getDRMSettings().getDrmScheme();
+        log.d("PKDrmParams.Scheme = " + scheme);
+
         String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
 
         if (licenseUri != null) {
@@ -606,13 +678,17 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             }
 
             Map<String, String> licenseRequestParamsHeaders = licenseRequestParams.headers;
+            UUID uuid = (scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID;
 
-            builder
-                    .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
-                    .setDrmLicenseUri(licenseUri)
-                    .setDrmMultiSession(false)
-                    .setDrmForceDefaultLicenseUri(false)
-                    .setDrmLicenseRequestHeaders(licenseRequestParamsHeaders);
+            MediaItem.DrmConfiguration drmConfiguration = new MediaItem.DrmConfiguration
+                    .Builder(uuid)
+                    .setLicenseUri(licenseUri)
+                    .setMultiSession(playerSettings.getDRMSettings().getIsMultiSession())
+                    .setForceDefaultLicenseUri(playerSettings.getDRMSettings().getIsForceDefaultLicenseUri())
+                    .setLicenseRequestHeaders(licenseRequestParamsHeaders)
+                    .build();
+
+            builder.setDrmConfiguration(drmConfiguration);
         }
     }
 
@@ -631,14 +707,26 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return licenseUrl;
     }
 
-    private List<MediaItem.Subtitle> buildSubtitlesList(List<PKExternalSubtitle> externalSubtitleList) {
-        List<MediaItem.Subtitle> subtitleList = new ArrayList<>();
+    private List<MediaItem.SubtitleConfiguration> buildSubtitlesList(List<PKExternalSubtitle> externalSubtitleList) {
+        List<MediaItem.SubtitleConfiguration> subtitleList = new ArrayList<>();
 
         if (externalSubtitleList != null && externalSubtitleList.size() > 0) {
             for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
                 PKExternalSubtitle pkExternalSubtitle = externalSubtitleList.get(subtitlePosition);
                 String subtitleMimeType = pkExternalSubtitle.getMimeType() == null ? "Unknown" : pkExternalSubtitle.getMimeType();
-                MediaItem.Subtitle subtitleMediaItem = new MediaItem.Subtitle(Uri.parse(pkExternalSubtitle.getUrl()), subtitleMimeType, pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType, pkExternalSubtitle.getSelectionFlags(), pkExternalSubtitle.getRoleFlag(), pkExternalSubtitle.getLabel());
+
+                MediaItem.SubtitleConfiguration.Builder builder = new MediaItem.SubtitleConfiguration.Builder(Uri.parse(pkExternalSubtitle.getUrl()));
+                builder.setMimeType(subtitleMimeType);
+
+                // "-" is important to be added between lang and mimetype
+                // This is how we understand that this is external subtitle in TrackSelectionHelper
+                builder.setLanguage(pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType);
+
+                builder.setSelectionFlags(pkExternalSubtitle.getSelectionFlags());
+                builder.setRoleFlags(pkExternalSubtitle.getRoleFlag());
+                builder.setLabel(pkExternalSubtitle.getLabel());
+
+                MediaItem.SubtitleConfiguration subtitleMediaItem = builder.build();
                 subtitleList.add(subtitleMediaItem);
             }
         }
@@ -648,7 +736,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
-        final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
+
+        final PKRequestConfig pkRequestConfig = playerSettings.getPKRequestConfig();
+        final int connectTimeout = pkRequestConfig.getConnectTimeoutMs();
+        final int readTimeout = pkRequestConfig.getReadTimeoutMs();
+        final boolean crossProtocolRedirectEnabled = pkRequestConfig.getCrossProtocolRedirectEnabled();
 
         if (CookieHandler.getDefault() == null) {
             CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
@@ -660,8 +752,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     .cookieJar(NativeCookieJarBridge.sharedCookieJar)
                     .followRedirects(true)
                     .followSslRedirects(crossProtocolRedirectEnabled)
-                    .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                    .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+                    .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+                    .readTimeout(readTimeout, TimeUnit.MILLISECONDS);
             builder.eventListener(analyticsAggregator);
             if (profiler != Profiler.NOOP) {
                 final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
@@ -669,12 +761,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     builder.eventListenerFactory(okListenerFactory);
                 }
             }
-            httpDataSourceFactory = new OkHttpDataSource.Factory(builder.build()).setUserAgent(userAgent);
+            httpDataSourceFactory = new OkHttpDataSource.Factory((Call.Factory) builder.build()).setUserAgent(userAgent);
         } else {
 
             httpDataSourceFactory = new DefaultHttpDataSource.Factory().setUserAgent(userAgent)
-                    .setConnectTimeoutMs(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS)
-                    .setReadTimeoutMs(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS)
+                    .setConnectTimeoutMs(connectTimeout)
+                    .setReadTimeoutMs(readTimeout)
                     .setAllowCrossProtocolRedirects(crossProtocolRedirectEnabled);
         }
 
@@ -685,7 +777,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
-        return new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
+        DataSource.Factory httpDataSourceFactory = new DefaultDataSource.Factory(context, getHttpDataSourceFactory(headers));
+        if (downloadCache != null) {
+            return buildReadOnlyCacheDataSource(httpDataSourceFactory, downloadCache);
+        } else {
+            return httpDataSourceFactory;
+        }
     }
 
     private static String getUserAgent(Context context) {
@@ -701,6 +798,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (stateChangedListener != null) {
             stateChangedListener.onStateChanged(previousState, currentState);
         }
+    }
+
+    private CacheDataSource.Factory buildReadOnlyCacheDataSource(
+            DataSource.Factory upstreamFactory, Cache cache) {
+        return new CacheDataSource.Factory()
+                .setCache(cache)
+                .setUpstreamDataSourceFactory(upstreamFactory)
+                .setCacheWriteDataSinkFactory(null)
+                .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
     }
 
     private void sendDistinctEvent(PlayerEvent.Type newEvent) {
@@ -805,7 +911,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void onTimelineChanged(Timeline timeline, int reason) {
+    public void onTimelineChanged(@NonNull Timeline timeline, int reason) {
         log.d("onTimelineChanged reason = " + reason + " duration = " + getDuration());
         if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
             isLoadedMetaDataFired = false;
@@ -824,9 +930,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void onPlayerError(ExoPlaybackException error) {
-        log.d("onPlayerError error type => " + error.type);
-        if (isBehindLiveWindow(error) && sourceConfig != null) {
+    public void onPlayerError(PlaybackException playbackException) {
+        log.d("onPlayerError error type => " + playbackException.errorCode);
+        if (isBehindLiveWindow(playbackException) && sourceConfig != null) {
             log.d("onPlayerError BehindLiveWindowException received, re-preparing player");
             MediaItem mediaItem = buildExoMediaItem(sourceConfig);
             if (mediaItem != null) {
@@ -843,110 +949,51 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             return;
         }
 
-        Enum errorType;
-        String errorMessage = error.getMessage();
-
-        switch (error.type) {
-            case ExoPlaybackException.TYPE_SOURCE:
-                errorType = PKPlayerErrorType.SOURCE_ERROR;
-                errorMessage = getSourceErrorMessage(error, errorMessage);
-                break;
-            case ExoPlaybackException.TYPE_RENDERER:
-                errorMessage = getDecoderInitializationErrorMessage(error, errorMessage);
-                if (errorMessage != null && errorMessage.startsWith("DRM_ERROR:")) {
-                    errorType = PKPlayerErrorType.DRM_ERROR;
-                } else {
-                    errorType = PKPlayerErrorType.RENDERER_ERROR;
-                }
-                break;
-            case ExoPlaybackException.TYPE_REMOTE:
-                errorType = PKPlayerErrorType.REMOTE_COMPONENT_ERROR;
-                break;
-            case ExoPlaybackException.TYPE_UNEXPECTED:
-            default:
-                errorType = PKPlayerErrorType.UNEXPECTED;
-                errorMessage = getUnexpectedErrorMessage(error, errorMessage);
-                break;
+        // Fire the more accurate error codes coming under PlaybackException from ExoPlayer
+        Pair<PKPlayerErrorType, String> exceptionPair = PKPlaybackException.getPlaybackExceptionType(playbackException);
+        if (exceptionPair.first == PKPlayerErrorType.TIMEOUT && exceptionPair.second.contains(Consts.EXO_TIMEOUT_OPERATION_RELEASE)) {
+            // ExoPlayer is being stopped internally in other EXO_TIMEOUT_EXCEPTION types
+            currentError = new PKError(PKPlayerErrorType.TIMEOUT, PKError.Severity.Recoverable, exceptionPair.second, playbackException);
+        } else {
+            currentError = new PKError(exceptionPair.first, exceptionPair.second, playbackException);
         }
+        log.e("ExoPlaybackException, type = " + exceptionPair.first);
 
-        String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
-
-        log.e(errorStr);
-        currentError = new PKError(errorType, errorStr, error);
         if (eventListener != null) {
-            log.e("Error-Event sent, type = " + error.type);
+            log.e("Error-Event Sent");
             eventListener.onEvent(PlayerEvent.Type.ERROR);
         } else {
-            log.e("eventListener is null cannot send Error-Event type = " + error.type);
+            log.e("eventListener is null cannot send Error-Event type = " + playbackException.getErrorCodeName());
         }
-    }
-
-    private String getDecoderInitializationErrorMessage(ExoPlaybackException error, String errorMessage) {
-        Exception cause = error.getRendererException();
-        if (cause instanceof MediaCodecRenderer.DecoderInitializationException) {
-            // Special case for decoder initialization failures.
-            MediaCodecRenderer.DecoderInitializationException decoderInitializationException =
-                    (MediaCodecRenderer.DecoderInitializationException) cause;
-            if (decoderInitializationException.codecInfo == null) {
-                if (decoderInitializationException.getCause() instanceof MediaCodecUtil.DecoderQueryException) {
-                    errorMessage = "Unable to query device decoders";
-                } else if (decoderInitializationException.secureDecoderRequired) {
-                    errorMessage = "This device does not provide a secure decoder for " +  decoderInitializationException.mimeType;
-                } else {
-                    errorMessage = "This device does not provide a decoder for " + decoderInitializationException.mimeType;
-                }
-            } else {
-                errorMessage = "Unable to instantiate decoder" + decoderInitializationException.codecInfo.name;
-            }
-        } else if (cause instanceof MediaCodec.CryptoException) {
-            MediaCodec.CryptoException mediaCodecCryptoException = (MediaCodec.CryptoException) cause;
-            errorMessage = mediaCodecCryptoException.getMessage() != null ? mediaCodecCryptoException.getMessage() : "MediaCodec.CryptoException occurred";
-            errorMessage = "DRM_ERROR:" + errorMessage;
-        }
-        return errorMessage;
-    }
-
-    private String getUnexpectedErrorMessage(ExoPlaybackException error, String errorMessage) {
-        Exception cause = error.getUnexpectedException();
-        if (cause.getCause() != null) {
-            errorMessage = cause.getCause().getMessage();
-        }
-        return errorMessage;
-    }
-
-    private String getSourceErrorMessage(ExoPlaybackException error, String errorMessage) {
-        Exception cause = error.getSourceException();
-        if (cause.getCause() != null) {
-            errorMessage = cause.getCause().getMessage();
-        }
-        return errorMessage;
     }
 
     @Override
-    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+    public void onPlaybackParametersChanged(@NonNull PlaybackParameters playbackParameters) {
         sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
     }
 
     @Override
-    public void onPositionDiscontinuity(int reason) {
+    public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition, @NonNull Player.PositionInfo newPosition, @Player.DiscontinuityReason int reason) {
         log.d("onPositionDiscontinuity reason = " + reason);
     }
 
     @Override
-    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+    public void onTracksInfoChanged(@NonNull TracksInfo tracksInfo) {
+        log.d("onTracksInfoChanged");
 
-        log.d("onTracksChanged");
-
-        //if onTracksChanged happened when application went background, do not update the tracks.
-        if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
+        //if onTracksInfoChanged happened when application went background, do not update the tracks.
+        if (assertTrackSelectionIsNotNull("onTracksInfoChanged()")) {
 
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
                 CustomDashManifest customDashManifest = null;
-                if (dashLastDataSink != null && player.getCurrentManifest() instanceof DashManifest) {
-                    byte[] bytes = dashLastDataSink.getData();
+                // Local Configuration includes the local playback properties
+                MediaItem.LocalConfiguration localConfiguration = player.getMediaItemAt(0).localConfiguration;
+                if (!TextUtils.isEmpty(dashManifestString) && dashLastDataSink != null
+                        && player.getCurrentManifest() instanceof DashManifest && localConfiguration != null) {
+                    // byte[] bytes = dashLastDataSink.getData();
                     try {
-                        customDashManifest = new CustomDashManifestParser().parse(player.getMediaItemAt(0).playbackProperties.uri, dashManifestString);
+                        customDashManifest = new CustomDashManifestParser().parse(localConfiguration.uri, dashManifestString);
                     } catch (IOException e) {
                         log.e("imageTracks assemble error " + e.getMessage());
                     } finally {
@@ -954,15 +1001,29 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         dashManifestString = null;
                     }
                 }
-                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(trackSelections, customDashManifest);
+                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(tracksInfo, sourceConfig.getExternalVttThumbnailUrl() ,customDashManifest);
             }
         }
 
-        trackSelectionHelper.notifyAboutTrackChange(trackSelections);
+        trackSelectionHelper.notifyAboutTrackChange(tracksInfo);
     }
 
     @Override
-    public void onMetadata(Metadata metadata) {
+    public void onVideoInputFormatChanged(@NonNull Format format) {
+        if (assertTrackSelectionIsNotNull("onVideoInputFormatChanged")) {
+            trackSelectionHelper.setCurrentVideoFormat(format);
+        }
+    }
+
+    @Override
+    public void onAudioInputFormatChanged(@NonNull Format format) {
+        if (assertTrackSelectionIsNotNull("onAudioInputFormatChanged")) {
+            trackSelectionHelper.setCurrentAudioFormat(format);
+        }
+    }
+
+    @Override
+    public void onMetadata(@NonNull Metadata metadata) {
         this.metadataList = MetadataConverter.convert(metadata);
         sendEvent(PlayerEvent.Type.METADATA_AVAILABLE);
     }
@@ -982,18 +1043,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         preparePlayer(mediaSourceConfig);
     }
 
-    private boolean isBehindLiveWindow(ExoPlaybackException e) {
-        if (e.type != ExoPlaybackException.TYPE_SOURCE) {
-            return false;
-        }
-        Throwable cause = e.getSourceException();
-        while (cause != null) {
-            if (cause instanceof BehindLiveWindowException) {
-                return true;
-            }
-            cause = cause.getCause();
-        }
-        return false;
+    private boolean isBehindLiveWindow(PlaybackException e) {
+        return e.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW;
     }
 
     private void maybeChangePlayerRenderView() {
@@ -1086,7 +1137,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.v("getProgramStartTime");
         long windowStartTimeMs = TIME_UNSET;
         if (assertPlayerIsNotNull("getProgramStartTime()")) {
-            final int currentWindowIndex = player.getCurrentWindowIndex();
+            final int currentWindowIndex = player.getCurrentMediaItemIndex();
             if (currentWindowIndex == C.INDEX_UNSET) {
                 return windowStartTimeMs;
             }
@@ -1170,7 +1221,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (bandwidthMeter != null) {
                 bandwidthMeter.removeEventListener(this);
             }
-            removeExternalTextTrackListener();
+            removeCustomLoadErrorPolicy();
             if (assertTrackSelectionIsNotNull("release()")) {
                 trackSelectionHelper.release();
                 trackSelectionHelper = null;
@@ -1223,7 +1274,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void destroy() {
         log.v("destroy");
         closeProfilerSession();
-        removeExternalTextTrackListener();
+        removeCustomLoadErrorPolicy();
         if (assertPlayerIsNotNull("destroy()")) {
             player.release();
         }
@@ -1248,20 +1299,21 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+    public void overrideMediaDefaultABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the tracksSelectionHelper");
             return;
         }
 
-        if (minVideoBitrate > maxVideoBitrate || maxVideoBitrate <= 0) {
-            minVideoBitrate = Long.MIN_VALUE;
-            maxVideoBitrate = Long.MAX_VALUE;
-            String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
+        if (minAbr > maxAbr || maxAbr <= 0) {
+            minAbr = Long.MIN_VALUE;
+            maxAbr = Long.MAX_VALUE;
+            pkAbrFilter = PKAbrFilter.NONE;
+            String errorMessage = "Either given min ABR value is greater than max ABR or max ABR is <= 0";
             sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
         }
 
-        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
+        trackSelectionHelper.overrideMediaDefaultABR(minAbr, maxAbr, pkAbrFilter);
     }
 
     @Override
@@ -1317,6 +1369,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void setAnalyticsListener(AnalyticsListener analyticsListener) {
         this.analyticsAggregator.setListener(analyticsListener);
+    }
+
+    @Override
+    public void setInputFormatChangedListener(Boolean enableListener) {
+        this.analyticsAggregator.setInputFormatChangedListener(enableListener != null ? this : null);
     }
 
     @Override
@@ -1407,7 +1464,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         if (assertPlayerIsNotNull("stop()")) {
             player.setPlayWhenReady(false);
-            player.stop(true);
+            player.stop();
+            player.clearMediaItems();
         }
 
         analyticsAggregator.reset();
@@ -1419,7 +1477,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.v("savePlayerPosition");
         if (assertPlayerIsNotNull("savePlayerPosition()")) {
             currentError = null;
-            playerWindow = player.getCurrentWindowIndex();
+            playerWindow = player.getCurrentMediaItemIndex();
             Timeline timeline = player.getCurrentTimeline();
             if (timeline != null && !timeline.isEmpty()  && playerWindow >= 0 && playerWindow < player.getCurrentTimeline().getWindowCount() && timeline.getWindow(playerWindow, window).isSeekable) {
                 playerPosition = player.getCurrentPosition();
@@ -1479,10 +1537,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
-                boolean isABREnabled = playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE;
+                HashMap<PKAbrFilter, Pair<Long, Long>> abrPrecedence = checkABRPriority();
+                PKAbrFilter abrFilter = getPKAbrFilter(abrPrecedence);
+                boolean isABREnabled = abrFilter != PKAbrFilter.NONE;
 
                 if(isABREnabled) {
-                    overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                    overrideMediaDefaultABR(abrPrecedence.get(abrFilter).first, abrPrecedence.get(abrFilter).second, abrFilter);
                 } else {
                     overrideMediaVideoCodec();
                 }
@@ -1536,6 +1596,43 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         };
     }
 
+    private PKAbrFilter getPKAbrFilter(HashMap<PKAbrFilter, Pair<Long, Long>> abrPrecedence) {
+        Set<PKAbrFilter> abrSet = abrPrecedence.keySet();
+        PKAbrFilter abrFilter = PKAbrFilter.NONE;
+
+        if (abrSet != null && abrSet.size() == 1) {
+            abrFilter = (PKAbrFilter) abrSet.toArray()[0];
+        }
+        return abrFilter;
+    }
+
+    private HashMap<PKAbrFilter, Pair<Long, Long>> checkABRPriority() {
+        HashMap<PKAbrFilter, Pair<Long, Long>> abrPriorityMap = new HashMap<>();
+
+        ABRSettings abrSettings = playerSettings.getAbrSettings();
+        Long minVideoHeight = abrSettings.getMinVideoHeight();
+        Long maxVideoHeight = abrSettings.getMaxVideoHeight();
+        Long minVideoWidth = abrSettings.getMinVideoWidth();
+        Long maxVideoWidth = abrSettings.getMaxVideoWidth();
+        Long minVideoBitrate = abrSettings.getMinVideoBitrate();
+        Long maxVideoBitrate = abrSettings.getMaxVideoBitrate();
+
+        if ((maxVideoHeight != Long.MAX_VALUE && minVideoHeight != Long.MIN_VALUE) &&
+                (maxVideoWidth != Long.MAX_VALUE && minVideoWidth != Long.MIN_VALUE)) {
+            abrPriorityMap.put(PKAbrFilter.PIXEL, new Pair<>(minVideoWidth * minVideoHeight, maxVideoWidth * maxVideoHeight));
+        } else if (maxVideoHeight != Long.MAX_VALUE || minVideoHeight != Long.MIN_VALUE) {
+            abrPriorityMap.put(PKAbrFilter.HEIGHT, new Pair<>(minVideoHeight, maxVideoHeight));
+        } else if (maxVideoWidth != Long.MAX_VALUE || minVideoWidth != Long.MIN_VALUE) {
+            abrPriorityMap.put(PKAbrFilter.WIDTH, new Pair<>(minVideoWidth, maxVideoWidth));
+        } else if (maxVideoBitrate != Long.MAX_VALUE || minVideoBitrate != Long.MIN_VALUE) {
+            abrPriorityMap.put(PKAbrFilter.BITRATE, new Pair<>(minVideoBitrate, maxVideoBitrate));
+        } else {
+            abrPriorityMap.put(PKAbrFilter.NONE, new Pair<>(Long.MIN_VALUE, Long.MAX_VALUE));
+        }
+
+        return abrPriorityMap;
+    }
+
     private void sendInvalidVideoBitrateRangeIfNeeded(String errorMessage) {
         if (eventListener != null) {
             currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
@@ -1562,9 +1659,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public boolean isLive() {
         log.v("isLive");
         if (assertPlayerIsNotNull("isLive()")) {
-            return player.isCurrentWindowLive();
+            return player.isCurrentMediaItemLive();
         }
         return false;
+    }
+
+    @Override
+    public void setDownloadCache(Cache downloadCache) {
+        this.downloadCache = downloadCache;
     }
 
     @Override
@@ -1672,7 +1774,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
-        if (playerSettings.getSubtitleStyleSettings() != null) {
+        if (playerSettings.getSubtitleStyleSettings() != null && subtitleStyleSettings != null) {
             playerSettings.setSubtitleStyle(subtitleStyleSettings);
             configureSubtitleView();
             sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);
@@ -1682,14 +1784,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void updateABRSettings(ABRSettings abrSettings) {
         playerSettings.setABRSettings(abrSettings);
-        overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+        HashMap<PKAbrFilter, Pair<Long, Long>> abrPrecedence = checkABRPriority();
+        PKAbrFilter abrFilter = getPKAbrFilter(abrPrecedence);
+        overrideMediaDefaultABR(abrPrecedence.get(abrFilter).first, abrPrecedence.get(abrFilter).second, abrFilter);
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
     }
 
     @Override
     public void resetABRSettings() {
         playerSettings.setABRSettings(ABRSettings.RESET);
-        overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+        overrideMediaDefaultABR(Long.MIN_VALUE, Long.MAX_VALUE, PKAbrFilter.NONE);
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
     }
 
@@ -1706,19 +1810,42 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             return;
         }
 
-        if (pkLowLatencyConfig == null) {
-            pkLowLatencyConfig = PKLowLatencyConfig.UNSET;
-        }
+        pkLowLatencyConfig = validatePKLowLatencyConfig(pkLowLatencyConfig);
 
         playerSettings.setPKLowLatencyConfig(pkLowLatencyConfig);
         if (player != null && player.getCurrentMediaItem() != null) {
+
+            MediaItem.LiveConfiguration liveConfiguration = getLowLatencyConfigFromPlayerSettings();
+
             player.setMediaItem(player.getCurrentMediaItem().buildUpon()
-                    .setLiveTargetOffsetMs(playerSettings.getPKLowLatencyConfig().getTargetOffsetMs())
-                    .setLiveMinOffsetMs(playerSettings.getPKLowLatencyConfig().getMinOffsetMs())
-                    .setLiveMaxOffsetMs(playerSettings.getPKLowLatencyConfig().getMaxOffsetMs())
-                    .setLiveMaxPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed())
-                    .setLiveMinPlaybackSpeed(playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed()).build());
+                    .setLiveConfiguration(liveConfiguration)
+                    .build());
         }
+    }
+
+    private PKLowLatencyConfig validatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+
+        PKLowLatencyConfig unsetPKLowLatencyConfig = PKLowLatencyConfig.UNSET;
+        if (pkLowLatencyConfig == null) {
+            pkLowLatencyConfig = unsetPKLowLatencyConfig;
+        } else {
+            if (pkLowLatencyConfig.getTargetOffsetMs() <= 0) {
+                pkLowLatencyConfig.setTargetOffsetMs(unsetPKLowLatencyConfig.getTargetOffsetMs());
+            }
+            if (pkLowLatencyConfig.getMinOffsetMs() <= 0) {
+                pkLowLatencyConfig.setMinOffsetMs(unsetPKLowLatencyConfig.getMinOffsetMs());
+            }
+            if (playerSettings.getPKLowLatencyConfig().getMaxOffsetMs() <= 0) {
+                pkLowLatencyConfig.setMaxOffsetMs(unsetPKLowLatencyConfig.getMaxOffsetMs());
+            }
+            if (playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed() <= 0) {
+                pkLowLatencyConfig.setMinPlaybackSpeed(unsetPKLowLatencyConfig.getMinPlaybackSpeed());
+            }
+            if (playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed() <= 0) {
+                pkLowLatencyConfig.setMaxPlaybackSpeed(unsetPKLowLatencyConfig.getMaxPlaybackSpeed());
+            }
+        }
+        return pkLowLatencyConfig;
     }
 
     private void configureAspectRatioResizeMode() {

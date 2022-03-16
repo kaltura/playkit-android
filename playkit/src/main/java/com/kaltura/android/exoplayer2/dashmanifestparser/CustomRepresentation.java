@@ -1,25 +1,27 @@
 package com.kaltura.android.exoplayer2.dashmanifestparser;
 
-
 import android.net.Uri;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+
+import com.google.common.collect.ImmutableList;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.source.dash.DashSegmentIndex;
+import com.kaltura.android.exoplayer2.source.dash.manifest.BaseUrl;
 import com.kaltura.android.exoplayer2.source.dash.manifest.Descriptor;
 import com.kaltura.android.exoplayer2.source.dash.manifest.RangedUri;
 
 import java.util.Collections;
 import java.util.List;
 
+import static com.kaltura.android.exoplayer2.util.Assertions.checkArgument;
+
 /**
  * A DASH representation.
  */
 public abstract class CustomRepresentation {
 
-    /**
-     * A default value for {@link #revisionId}.
-     */
+    /** A default value for {@link #revisionId}. */
     public static final long REVISION_ID_DEFAULT = -1;
 
     /**
@@ -29,20 +31,18 @@ public abstract class CustomRepresentation {
      * often a suitable.
      */
     public final long revisionId;
-    /**
-     * The format of the representation.
-     */
+    /** The format of the representation. */
     public final CustomFormat format;
-    /**
-     * The base URL of the representation.
-     */
-    public final String baseUrl;
-    /**
-     * The offset of the presentation timestamps in the media stream relative to media time.
-     */
+    /** The base URLs of the representation. */
+    public final ImmutableList<BaseUrl> baseUrls;
+    /** The offset of the presentation timestamps in the media stream relative to media time. */
     public final long presentationTimeOffsetUs;
     /** The in-band event streams in the representation. May be empty. */
     public final List<Descriptor> inbandEventStreams;
+    /** Essential properties in the representation. May be empty. */
+    public final List<Descriptor> essentialProperties;
+    /** Supplemental properties in the adaptation set. May be empty. */
+    public final List<Descriptor> supplementalProperties;
 
     private final RangedUri initializationUri;
 
@@ -51,37 +51,20 @@ public abstract class CustomRepresentation {
      *
      * @param revisionId Identifies the revision of the content.
      * @param format The format of the representation.
-     * @param baseUrl The base URL.
+     * @param baseUrls The list of base URLs of the representation.
      * @param segmentBase A segment base element for the representation.
      * @return The constructed instance.
      */
     public static CustomRepresentation newInstance(
-            long revisionId, CustomFormat format, String baseUrl, CustomSegmentBase segmentBase) {
-        return newInstance(revisionId, format, baseUrl, segmentBase, /* inbandEventStreams= */ null);
-    }
-
-    /**
-     * Constructs a new instance.
-     *
-     * @param revisionId Identifies the revision of the content.
-     * @param format The format of the representation.
-     * @param baseUrl The base URL.
-     * @param segmentBase A segment base element for the representation.
-     * @param inbandEventStreams The in-band event streams in the representation. May be null.
-     * @return The constructed instance.
-     */
-    public static CustomRepresentation newInstance(
-            long revisionId,
-            CustomFormat format,
-            String baseUrl,
-            CustomSegmentBase segmentBase,
-            @Nullable List<Descriptor> inbandEventStreams) {
+            long revisionId, CustomFormat format, List<BaseUrl> baseUrls, CustomSegmentBase segmentBase) {
         return newInstance(
                 revisionId,
                 format,
-                baseUrl,
+                baseUrls,
                 segmentBase,
-                inbandEventStreams,
+                /* inbandEventStreams= */ null,
+                /* essentialProperties= */ ImmutableList.of(),
+                /* supplementalProperties= */ ImmutableList.of(),
                 /* cacheKey= */ null);
     }
 
@@ -90,9 +73,11 @@ public abstract class CustomRepresentation {
      *
      * @param revisionId Identifies the revision of the content.
      * @param format The format of the representation.
-     * @param baseUrl The base URL of the representation.
+     * @param baseUrls The list of base URLs of the representation.
      * @param segmentBase A segment base element for the representation.
      * @param inbandEventStreams The in-band event streams in the representation. May be null.
+     * @param essentialProperties Essential properties in the representation. May be empty.
+     * @param supplementalProperties Supplemental properties in the representation. May be empty.
      * @param cacheKey An optional key to be returned from {@link #getCacheKey()}, or null. This
      *     parameter is ignored if {@code segmentBase} consists of multiple segments.
      * @return The constructed instance.
@@ -100,41 +85,56 @@ public abstract class CustomRepresentation {
     public static CustomRepresentation newInstance(
             long revisionId,
             CustomFormat format,
-            String baseUrl,
+            List<BaseUrl> baseUrls,
             CustomSegmentBase segmentBase,
             @Nullable List<Descriptor> inbandEventStreams,
+            List<Descriptor> essentialProperties,
+            List<Descriptor> supplementalProperties,
             @Nullable String cacheKey) {
         if (segmentBase instanceof CustomSegmentBase.SingleSegmentBase) {
-            return new CustomRepresentation.SingleSegmentRepresentation(
+            return new SingleSegmentRepresentation(
                     revisionId,
                     format,
-                    baseUrl,
+                    baseUrls,
                     (CustomSegmentBase.SingleSegmentBase) segmentBase,
                     inbandEventStreams,
+                    essentialProperties,
+                    supplementalProperties,
                     cacheKey,
-                    C.LENGTH_UNSET);
+                    /* contentLength= */ C.LENGTH_UNSET);
         } else if (segmentBase instanceof CustomSegmentBase.MultiSegmentBase) {
-            return new CustomRepresentation.MultiSegmentRepresentation(
-                    revisionId, format, baseUrl, (CustomSegmentBase.MultiSegmentBase) segmentBase, inbandEventStreams);
+            return new MultiSegmentRepresentation(
+                    revisionId,
+                    format,
+                    baseUrls,
+                    (CustomSegmentBase.MultiSegmentBase) segmentBase,
+                    inbandEventStreams,
+                    essentialProperties,
+                    supplementalProperties);
         } else {
-            throw new IllegalArgumentException("segmentBase must be of type SingleSegmentBase or "
-                    + "MultiSegmentBase");
+            throw new IllegalArgumentException(
+                    "segmentBase must be of type SingleSegmentBase or " + "MultiSegmentBase");
         }
     }
 
     private CustomRepresentation(
             long revisionId,
             CustomFormat format,
-            String baseUrl,
+            List<BaseUrl> baseUrls,
             CustomSegmentBase segmentBase,
-            @Nullable List<Descriptor> inbandEventStreams) {
+            @Nullable List<Descriptor> inbandEventStreams,
+            List<Descriptor> essentialProperties,
+            List<Descriptor> supplementalProperties) {
+        checkArgument(!baseUrls.isEmpty());
         this.revisionId = revisionId;
         this.format = format;
-        this.baseUrl = baseUrl;
+        this.baseUrls = ImmutableList.copyOf(baseUrls);
         this.inbandEventStreams =
                 inbandEventStreams == null
                         ? Collections.emptyList()
                         : Collections.unmodifiableList(inbandEventStreams);
+        this.essentialProperties = essentialProperties;
+        this.supplementalProperties = supplementalProperties;
         initializationUri = segmentBase.getInitialization(this);
         presentationTimeOffsetUs = segmentBase.getPresentationTimeOffsetUs();
     }
@@ -163,19 +163,12 @@ public abstract class CustomRepresentation {
     @Nullable
     public abstract String getCacheKey();
 
-    /**
-     * A DASH representation consisting of a single segment.
-     */
+    /** A DASH representation consisting of a single segment. */
     public static class SingleSegmentRepresentation extends CustomRepresentation {
 
-        /**
-         * The uri of the single segment.
-         */
+        /** The uri of the single segment. */
         public final Uri uri;
-
-        /**
-         * The content length, or {@link C#LENGTH_UNSET} if unknown.
-         */
+        /** The content length, or {@link C#LENGTH_UNSET} if unknown. */
         public final long contentLength;
 
         @Nullable private final String cacheKey;
@@ -205,40 +198,60 @@ public abstract class CustomRepresentation {
                 List<Descriptor> inbandEventStreams,
                 @Nullable String cacheKey,
                 long contentLength) {
-            RangedUri rangedUri = new RangedUri(null, initializationStart,
-                    initializationEnd - initializationStart + 1);
-            CustomSegmentBase.SingleSegmentBase segmentBase = new CustomSegmentBase.SingleSegmentBase(rangedUri, 1, 0, indexStart,
-                    indexEnd - indexStart + 1);
+            RangedUri rangedUri =
+                    new RangedUri(null, initializationStart, initializationEnd - initializationStart + 1);
+            CustomSegmentBase.SingleSegmentBase segmentBase =
+                    new CustomSegmentBase.SingleSegmentBase(rangedUri, 1, 0, indexStart, indexEnd - indexStart + 1);
+            ImmutableList<BaseUrl> baseUrls = ImmutableList.of(new BaseUrl(uri));
             return new SingleSegmentRepresentation(
-                    revisionId, format, uri, segmentBase, inbandEventStreams, cacheKey, contentLength);
+                    revisionId,
+                    format,
+                    baseUrls,
+                    segmentBase,
+                    inbandEventStreams,
+                    /* essentialProperties= */ ImmutableList.of(),
+                    /* supplementalProperties= */ ImmutableList.of(),
+                    cacheKey,
+                    contentLength);
         }
 
         /**
          * @param revisionId Identifies the revision of the content.
          * @param format The format of the representation.
-         * @param baseUrl The base URL of the representation.
+         * @param baseUrls The base urls of the representation.
          * @param segmentBase The segment base underlying the representation.
          * @param inbandEventStreams The in-band event streams in the representation. May be null.
+         * @param essentialProperties Essential properties in the representation. May be empty.
+         * @param supplementalProperties Supplemental properties in the representation. May be empty.
          * @param cacheKey An optional key to be returned from {@link #getCacheKey()}, or null.
          * @param contentLength The content length, or {@link C#LENGTH_UNSET} if unknown.
          */
         public SingleSegmentRepresentation(
                 long revisionId,
                 CustomFormat format,
-                String baseUrl,
+                List<BaseUrl> baseUrls,
                 CustomSegmentBase.SingleSegmentBase segmentBase,
                 @Nullable List<Descriptor> inbandEventStreams,
+                List<Descriptor> essentialProperties,
+                List<Descriptor> supplementalProperties,
                 @Nullable String cacheKey,
                 long contentLength) {
-            super(revisionId, format, baseUrl, segmentBase, inbandEventStreams);
-            this.uri = Uri.parse(baseUrl);
+            super(
+                    revisionId,
+                    format,
+                    baseUrls,
+                    segmentBase,
+                    inbandEventStreams,
+                    essentialProperties,
+                    supplementalProperties);
+            this.uri = Uri.parse(baseUrls.get(0).url);
             this.indexUri = segmentBase.getIndex();
             this.cacheKey = cacheKey;
             this.contentLength = contentLength;
             // If we have an index uri then the index is defined externally, and we shouldn't return one
             // directly. If we don't, then we can't do better than an index defining a single segment.
-            segmentIndex = indexUri != null ? null
-                    : new CustomSingleSegmentIndex(new RangedUri(null, 0, contentLength));
+            segmentIndex =
+                    indexUri != null ? null : new CustomSingleSegmentIndex(new RangedUri(null, 0, contentLength));
         }
 
         @Override
@@ -258,12 +271,9 @@ public abstract class CustomRepresentation {
         public String getCacheKey() {
             return cacheKey;
         }
-
     }
 
-    /**
-     * A DASH representation consisting of multiple segments.
-     */
+    /** A DASH representation consisting of multiple segments. */
     public static class MultiSegmentRepresentation extends CustomRepresentation
             implements DashSegmentIndex {
 
@@ -274,17 +284,28 @@ public abstract class CustomRepresentation {
          *
          * @param revisionId Identifies the revision of the content.
          * @param format The format of the representation.
-         * @param baseUrl The base URL of the representation.
+         * @param baseUrls The base URLs of the representation.
          * @param segmentBase The segment base underlying the representation.
          * @param inbandEventStreams The in-band event streams in the representation. May be null.
+         * @param essentialProperties Essential properties in the representation. May be empty.
+         * @param supplementalProperties Supplemental properties in the representation. May be empty.
          */
         public MultiSegmentRepresentation(
                 long revisionId,
                 CustomFormat format,
-                String baseUrl,
+                List<BaseUrl> baseUrls,
                 CustomSegmentBase.MultiSegmentBase segmentBase,
-                @Nullable List<Descriptor> inbandEventStreams) {
-            super(revisionId, format, baseUrl, segmentBase, inbandEventStreams);
+                @Nullable List<Descriptor> inbandEventStreams,
+                List<Descriptor> essentialProperties,
+                List<Descriptor> supplementalProperties) {
+            super(
+                    revisionId,
+                    format,
+                    baseUrls,
+                    segmentBase,
+                    inbandEventStreams,
+                    essentialProperties,
+                    supplementalProperties);
             this.segmentBase = segmentBase;
         }
 
@@ -308,8 +329,8 @@ public abstract class CustomRepresentation {
         // DashSegmentIndex implementation.
 
         @Override
-        public RangedUri getSegmentUrl(long segmentIndex) {
-            return segmentBase.getSegmentUrl(this, segmentIndex);
+        public RangedUri getSegmentUrl(long segmentNum) {
+            return segmentBase.getSegmentUrl(this, segmentNum);
         }
 
         @Override
@@ -318,13 +339,13 @@ public abstract class CustomRepresentation {
         }
 
         @Override
-        public long getTimeUs(long segmentIndex) {
-            return segmentBase.getSegmentTimeUs(segmentIndex);
+        public long getTimeUs(long segmentNum) {
+            return segmentBase.getSegmentTimeUs(segmentNum);
         }
 
         @Override
-        public long getDurationUs(long segmentIndex, long periodDurationUs) {
-            return segmentBase.getSegmentDurationUs(segmentIndex, periodDurationUs);
+        public long getDurationUs(long segmentNum, long periodDurationUs) {
+            return segmentBase.getSegmentDurationUs(segmentNum, periodDurationUs);
         }
 
         @Override
@@ -338,12 +359,12 @@ public abstract class CustomRepresentation {
         }
 
         @Override
-        public int getSegmentCount(long periodDurationUs) {
+        public long getSegmentCount(long periodDurationUs) {
             return segmentBase.getSegmentCount(periodDurationUs);
         }
 
         @Override
-        public int getAvailableSegmentCount(long periodDurationUs, long nowUnixTimeUs) {
+        public long getAvailableSegmentCount(long periodDurationUs, long nowUnixTimeUs) {
             return segmentBase.getAvailableSegmentCount(periodDurationUs, nowUnixTimeUs);
         }
 
@@ -356,7 +377,5 @@ public abstract class CustomRepresentation {
         public boolean isExplicit() {
             return segmentBase.isExplicit();
         }
-
     }
-
 }

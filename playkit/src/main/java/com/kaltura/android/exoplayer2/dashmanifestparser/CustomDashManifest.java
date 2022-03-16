@@ -8,6 +8,7 @@ import com.kaltura.android.exoplayer2.offline.StreamKey;
 import com.kaltura.android.exoplayer2.source.dash.manifest.ProgramInformation;
 import com.kaltura.android.exoplayer2.source.dash.manifest.ServiceDescriptionElement;
 import com.kaltura.android.exoplayer2.source.dash.manifest.UtcTimingElement;
+import com.kaltura.android.exoplayer2.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -159,7 +160,7 @@ public class CustomDashManifest implements FilterableManifest<CustomDashManifest
     }
 
     public final long getPeriodDurationUs(int index) {
-        return C.msToUs(getPeriodDurationMs(index));
+        return Util.msToUs(getPeriodDurationMs(index));
     }
 
     @Override
@@ -215,7 +216,7 @@ public class CustomDashManifest implements FilterableManifest<CustomDashManifest
             List<CustomRepresentation> representations = adaptationSet.representations;
             ArrayList<CustomRepresentation> copyRepresentations = new ArrayList<>();
             do {
-                CustomRepresentation representation = representations.get(key.trackIndex);
+                CustomRepresentation representation = representations.get(key.streamIndex);
                 copyRepresentations.add(representation);
                 key = keys.poll();
             } while (key.periodIndex == periodIndex && key.groupIndex == adaptationSetIndex);

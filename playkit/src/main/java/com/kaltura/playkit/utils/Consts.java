@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.utils;
 
+import com.kaltura.android.exoplayer2.C;
+
 /**
  * Created by anton.afanasiev on 04/12/2016.
  */
@@ -84,8 +86,8 @@ public class Consts {
      * Flag that indicates, that this specified track will be
      * selected by the player as default track.
      */
-    public static final int DEFAULT_TRACK_SELECTION_FLAG_HLS = 5;
-    public static final int DEFAULT_TRACK_SELECTION_FLAG_DASH = 1;
+    public static final int DEFAULT_TRACK_SELECTION_FLAG_HLS = C.SELECTION_FLAG_DEFAULT | C.SELECTION_FLAG_AUTOSELECT;
+    public static final int DEFAULT_TRACK_SELECTION_FLAG_DASH = C.SELECTION_FLAG_DEFAULT;
 
     /**
      * Flag that indicates, that this specified track will not
@@ -127,7 +129,11 @@ public class Consts {
 
     public static final int FORMAT_HANDLED = 4;
 
+    public static String EXO_DOWNLOAD_CHANNEL_ID = "download_channel";
+
     public static final String HTTP_METHOD_POST = "POST";
 
     public static final String HTTP_METHOD_GET = "GET";
+
+    public static final String EXO_TIMEOUT_OPERATION_RELEASE = "Player release timed out.";
 }

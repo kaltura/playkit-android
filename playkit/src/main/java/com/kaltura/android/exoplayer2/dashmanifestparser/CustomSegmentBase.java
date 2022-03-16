@@ -6,12 +6,17 @@ import static java.lang.Math.min;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+
+import com.google.common.math.BigIntegerMath;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.source.dash.DashSegmentIndex;
 import com.kaltura.android.exoplayer2.source.dash.manifest.RangedUri;
 import com.kaltura.android.exoplayer2.source.dash.manifest.Representation;
 import com.kaltura.android.exoplayer2.source.dash.manifest.UrlTemplate;
 import com.kaltura.android.exoplayer2.util.Util;
+
+import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.List;
 
 /**
@@ -248,7 +253,7 @@ public abstract class CustomSegmentBase {
                 long duration = segmentTimeline.get((int) (sequenceNumber - startNumber)).duration;
                 return (duration * C.MICROS_PER_SECOND) / timescale;
             } else {
-                int segmentCount = getSegmentCount(periodDurationUs);
+                long segmentCount = getSegmentCount(periodDurationUs);
                 return segmentCount != INDEX_UNBOUNDED
                         && sequenceNumber == (getFirstSegmentNum() + segmentCount - 1)
                         ? (periodDurationUs - getSegmentTimeUs(sequenceNumber))
@@ -298,8 +303,8 @@ public abstract class CustomSegmentBase {
         }
 
         /** See {@link DashSegmentIndex#getAvailableSegmentCount(long, long)}. */
-        public int getAvailableSegmentCount(long periodDurationUs, long nowUnixTimeUs) {
-            int segmentCount = getSegmentCount(periodDurationUs);
+        public long getAvailableSegmentCount(long periodDurationUs, long nowUnixTimeUs) {
+            long segmentCount = getSegmentCount(periodDurationUs);
             if (segmentCount != INDEX_UNBOUNDED) {
                 return segmentCount;
             }
@@ -332,7 +337,7 @@ public abstract class CustomSegmentBase {
         }
 
         /** See {@link DashSegmentIndex#getSegmentCount(long)}. */
-        public abstract int getSegmentCount(long periodDurationUs);
+        public abstract long getSegmentCount(long periodDurationUs);
     }
 
     /** A {@link MultiSegmentBase} that uses a SegmentList to define its segments. */
@@ -390,7 +395,7 @@ public abstract class CustomSegmentBase {
         }
 
         @Override
-        public int getSegmentCount(long periodDurationUs) {
+        public long getSegmentCount(long periodDurationUs) {
             return mediaSegments.size();
         }
 
@@ -481,8 +486,9 @@ public abstract class CustomSegmentBase {
         @Nullable
         public RangedUri getInitialization(CustomRepresentation representation) {
             if (initializationTemplate != null) {
-                String urlString = initializationTemplate.buildUri(representation.format.id, 0,
-                        representation.format.bitrate, 0);
+                String urlString =
+                        initializationTemplate.buildUri(
+                                representation.format.id, 0, representation.format.bitrate, 0);
                 return new RangedUri(urlString, 0, C.LENGTH_UNSET);
             } else {
                 return super.getInitialization(representation);
@@ -497,20 +503,24 @@ public abstract class CustomSegmentBase {
             } else {
                 time = (sequenceNumber - startNumber) * duration;
             }
-            String uriString = mediaTemplate.buildUri(representation.format.id, sequenceNumber,
-                    representation.format.bitrate, time);
+            String uriString =
+                    mediaTemplate.buildUri(
+                            representation.format.id, sequenceNumber, representation.format.bitrate, time);
             return new RangedUri(uriString, 0, C.LENGTH_UNSET);
         }
 
         @Override
-        public int getSegmentCount(long periodDurationUs) {
+        public long getSegmentCount(long periodDurationUs) {
             if (segmentTimeline != null) {
                 return segmentTimeline.size();
             } else if (endNumber != C.INDEX_UNSET) {
-                return (int) (endNumber - startNumber + 1);
+                return endNumber - startNumber + 1;
             } else if (periodDurationUs != C.TIME_UNSET) {
-                long durationUs = (duration * C.MICROS_PER_SECOND) / timescale;
-                return (int) Util.ceilDivide(periodDurationUs, durationUs);
+                BigInteger numerator =
+                        BigInteger.valueOf(periodDurationUs).multiply(BigInteger.valueOf(timescale));
+                BigInteger denominator =
+                        BigInteger.valueOf(duration).multiply(BigInteger.valueOf(C.MICROS_PER_SECOND));
+                return BigIntegerMath.divide(numerator, denominator, RoundingMode.CEILING).longValue();
             } else {
                 return INDEX_UNBOUNDED;
             }

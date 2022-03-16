@@ -1,5 +1,6 @@
 package com.kaltura.playkit;
 
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -95,8 +96,8 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
-    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
-        playerEngine.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate, PKAbrFilter pkAbrFilter) {
+        playerEngine.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate, pkAbrFilter);
     }
 
     @Override
@@ -137,6 +138,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public void setAnalyticsListener(AnalyticsListener analyticsListener) {
         playerEngine.setAnalyticsListener(analyticsListener);
+    }
+
+    @Override
+    public void setInputFormatChangedListener(Boolean enableListener) {
+        playerEngine.setInputFormatChangedListener(enableListener);
     }
 
     @Override
@@ -194,6 +200,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
         return playerEngine.getPlaybackRate();
     }
 
+    @Override
+    public void setDownloadCache(Cache downloadCache) {
+        playerEngine.setDownloadCache(downloadCache);
+    }
+    
     @Override
     public ThumbnailInfo getThumbnailInfo(long positionMS) {
         return playerEngine.getThumbnailInfo(positionMS);

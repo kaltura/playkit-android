@@ -16,9 +16,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.RectF;
-
-import androidx.annotation.NonNull;
-
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -28,13 +25,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+
+import com.kaltura.android.exoplayer2.ExoPlayer;
 import com.kaltura.android.exoplayer2.Player;
-import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.text.Cue;
 import com.kaltura.android.exoplayer2.text.TextOutput;
 import com.kaltura.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
-import com.kaltura.android.exoplayer2.video.VideoListener;
+import com.kaltura.android.exoplayer2.video.VideoSize;
 import com.kaltura.playkit.PKLog;
 
 import java.util.ArrayList;
@@ -54,9 +53,9 @@ class ExoPlayerView extends BaseExoplayerView {
     private SubtitleView subtitleView;
     private AspectRatioFrameLayout contentFrame;
 
-    private SimpleExoPlayer player;
+    private ExoPlayer player;
     private ComponentListener componentListener;
-    private Player.EventListener playerEventListener;
+    private Player.Listener playerEventListener;
     private int textureViewRotation;
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
     private PKSubtitlePosition subtitleViewPosition;
@@ -81,8 +80,8 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @NonNull
-    private Player.EventListener getPlayerEventListener() {
-        return new Player.EventListener() {
+    private Player.Listener getPlayerEventListener() {
+        return new Player.Listener() {
             @Override
             public void onPlaybackStateChanged(int playbackState) {
                 switch (playbackState) {
@@ -95,7 +94,7 @@ class ExoPlayerView extends BaseExoplayerView {
                             }
                         }
                         break;
-                        
+
                     case Player.STATE_BUFFERING:
                     case Player.STATE_ENDED:
                     case Player.STATE_IDLE:
@@ -115,14 +114,14 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     /**
-     * Set the {@link SimpleExoPlayer} to use. If ExoplayerView instance already has
+     * Set the {@link ExoPlayer} to use. If ExoplayerView instance already has
      * player attached to it, it will remove and clear videoSurface first.
      *
-     * @param player           - The {@link SimpleExoPlayer} to use.
+     * @param player           - The {@link ExoPlayer} to use.
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
     @Override
-    public void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews) {
+    public void setPlayer(ExoPlayer player, boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews) {
         if (this.player == player) {
             return;
         }
@@ -158,27 +157,19 @@ class ExoPlayerView extends BaseExoplayerView {
         resetViews();
         createVideoSurface(useTextureView);
 
-        Player.VideoComponent newVideoComponent = player.getVideoComponent();
-        Player.TextComponent newTextComponent = player.getTextComponent();
         player.addListener(playerEventListener);
 
         //Decide which type of videoSurface should be set.
-        if (newVideoComponent != null) {
-            if (videoSurface instanceof TextureView) {
-                newVideoComponent.setVideoTextureView((TextureView) videoSurface);
-            } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    ((SurfaceView) videoSurface).setSecure(isSurfaceSecured);
-                }
-                newVideoComponent.setVideoSurfaceView((SurfaceView) videoSurface);
+        if (videoSurface instanceof TextureView) {
+            player.setVideoTextureView((TextureView) videoSurface);
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                ((SurfaceView) videoSurface).setSecure(isSurfaceSecured);
             }
-            //Set listeners
-            newVideoComponent.addVideoListener(componentListener);
+            player.setVideoSurfaceView((SurfaceView) videoSurface);
         }
-
-        if (newTextComponent != null) {
-            newTextComponent.addTextOutput(componentListener);
-        }
+        //Set listeners
+        player.addListener(componentListener);
 
         contentFrame.addView(videoSurface, 0);
 
@@ -194,27 +185,22 @@ class ExoPlayerView extends BaseExoplayerView {
      * Clear all the listeners and detach Surface from view hierarchy.
      */
     private void removeVideoSurface() {
-        Player.VideoComponent oldVideoComponent = player.getVideoComponent();
-        Player.TextComponent oldTextComponent = player.getTextComponent();
+
         if (playerEventListener != null) {
             player.removeListener(playerEventListener);
         }
         //Remove existed videoSurface from player.
-        if (oldVideoComponent != null) {
-
-            if (videoSurface instanceof SurfaceView) {
-                oldVideoComponent.clearVideoSurfaceView((SurfaceView) videoSurface);
-            } else if (videoSurface instanceof TextureView) {
-                oldVideoComponent.clearVideoTextureView((TextureView) videoSurface);
-            }
-
-            //Clear listeners.
-            oldVideoComponent.removeVideoListener(componentListener);
+        if (videoSurface instanceof SurfaceView) {
+            player.clearVideoSurfaceView((SurfaceView) videoSurface);
+        } else if (videoSurface instanceof TextureView) {
+            player.clearVideoTextureView((TextureView) videoSurface);
         }
 
-        if (oldTextComponent != null) {
-            oldTextComponent.removeTextOutput(componentListener);
+        //Clear listeners.
+        if (componentListener != null) {
+            player.removeListener(componentListener);
         }
+
         lastReportedCues = null;
         contentFrame.removeView(videoSurface);
     }
@@ -337,7 +323,7 @@ class ExoPlayerView extends BaseExoplayerView {
     /**
      * Local listener implementation.
      */
-    private final class ComponentListener implements TextOutput, VideoListener, OnLayoutChangeListener {
+    private final class ComponentListener implements TextOutput, Player.Listener, OnLayoutChangeListener {
 
         @Override
         public void onCues(List<Cue> cues) {
@@ -352,17 +338,17 @@ class ExoPlayerView extends BaseExoplayerView {
         }
 
         @Override
-        public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
+        public void onVideoSizeChanged(@NonNull VideoSize videoSize) {
             if (contentFrame == null) {
                 return;
             }
 
             float videoAspectRatio =
-                    (height == 0 || width == 0) ? 1 : (width * pixelWidthHeightRatio) / height;
+                    (videoSize.height == 0 || videoSize.width == 0) ? 1 : (videoSize.width * videoSize.pixelWidthHeightRatio) / videoSize.height;
 
             if (videoSurface instanceof TextureView) {
                 // Try to apply rotation transformation when our surface is a TextureView.
-                if (unappliedRotationDegrees == 90 || unappliedRotationDegrees == 270) {
+                if (videoSize.unappliedRotationDegrees == 90 || videoSize.unappliedRotationDegrees == 270) {
                     // We will apply a rotation 90/270 degree to the output texture of the TextureView.
                     // In this case, the output video's width and height will be swapped.
                     videoAspectRatio = 1 / videoAspectRatio;
@@ -370,7 +356,7 @@ class ExoPlayerView extends BaseExoplayerView {
                 if (textureViewRotation != 0) {
                     videoSurface.removeOnLayoutChangeListener(this);
                 }
-                textureViewRotation = unappliedRotationDegrees;
+                textureViewRotation = videoSize.unappliedRotationDegrees;
                 if (textureViewRotation != 0) {
                     // The texture view's dimensions might be changed after layout step.
                     // So add an OnLayoutChangeListener to apply rotation after layout step.

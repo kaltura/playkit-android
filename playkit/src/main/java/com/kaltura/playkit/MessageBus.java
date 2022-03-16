@@ -17,6 +17,7 @@ import android.os.Looper;
 import androidx.annotation.Nullable;
 
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,10 +43,18 @@ public class MessageBus {
 
         // Listeners that are listening for this event
         final Set<PKEvent.Listener> postListeners = new HashSet<>();
-        // By event type (PlayerEvent.DURATION_CHANGED etc)
-        postListeners.addAll(safeSet(this.listeners.get(event.eventType())));
-        // By event class (PlayerEvent.DurationChanged.class etc)
-        postListeners.addAll(safeSet(this.listeners.get(event.getClass())));
+        try {
+            // By event type (PlayerEvent.DURATION_CHANGED etc)
+            postListeners.addAll(safeSet(this.listeners.get(event.eventType())));
+        } catch (ConcurrentModificationException ex) {
+            postListeners.addAll(safeSet(this.listeners.get(event.eventType())));
+        }
+        try {
+            // By event class (PlayerEvent.DurationChanged.class etc)
+            postListeners.addAll(safeSet(this.listeners.get(event.getClass())));
+        } catch (ConcurrentModificationException ex) {
+            postListeners.addAll(safeSet(this.listeners.get(event.getClass())));
+        }
 
         if (!postListeners.isEmpty()) {
             postHandler.post(() -> {

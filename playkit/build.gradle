@@ -1,8 +1,9 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 apply from: 'version.gradle'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -12,6 +13,7 @@ android {
         targetSdkVersion 30
         versionName playkitVersion  // defined in version.gradle
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String","VERSION_NAME","\"${playkitVersion}\"")
     }
     buildTypes {
         release {
@@ -27,6 +29,10 @@ android {
     lintOptions {
         lintConfig file("lint.xml")
     }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 tasks.withType(Javadoc) {
@@ -35,14 +41,18 @@ tasks.withType(Javadoc) {
 
 dependencies {
 
-    def exoPlayerVersion = '2.13.2'
+    def exoPlayerVersion = '2.17.1'
     api "com.kaltura.playkit:kexoplayer:$exoPlayerVersion"
 
     api 'com.google.code.gson:gson:2.8.6'
     implementation 'androidx.annotation:annotation:1.2.0'
 
     // Ok is (optionally) used by ExoPlayer now
-    api 'com.squareup.okhttp3:okhttp:3.12.11'
+    api 'com.squareup.okhttp3:okhttp:4.9.2'
+
+    // Kotlin Config
+    implementation 'androidx.core:core-ktx:1.3.2'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     def checkerframeworkVersion = '3.3.0'
     def checkerframeworkCompatVersion = '2.5.0'
@@ -50,7 +60,7 @@ dependencies {
     compileOnly 'org.checkerframework:checker-qual:' + checkerframeworkVersion
     compileOnly 'org.checkerframework:checker-compat-qual:' + checkerframeworkCompatVersion
 
-    def     guavaVersion = '27.1-android'
+    def guavaVersion = '27.1-android'
 
     api ('com.google.guava:guava:' + guavaVersion) {
         exclude group: 'org.checkerframework', module: 'checker-compat-qual'
@@ -62,6 +72,8 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.3.0'
 }
 
-if (hasProperty('VERSION_NAME')) {
+if (!ext.playkitVersion.contains('dev')) {
     apply from: './gradle-mvn-push.gradle'
+} else {
+    apply from: './gradle-mvn-local.gradle'
 }

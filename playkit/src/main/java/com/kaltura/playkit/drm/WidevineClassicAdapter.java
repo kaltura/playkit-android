@@ -62,12 +62,10 @@ class WidevineClassicAdapter extends DrmAdapter {
             @Override
             public void onEvent(DrmEvent event) {
                 log.d(event.toString());
-                switch (event.getType()) {
-                    case DrmInfoEvent.TYPE_RIGHTS_INSTALLED:
-                        if (listener != null) {
-                            listener.onRegistered(localAssetPath);
-                        }
-                        break;
+                if (event.getType() == DrmInfoEvent.TYPE_RIGHTS_INSTALLED) {
+                    if (listener != null) {
+                        listener.onRegistered(localAssetPath);
+                    }
                 }
             }
         });
@@ -78,7 +76,7 @@ class WidevineClassicAdapter extends DrmAdapter {
 
     @Override
     public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
-        return registerAsset(localAssetPath, assetId, licenseUri,  null, forceWidevineL3Playback, listener);
+        return registerAsset(localAssetPath, assetId, licenseUri, null, forceWidevineL3Playback, listener);
     }
 
     @Override
@@ -93,12 +91,10 @@ class WidevineClassicAdapter extends DrmAdapter {
             @Override
             public void onEvent(DrmEvent event) {
                 log.d(event.toString());
-                switch (event.getType()) {
-                    case DrmInfoEvent.TYPE_RIGHTS_REMOVED:
-                        if (listener != null) {
-                            listener.onRemoved(localAssetPath);
-                        }
-                        break;
+                if (event.getType() == DrmInfoEvent.TYPE_RIGHTS_REMOVED) {
+                    if (listener != null) {
+                        listener.onRemoved(localAssetPath);
+                    }
                 }
             }
         });

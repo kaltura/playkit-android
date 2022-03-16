@@ -16,16 +16,18 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 
+import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.analytics.PlayerId;
 import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmSession;
 import com.kaltura.android.exoplayer2.drm.DrmSessionEventListener;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
-import com.kaltura.android.exoplayer2.drm.ExoMediaCrypto;
 import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
 import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
@@ -53,17 +55,19 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
 
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
 
-    private String WIDEVINE_SECURITY_LEVEL_1 = "L1";
-    private String WIDEVINE_SECURITY_LEVEL_3 = "L3";
-    private String SECURITY_LEVEL_PROPERTY = "securityLevel";
+    private final String WIDEVINE_SECURITY_LEVEL_1 = "L1";
+    private final String WIDEVINE_SECURITY_LEVEL_3 = "L3";
+    private final String SECURITY_LEVEL_PROPERTY = "securityLevel";
 
     private Handler mainHandler;
     private final DrmCallback drmCallback;
     private DrmSessionListener drmSessionListener;
     private LocalAssetsManager.LocalMediaSource localMediaSource = null;
     private DrmSessionManager drmSessionManager;
-    private boolean allowClearLead;
-    private boolean forceWidevineL3Playback;
+    private final boolean allowClearLead;
+    private final boolean forceWidevineL3Playback;
+    private Looper playbackLooper;
+    private PlayerId playbackPlayerId;
 
     public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead, boolean forceWidevineL3Playback) {
         this.mainHandler = mainHandler;
@@ -108,9 +112,15 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         }
     }
 
+    @Override
+    public void setPlayer(@NonNull Looper looper, @NonNull PlayerId playerId) {
+        playbackLooper = looper;
+        playbackPlayerId = playerId;
+    }
+
     @Nullable
     @Override
-    public DrmSession acquireSession(Looper playbackLooper, @Nullable EventDispatcher eventDispatcher, Format format) {
+    public DrmSession acquireSession(@Nullable EventDispatcher eventDispatcher, @NonNull Format format) {
         if (drmSessionManager == null) {
             return null;
         }
@@ -134,7 +144,8 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
             }
         }
 
-        return drmSessionManager.acquireSession(playbackLooper, eventDispatcher, format);
+        drmSessionManager.setPlayer(playbackLooper, playbackPlayerId);
+        return drmSessionManager.acquireSession(eventDispatcher, format);
     }
 
     private DrmSessionManager getDRMSessionManager(DrmCallback drmCallback) {
@@ -168,13 +179,12 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         return drmSessionManager;
     }
 
-    @Nullable
     @Override
-    public Class<? extends ExoMediaCrypto> getExoMediaCryptoType(Format format) {
+    public int getCryptoType(@NonNull Format format) {
         if (drmSessionManager != null) {
-            return drmSessionManager.getExoMediaCryptoType(format);
+            return drmSessionManager.getCryptoType(format);
         }
-        return null;
+        return C.CRYPTO_TYPE_NONE;
     }
 
     @Override
@@ -237,7 +247,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     }
 
     @Override
-    public void onDrmSessionAcquired(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
+    public void onDrmSessionAcquired(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId, @DrmSession.State int state) {
         log.d("onDrmSessionAcquired");
     }
 

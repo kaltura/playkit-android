@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKAudioCodec;
@@ -20,7 +21,7 @@ import com.kaltura.playkit.PKAudioCodec;
  * Audio track data holder.
  * Created by anton.afanasiev on 17/11/2016.
  */
-public class AudioTrack extends BaseTrack {
+public class AudioTrack extends BaseTrack implements Comparable<AudioTrack> {
 
     private long bitrate;
     private String label;
@@ -97,5 +98,10 @@ public class AudioTrack extends BaseTrack {
 
     @Nullable public String getCodecName() {
         return codecName;
+    }
+
+    @Override
+    public int compareTo(@NonNull AudioTrack track) {
+        return Long.compare(this.getBitrate(), track.getBitrate());
     }
 }

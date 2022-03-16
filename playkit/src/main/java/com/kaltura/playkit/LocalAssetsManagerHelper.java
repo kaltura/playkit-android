@@ -80,7 +80,6 @@ public class LocalAssetsManagerHelper {
         localDataStore.save(buildAssetKey(assetId), buildMediaFormatValueAsByteArray(mediaFormat, scheme));
     }
 
-
     void removeAssetKey(String assetId) {
         localDataStore.remove(buildAssetKey(assetId));
     }

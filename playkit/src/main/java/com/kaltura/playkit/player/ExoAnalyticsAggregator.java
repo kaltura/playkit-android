@@ -1,10 +1,16 @@
 package com.kaltura.playkit.player;
 
 import android.os.SystemClock;
+import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.C;
+import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
+import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
 import com.kaltura.android.exoplayer2.source.LoadEventInfo;
 import com.kaltura.android.exoplayer2.source.MediaLoadData;
 import com.kaltura.playkit.PKLog;
@@ -25,6 +31,11 @@ import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
 
 class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener {
 
+    public interface InputFormatChangedListener {
+        void onVideoInputFormatChanged(@NonNull Format format);
+        void onAudioInputFormatChanged(@NonNull Format format);
+    }
+
     private static final PKLog log = PKLog.get("ExoAnalyticsAggregator");
     private final Map<String, URIConnectionAcquiredInfo> urlCallTimeMap = new ConcurrentHashMap<>();
     private long totalDroppedFrames;
@@ -32,7 +43,8 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     private int renderedOutputBufferCount;
     private int skippedOutputBufferCount;
 
-    private PlayerEngine.AnalyticsListener listener;
+    @Nullable private PlayerEngine.AnalyticsListener listener;
+    @Nullable private InputFormatChangedListener inputFormatChangedListener;
 
     void reset() {
         totalDroppedFrames = 0;
@@ -41,8 +53,24 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
         skippedOutputBufferCount = 0;
     }
 
+    /**
+     * Listener for extra info. Being used to send the events
+     * @param listener listener for PlayerController
+     */
+    public void setListener(@Nullable PlayerEngine.AnalyticsListener listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * Listener to get the selected Video/Audio format by the Player
+     * @param inputFormatChangedListener listener for ExoPlayerWrapper
+     */
+    public void setInputFormatChangedListener(@Nullable InputFormatChangedListener inputFormatChangedListener) {
+        this.inputFormatChangedListener = inputFormatChangedListener;
+    }
+
     @Override
-    public void onDroppedVideoFrames(EventTime eventTime, int droppedFrames, long elapsedMs) {
+    public void onDroppedVideoFrames(@NonNull EventTime eventTime, int droppedFrames, long elapsedMs) {
         totalDroppedFrames += droppedFrames;
         if (listener != null) {
             listener.onDroppedFrames(droppedFrames, elapsedMs, totalDroppedFrames);
@@ -50,16 +78,16 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     }
 
     @Override
-    public void onVideoDisabled(EventTime eventTime, DecoderCounters decoderCounters) {
+    public void onVideoDisabled(@NonNull EventTime eventTime, DecoderCounters decoderCounters) {
         skippedOutputBufferCount  = decoderCounters.skippedOutputBufferCount;
         renderedOutputBufferCount = decoderCounters.renderedOutputBufferCount;
         if (listener != null) {
             listener.onDecoderDisabled(skippedOutputBufferCount, renderedOutputBufferCount);
         }
     }
-    
+
     @Override
-    public void onLoadCompleted(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+    public void onLoadCompleted(@NonNull EventTime eventTime, LoadEventInfo loadEventInfo, @NonNull MediaLoadData mediaLoadData) {
         if (loadEventInfo.bytesLoaded > 0) {
             if (mediaLoadData.trackType == C.TRACK_TYPE_VIDEO  || mediaLoadData.trackType == C.TRACK_TYPE_AUDIO || mediaLoadData.trackType == C.TRACK_TYPE_DEFAULT) { // in HLS track type 0 is sent in dash type 1 is sent
                 totalBytesLoaded += loadEventInfo.bytesLoaded;
@@ -73,31 +101,28 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
 
     @Override
     public void onIsLoadingChanged(EventTime eventTime, boolean isLoading) {
-        log.v("onIsLoadingChanged eventPlaybackPositionMs = " + eventTime.eventPlaybackPositionMs + " totalBufferedDurationMs = " + eventTime.totalBufferedDurationMs + " isLoading = " +  Boolean.toString(isLoading));
+        log.v("onIsLoadingChanged eventPlaybackPositionMs = " + eventTime.eventPlaybackPositionMs + " totalBufferedDurationMs = " + eventTime.totalBufferedDurationMs + " isLoading = " + isLoading);
     }
 
     @Override
-    public void onLoadCanceled(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+    public void onLoadCanceled(@NonNull EventTime eventTime, @NonNull LoadEventInfo loadEventInfo, @NonNull MediaLoadData mediaLoadData) {
         onLoadCompleted(eventTime, loadEventInfo, mediaLoadData);   // in case there are bytes loaded
     }
 
     @Override
-    public void onLoadError(EventTime eventTime, LoadEventInfo loadEventInfo,MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
+    public void onLoadError(@NonNull EventTime eventTime, @NonNull LoadEventInfo loadEventInfo, @NonNull MediaLoadData mediaLoadData, @NonNull IOException error, boolean wasCanceled) {
+        log.v("onLoadError Uri = " + loadEventInfo.uri.toString());
         onLoadCompleted(eventTime, loadEventInfo, mediaLoadData);   // in case there are bytes loaded
         if (listener != null) {
             listener.onLoadError(error, wasCanceled);
         }
     }
 
-    public void setListener(PlayerEngine.AnalyticsListener listener) {
-        this.listener = listener;
-    }
-
     @Override // OKHTTTP
     public void callStart(Call call) {
         String loadedURL = call.request().url().toString();
         log.v("callStart = " + loadedURL);
-        if (HTTP_METHOD_GET.equals(call.request().method())) {
+        if (!TextUtils.isEmpty(loadedURL) && HTTP_METHOD_GET.equals(call.request().method())) {
             URIConnectionAcquiredInfo connectionInfo = new URIConnectionAcquiredInfo();
             connectionInfo.connectDurationMs = SystemClock.elapsedRealtime();
             connectionInfo.url = loadedURL;
@@ -107,22 +132,28 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     }
 
     @Override // OKHTTTP
-    public void connectionAcquired(Call call, Connection connection) {
+    public void connectionAcquired(Call call, @NonNull Connection connection) {
         String loadedURL = call.request().url().toString();
         log.v("connectionAcquired = " + loadedURL);
-        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
-            urlCallTimeMap.get(loadedURL).connectDurationMs = (SystemClock.elapsedRealtime() - urlCallTimeMap.get(loadedURL).connectDurationMs);
+        if (isLoadedURLExists(loadedURL)) {
+            URIConnectionAcquiredInfo uriConnectionAcquiredInfo = urlCallTimeMap.get(loadedURL);
+            if (uriConnectionAcquiredInfo != null) {
+                uriConnectionAcquiredInfo.connectDurationMs = (SystemClock.elapsedRealtime() - uriConnectionAcquiredInfo.connectDurationMs);
+            }
         }
     }
 
     @Override // OKHTTTP
-    public void connectionReleased(Call call, Connection connection) {
+    public void connectionReleased(Call call, @NonNull Connection connection) {
         String loadedURL = call.request().url().toString();
         log.v("connectionReleased = " + loadedURL);
-        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
+        if (isLoadedURLExists(loadedURL)) {
             if (listener != null) {
                 listener.onConnectionAcquired(urlCallTimeMap.get(loadedURL));
-                log.v("connectionReleased SEND EVENT " + urlCallTimeMap.get(loadedURL).toString());
+                URIConnectionAcquiredInfo uriConnectionAcquiredInfo = urlCallTimeMap.get(loadedURL);
+                if (uriConnectionAcquiredInfo != null) {
+                    log.v("connectionReleased SEND EVENT");
+                }
             }
 
             urlCallTimeMap.remove(loadedURL);
@@ -130,22 +161,26 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     }
 
     @Override
-    public void dnsStart(Call call, String domainName) {
+    public void dnsStart(Call call, @NonNull String domainName) {
         log.v("dnsStart");
         String loadedURL = call.request().url().toString();
-        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
-            if (urlCallTimeMap.containsKey(loadedURL)) {
-                urlCallTimeMap.get(loadedURL).dnsDurationMs = SystemClock.elapsedRealtime();
+        if (isLoadedURLExists(loadedURL)) {
+            URIConnectionAcquiredInfo uriConnectionAcquiredInfo = urlCallTimeMap.get(loadedURL);
+            if (uriConnectionAcquiredInfo != null) {
+                uriConnectionAcquiredInfo.dnsDurationMs = SystemClock.elapsedRealtime();
             }
         }
     }
 
     @Override
-    public void dnsEnd(Call call, String domainName, List<InetAddress> inetAddressList) {
+    public void dnsEnd(Call call, @NonNull String domainName, @NonNull List<InetAddress> inetAddressList) {
         log.v("dnsEnd");
         String loadedURL = call.request().url().toString();
-        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
-            urlCallTimeMap.get(loadedURL).dnsDurationMs = (SystemClock.elapsedRealtime() - urlCallTimeMap.get(loadedURL).dnsDurationMs);
+        if (isLoadedURLExists(loadedURL)) {
+            URIConnectionAcquiredInfo uriConnectionAcquiredInfo = urlCallTimeMap.get(loadedURL);
+            if (uriConnectionAcquiredInfo != null) {
+                uriConnectionAcquiredInfo.dnsDurationMs = (SystemClock.elapsedRealtime() - uriConnectionAcquiredInfo.dnsDurationMs);
+            }
         }
     }
 
@@ -153,8 +188,11 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     public void secureConnectStart(Call call) {
         log.v("secureConnectStart");
         String loadedURL = call.request().url().toString();
-        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
-            urlCallTimeMap.get(loadedURL).tlsDurationMs = SystemClock.elapsedRealtime();
+        if (isLoadedURLExists(loadedURL)) {
+            URIConnectionAcquiredInfo uriConnectionAcquiredInfo = urlCallTimeMap.get(loadedURL);
+            if (uriConnectionAcquiredInfo != null) {
+                uriConnectionAcquiredInfo.tlsDurationMs = SystemClock.elapsedRealtime();
+            }
         }
     }
 
@@ -162,8 +200,29 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     public void secureConnectEnd(Call call, Handshake handshake) {
         log.v("secureConnectEnd");
         String loadedURL = call.request().url().toString();
-        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
-            urlCallTimeMap.get(loadedURL).tlsDurationMs = (SystemClock.elapsedRealtime() - urlCallTimeMap.get(loadedURL).tlsDurationMs);
+        if (isLoadedURLExists(loadedURL)) {
+            URIConnectionAcquiredInfo uriConnectionAcquiredInfo = urlCallTimeMap.get(loadedURL);
+            if (uriConnectionAcquiredInfo != null) {
+                uriConnectionAcquiredInfo.tlsDurationMs = (SystemClock.elapsedRealtime() - uriConnectionAcquiredInfo.tlsDurationMs);
+            }
+        }
+    }
+
+    private boolean isLoadedURLExists(String loadedURL) {
+        return loadedURL != null && urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null;
+    }
+
+    @Override
+    public void onVideoInputFormatChanged(@NonNull EventTime eventTime, @NonNull Format format, @Nullable DecoderReuseEvaluation decoderReuseEvaluation) {
+        if (inputFormatChangedListener != null) {
+            inputFormatChangedListener.onVideoInputFormatChanged(format);
+        }
+    }
+
+    @Override
+    public void onAudioInputFormatChanged(@NonNull EventTime eventTime, @NonNull Format format, @Nullable DecoderReuseEvaluation decoderReuseEvaluation) {
+        if (inputFormatChangedListener != null) {
+            inputFormatChangedListener.onAudioInputFormatChanged(format);
         }
     }
 }

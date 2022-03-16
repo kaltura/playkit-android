@@ -15,8 +15,13 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.playkit.ads.AdvertisingConfig;
+import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.DRMSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMaxVideoSize;
@@ -96,7 +101,9 @@ public interface Player {
          *
          * @param crossProtocolRedirectEnabled - true if should do cross protocol redirect.
          * @return - Player Settings.
+         * @deprecated Please use {@link com.kaltura.playkit.PKRequestConfig} to set crossProtocolRedirect
          */
+        @Deprecated
         Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled);
 
         /**
@@ -104,7 +111,9 @@ public interface Player {
          *
          * @param allowClearLead - should enable/disable clear lead playback default true (enabled)
          * @return - Player Settings.
+         * @deprecated Please use {@link #setDRMSettings(DRMSettings)} to set allowClearLead.
          */
+        @Deprecated
         Settings allowClearLead(boolean allowClearLead);
 
         /**
@@ -309,16 +318,20 @@ public interface Player {
          *
          * @param maxVideoSize - Max allowed video width and height
          * @return - Player Settings
+         * @deprecated Please use {@link #setABRSettings(ABRSettings)} to set max video size.
          */
+        @Deprecated
         Settings setMaxVideoSize(@NonNull PKMaxVideoSize maxVideoSize);
 
         /**
+         *
          * Sets the maximum allowed video bitrate.
          *
          * @param maxVideoBitrate Maximum allowed video bitrate in bits per second.
          * @return - Player Settings
+          @deprecated Please use {@link #setABRSettings(ABRSettings)} to set max video bitrate.
          */
-
+        @Deprecated
         Settings setMaxVideoBitrate(@NonNull Integer maxVideoBitrate);
 
         /**
@@ -338,14 +351,32 @@ public interface Player {
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
 
         /**
+         * Sets the multicastSettings for udp streams.
+         *
+         * @param multicastSettings - maxPacketSize default = 3000 & socketTimeoutMillis default = 10000
+         * @return - Player Settings
+         */
+        Settings setMulticastSettings(MulticastSettings multicastSettings);
+
+        /**
          * If the device codec is known to fail if security level L1 is used
          * then set flag to true, it will force the player to use Widevine L3
          * Will work only SDK level 18 or above
          *
          * @param forceWidevineL3Playback - force the L3 Playback. Default is false
          * @return - Player Settings
+         * @deprecated Please use {@link #setDRMSettings(DRMSettings)} to forceWidevineL3Playback.
          */
+        @Deprecated
         Settings forceWidevineL3Playback(boolean forceWidevineL3Playback);
+
+        /**
+         * Creates a DRM playback configuration.
+         *
+         * @param drmSettings - Configuration for DRM playback Widevine/Playready default is Widevine
+         * @return - Player Settings
+         */
+        Settings setDRMSettings(DRMSettings drmSettings);
 
         /**
          * Creates a Low Latency Live playback configuration.
@@ -354,6 +385,14 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig);
+
+        /**
+         * Creates a request configuration for HttpDataSourceFactory {@link com.kaltura.playkit.player.ExoPlayerWrapper}.
+         *
+         * @param pkRequestConfig - Configuration for PKRequestConfig
+         * @return - Player Settings
+         */
+        Settings setPKRequestConfig(PKRequestConfig pkRequestConfig);
     }
 
     /**
@@ -370,7 +409,22 @@ public interface Player {
      */
     void prepare(@NonNull PKMediaConfig playerConfig);
 
+    /**
+     * Used by Kaltura-Player SDK internally for AdvertisingConfiguration.
+     * @param pkAdvertisingController Controller, it resides in Kaltura-Player
+     * @param advertisingConfig AdvertisingConfig
+     */
+    void setAdvertising(@NonNull PKAdvertisingController pkAdvertisingController, @Nullable AdvertisingConfig advertisingConfig);
+
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
+    
+    /**
+     * Used by Kaltura-Player SDK internally for ExoOffline provider.
+     * This feature is blocked for being used directly by Playkit SDK.
+     *
+     * @param downloadCache internally build the CacheDataSource
+     */
+    void setDownloadCache(Cache downloadCache);
 
     /**
      * Player lifecycle method. Should be used when the application went to onPause();
@@ -461,9 +515,9 @@ public interface Player {
 
     /**
      * Change the volume of the current audio track.
-     * Accept values between 0 and 1. Where 0 is mute and 1 is maximum volume.
-     * If the volume parameter is higher then 1, it will be converted to 1.
-     * If the volume parameter is lower then 0, it be converted to 0.
+     * Accept values between 0.0 and 1.0. Where 0.0 is mute and 1.0 is maximum volume.
+     * If the volume parameter is higher then 1.0, it will be converted to 1.0.
+     * If the volume parameter is lower then 0.0, it be converted to 0.0.
      *
      * @param volume - volume to set.
      */
@@ -563,7 +617,7 @@ public interface Player {
 
     /** Update ABRSettings
      * <br>
-     * Updating {@link ABRSettings#setInitialBitrateEstimate(long)} is unaffected because
+     * Updating {@link ABRSettings#setInitialBitrateEstimate(Long)} is unaffected because
      * initial bitrate is only meant at the start of the playback
      * <br>
      * @param abrSettings new ABR Settings
@@ -653,7 +707,7 @@ public interface Player {
      * Add state changed listener to the player.
      *
      * @param listener - state changed listener
-     * @deprecated Use {@link #addListener(Object, Class, PKEvent.Listener)} with {@link PlayerEvent#stateChanged}
+     * @deprecated Please use {@link #addListener(Object, Class, PKEvent.Listener)} with {@link PlayerEvent#stateChanged}
      * and remove with {@link #removeListeners(Object)}.
      */
     @Deprecated

@@ -1,14 +1,17 @@
 package com.kaltura.android.exoplayer2.dashmanifestparser;
 
 import android.net.Uri;
-import android.os.Build;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Pair;
 import android.util.Xml;
+
 import androidx.annotation.Nullable;
 
+import com.google.common.base.Ascii;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.ParserException;
@@ -16,12 +19,11 @@ import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmInitData.SchemeData;
 import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
 import com.kaltura.android.exoplayer2.metadata.emsg.EventMessage;
-import com.kaltura.android.exoplayer2.source.dash.manifest.AdaptationSet;
+import com.kaltura.android.exoplayer2.source.dash.manifest.BaseUrl;
 import com.kaltura.android.exoplayer2.source.dash.manifest.Descriptor;
 import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.android.exoplayer2.source.dash.manifest.ProgramInformation;
 import com.kaltura.android.exoplayer2.source.dash.manifest.RangedUri;
-import com.kaltura.android.exoplayer2.source.dash.manifest.Representation;
 import com.kaltura.android.exoplayer2.source.dash.manifest.ServiceDescriptionElement;
 import com.kaltura.android.exoplayer2.source.dash.manifest.UrlTemplate;
 import com.kaltura.android.exoplayer2.source.dash.manifest.UtcTimingElement;
@@ -32,16 +34,6 @@ import com.kaltura.android.exoplayer2.util.UriUtil;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.android.exoplayer2.util.XmlPullParserUtil;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.checkerframework.checker.nullness.compatqual.NullableType;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmlpull.v1.XmlPullParser;
@@ -49,12 +41,25 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 import org.xmlpull.v1.XmlSerializer;
 
-import static com.kaltura.android.exoplayer2.util.MimeTypes.BASE_TYPE_IMAGE;
-import static com.kaltura.android.exoplayer2.dashmanifestparser.CustomSegmentBase.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- * A parser of media presentation description files.
- */
+import static com.kaltura.android.exoplayer2.dashmanifestparser.CustomSegmentBase.SegmentList;
+import static com.kaltura.android.exoplayer2.dashmanifestparser.CustomSegmentBase.SegmentTemplate;
+import static com.kaltura.android.exoplayer2.dashmanifestparser.CustomSegmentBase.SegmentTimelineElement;
+import static com.kaltura.android.exoplayer2.dashmanifestparser.CustomSegmentBase.SingleSegmentBase;
+import static com.kaltura.android.exoplayer2.source.dash.manifest.BaseUrl.DEFAULT_DVB_PRIORITY;
+import static com.kaltura.android.exoplayer2.source.dash.manifest.BaseUrl.DEFAULT_WEIGHT;
+import static com.kaltura.android.exoplayer2.source.dash.manifest.BaseUrl.PRIORITY_UNSET;
+import static com.kaltura.android.exoplayer2.util.MimeTypes.BASE_TYPE_IMAGE;
+
+/** A parser of media presentation description files. */
 public class CustomDashManifestParser extends DefaultHandler {
 
     private static final String TAG = "MpdParser";
@@ -90,39 +95,50 @@ public class CustomDashManifestParser extends DefaultHandler {
     public CustomDashManifest parse(Uri uri, String dashManifest) throws IOException {
         try {
             XmlPullParser xpp = xmlParserFactory.newPullParser();
-            xpp.setInput( new StringReader( dashManifest ) );
+            xpp.setInput(new StringReader(dashManifest));
             int eventType = xpp.next();
             if (eventType != XmlPullParser.START_TAG || !"MPD".equals(xpp.getName())) {
-                throw new ParserException(
-                        "inputStream does not contain a valid media presentation description");
+                throw ParserException.createForMalformedManifest(
+                        "inputStream does not contain a valid media presentation description",
+                        /* cause= */ null);
             }
-            return parseMediaPresentationDescription(xpp, uri.toString());
+            return parseMediaPresentationDescription(xpp, uri);
         } catch (XmlPullParserException e) {
-            throw new ParserException(e);
+            throw ParserException.createForMalformedManifest(/* message= */ null, /* cause= */ e);
         }
     }
 
-    protected CustomDashManifest parseMediaPresentationDescription(XmlPullParser xpp,
-                                                             String baseUrl) throws XmlPullParserException, IOException {
+    protected CustomDashManifest parseMediaPresentationDescription(
+            XmlPullParser xpp, Uri documentBaseUri) throws XmlPullParserException, IOException {
+        boolean dvbProfileDeclared =
+                isDvbProfileDeclared(parseProfiles(xpp, "profiles", new String[0]));
         long availabilityStartTime = parseDateTime(xpp, "availabilityStartTime", C.TIME_UNSET);
         long durationMs = parseDuration(xpp, "mediaPresentationDuration", C.TIME_UNSET);
         long minBufferTimeMs = parseDuration(xpp, "minBufferTime", C.TIME_UNSET);
         String typeString = xpp.getAttributeValue(null, "type");
         boolean dynamic = "dynamic".equals(typeString);
-        long minUpdateTimeMs = dynamic ? parseDuration(xpp, "minimumUpdatePeriod", C.TIME_UNSET)
-                : C.TIME_UNSET;
-        long timeShiftBufferDepthMs = dynamic
-                ? parseDuration(xpp, "timeShiftBufferDepth", C.TIME_UNSET) : C.TIME_UNSET;
-        long suggestedPresentationDelayMs = dynamic
-                ? parseDuration(xpp, "suggestedPresentationDelay", C.TIME_UNSET) : C.TIME_UNSET;
+        long minUpdateTimeMs =
+                dynamic ? parseDuration(xpp, "minimumUpdatePeriod", C.TIME_UNSET) : C.TIME_UNSET;
+        long timeShiftBufferDepthMs =
+                dynamic ? parseDuration(xpp, "timeShiftBufferDepth", C.TIME_UNSET) : C.TIME_UNSET;
+        long suggestedPresentationDelayMs =
+                dynamic ? parseDuration(xpp, "suggestedPresentationDelay", C.TIME_UNSET) : C.TIME_UNSET;
         long publishTimeMs = parseDateTime(xpp, "publishTime", C.TIME_UNSET);
         ProgramInformation programInformation = null;
         UtcTimingElement utcTiming = null;
         Uri location = null;
         ServiceDescriptionElement serviceDescription = null;
         long baseUrlAvailabilityTimeOffsetUs = dynamic ? 0 : C.TIME_UNSET;
+        BaseUrl documentBaseUrl =
+                new BaseUrl(
+                        documentBaseUri.toString(),
+                        /* serviceLocation= */ documentBaseUri.toString(),
+                        dvbProfileDeclared ? DEFAULT_DVB_PRIORITY : PRIORITY_UNSET,
+                        DEFAULT_WEIGHT);
+        ArrayList<BaseUrl> parentBaseUrls = Lists.newArrayList(documentBaseUrl);
 
         List<CustomPeriod> periods = new ArrayList<>();
+        ArrayList<BaseUrl> baseUrls = new ArrayList<>();
         long nextPeriodStartMs = dynamic ? C.TIME_UNSET : 0;
         boolean seenEarlyAccessPeriod = false;
         boolean seenFirstBaseUrl = false;
@@ -132,26 +148,27 @@ public class CustomDashManifestParser extends DefaultHandler {
                 if (!seenFirstBaseUrl) {
                     baseUrlAvailabilityTimeOffsetUs =
                             parseAvailabilityTimeOffsetUs(xpp, baseUrlAvailabilityTimeOffsetUs);
-                    baseUrl = parseBaseUrl(xpp, baseUrl);
                     seenFirstBaseUrl = true;
                 }
+                baseUrls.addAll(parseBaseUrl(xpp, parentBaseUrls, dvbProfileDeclared));
             } else if (XmlPullParserUtil.isStartTag(xpp, "ProgramInformation")) {
                 programInformation = parseProgramInformation(xpp);
             } else if (XmlPullParserUtil.isStartTag(xpp, "UTCTiming")) {
                 utcTiming = parseUtcTiming(xpp);
             } else if (XmlPullParserUtil.isStartTag(xpp, "Location")) {
-                location = Uri.parse(xpp.nextText());
+                location = UriUtil.resolveToUri(documentBaseUri.toString(), xpp.nextText());
             } else if (XmlPullParserUtil.isStartTag(xpp, "ServiceDescription")) {
                 serviceDescription = parseServiceDescription(xpp);
             } else if (XmlPullParserUtil.isStartTag(xpp, "Period") && !seenEarlyAccessPeriod) {
                 Pair<CustomPeriod, Long> periodWithDurationMs =
                         parsePeriod(
                                 xpp,
-                                baseUrl,
+                                !baseUrls.isEmpty() ? baseUrls : parentBaseUrls,
                                 nextPeriodStartMs,
                                 baseUrlAvailabilityTimeOffsetUs,
                                 availabilityStartTime,
-                                timeShiftBufferDepthMs);
+                                timeShiftBufferDepthMs,
+                                dvbProfileDeclared);
                 CustomPeriod period = periodWithDurationMs.first;
                 if (period.startMs == C.TIME_UNSET) {
                     if (dynamic) {
@@ -159,12 +176,13 @@ public class CustomDashManifestParser extends DefaultHandler {
                         // early access.
                         seenEarlyAccessPeriod = true;
                     } else {
-                        throw new ParserException("Unable to determine start of period " + periods.size());
+                        throw ParserException.createForMalformedManifest(
+                                "Unable to determine start of period " + periods.size(), /* cause= */ null);
                     }
                 } else {
                     long periodDurationMs = periodWithDurationMs.second;
-                    nextPeriodStartMs = periodDurationMs == C.TIME_UNSET ? C.TIME_UNSET
-                            : (period.startMs + periodDurationMs);
+                    nextPeriodStartMs =
+                            periodDurationMs == C.TIME_UNSET ? C.TIME_UNSET : (period.startMs + periodDurationMs);
                     periods.add(period);
                 }
             } else {
@@ -177,12 +195,13 @@ public class CustomDashManifestParser extends DefaultHandler {
                 // If we know the end time of the final period, we can use it as the duration.
                 durationMs = nextPeriodStartMs;
             } else if (!dynamic) {
-                throw new ParserException("Unable to determine duration of static manifest.");
+                throw ParserException.createForMalformedManifest(
+                        "Unable to determine duration of static manifest.", /* cause= */ null);
             }
         }
 
         if (periods.isEmpty()) {
-            throw new ParserException("No periods found.");
+            throw ParserException.createForMalformedManifest("No periods found.", /* cause= */ null);
         }
 
         return buildMediaPresentationDescription(
@@ -265,11 +284,12 @@ public class CustomDashManifestParser extends DefaultHandler {
 
     protected Pair<CustomPeriod, Long> parsePeriod(
             XmlPullParser xpp,
-            String baseUrl,
+            List<BaseUrl> parentBaseUrls,
             long defaultStartMs,
             long baseUrlAvailabilityTimeOffsetUs,
             long availabilityStartTimeMs,
-            long timeShiftBufferDepthMs)
+            long timeShiftBufferDepthMs,
+            boolean dvbProfileDeclared)
             throws XmlPullParserException, IOException {
         @Nullable String id = xpp.getAttributeValue(null, "id");
         long startMs = parseDuration(xpp, "start", defaultStartMs);
@@ -280,6 +300,7 @@ public class CustomDashManifestParser extends DefaultHandler {
         @Nullable Descriptor assetIdentifier = null;
         List<CustomAdaptationSet> adaptationSets = new ArrayList<>();
         List<EventStream> eventStreams = new ArrayList<>();
+        ArrayList<BaseUrl> baseUrls = new ArrayList<>();
         boolean seenFirstBaseUrl = false;
         long segmentBaseAvailabilityTimeOffsetUs = C.TIME_UNSET;
         do {
@@ -288,20 +309,21 @@ public class CustomDashManifestParser extends DefaultHandler {
                 if (!seenFirstBaseUrl) {
                     baseUrlAvailabilityTimeOffsetUs =
                             parseAvailabilityTimeOffsetUs(xpp, baseUrlAvailabilityTimeOffsetUs);
-                    baseUrl = parseBaseUrl(xpp, baseUrl);
                     seenFirstBaseUrl = true;
                 }
+                baseUrls.addAll(parseBaseUrl(xpp, parentBaseUrls, dvbProfileDeclared));
             } else if (XmlPullParserUtil.isStartTag(xpp, "AdaptationSet")) {
                 adaptationSets.add(
                         parseAdaptationSet(
                                 xpp,
-                                baseUrl,
+                                !baseUrls.isEmpty() ? baseUrls : parentBaseUrls,
                                 segmentBase,
                                 durationMs,
                                 baseUrlAvailabilityTimeOffsetUs,
                                 segmentBaseAvailabilityTimeOffsetUs,
                                 periodStartUnixTimeMs,
-                                timeShiftBufferDepthMs));
+                                timeShiftBufferDepthMs,
+                                dvbProfileDeclared));
             } else if (XmlPullParserUtil.isStartTag(xpp, "EventStream")) {
                 eventStreams.add(parseEventStream(xpp));
             } else if (XmlPullParserUtil.isStartTag(xpp, "SegmentBase")) {
@@ -355,22 +377,24 @@ public class CustomDashManifestParser extends DefaultHandler {
 
     protected CustomAdaptationSet parseAdaptationSet(
             XmlPullParser xpp,
-            String baseUrl,
+            List<BaseUrl> parentBaseUrls,
             @Nullable CustomSegmentBase segmentBase,
             long periodDurationMs,
             long baseUrlAvailabilityTimeOffsetUs,
             long segmentBaseAvailabilityTimeOffsetUs,
             long periodStartUnixTimeMs,
-            long timeShiftBufferDepthMs)
+            long timeShiftBufferDepthMs,
+            boolean dvbProfileDeclared)
             throws XmlPullParserException, IOException {
-        int id = parseInt(xpp, "id", AdaptationSet.ID_UNSET);
-        int contentType = parseContentType(xpp);
+        int id = parseInt(xpp, "id", CustomAdaptationSet.ID_UNSET);
+        @C.TrackType int contentType = parseContentType(xpp);
 
         String mimeType = xpp.getAttributeValue(null, "mimeType");
 
         if (contentType == -1 && ("image/jpeg".equals(mimeType) || "image/png".equals(mimeType))) {
             contentType = C.TRACK_TYPE_IMAGE;
         }
+
         String codecs = xpp.getAttributeValue(null, "codecs");
         int width = parseInt(xpp, "width", Format.NO_VALUE);
         int height = parseInt(xpp, "height", Format.NO_VALUE);
@@ -387,6 +411,7 @@ public class CustomDashManifestParser extends DefaultHandler {
         ArrayList<Descriptor> essentialProperties = new ArrayList<>();
         ArrayList<Descriptor> supplementalProperties = new ArrayList<>();
         List<RepresentationInfo> representationInfos = new ArrayList<>();
+        ArrayList<BaseUrl> baseUrls = new ArrayList<>();
 
         boolean seenFirstBaseUrl = false;
         do {
@@ -395,9 +420,9 @@ public class CustomDashManifestParser extends DefaultHandler {
                 if (!seenFirstBaseUrl) {
                     baseUrlAvailabilityTimeOffsetUs =
                             parseAvailabilityTimeOffsetUs(xpp, baseUrlAvailabilityTimeOffsetUs);
-                    baseUrl = parseBaseUrl(xpp, baseUrl);
                     seenFirstBaseUrl = true;
                 }
+                baseUrls.addAll(parseBaseUrl(xpp, parentBaseUrls, dvbProfileDeclared));
             } else if (XmlPullParserUtil.isStartTag(xpp, "ContentProtection")) {
                 Pair<String, SchemeData> contentProtection = parseContentProtection(xpp);
                 if (contentProtection.first != null) {
@@ -423,7 +448,7 @@ public class CustomDashManifestParser extends DefaultHandler {
                 RepresentationInfo representationInfo =
                         parseRepresentation(
                                 xpp,
-                                baseUrl,
+                                !baseUrls.isEmpty() ? baseUrls : parentBaseUrls,
                                 mimeType,
                                 codecs,
                                 width,
@@ -441,7 +466,8 @@ public class CustomDashManifestParser extends DefaultHandler {
                                 periodDurationMs,
                                 baseUrlAvailabilityTimeOffsetUs,
                                 segmentBaseAvailabilityTimeOffsetUs,
-                                timeShiftBufferDepthMs);
+                                timeShiftBufferDepthMs,
+                                dvbProfileDeclared);
                 contentType =
                         checkContentTypeConsistency(
                                 contentType, MimeTypes.getTrackType(representationInfo.format.sampleMimeType));
@@ -491,7 +517,8 @@ public class CustomDashManifestParser extends DefaultHandler {
                             label,
                             drmSchemeType,
                             drmSchemeDatas,
-                            inbandEventStreams));
+                            inbandEventStreams,
+                            baseUrls));
         }
 
         return buildAdaptationSet(
@@ -505,7 +532,7 @@ public class CustomDashManifestParser extends DefaultHandler {
 
     protected CustomAdaptationSet buildAdaptationSet(
             int id,
-            int contentType,
+            @C.TrackType int contentType,
             List<CustomRepresentation> representations,
             List<Descriptor> accessibilityDescriptors,
             List<Descriptor> essentialProperties,
@@ -519,7 +546,7 @@ public class CustomDashManifestParser extends DefaultHandler {
                 supplementalProperties);
     }
 
-    protected int parseContentType(XmlPullParser xpp) {
+    protected @C.TrackType int parseContentType(XmlPullParser xpp) {
         String contentType = xpp.getAttributeValue(null, "contentType");
         return TextUtils.isEmpty(contentType) ? C.TRACK_TYPE_UNKNOWN
                 : MimeTypes.BASE_TYPE_AUDIO.equals(contentType) ? C.TRACK_TYPE_AUDIO
@@ -547,7 +574,7 @@ public class CustomDashManifestParser extends DefaultHandler {
 
         String schemeIdUri = xpp.getAttributeValue(null, "schemeIdUri");
         if (schemeIdUri != null) {
-            switch (Util.toLowerInvariant(schemeIdUri)) {
+            switch (Ascii.toLowerCase(schemeIdUri)) {
                 case "urn:mpeg:dash:mp4protection:2011":
                     schemeType = xpp.getAttributeValue(null, "value");
                     String defaultKid = XmlPullParserUtil.getAttributeValueIgnorePrefix(xpp, "default_KID");
@@ -620,7 +647,7 @@ public class CustomDashManifestParser extends DefaultHandler {
 
     protected RepresentationInfo parseRepresentation(
             XmlPullParser xpp,
-            String baseUrl,
+            List<BaseUrl> parentBaseUrls,
             @Nullable String adaptationSetMimeType,
             @Nullable String adaptationSetCodecs,
             int adaptationSetWidth,
@@ -638,13 +665,13 @@ public class CustomDashManifestParser extends DefaultHandler {
             long periodDurationMs,
             long baseUrlAvailabilityTimeOffsetUs,
             long segmentBaseAvailabilityTimeOffsetUs,
-            long timeShiftBufferDepthMs)
+            long timeShiftBufferDepthMs,
+            boolean dvbProfileDeclared)
             throws XmlPullParserException, IOException {
         String id = xpp.getAttributeValue(null, "id");
         int bandwidth = parseInt(xpp, "bandwidth", Format.NO_VALUE);
 
         String mimeType = parseString(xpp, "mimeType", adaptationSetMimeType);
-
         String codecs = parseString(xpp, "codecs", adaptationSetCodecs);
         int width = parseInt(xpp, "width", adaptationSetWidth);
         int height = parseInt(xpp, "height", adaptationSetHeight);
@@ -657,6 +684,7 @@ public class CustomDashManifestParser extends DefaultHandler {
         ArrayList<Descriptor> essentialProperties = new ArrayList<>(adaptationSetEssentialProperties);
         ArrayList<Descriptor> supplementalProperties =
                 new ArrayList<>(adaptationSetSupplementalProperties);
+        ArrayList<BaseUrl> baseUrls = new ArrayList<>();
 
         boolean seenFirstBaseUrl = false;
         do {
@@ -665,9 +693,9 @@ public class CustomDashManifestParser extends DefaultHandler {
                 if (!seenFirstBaseUrl) {
                     baseUrlAvailabilityTimeOffsetUs =
                             parseAvailabilityTimeOffsetUs(xpp, baseUrlAvailabilityTimeOffsetUs);
-                    baseUrl = parseBaseUrl(xpp, baseUrl);
                     seenFirstBaseUrl = true;
                 }
+                baseUrls.addAll(parseBaseUrl(xpp, parentBaseUrls, dvbProfileDeclared));
             } else if (XmlPullParserUtil.isStartTag(xpp, "AudioChannelConfiguration")) {
                 audioChannels = parseAudioChannelConfiguration(xpp);
             } else if (XmlPullParserUtil.isStartTag(xpp, "SegmentBase")) {
@@ -716,6 +744,8 @@ public class CustomDashManifestParser extends DefaultHandler {
             }
         } while (!XmlPullParserUtil.isEndTag(xpp, "Representation"));
 
+        String baseUrl = (!baseUrls.isEmpty() && baseUrls.size() > 0) ? baseUrls.get(0).url : parentBaseUrls.get(0).url;
+
         CustomFormat format =
                 buildFormat(
                         id,
@@ -737,8 +767,17 @@ public class CustomDashManifestParser extends DefaultHandler {
 
         segmentBase = segmentBase != null ? segmentBase : new SingleSegmentBase();
 
-        return new RepresentationInfo(format, baseUrl, segmentBase, drmSchemeType, drmSchemeDatas,
-                inbandEventStreams, Representation.REVISION_ID_DEFAULT);  }
+        return new RepresentationInfo(
+                format,
+                !baseUrls.isEmpty() ? baseUrls : parentBaseUrls,
+                segmentBase,
+                drmSchemeType,
+                drmSchemeDatas,
+                inbandEventStreams,
+                essentialProperties,
+                supplementalProperties,
+                CustomRepresentation.REVISION_ID_DEFAULT);
+    }
 
     protected CustomFormat buildFormat(
             @Nullable String id,
@@ -760,11 +799,16 @@ public class CustomDashManifestParser extends DefaultHandler {
         @Nullable String sampleMimeType = getSampleMimeType(containerMimeType, codecs);
         if (MimeTypes.AUDIO_E_AC3.equals(sampleMimeType)) {
             sampleMimeType = parseEac3SupplementalProperties(supplementalProperties);
+            if (MimeTypes.AUDIO_E_AC3_JOC.equals(sampleMimeType)) {
+                codecs = MimeTypes.CODEC_E_AC3_JOC;
+            }
         }
+
         CustomFormat.FormatThumbnailInfo formatThumbnailInfo = null;
         if (isImage(containerMimeType)) {
-            formatThumbnailInfo = buildFormatThumbnailInfo(baseURL, id, bitrate , segmentBase, essentialProperties);
+            formatThumbnailInfo = buildFormatThumbnailInfo(baseURL, id, bitrate, segmentBase, essentialProperties);
         }
+
         @C.SelectionFlags int selectionFlags = parseSelectionFlagsFromRoleDescriptors(roleDescriptors);
         @C.RoleFlags int roleFlags = parseRoleFlagsFromRoleDescriptors(roleDescriptors);
         roleFlags |= parseRoleFlagsFromAccessibilityDescriptors(accessibilityDescriptors);
@@ -799,6 +843,8 @@ public class CustomDashManifestParser extends DefaultHandler {
                 accessibilityChannel = parseCea708AccessibilityChannel(accessibilityDescriptors);
             }
             formatBuilder.setAccessibilityChannel(accessibilityChannel);
+        } else if (MimeTypes.isImage(sampleMimeType)) {
+            formatBuilder.setWidth(width).setHeight(height);
         }
 
         return formatBuilder.build();
@@ -825,14 +871,19 @@ public class CustomDashManifestParser extends DefaultHandler {
             @Nullable String label,
             @Nullable String extraDrmSchemeType,
             ArrayList<SchemeData> extraDrmSchemeDatas,
-            ArrayList<Descriptor> extraInbandEventStreams) {
+            ArrayList<Descriptor> extraInbandEventStreams,
+            List<BaseUrl> parentBaseUrls) {
         CustomFormat.Builder formatBuilder = representationInfo.format.buildUpon();
         if (label != null) {
             formatBuilder.setLabel(label);
         }
+
         if (isImage(representationInfo.format.containerMimeType)) {
             if (representationInfo.format.formatThumbnailInfo == null) {
-                formatBuilder.setFormatThumbnailInfo(buildFormatThumbnailInfo(representationInfo.baseUrl, representationInfo.format.id, representationInfo.format.bitrate, representationInfo.segmentBase, null));
+                String baseUrl = (!representationInfo.baseUrls.isEmpty() && representationInfo.baseUrls.size() > 0) ?
+                        representationInfo.baseUrls.get(0).url :
+                        parentBaseUrls.get(0).url;
+                formatBuilder.setFormatThumbnailInfo(buildFormatThumbnailInfo(baseUrl, representationInfo.format.id, representationInfo.format.bitrate, representationInfo.segmentBase, null));
             } else {
                 formatBuilder.setFormatThumbnailInfo(representationInfo.format.formatThumbnailInfo);
             }
@@ -853,9 +904,12 @@ public class CustomDashManifestParser extends DefaultHandler {
         return CustomRepresentation.newInstance(
                 representationInfo.revisionId,
                 formatBuilder.build(),
-                representationInfo.baseUrl,
+                representationInfo.baseUrls,
                 representationInfo.segmentBase,
-                inbandEventStreams);
+                inbandEventStreams,
+                representationInfo.essentialProperties,
+                representationInfo.supplementalProperties,
+                /* cacheKey= */ null);
     }
 
     private CustomFormat.FormatThumbnailInfo buildFormatThumbnailInfo(String baseURL, String id, int bitrate, CustomSegmentBase segmentBase, List<Descriptor> essentialProperties) {
@@ -907,8 +961,9 @@ public class CustomDashManifestParser extends DefaultHandler {
             throws XmlPullParserException, IOException {
 
         long timescale = parseLong(xpp, "timescale", parent != null ? parent.timescale : 1);
-        long presentationTimeOffset = parseLong(xpp, "presentationTimeOffset",
-                parent != null ? parent.presentationTimeOffset : 0);
+        long presentationTimeOffset =
+                parseLong(
+                        xpp, "presentationTimeOffset", parent != null ? parent.presentationTimeOffset : 0);
 
         long indexStart = parent != null ? parent.indexStart : 0;
         long indexLength = parent != null ? parent.indexLength : 0;
@@ -929,14 +984,18 @@ public class CustomDashManifestParser extends DefaultHandler {
             }
         } while (!XmlPullParserUtil.isEndTag(xpp, "SegmentBase"));
 
-        return buildSingleSegmentBase(initialization, timescale, presentationTimeOffset, indexStart,
-                indexLength);
+        return buildSingleSegmentBase(
+                initialization, timescale, presentationTimeOffset, indexStart, indexLength);
     }
 
-    protected SingleSegmentBase buildSingleSegmentBase(RangedUri initialization, long timescale,
-                                                       long presentationTimeOffset, long indexStart, long indexLength) {
-        return new SingleSegmentBase(initialization, timescale, presentationTimeOffset, indexStart,
-                indexLength);
+    protected SingleSegmentBase buildSingleSegmentBase(
+            RangedUri initialization,
+            long timescale,
+            long presentationTimeOffset,
+            long indexStart,
+            long indexLength) {
+        return new SingleSegmentBase(
+                initialization, timescale, presentationTimeOffset, indexStart, indexLength);
     }
 
     protected SegmentList parseSegmentList(
@@ -950,8 +1009,9 @@ public class CustomDashManifestParser extends DefaultHandler {
             throws XmlPullParserException, IOException {
 
         long timescale = parseLong(xpp, "timescale", parent != null ? parent.timescale : 1);
-        long presentationTimeOffset = parseLong(xpp, "presentationTimeOffset",
-                parent != null ? parent.presentationTimeOffset : 0);
+        long presentationTimeOffset =
+                parseLong(
+                        xpp, "presentationTimeOffset", parent != null ? parent.presentationTimeOffset : 0);
         long duration = parseLong(xpp, "duration", parent != null ? parent.duration : C.TIME_UNSET);
         long startNumber = parseLong(xpp, "startNumber", parent != null ? parent.startNumber : 1);
         long availabilityTimeOffsetUs =
@@ -1017,8 +1077,8 @@ public class CustomDashManifestParser extends DefaultHandler {
                 timeline,
                 availabilityTimeOffsetUs,
                 segments,
-                C.msToUs(timeShiftBufferDepthMs),
-                C.msToUs(periodStartUnixTimeMs));
+                Util.msToUs(timeShiftBufferDepthMs),
+                Util.msToUs(periodStartUnixTimeMs));
     }
 
     protected SegmentTemplate parseSegmentTemplate(
@@ -1032,8 +1092,9 @@ public class CustomDashManifestParser extends DefaultHandler {
             long timeShiftBufferDepthMs)
             throws XmlPullParserException, IOException {
         long timescale = parseLong(xpp, "timescale", parent != null ? parent.timescale : 1);
-        long presentationTimeOffset = parseLong(xpp, "presentationTimeOffset",
-                parent != null ? parent.presentationTimeOffset : 0);
+        long presentationTimeOffset =
+                parseLong(
+                        xpp, "presentationTimeOffset", parent != null ? parent.presentationTimeOffset : 0);
         long duration = parseLong(xpp, "duration", parent != null ? parent.duration : C.TIME_UNSET);
         long startNumber = parseLong(xpp, "startNumber", parent != null ? parent.startNumber : 1);
         long endNumber =
@@ -1042,10 +1103,11 @@ public class CustomDashManifestParser extends DefaultHandler {
                 getFinalAvailabilityTimeOffset(
                         baseUrlAvailabilityTimeOffsetUs, segmentBaseAvailabilityTimeOffsetUs);
 
-        UrlTemplate mediaTemplate = parseUrlTemplate(xpp, "media",
-                parent != null ? parent.mediaTemplate : null);
-        UrlTemplate initializationTemplate = parseUrlTemplate(xpp, "initialization",
-                parent != null ? parent.initializationTemplate : null);
+        UrlTemplate mediaTemplate =
+                parseUrlTemplate(xpp, "media", parent != null ? parent.mediaTemplate : null);
+        UrlTemplate initializationTemplate =
+                parseUrlTemplate(
+                        xpp, "initialization", parent != null ? parent.initializationTemplate : null);
 
         RangedUri initialization = null;
         List<SegmentTimelineElement> timeline = null;
@@ -1105,8 +1167,8 @@ public class CustomDashManifestParser extends DefaultHandler {
                 availabilityTimeOffsetUs,
                 initializationTemplate,
                 mediaTemplate,
-                C.msToUs(timeShiftBufferDepthMs),
-                C.msToUs(periodStartUnixTimeMs));
+                Util.msToUs(timeShiftBufferDepthMs),
+                Util.msToUs(periodStartUnixTimeMs));
     }
 
     /**
@@ -1145,8 +1207,12 @@ public class CustomDashManifestParser extends DefaultHandler {
         return buildEventStream(schemeIdUri, value, timescale, presentationTimesUs, events);
     }
 
-    protected EventStream buildEventStream(String schemeIdUri, String value, long timescale,
-                                           long[] presentationTimesUs, EventMessage[] events) {
+    protected EventStream buildEventStream(
+            String schemeIdUri,
+            String value,
+            long timescale,
+            long[] presentationTimesUs,
+            EventMessage[] events) {
         return new EventStream(schemeIdUri, value, timescale, presentationTimesUs, events);
     }
 
@@ -1175,8 +1241,8 @@ public class CustomDashManifestParser extends DefaultHandler {
         long duration = parseLong(xpp, "duration", C.TIME_UNSET);
         long presentationTime = parseLong(xpp, "presentationTime", 0);
         long durationMs = Util.scaleLargeTimestamp(duration, C.MILLIS_PER_SECOND, timescale);
-        long presentationTimesUs = Util.scaleLargeTimestamp(presentationTime, C.MICROS_PER_SECOND,
-                timescale);
+        long presentationTimesUs =
+                Util.scaleLargeTimestamp(presentationTime, C.MICROS_PER_SECOND, timescale);
         String messageData = parseString(xpp, "messageData", null);
         byte[] eventObject = parseEventObject(xpp, scratchOutputStream);
         return Pair.create(
@@ -1202,9 +1268,7 @@ public class CustomDashManifestParser extends DefaultHandler {
             throws XmlPullParserException, IOException {
         scratchOutputStream.reset();
         XmlSerializer xmlSerializer = Xml.newSerializer();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            xmlSerializer.setOutput(scratchOutputStream, StandardCharsets.UTF_8.name());
-        }
+        xmlSerializer.setOutput(scratchOutputStream, Charsets.UTF_8.name());
         // Start reading everything between <Event> and </Event>, and serialize them into an Xml
         // byte array.
         xpp.nextToken();
@@ -1219,8 +1283,8 @@ public class CustomDashManifestParser extends DefaultHandler {
                 case (XmlPullParser.START_TAG):
                     xmlSerializer.startTag(xpp.getNamespace(), xpp.getName());
                     for (int i = 0; i < xpp.getAttributeCount(); i++) {
-                        xmlSerializer.attribute(xpp.getAttributeNamespace(i), xpp.getAttributeName(i),
-                                xpp.getAttributeValue(i));
+                        xmlSerializer.attribute(
+                                xpp.getAttributeNamespace(i), xpp.getAttributeName(i), xpp.getAttributeValue(i));
                     }
                     break;
                 case (XmlPullParser.END_TAG):
@@ -1353,8 +1417,8 @@ public class CustomDashManifestParser extends DefaultHandler {
         return parseRangedUrl(xpp, "media", "mediaRange");
     }
 
-    protected RangedUri parseRangedUrl(XmlPullParser xpp, String urlAttribute,
-                                       String rangeAttribute) {
+    protected RangedUri parseRangedUrl(
+            XmlPullParser xpp, String urlAttribute, String rangeAttribute) {
         String urlText = xpp.getAttributeValue(null, urlAttribute);
         long rangeStart = 0;
         long rangeLength = C.LENGTH_UNSET;
@@ -1411,14 +1475,43 @@ public class CustomDashManifestParser extends DefaultHandler {
      * Parses a BaseURL element.
      *
      * @param xpp The parser from which to read.
-     * @param parentBaseUrl A base URL for resolving the parsed URL.
+     * @param parentBaseUrls The parent base URLs for resolving the parsed URLs.
      * @throws XmlPullParserException If an error occurs parsing the element.
      * @throws IOException If an error occurs reading the element.
-     * @return The parsed and resolved URL.
+     * @return The list of parsed and resolved URLs.
      */
-    protected String parseBaseUrl(XmlPullParser xpp, String parentBaseUrl)
+    protected List<BaseUrl> parseBaseUrl(XmlPullParser xpp, List<BaseUrl> parentBaseUrls, boolean dvbProfileDeclared)
             throws XmlPullParserException, IOException {
-        return UriUtil.resolve(parentBaseUrl, parseText(xpp, "BaseURL"));
+        @Nullable String priorityValue = xpp.getAttributeValue(null, "dvb:priority");
+        int priority =
+                priorityValue != null
+                        ? Integer.parseInt(priorityValue)
+                        : (dvbProfileDeclared ? DEFAULT_DVB_PRIORITY : PRIORITY_UNSET);
+        @Nullable String weightValue = xpp.getAttributeValue(null, "dvb:weight");
+        int weight = weightValue != null ? Integer.parseInt(weightValue) : DEFAULT_WEIGHT;
+        @Nullable String serviceLocation = xpp.getAttributeValue(null, "serviceLocation");
+        String baseUrl = parseText(xpp, "BaseURL");
+        if (UriUtil.isAbsolute(baseUrl)) {
+            if (serviceLocation == null) {
+                serviceLocation = baseUrl;
+            }
+            return Lists.newArrayList(new BaseUrl(baseUrl, serviceLocation, priority, weight));
+        }
+
+        List<BaseUrl> baseUrls = new ArrayList<>();
+        for (int i = 0; i < parentBaseUrls.size(); i++) {
+            BaseUrl parentBaseUrl = parentBaseUrls.get(i);
+            String resolvedBaseUri = UriUtil.resolve(parentBaseUrl.url, baseUrl);
+            String resolvedServiceLocation = serviceLocation == null ? resolvedBaseUri : serviceLocation;
+            if (dvbProfileDeclared) {
+                // Inherit parent properties only if dvb profile is declared.
+                priority = parentBaseUrl.priority;
+                weight = parentBaseUrl.weight;
+                resolvedServiceLocation = parentBaseUrl.serviceLocation;
+            }
+            baseUrls.add(new BaseUrl(resolvedBaseUri, resolvedServiceLocation, priority, weight));
+        }
+        return baseUrls;
     }
 
     /**
@@ -1470,16 +1563,37 @@ public class CustomDashManifestParser extends DefaultHandler {
     }
 
     // Selection flag parsing.
-
-    protected int parseSelectionFlagsFromRoleDescriptors(List<Descriptor> roleDescriptors) {
+    protected @C.SelectionFlags int parseSelectionFlagsFromRoleDescriptors(List<Descriptor> roleDescriptors) {
+        @C.SelectionFlags int result = 0;
         for (int i = 0; i < roleDescriptors.size(); i++) {
             Descriptor descriptor = roleDescriptors.get(i);
-            if ("urn:mpeg:dash:role:2011".equalsIgnoreCase(descriptor.schemeIdUri)
-                    && "main".equals(descriptor.value)) {
-                return C.SELECTION_FLAG_DEFAULT;
+            if (Ascii.equalsIgnoreCase("urn:mpeg:dash:role:2011", descriptor.schemeIdUri)) {
+                result |= parseSelectionFlagsFromDashRoleScheme(descriptor.value);
             }
         }
-        return 0;
+        return result;
+    }
+
+    protected String[] parseProfiles(XmlPullParser xpp, String attributeName, String[] defaultValue) {
+        @Nullable String attributeValue = xpp.getAttributeValue(/* namespace= */ null, attributeName);
+        if (attributeValue == null) {
+            return defaultValue;
+        }
+        return attributeValue.split(",");
+    }
+
+    protected @C.SelectionFlags int parseSelectionFlagsFromDashRoleScheme(@Nullable String value) {
+        if (value == null) {
+            return 0;
+        }
+        switch (value) {
+            case "forced_subtitle":
+                // Support both hyphen and underscore (https://github.com/google/ExoPlayer/issues/9727).
+            case "forced-subtitle":
+                return C.SELECTION_FLAG_FORCED;
+            default:
+                return 0;
+        }
     }
 
     // Role and Accessibility parsing.
@@ -1489,8 +1603,8 @@ public class CustomDashManifestParser extends DefaultHandler {
         @C.RoleFlags int result = 0;
         for (int i = 0; i < roleDescriptors.size(); i++) {
             Descriptor descriptor = roleDescriptors.get(i);
-            if ("urn:mpeg:dash:role:2011".equalsIgnoreCase(descriptor.schemeIdUri)) {
-                result |= parseDashRoleSchemeValue(descriptor.value);
+            if (Ascii.equalsIgnoreCase("urn:mpeg:dash:role:2011", descriptor.schemeIdUri)) {
+                result |= parseRoleFlagsFromDashRoleScheme(descriptor.value);
             }
         }
         return result;
@@ -1502,10 +1616,10 @@ public class CustomDashManifestParser extends DefaultHandler {
         @C.RoleFlags int result = 0;
         for (int i = 0; i < accessibilityDescriptors.size(); i++) {
             Descriptor descriptor = accessibilityDescriptors.get(i);
-            if ("urn:mpeg:dash:role:2011".equalsIgnoreCase(descriptor.schemeIdUri)) {
-                result |= parseDashRoleSchemeValue(descriptor.value);
-            } else if ("urn:tva:metadata:cs:AudioPurposeCS:2007"
-                    .equalsIgnoreCase(descriptor.schemeIdUri)) {
+            if (Ascii.equalsIgnoreCase("urn:mpeg:dash:role:2011", descriptor.schemeIdUri)) {
+                result |= parseRoleFlagsFromDashRoleScheme(descriptor.value);
+            } else if (Ascii.equalsIgnoreCase(
+                    "urn:tva:metadata:cs:AudioPurposeCS:2007", descriptor.schemeIdUri)) {
                 result |= parseTvaAudioPurposeCsValue(descriptor.value);
             }
         }
@@ -1517,15 +1631,15 @@ public class CustomDashManifestParser extends DefaultHandler {
         @C.RoleFlags int result = 0;
         for (int i = 0; i < accessibilityDescriptors.size(); i++) {
             Descriptor descriptor = accessibilityDescriptors.get(i);
-            if ("http://dashif.org/guidelines/trickmode".equalsIgnoreCase(descriptor.schemeIdUri)) {
+            if (Ascii.equalsIgnoreCase(
+                    "http://dashif.org/guidelines/trickmode", descriptor.schemeIdUri)) {
                 result |= C.ROLE_FLAG_TRICK_PLAY;
             }
         }
         return result;
     }
 
-    @C.RoleFlags
-    protected int parseDashRoleSchemeValue(@Nullable String value) {
+    protected @C.RoleFlags int parseRoleFlagsFromDashRoleScheme(@Nullable String value) {
         if (value == null) {
             return 0;
         }
@@ -1544,6 +1658,9 @@ public class CustomDashManifestParser extends DefaultHandler {
                 return C.ROLE_FLAG_EMERGENCY;
             case "caption":
                 return C.ROLE_FLAG_CAPTION;
+            case "forced_subtitle":
+                // Support both hyphen and underscore (https://github.com/google/ExoPlayer/issues/9727).
+            case "forced-subtitle":
             case "subtitle":
                 return C.ROLE_FLAG_SUBTITLE;
             case "sign":
@@ -1603,9 +1720,7 @@ public class CustomDashManifestParser extends DefaultHandler {
         }
     }
 
-    /**
-     * Removes unnecessary {@link SchemeData}s with null {@link SchemeData#data}.
-     */
+    /** Removes unnecessary {@link SchemeData}s with null {@link SchemeData#data}. */
     private static void filterRedundantIncompleteSchemeDatas(ArrayList<SchemeData> schemeDatas) {
         for (int i = schemeDatas.size() - 1; i >= 0; i--) {
             SchemeData schemeData = schemeDatas.get(i);
@@ -1643,6 +1758,9 @@ public class CustomDashManifestParser extends DefaultHandler {
             }
             // All other text types are raw formats.
             return containerMimeType;
+        } else if (MimeTypes.isImage(containerMimeType)) {
+            // Image types are raw formats.
+            return containerMimeType;
         } else if (MimeTypes.APPLICATION_MP4.equals(containerMimeType)) {
             @Nullable String mimeType = MimeTypes.getMediaMimeType(codecs);
             return MimeTypes.TEXT_VTT.equals(mimeType) ? MimeTypes.APPLICATION_MP4VTT : mimeType;
@@ -1676,15 +1794,16 @@ public class CustomDashManifestParser extends DefaultHandler {
     /**
      * Checks two adaptation set content types for consistency, returning the consistent type, or
      * throwing an {@link IllegalStateException} if the types are inconsistent.
-     * <p>
-     * Two types are consistent if they are equal, or if one is {@link C#TRACK_TYPE_UNKNOWN}.
-     * Where one of the types is {@link C#TRACK_TYPE_UNKNOWN}, the other is returned.
+     *
+     * <p>Two types are consistent if they are equal, or if one is {@link C#TRACK_TYPE_UNKNOWN}. Where
+     * one of the types is {@link C#TRACK_TYPE_UNKNOWN}, the other is returned.
      *
      * @param firstType The first type.
      * @param secondType The second type.
      * @return The consistent type.
      */
-    private static int checkContentTypeConsistency(int firstType, int secondType) {
+    private static int checkContentTypeConsistency(
+            @C.TrackType int firstType, @C.TrackType int secondType) {
         if (firstType == C.TRACK_TYPE_UNKNOWN) {
             return secondType;
         } else if (secondType == C.TRACK_TYPE_UNKNOWN) {
@@ -1715,8 +1834,7 @@ public class CustomDashManifestParser extends DefaultHandler {
         return new Descriptor(schemeIdUri, value, id);
     }
 
-    protected static int parseCea608AccessibilityChannel(
-            List<Descriptor> accessibilityDescriptors) {
+    protected static int parseCea608AccessibilityChannel(List<Descriptor> accessibilityDescriptors) {
         for (int i = 0; i < accessibilityDescriptors.size(); i++) {
             Descriptor descriptor = accessibilityDescriptors.get(i);
             if ("urn:scte:dash:cc:cea-608:2015".equals(descriptor.schemeIdUri)
@@ -1732,8 +1850,7 @@ public class CustomDashManifestParser extends DefaultHandler {
         return Format.NO_VALUE;
     }
 
-    protected static int parseCea708AccessibilityChannel(
-            List<Descriptor> accessibilityDescriptors) {
+    protected static int parseCea708AccessibilityChannel(List<Descriptor> accessibilityDescriptors) {
         for (int i = 0; i < accessibilityDescriptors.size(); i++) {
             Descriptor descriptor = accessibilityDescriptors.get(i);
             if ("urn:scte:dash:cc:cea-708:2015".equals(descriptor.schemeIdUri)
@@ -1814,12 +1931,18 @@ public class CustomDashManifestParser extends DefaultHandler {
         return text;
     }
 
+    private boolean isDvbProfileDeclared(String[] profiles) {
+        for (String profile : profiles) {
+            if (profile.startsWith("urn:dvb:dash:profile:dvb-dash:")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected static int parseInt(XmlPullParser xpp, String name, int defaultValue) {
         String value = xpp.getAttributeValue(null, name);
-        if (value == null || !TextUtils.isDigitsOnly(value)) {
-            return defaultValue;
-        }
-        return Integer.parseInt(value);
+        return value == null ? defaultValue : Integer.parseInt(value);
     }
 
     protected static long parseLong(XmlPullParser xpp, String name, long defaultValue) {
@@ -1872,11 +1995,11 @@ public class CustomDashManifestParser extends DefaultHandler {
      *     not be parsed.
      */
     protected static int parseDolbyChannelConfiguration(XmlPullParser xpp) {
-        String value = Util.toLowerInvariant(xpp.getAttributeValue(null, "value"));
+        @Nullable String value = xpp.getAttributeValue(null, "value");
         if (value == null) {
             return Format.NO_VALUE;
         }
-        switch (value) {
+        switch (Ascii.toLowerCase(value)) {
             case "4000":
                 return 1;
             case "a000":
@@ -1894,8 +2017,8 @@ public class CustomDashManifestParser extends DefaultHandler {
             List<Descriptor> supplementalProperties) {
         for (int i = 0; i < supplementalProperties.size(); i++) {
             Descriptor descriptor = supplementalProperties.get(i);
-            if ("http://dashif.org/guidelines/last-segment-number"
-                    .equalsIgnoreCase(descriptor.schemeIdUri)) {
+            if (Ascii.equalsIgnoreCase(
+                    "http://dashif.org/guidelines/last-segment-number", descriptor.schemeIdUri)) {
                 return Long.parseLong(descriptor.value);
             }
         }
@@ -1920,32 +2043,34 @@ public class CustomDashManifestParser extends DefaultHandler {
     protected static final class RepresentationInfo {
 
         public final CustomFormat format;
-        public final String baseUrl;
+        public final ImmutableList<BaseUrl> baseUrls;
         public final CustomSegmentBase segmentBase;
         @Nullable public final String drmSchemeType;
         public final ArrayList<SchemeData> drmSchemeDatas;
         public final ArrayList<Descriptor> inbandEventStreams;
         public final long revisionId;
+        public final List<Descriptor> essentialProperties;
+        public final List<Descriptor> supplementalProperties;
 
         public RepresentationInfo(
                 CustomFormat format,
-                String baseUrl,
+                List<BaseUrl> baseUrls,
                 CustomSegmentBase segmentBase,
                 @Nullable String drmSchemeType,
                 ArrayList<SchemeData> drmSchemeDatas,
                 ArrayList<Descriptor> inbandEventStreams,
+                List<Descriptor> essentialProperties,
+                List<Descriptor> supplementalProperties,
                 long revisionId) {
             this.format = format;
-            this.baseUrl = baseUrl;
+            this.baseUrls = ImmutableList.copyOf(baseUrls);
             this.segmentBase = segmentBase;
             this.drmSchemeType = drmSchemeType;
             this.drmSchemeDatas = drmSchemeDatas;
             this.inbandEventStreams = inbandEventStreams;
+            this.essentialProperties = essentialProperties;
+            this.supplementalProperties = supplementalProperties;
             this.revisionId = revisionId;
         }
-
     }
-    
-    
-
 }

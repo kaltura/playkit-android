@@ -34,10 +34,10 @@ public class PKMediaEntry implements Parcelable {
     private boolean isVRMediaType;
     private Map<String, String> metadata;
     private List<PKExternalSubtitle> externalSubtitleList;
+    private String externalVttThumbnailUrl;
 
     public PKMediaEntry() {
     }
-
 
     public PKMediaEntry setId(String id) {
         this.id = id;
@@ -56,6 +56,33 @@ public class PKMediaEntry implements Parcelable {
 
     public PKMediaEntry setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
+        return this;
+    }
+
+    public PKMediaEntry setExternalSubtitleList(List<PKExternalSubtitle> externalSubtitleList) {
+        this.externalSubtitleList = externalSubtitleList;
+        if (externalSubtitleList != null) {
+            ListIterator<PKExternalSubtitle> externalSubtitleListIterator = externalSubtitleList.listIterator();
+
+            while (externalSubtitleListIterator.hasNext()) {
+                PKExternalSubtitle pkExternalSubtitle = externalSubtitleListIterator.next();
+                PKSubtitleFormat urlFormat = PKSubtitleFormat.valueOfUrl(pkExternalSubtitle.getUrl());
+
+                if (urlFormat != null && pkExternalSubtitle.getMimeType() == null) {
+                    pkExternalSubtitle.setMimeType(urlFormat);
+                }
+
+                if (TextUtils.isEmpty(pkExternalSubtitle.getUrl()) || (urlFormat != null && !urlFormat.mimeType.equals(pkExternalSubtitle.getMimeType()))) {
+                    externalSubtitleListIterator.remove();
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public PKMediaEntry setExternalVttThumbnailUrl(String externalVttThumbnailUrl) {
+        this.externalVttThumbnailUrl = externalVttThumbnailUrl;
         return this;
     }
 
@@ -110,26 +137,8 @@ public class PKMediaEntry implements Parcelable {
         return externalSubtitleList;
     }
 
-    public PKMediaEntry setExternalSubtitleList(List<PKExternalSubtitle> externalSubtitleList) {
-        this.externalSubtitleList = externalSubtitleList;
-        if (externalSubtitleList != null) {
-            ListIterator<PKExternalSubtitle> externalSubtitleListIterator = externalSubtitleList.listIterator();
-
-            while (externalSubtitleListIterator.hasNext()) {
-                PKExternalSubtitle pkExternalSubtitle = externalSubtitleListIterator.next();
-                PKSubtitleFormat urlFormat = PKSubtitleFormat.valueOfUrl(pkExternalSubtitle.getUrl());
-
-                if (urlFormat != null && pkExternalSubtitle.getMimeType() == null) {
-                    pkExternalSubtitle.setMimeType(urlFormat);
-                }
-
-                if (TextUtils.isEmpty(pkExternalSubtitle.getUrl()) || (urlFormat != null && !urlFormat.mimeType.equals(pkExternalSubtitle.getMimeType()))) {
-                    externalSubtitleListIterator.remove();
-                }
-            }
-        }
-
-        return this;
+    public String getExternalVttThumbnailUrl() {
+        return externalVttThumbnailUrl;
     }
 
     public enum MediaEntryType {
@@ -166,6 +175,7 @@ public class PKMediaEntry implements Parcelable {
             dest.writeInt(-1);
         }
         dest.writeTypedList(this.externalSubtitleList);
+        dest.writeString(this.externalVttThumbnailUrl);
     }
 
     protected PKMediaEntry(Parcel in) {
@@ -190,6 +200,7 @@ public class PKMediaEntry implements Parcelable {
             }
         }
         this.externalSubtitleList = in.createTypedArrayList(PKExternalSubtitle.CREATOR);
+        this.externalVttThumbnailUrl = in.readString();
     }
 
     public static final Creator<PKMediaEntry> CREATOR = new Creator<PKMediaEntry>() {

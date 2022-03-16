@@ -14,13 +14,19 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
+import com.kaltura.playkit.ads.AdvertisingConfig;
+import com.kaltura.playkit.ads.AdvertisingController;
+import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
+import com.kaltura.playkit.utils.NetworkUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -48,6 +54,10 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
+    private @Nullable AdvertisingConfig advertisingConfig;
+    private PKAdvertisingController pkAdvertisingController;
+    private final String kavaPluginKey = "kava";
+    private boolean isKavaImpressionFired;
 
     PlayerLoader(Context context, MessageBus messageBus) {
         this.context = context;
@@ -121,6 +131,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public void destroy() {
+        isKavaImpressionFired = false;
         stop();
         releasePlugins();
         releasePlayer();
@@ -158,9 +169,22 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         super.prepare(mediaConfig);
 
+        if (pkAdvertisingController != null && playerController.getController(AdvertisingController.class) != null) {
+            pkAdvertisingController.setAdController(playerController.getController(AdvertisingController.class));
+            pkAdvertisingController.setAdvertising(advertisingConfig);
+        }
+
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
             loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
         }
+
+        if (!PKDeviceCapabilities.isKalturaPlayerAvailable() &&
+                loadedPlugins != null && !loadedPlugins.containsKey(kavaPluginKey)) {
+            Player player = getPlayer();
+            String sessionId = (player != null && player.getSessionId() != null) ? player.getSessionId() : "";
+            doKavaAnalyticsCall(mediaConfig, sessionId);
+        }
+
 //        messageBus.post(new Runnable() {
 //            @Override
 //            public void run() {
@@ -169,6 +193,17 @@ class PlayerLoader extends PlayerDecoratorBase {
 //                }
 //            }
 //        });
+    }
+
+    @Override
+    public void setAdvertising(@NonNull PKAdvertisingController pkAdvertisingController, @Nullable AdvertisingConfig advertisingConfig) {
+        if (!PKDeviceCapabilities.isKalturaPlayerAvailable()) {
+            log.e("Advertising is being used to configure custom AdLayout. This feature is not available in Playkit SDK. " +
+                    "It is only being used by Kaltura Player SDK.");
+            return;
+        }
+        this.pkAdvertisingController = pkAdvertisingController;
+        this.advertisingConfig = advertisingConfig;
     }
 
     private void releasePlugins() {
@@ -196,6 +231,54 @@ class PlayerLoader extends PlayerDecoratorBase {
         }
 
         setPlayer(currentLayer);
+    }
+
+    /**
+     * Do KavaAnalytics call
+     * @param pkMediaConfig mediaConfig
+     */
+    private void doKavaAnalyticsCall(PKMediaConfig pkMediaConfig, String sessionId) {
+        Pair<Integer, String> metaData = getRequiredAnalyticsInfo(pkMediaConfig);
+
+        int partnerId = metaData.first == null ? 0 : metaData.first;
+        String entryId = TextUtils.isEmpty(metaData.second) ? "" : metaData.second;
+
+        if (partnerId <= 0) {
+            partnerId = NetworkUtils.DEFAULT_KAVA_PARTNER_ID;
+            entryId = NetworkUtils.DEFAULT_KAVA_ENTRY_ID;
+        }
+
+        if (!isKavaImpressionFired) {
+            NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_IMPRESSION, sessionId);
+            isKavaImpressionFired = true;
+        }
+
+        NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST, sessionId);
+    }
+
+    /**
+     * Get EntryId and PartnerId from Metadata
+     * @param pkMediaConfig mediaConfig
+     * @return Pair of Entry and partner Ids
+     */
+    private Pair<Integer, String> getRequiredAnalyticsInfo(PKMediaConfig pkMediaConfig) {
+        final String kavaPartnerIdKey = "kavaPartnerId";
+        final String kavaEntryIdKey = "entryId";
+        int kavaPartnerId = 0;
+        String kavaEntryId = null;
+
+        if (pkMediaConfig.getMediaEntry() != null && pkMediaConfig.getMediaEntry().getMetadata() != null) {
+            if (pkMediaConfig.getMediaEntry().getMetadata().containsKey(kavaPartnerIdKey)) {
+                String partnerId = pkMediaConfig.getMediaEntry().getMetadata().get(kavaPartnerIdKey);
+                kavaPartnerId = Integer.parseInt(partnerId != null && TextUtils.isDigitsOnly(partnerId) && !TextUtils.isEmpty(partnerId) ? partnerId : "0");
+            }
+
+            if (pkMediaConfig.getMediaEntry().getMetadata().containsKey(kavaEntryIdKey)) {
+                kavaEntryId = pkMediaConfig.getMediaEntry().getMetadata().get(kavaEntryIdKey);
+            }
+        }
+
+        return Pair.create(kavaPartnerId, kavaEntryId);
     }
 
     private PKPlugin loadPlugin(String name, Player player, Object config, MessageBus messageBus, Context context) {
