@@ -6,9 +6,8 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.kaltura.android.exoplayer2.text.CaptionStyleCompat;
+import com.kaltura.android.exoplayer2.ui.CaptionStyleCompat;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
@@ -17,7 +16,6 @@ import com.kaltura.playkit.Utils.GsonObject;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.MediaSupport;
-import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PKSubtitlePosition;
 import com.kaltura.playkit.player.PlayerSettings;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
@@ -158,18 +156,18 @@ public class ToJson {
             return null;
         }
         return new GsonObject()
-            .add("preferredMode", s.getPreferredMode().name())
-            .add("language", s.getTrackLanguage());
+                .add("preferredMode", s.getPreferredMode().name())
+                .add("language", s.getTrackLanguage());
     }
 
     @Nullable
-    static GsonObject toJson(@Nullable PKMaxVideoSize s) {
-        if (s == null) {
+    static GsonObject toJson(@Nullable Long height, Long width) {
+        if (height == null || width == null) {
             return null;
         }
         return new GsonObject()
-                .add("width", s.getMaxVideoWidth())
-                .add("height", s.getMaxVideoHeight());
+                .add("width", height)
+                .add("height", width);
     }
 
     @Nullable
@@ -193,27 +191,27 @@ public class ToJson {
             return null;
         }
         return new GsonObject()
-                    .add("clearLead", settings.allowClearLead())
-                    .add("cea608Captions", settings.cea608CaptionsEnabled())
-                    .add("decoderFallback", settings.enableDecoderFallback())
-                    .add("abrSettings", toJson(settings.getAbrSettings()))
-                    .add("aspectRatioResizeMode", settings.getAspectRatioResizeMode().name())
-                    .add("loadControlBuffers", toJson(settings.getLoadControlBuffers()))
-                    .add("maxAudioBitrate", settings.getMaxAudioBitrate())
-                    .add("maxAudioChannelCount", settings.getMaxAudioChannelCount())
-                    .add("maxVideoBitrate", settings.getMaxVideoBitrate())
-                    .add("maxVideoSize", toJson(settings.getMaxVideoSize()))
-                    .add("preferredAudioTrack", toJson(settings.getPreferredAudioTrackConfig()))
-                    .add("preferredMediaFormat", settings.getPreferredMediaFormat().name())
-                    .add("preferredTextTrack", toJson(settings.getPreferredTextTrackConfig()))
-                    .add("subtitleStyle", toJson(settings.getSubtitleStyleSettings()))
-                    .add("vr", toJson(settings.getVRSettings()))
-                    .add("adAutoPlayOnResume", settings.isAdAutoPlayOnResume())
-                    .add("forceSinglePlayerEngine", settings.isForceSinglePlayerEngine())
-                    .add("handleAudioBecomingNoisy", settings.isHandleAudioBecomingNoisyEnabled())
-                    .add("secureSurface", settings.isSurfaceSecured())
-                    .add("tunneledAudioPlayback", settings.isTunneledAudioPlayback())
-                    .add("vrEnabled", settings.isVRPlayerEnabled());
+                .add("clearLead", settings.allowClearLead())
+                .add("cea608Captions", settings.cea608CaptionsEnabled())
+                .add("decoderFallback", settings.enableDecoderFallback())
+                .add("abrSettings", toJson(settings.getAbrSettings()))
+                .add("aspectRatioResizeMode", settings.getAspectRatioResizeMode().name())
+                .add("loadControlBuffers", toJson(settings.getLoadControlBuffers()))
+                .add("maxAudioBitrate", settings.getMaxAudioBitrate())
+                .add("maxAudioChannelCount", settings.getMaxAudioChannelCount())
+                .add("maxVideoBitrate", settings.getAbrSettings().getMaxVideoBitrate())
+                .add("maxVideoSize", toJson(settings.getAbrSettings().getMaxVideoHeight(), settings.getAbrSettings().getMaxVideoWidth()))
+                .add("preferredAudioTrack", toJson(settings.getPreferredAudioTrackConfig()))
+                .add("preferredMediaFormat", settings.getPreferredMediaFormat().name())
+                .add("preferredTextTrack", toJson(settings.getPreferredTextTrackConfig()))
+                .add("subtitleStyle", toJson(settings.getSubtitleStyleSettings()))
+                .add("vr", toJson(settings.getVRSettings()))
+                .add("adAutoPlayOnResume", settings.isAdAutoPlayOnResume())
+                .add("forceSinglePlayerEngine", settings.isForceSinglePlayerEngine())
+                .add("handleAudioBecomingNoisy", settings.isHandleAudioBecomingNoisyEnabled())
+                .add("secureSurface", settings.isSurfaceSecured())
+                .add("tunneledAudioPlayback", settings.isTunneledAudioPlayback())
+                .add("vrEnabled", settings.isVRPlayerEnabled());
     }
 
     static GsonObject buildInfoJson() {
