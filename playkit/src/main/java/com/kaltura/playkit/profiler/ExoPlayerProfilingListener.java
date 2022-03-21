@@ -1,6 +1,5 @@
 package com.kaltura.playkit.profiler;
 
-
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -237,12 +236,18 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onAudioCodecError(@NonNull EventTime eventTime, Exception audioCodecError) {
-        log("PlayerError").add("type", "audioCodecError").add("cause", audioCodecError.getCause());
+        log("PlayerError")
+                .add("type", "audioCodecError")
+                .add("cause", audioCodecError.getCause())
+                .end();
     }
 
     @Override
     public void onAudioSinkError(@NonNull EventTime eventTime, Exception audioSinkError) {
-        log("PlayerError").add("type", "audioSinkError").add("cause", audioSinkError.getCause());
+        log("PlayerError")
+                .add("type", "audioSinkError")
+                .add("cause", audioSinkError.getCause())
+                .end();
     }
 
     @Override
@@ -476,13 +481,15 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     public void onSurfaceSizeChanged(@NonNull EventTime eventTime, int width, int height) {
         log("ViewportSizeChange")
                 .add("width", width)
-                .add("height", height).end();
+                .add("height", height)
+                .end();
     }
 
     @Override
     public void onVolumeChanged(@NonNull EventTime eventTime, float volume) {
         log("VolumeChanged")
-                .add("volume", volume).end();
+                .add("volume", volume)
+                .end();
     }
 
     @Override
