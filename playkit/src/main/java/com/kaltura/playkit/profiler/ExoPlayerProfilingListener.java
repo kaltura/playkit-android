@@ -7,10 +7,12 @@ import androidx.annotation.Nullable;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
+import com.kaltura.android.exoplayer2.TracksInfo;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
 import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
@@ -18,11 +20,6 @@ import com.kaltura.android.exoplayer2.drm.DrmSession;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.source.LoadEventInfo;
 import com.kaltura.android.exoplayer2.source.MediaLoadData;
-import com.kaltura.android.exoplayer2.source.TrackGroup;
-import com.kaltura.android.exoplayer2.source.TrackGroupArray;
-import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
-import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
-import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.android.exoplayer2.video.VideoSize;
 import com.kaltura.playkit.PKPlaybackException;
 import com.kaltura.playkit.Utils;
@@ -30,7 +27,6 @@ import com.kaltura.playkit.player.PKPlayerErrorType;
 import com.kaltura.playkit.player.Profiler.Event;
 
 import java.io.IOException;
-import java.util.LinkedHashSet;
 
 import static com.kaltura.android.exoplayer2.C.DATA_TYPE_AD;
 import static com.kaltura.android.exoplayer2.C.DATA_TYPE_DRM;
@@ -269,45 +265,29 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onTracksChanged(@NonNull EventTime eventTime, TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-        LinkedHashSet<TrackGroup> trackGroupSet = new LinkedHashSet<>(trackGroups.length);
-        for (int i = 0; i < trackSelections.length; i++) {
-            final TrackSelection trackSelection = trackSelections.get(i);
-            if (trackSelection != null) {
-                trackGroupSet.add(trackSelection.getTrackGroup());
-            }
+    public void onTracksInfoChanged(@NonNull EventTime eventTime, @NonNull TracksInfo tracksInfo) {
+        if (tracksInfo.getTrackGroupInfos().size() <= 0) {
+            return;
         }
 
-        // Add the rest
-        for (int i = 0; i < trackGroups.length; i++) {
-            final TrackGroup trackGroup = trackGroups.get(i);
-            trackGroupSet.add(trackGroup);
-        }
+        // All the formats will be added to the TrackGroup's JSON
+        JsonArray jTrackGroups = new JsonArray(tracksInfo.getTrackGroupInfos().size());
+        JsonArray jTextTrackSelections = new JsonArray();
 
-        JsonArray jTrackGroups = new JsonArray(trackGroups.length);
-        for (TrackGroup trackGroup : trackGroupSet) {
-            JsonArray jTrackGroup = new JsonArray(trackGroup.length);
-            for (int j = 0; j < trackGroup.length; j++) {
-                final Format format = trackGroup.getFormat(j);
-                jTrackGroup.add(toJSON(format));
+        for (TracksInfo.TrackGroupInfo trackGroupInfo : tracksInfo.getTrackGroupInfos()) {
+            JsonArray jTrackGroup = new JsonArray(trackGroupInfo.getTrackGroup().length);
+            for (int trackGroupIndex = 0; trackGroupIndex < trackGroupInfo.getTrackGroup().length; trackGroupIndex++) {
+                jTrackGroup.add(toJSON(trackGroupInfo.getTrackGroup().getFormat(trackGroupIndex)));
+                if (trackGroupInfo.getTrackType() == C.TRACK_TYPE_TEXT && trackGroupInfo.isSelected()) {
+                    jTextTrackSelections.add(toJSON(trackGroupInfo.getTrackGroup().getFormat(trackGroupIndex)));
+                }
             }
             jTrackGroups.add(jTrackGroup);
         }
 
-
-        JsonArray jTrackSelections = new JsonArray(trackSelections.length);
-        for (int i = 0; i < trackSelections.length; i++) {
-            ExoTrackSelection trackSelection = null;
-            if (trackSelections.get(i) instanceof ExoTrackSelection) {
-                trackSelection = (ExoTrackSelection) trackSelections.get(i);
-            }
-            final Format selectedFormat = trackSelection == null ? null : trackSelection.getSelectedFormat();
-            jTrackSelections.add(toJSON(selectedFormat));
-        }
-
         log("TracksChanged")
                 .add("available", jTrackGroups)
-                .add("selected", jTrackSelections)
+                .add("selected", jTextTrackSelections)
                 .end();
     }
 
@@ -436,11 +416,26 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onVideoInputFormatChanged(@NonNull EventTime eventTime, Format format, DecoderReuseEvaluation decoderReuseEvaluation) {
+    public void onVideoInputFormatChanged(@NonNull EventTime eventTime, @NonNull Format format, DecoderReuseEvaluation decoderReuseEvaluation) {
         log("DecoderInputFormatChanged")
                 .add("id", format.id)
                 .add("codecs", format.codecs)
                 .add("bitrate", format.bitrate)
+                .end();
+
+        JsonArray jVideoTrackSelections = new JsonArray(1);
+        jVideoTrackSelections.add(toJSON(format));
+        log("TracksChanged")
+                .add("selected", jVideoTrackSelections)
+                .end();
+    }
+
+    @Override
+    public void onAudioInputFormatChanged(@NonNull EventTime eventTime, @NonNull Format format, @Nullable DecoderReuseEvaluation decoderReuseEvaluation) {
+        JsonArray jAudioTrackSelections = new JsonArray(1);
+        jAudioTrackSelections.add(toJSON(format));
+        log("TracksChanged")
+                .add("selected", jAudioTrackSelections)
                 .end();
     }
 
