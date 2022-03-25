@@ -20,6 +20,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.common.base.Charsets;
 import com.kaltura.android.exoplayer2.C;
@@ -633,7 +634,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             builder.setLiveConfiguration(lowLatencyConfiguration);
         }
 
-        if ((format == PKMediaFormat.dash || format == PKMediaFormat.hls) && sourceConfig.mediaSource.hasDrmParams()) {
+        if ((format == PKMediaFormat.dash || format == PKMediaFormat.hls)) {
             setMediaItemBuilderDRMParams(sourceConfig, builder);
         } else  if (format == PKMediaFormat.udp) {
             builder.setMimeType(null);
@@ -669,29 +670,36 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         log.d("PKDrmParams.Scheme = " + scheme);
 
         String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
+        UUID uuid = (scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID;
 
+        MediaItem.DrmConfiguration.Builder drmConfigurationBuilder = new MediaItem.DrmConfiguration
+                .Builder(uuid)
+                .setLicenseUri(licenseUri)
+                .setMultiSession(playerSettings.getDRMSettings().getIsMultiSession())
+                .setForceDefaultLicenseUri(playerSettings.getDRMSettings().getIsForceDefaultLicenseUri());
+
+        Map<String, String> licenseRequestParamsHeaders = getLicenseRequestParamsHeaders(licenseUri);
+        if (licenseRequestParamsHeaders != null) {
+            drmConfigurationBuilder.setLicenseRequestHeaders(licenseRequestParamsHeaders);
+        }
+
+        builder.setDrmConfiguration(drmConfigurationBuilder.build());
+    }
+
+    @Nullable
+    private Map<String, String> getLicenseRequestParamsHeaders(String licenseUri) {
+        Map<String, String> licenseRequestParamsHeaders = null;
         if (licenseUri != null) {
             PKRequestParams licenseRequestParams = new PKRequestParams(Uri.parse(licenseUri), new HashMap<>());
-
             if (playerSettings.getLicenseRequestAdapter() != null) {
                 licenseRequestParams = playerSettings.getLicenseRequestAdapter().adapt(licenseRequestParams);
             }
-
-            Map<String, String> licenseRequestParamsHeaders = licenseRequestParams.headers;
-            UUID uuid = (scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID;
-
-            MediaItem.DrmConfiguration drmConfiguration = new MediaItem.DrmConfiguration
-                    .Builder(uuid)
-                    .setLicenseUri(licenseUri)
-                    .setMultiSession(playerSettings.getDRMSettings().getIsMultiSession())
-                    .setForceDefaultLicenseUri(playerSettings.getDRMSettings().getIsForceDefaultLicenseUri())
-                    .setLicenseRequestHeaders(licenseRequestParamsHeaders)
-                    .build();
-
-            builder.setDrmConfiguration(drmConfiguration);
+            licenseRequestParamsHeaders = licenseRequestParams.headers;
         }
+        return licenseRequestParamsHeaders;
     }
 
+    @Nullable
     private String getDrmLicenseUrl(PKMediaSource mediaSource, PKDrmParams.Scheme scheme) {
         String licenseUrl = null;
 
