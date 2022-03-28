@@ -671,12 +671,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
         String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
         UUID uuid = (scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID;
+        boolean isForceDefaultLicenseUri = playerSettings.getDRMSettings().getIsForceDefaultLicenseUri();
+        if (scheme == PKDrmParams.Scheme.PlayReadyCENC &&
+                licenseUri == null &&
+                isForceDefaultLicenseUri) {
+            sendPlayReadyDRMError();
+            return;
+        }
 
         MediaItem.DrmConfiguration.Builder drmConfigurationBuilder = new MediaItem.DrmConfiguration
                 .Builder(uuid)
                 .setLicenseUri(licenseUri)
                 .setMultiSession(playerSettings.getDRMSettings().getIsMultiSession())
-                .setForceDefaultLicenseUri(playerSettings.getDRMSettings().getIsForceDefaultLicenseUri());
+                .setForceDefaultLicenseUri(licenseUri != null && isForceDefaultLicenseUri /* If DRM license is null then `isForceDefaultLicenseUri` should be false*/);
 
         Map<String, String> licenseRequestParamsHeaders = getLicenseRequestParamsHeaders(licenseUri);
         if (licenseRequestParamsHeaders != null) {
@@ -1343,6 +1350,32 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             eventListener.onEvent(PlayerEvent.Type.ERROR);
         } else {
             log.e("eventListener is null cannot send Error-Event type = " + PKPlayerErrorType.TRACK_SELECTION_FAILED + " uniqueId = " + uniqueId);
+        }
+    }
+
+    /**
+     * By default DRM Schema is Widevine and if Schema
+     * comes as 'Playready', it means application wants to play
+     * a playready media.
+     *
+     * Now if Application is not sending any license then the license
+     * should be picked from the manifest. For that Application has to
+     * pass
+     * <br>
+     * <br>
+     * player.getSettings().setDRMSettings(new DRMSettings(PKDrmParams.Scheme.PlayReadyCENC).setIsForceDefaultLicenseUri(false));
+     * </br>
+     *
+     * If `setIsForceDefaultLicenseUri` is set to `true`
+     * then sending fatal error to the App
+     */
+    private void sendPlayReadyDRMError() {
+        log.v("sendPlayReadyDRMError");
+        if (eventListener != null) {
+            String errorMessage = "If DRM license is not provided for PlayReady Stream then use `setIsForceDefaultLicenseUri(false)` in `DRMSettings`. \n" +
+                    "It will enable the Player to take InStream DRM license.";
+            currentError = new PKError(PKPlayerErrorType.DRM_ERROR, PKError.Severity.Fatal, errorMessage, new IllegalArgumentException(errorMessage));
+            eventListener.onEvent(PlayerEvent.Type.ERROR);
         }
     }
 
