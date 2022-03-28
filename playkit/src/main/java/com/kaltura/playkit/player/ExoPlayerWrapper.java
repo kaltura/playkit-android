@@ -672,7 +672,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
         UUID uuid = (scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID;
         boolean isForceDefaultLicenseUri = playerSettings.getDRMSettings().getIsForceDefaultLicenseUri();
-        if (licenseUri == null && isForceDefaultLicenseUri) {
+        if (TextUtils.isEmpty(licenseUri) && isForceDefaultLicenseUri) {
             sendUnexpectedError();
             return;
         }
@@ -1355,22 +1355,24 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
      * By default DRM Schema is Widevine and if Schema
      * comes as 'Playready', it means application wants to play
      * a playready media.
-     *
+     * <br>
      * Now if Application is not sending any license then the license
      * should be picked from the manifest. For that Application has to
      * pass
+     * </br>
+     *
      * <br>
      * <br>
      * player.getSettings().setDRMSettings(new DRMSettings(PKDrmParams.Scheme.PlayReadyCENC).setIsForceDefaultLicenseUri(false));
      * </br>
      *
-     * If `setIsForceDefaultLicenseUri` is set to `true`
+     * If `setIsForceDefaultLicenseUri` is set to `true` and license URL is not there
      * then sending fatal error to the App
      */
     private void sendUnexpectedError() {
         log.v("sendUnexpectedError");
         if (eventListener != null) {
-            String errorMessage = "If DRM license is not provided for Stream then use `setIsForceDefaultLicenseUri(false)` in `DRMSettings`. \n" +
+            String errorMessage = "If DRM license is not provided for Playready Stream then use `setIsForceDefaultLicenseUri(false)` in `DRMSettings`. \n" +
                     "It will enable the Player to take InStream DRM license.";
             currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Fatal, errorMessage, new IllegalArgumentException(errorMessage));
             eventListener.onEvent(PlayerEvent.Type.ERROR);

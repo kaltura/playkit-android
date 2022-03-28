@@ -59,7 +59,7 @@ public class DRMSettings {
      * </br>
      * <br>
      * <br>
-     * Passing `false` for Widevine streams is not applicable.
+     * Passing `true` for Widevine streams is not applicable.
      * </br>
      */
     public DRMSettings setIsForceDefaultLicenseUri(boolean isForceDefaultLicenseUri) {
