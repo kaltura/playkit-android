@@ -218,6 +218,34 @@ public interface Player {
         Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine);
 
         /**
+         * Default is `true`.
+         * <br>
+         * Player will only use the information in the multivariant playlist to prepare the stream,
+         * which works if the `#EXT-X-STREAM-INF` tags contain the `CODECS` attribute
+         * <br>
+         * You may need to disable this feature if your media segments contain muxed
+         * closed-caption tracks that are not declared in the multivariant playlist with a
+         * `#EXT-X-MEDIA:TYPE=CLOSED-CAPTIONS` tag. Otherwise, these closed-caption tracks
+         * won't be detected and played.
+         * </br/>
+         * <br>
+         * <br>
+         * You can disable chunkless preparation in the
+         * `HlsMediaSource.Factory` as shown in the following snippet.
+         * </br/>
+         * <br>
+         * <br>
+         * Note that this
+         * will increase start up time as ExoPlayer needs to download a media segment to
+         * discover these additional tracks and it is preferable to declare the
+         * closed-caption tracks in the multivariant playlist instead.
+         * </br/>
+         * @param allowChunklessPreparation chunkless preparation is allowed or not
+         * @return - Player Settings
+         */
+        Settings allowChunklessPreparation(boolean allowChunklessPreparation);
+
+        /**
          * Set the flag which handles the video view
          *
          * @param hide video surface visibility
