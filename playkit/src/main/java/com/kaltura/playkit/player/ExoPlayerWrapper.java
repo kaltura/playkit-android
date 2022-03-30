@@ -691,10 +691,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         }
     }
 
+    /**
+     * Get the license request headers from the Adapter
+     *
+     * @param licenseUri license URI for the media
+     * @return return the license request header's map
+     */
     @Nullable
     private Map<String, String> getLicenseRequestParamsHeaders(String licenseUri) {
         Map<String, String> licenseRequestParamsHeaders = null;
-        if (licenseUri != null) {
+        if (!TextUtils.isEmpty(licenseUri)) {
             PKRequestParams licenseRequestParams = new PKRequestParams(Uri.parse(licenseUri), new HashMap<>());
             if (playerSettings.getLicenseRequestAdapter() != null) {
                 licenseRequestParams = playerSettings.getLicenseRequestAdapter().adapt(licenseRequestParams);
