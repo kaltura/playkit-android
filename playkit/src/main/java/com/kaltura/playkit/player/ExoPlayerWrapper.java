@@ -634,7 +634,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             builder.setLiveConfiguration(lowLatencyConfiguration);
         }
 
-        if ((format == PKMediaFormat.dash || format == PKMediaFormat.hls)) {
+        if (format == PKMediaFormat.dash || (format == PKMediaFormat.hls && sourceConfig.mediaSource.hasDrmParams())) {
             setMediaItemBuilderDRMParams(sourceConfig, builder);
         } else  if (format == PKMediaFormat.udp) {
             builder.setMimeType(null);
@@ -672,23 +672,23 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
         UUID uuid = (scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID;
         boolean isForceDefaultLicenseUri = playerSettings.getDRMSettings().getIsForceDefaultLicenseUri();
-        if (TextUtils.isEmpty(licenseUri) && isForceDefaultLicenseUri) {
-            sendUnexpectedError();
-            return;
+
+        if (!TextUtils.isEmpty(licenseUri) ||
+                (uuid == MediaSupport.PLAYREADY_UUID && TextUtils.isEmpty(licenseUri) && !isForceDefaultLicenseUri)) {
+
+            MediaItem.DrmConfiguration.Builder drmConfigurationBuilder = new MediaItem.DrmConfiguration
+                    .Builder(uuid)
+                    .setLicenseUri(licenseUri)
+                    .setMultiSession(playerSettings.getDRMSettings().getIsMultiSession())
+                    .setForceDefaultLicenseUri(isForceDefaultLicenseUri);
+
+            Map<String, String> licenseRequestParamsHeaders = getLicenseRequestParamsHeaders(licenseUri);
+            if (licenseRequestParamsHeaders != null) {
+                drmConfigurationBuilder.setLicenseRequestHeaders(licenseRequestParamsHeaders);
+            }
+
+            builder.setDrmConfiguration(drmConfigurationBuilder.build());
         }
-
-        MediaItem.DrmConfiguration.Builder drmConfigurationBuilder = new MediaItem.DrmConfiguration
-                .Builder(uuid)
-                .setLicenseUri(licenseUri)
-                .setMultiSession(playerSettings.getDRMSettings().getIsMultiSession())
-                .setForceDefaultLicenseUri(isForceDefaultLicenseUri);
-
-        Map<String, String> licenseRequestParamsHeaders = getLicenseRequestParamsHeaders(licenseUri);
-        if (licenseRequestParamsHeaders != null) {
-            drmConfigurationBuilder.setLicenseRequestHeaders(licenseRequestParamsHeaders);
-        }
-
-        builder.setDrmConfiguration(drmConfigurationBuilder.build());
     }
 
     @Nullable
@@ -1348,34 +1348,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             eventListener.onEvent(PlayerEvent.Type.ERROR);
         } else {
             log.e("eventListener is null cannot send Error-Event type = " + PKPlayerErrorType.TRACK_SELECTION_FAILED + " uniqueId = " + uniqueId);
-        }
-    }
-
-    /**
-     * By default DRM Schema is Widevine and if Schema
-     * comes as 'Playready', it means application wants to play
-     * a playready media.
-     * <br>
-     * Now if Application is not sending any license then the license
-     * should be picked from the manifest. For that Application has to
-     * pass
-     * </br>
-     *
-     * <br>
-     * <br>
-     * player.getSettings().setDRMSettings(new DRMSettings(PKDrmParams.Scheme.PlayReadyCENC).setIsForceDefaultLicenseUri(false));
-     * </br>
-     *
-     * If `setIsForceDefaultLicenseUri` is set to `true` and license URL is not there
-     * then sending fatal error to the App
-     */
-    private void sendUnexpectedError() {
-        log.v("sendUnexpectedError");
-        if (eventListener != null) {
-            String errorMessage = "If DRM license is not provided for Playready Stream then use `setIsForceDefaultLicenseUri(false)` in `DRMSettings`. \n" +
-                    "It will enable the Player to take InStream DRM license.";
-            currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Fatal, errorMessage, new IllegalArgumentException(errorMessage));
-            eventListener.onEvent(PlayerEvent.Type.ERROR);
         }
     }
 
