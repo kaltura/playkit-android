@@ -218,7 +218,7 @@ public interface Player {
         Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine);
 
         /**
-         * Default is `true`.
+         * This flag is only for the HLS Streams. Default is `true`.
          * <br>
          * Player will only use the information in the multivariant playlist to prepare the stream,
          * which works if the `#EXT-X-STREAM-INF` tags contain the `CODECS` attribute.
