@@ -221,7 +221,7 @@ public interface Player {
          * Default is `true`.
          * <br>
          * Player will only use the information in the multivariant playlist to prepare the stream,
-         * which works if the `#EXT-X-STREAM-INF` tags contain the `CODECS` attribute
+         * which works if the `#EXT-X-STREAM-INF` tags contain the `CODECS` attribute.
          * <br>
          * You may need to disable this feature if your media segments contain muxed
          * closed-caption tracks that are not declared in the multivariant playlist with a
@@ -230,13 +230,9 @@ public interface Player {
          * </br/>
          * <br>
          * <br>
-         * You can disable chunkless preparation in the
-         * `HlsMediaSource.Factory` as shown in the following snippet.
-         * </br/>
-         * <br>
-         * <br>
+         * You can disable chunkless preparation by setting this flag to `false`.
          * Note that this
-         * will increase start up time as ExoPlayer needs to download a media segment to
+         * will increase start up time as Player needs to download a media segment to
          * discover these additional tracks and it is preferable to declare the
          * closed-caption tracks in the multivariant playlist instead.
          * </br/>
