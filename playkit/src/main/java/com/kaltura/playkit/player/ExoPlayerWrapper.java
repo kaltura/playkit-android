@@ -323,7 +323,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             } else {
                 player.setMediaSources(Collections.singletonList(mediaSource), 0, playerPosition == TIME_UNSET ? 0 : playerPosition);
             }
-
+            
             player.prepare();
 
             changeState(PlayerState.LOADING);
@@ -508,6 +508,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                 mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
                         .setDrmSessionManagerProvider(getDrmSessionManagerProvider(sourceConfig.mediaSource))
                         .setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy)
+                        .setAllowChunklessPreparation(playerSettings.isAllowChunklessPreparation())
                         .createMediaSource(mediaItem);
                 break;
 

@@ -32,12 +32,18 @@ public class PlayerSettings implements Player.Settings {
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
-    private VideoCodecSettings preferredVideoCodecSettings = new VideoCodecSettings();
-    private AudioCodecSettings preferredAudioCodecSettings = new AudioCodecSettings();
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisyEnabled;
-    private PKWakeMode wakeMode = PKWakeMode.NONE;
     private boolean handleAudioFocus;
+
+    //Flag helping to check if client app wants to use a single player instance at a time
+    //Only if IMA plugin is there then only this flag is set to true.
+    private boolean forceSinglePlayerEngine = false;
+    private boolean allowChunklessPreparation = true;
+
+    private PKWakeMode wakeMode = PKWakeMode.NONE;
+    private VideoCodecSettings preferredVideoCodecSettings = new VideoCodecSettings();
+    private AudioCodecSettings preferredAudioCodecSettings = new AudioCodecSettings();
     private PKSubtitlePreference subtitlePreference = PKSubtitlePreference.INTERNAL;
     private Integer maxAudioBitrate;
     private int maxAudioChannelCount = -1;
@@ -50,11 +56,7 @@ public class PlayerSettings implements Player.Settings {
     private VRSettings vrSettings;
     private PKLowLatencyConfig pkLowLatencyConfig;
     private PKRequestConfig pkRequestConfig = new PKRequestConfig();
-    /**
-     * Flag helping to check if client app wants to use a single player instance at a time
-     * Only if IMA plugin is there then only this flag is set to true.
-     */
-    private boolean forceSinglePlayerEngine = false;
+
     private DRMSettings drmSettings = new DRMSettings(PKDrmParams.Scheme.WidevineCENC);
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -149,6 +151,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isForceSinglePlayerEngine() {
         return forceSinglePlayerEngine;
+    }
+
+    public boolean isAllowChunklessPreparation() {
+        return allowChunklessPreparation;
     }
 
     public VideoCodecSettings getPreferredVideoCodecSettings() {
@@ -323,6 +329,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine) {
         this.forceSinglePlayerEngine = forceSinglePlayerEngine;
+        return this;
+    }
+
+    @Override
+    public Player.Settings allowChunklessPreparation(boolean allowChunklessPreparation) {
+        this.allowChunklessPreparation = allowChunklessPreparation;
         return this;
     }
 
