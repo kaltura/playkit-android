@@ -47,6 +47,20 @@ public class DRMSettings {
     /**
      * Sets whether to force use the default DRM license server URI even if the media specifies its
      * own DRM license server URI.
+     * <br>
+     * Default is set to `true` for Playready DRM streams otherwise `false` for Widevine DRM streams.
+     * Means in both the cases, DRM license URL should be passed for the playback.
+     * </br>
+     * <br>
+     * <br>
+     * If license URL is not passed for Playready Stream and
+     * manifest has InStream license URL then set it `false`,
+     * by doing this; Player will take the license URL from the manifest.
+     * </br>
+     * <br>
+     * <br>
+     * Passing `true` for Widevine streams is not applicable.
+     * </br>
      */
     public DRMSettings setIsForceDefaultLicenseUri(boolean isForceDefaultLicenseUri) {
         this.isForceDefaultLicenseUri = isForceDefaultLicenseUri;
