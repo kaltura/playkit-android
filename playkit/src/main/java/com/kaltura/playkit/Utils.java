@@ -48,6 +48,7 @@ import java.util.Map;
 import static android.content.Context.UI_MODE_SERVICE;
 import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
 import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER_FLOAT;
 
 /**
  * @hide
@@ -363,7 +364,7 @@ public class Utils {
         }
 
         public GsonObject addTime(String key, long millis) {
-            jo.addProperty(key, millis / 1000f);
+            jo.addProperty(key, millis / MILLISECONDS_MULTIPLIER_FLOAT);
             return this;
         }
 
