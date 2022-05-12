@@ -1,6 +1,6 @@
 package com.kaltura.playkit;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -186,6 +186,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public List<EventStream> getEventStreams() {
+        return playerEngine.getEventStreams();
+    }
+
+    @Override
     public boolean isLive() {
         return playerEngine.isLive();
     }
@@ -204,7 +209,7 @@ public class PlayerEngineWrapper implements PlayerEngine {
     public void setDownloadCache(Cache downloadCache) {
         playerEngine.setDownloadCache(downloadCache);
     }
-    
+
     @Override
     public ThumbnailInfo getThumbnailInfo(long positionMS) {
         return playerEngine.getThumbnailInfo(positionMS);

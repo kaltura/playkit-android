@@ -27,6 +27,7 @@ import android.view.SurfaceHolder;
 import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.PKAbrFilter;
+import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -604,6 +605,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public BaseTrack getLastSelectedTrack(int renderType) {
+        return null;
+    }
+
+    @Override
+    public List<EventStream> getEventStreams() {
         return null;
     }
 

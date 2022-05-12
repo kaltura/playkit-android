@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKDeviceCapabilities;
@@ -964,6 +965,14 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.TextTrackChanged(textTrack);
+                        break;
+
+                    case EVENT_STREAMS_AVAILABLE:
+                        List<EventStream> streams =  player.getEventStreams();
+                        if (streams == null || streams.size() == 0) {
+                            return;
+                        }
+                        event = new PlayerEvent.EventStreamAvailable(streams);
                         break;
                     case IMAGE_TRACK_CHANGED:
                         ImageTrack imageTrack = (ImageTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_IMAGE);
