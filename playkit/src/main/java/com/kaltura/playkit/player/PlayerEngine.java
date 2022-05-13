@@ -14,6 +14,7 @@ package com.kaltura.playkit.player;
 
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKAbrFilter;
+import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlaybackInfo;
@@ -262,6 +263,8 @@ public interface PlayerEngine {
     List<PKMetadata> getMetadata();
 
     BaseTrack getLastSelectedTrack(int renderType);
+
+    List<EventStream> getEventStreams();
 
     boolean isLive();
 

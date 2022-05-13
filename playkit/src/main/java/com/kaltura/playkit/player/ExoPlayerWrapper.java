@@ -75,6 +75,7 @@ import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
+import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
@@ -129,6 +130,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private boolean rootViewUpdated;
 
     private PKTracks tracks;
+    private List<EventStream> eventStreams;
     private Timeline.Window window;
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
@@ -947,6 +949,17 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             }
             sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         }
+
+        if(player.getCurrentManifest() instanceof  DashManifest){
+            if(((DashManifest)player.getCurrentManifest()).getPeriodCount() > 0){
+                List<EventStream> eventStreamsList = ((DashManifest) player.getCurrentManifest()).getPeriod(0).eventStreams;
+                if (eventStreamsList.size() > 0) {
+                    eventStreams = eventStreamsList;
+                    sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_AVAILABLE);
+                }
+            }
+        }
+
     }
 
     @Override
@@ -1613,6 +1626,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             public void onImageTrackChanged() {
                 sendEvent(PlayerEvent.Type.IMAGE_TRACK_CHANGED);
             }
+
+            @Override
+            public void onEventStreamsReady(List<EventStream> eventStreamsList) {
+                eventStreams = eventStreamsList;
+                sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_AVAILABLE);
+
+            }
         };
     }
 
@@ -1673,6 +1693,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             return trackSelectionHelper.getLastSelectedTrack(renderType);
         }
         return null;
+    }
+
+    @Override
+    public List<EventStream> getEventStreams() {
+        return eventStreams;
     }
 
     @Override
