@@ -216,6 +216,7 @@ public class TrackSelectionHelper {
 
         List<CustomFormat> rawImageTracks = new ArrayList<>();
         List<EventStream> eventStreamsList = new ArrayList<>();
+
         if (customDashManifest != null) {
             for (int periodIndex = 0; periodIndex < customDashManifest.getPeriodCount(); periodIndex++) {
                 eventStreamsList.addAll(customDashManifest.getPeriod(periodIndex).eventStreams);
@@ -244,7 +245,7 @@ public class TrackSelectionHelper {
                 tracksInfoListener.onImageTrackChanged();
             }
 
-            if(!eventStreamsList.isEmpty()){
+            if (!eventStreamsList.isEmpty()) {
                 tracksInfoListener.onEventStreamsReady(eventStreamsList);
             }
         }

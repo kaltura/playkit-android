@@ -943,23 +943,24 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             }
         }
 
-        if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE && getDuration() != TIME_UNSET) {
-            if (!isLoadedMetaDataFired)  {
-                sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+        if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE) {
+            if (getDuration() != TIME_UNSET) {
+                if (!isLoadedMetaDataFired) {
+                    sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+                }
+                sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
             }
-            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-        }
 
-        if(player.getCurrentManifest() instanceof  DashManifest){
-            if(((DashManifest)player.getCurrentManifest()).getPeriodCount() > 0){
-                List<EventStream> eventStreamsList = ((DashManifest) player.getCurrentManifest()).getPeriod(0).eventStreams;
-                if (eventStreamsList.size() > 0) {
-                    eventStreams = eventStreamsList;
-                    sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_AVAILABLE);
+            if (player.getCurrentManifest() instanceof DashManifest) {
+                if (((DashManifest) player.getCurrentManifest()).getPeriodCount() > 0) {
+                    List<EventStream> eventStreamsList = ((DashManifest) player.getCurrentManifest()).getPeriod(0).eventStreams;
+                    if (!eventStreamsList.isEmpty()) {
+                        eventStreams = eventStreamsList;
+                        sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_AVAILABLE);
+                    }
                 }
             }
         }
-
     }
 
     @Override
@@ -1034,7 +1035,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                         dashManifestString = null;
                     }
                 }
-                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(tracksInfo, sourceConfig.getExternalVttThumbnailUrl() ,customDashManifest);
+                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(tracksInfo, sourceConfig.getExternalVttThumbnailUrl(), customDashManifest);
             }
         }
 
@@ -1631,7 +1632,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             public void onEventStreamsReady(List<EventStream> eventStreamsList) {
                 eventStreams = eventStreamsList;
                 sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_AVAILABLE);
-
             }
         };
     }

@@ -184,8 +184,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
         sendDistinctEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
         sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
-        sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_AVAILABLE);
-
     }
 
     private void handleContentCompleted() {
