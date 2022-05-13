@@ -969,7 +969,7 @@ public class PlayerController implements Player {
 
                     case EVENT_STREAMS_AVAILABLE:
                         List<EventStream> streams =  player.getEventStreams();
-                        if (streams == null || streams.size() == 0) {
+                        if (streams == null || streams.isEmpty()) {
                             return;
                         }
                         event = new PlayerEvent.EventStreamAvailable(streams);

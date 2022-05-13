@@ -1606,6 +1606,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             public void onImageTrackChanged() {
                 sendEvent(PlayerEvent.Type.IMAGE_TRACK_CHANGED);
             }
+
+            @Override
+            public void onEventStreamsReady(List<EventStream> eventStreamsList) {
+                eventStreams = eventStreamsList;
+                sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_AVAILABLE);
+
+            }
         };
     }
 
@@ -1666,6 +1673,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             return trackSelectionHelper.getLastSelectedTrack(renderType);
         }
         return null;
+    }
+
+    @Override
+    public List<EventStream> getEventStreams() {
+        return eventStreams;
     }
 
     @Override
