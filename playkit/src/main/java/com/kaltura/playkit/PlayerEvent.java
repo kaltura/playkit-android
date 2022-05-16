@@ -42,7 +42,7 @@ public class PlayerEvent implements PKEvent {
     public static final Class<VideoTrackChanged> videoTrackChanged = VideoTrackChanged.class;
     public static final Class<AudioTrackChanged> audioTrackChanged = AudioTrackChanged.class;
     public static final Class<TextTrackChanged> textTrackChanged = TextTrackChanged.class;
-    public static final Class<EventStreamChanged> eventStreamAvailable = EventStreamChanged.class;
+    public static final Class<EventStreamChanged> eventStreamChanged = EventStreamChanged.class;
     public static final Class<ImageTrackChanged> imageTrackChanged = ImageTrackChanged.class;
 
     public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
