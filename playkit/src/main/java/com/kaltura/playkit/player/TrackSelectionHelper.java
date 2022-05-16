@@ -153,7 +153,7 @@ public class TrackSelectionHelper {
 
         void onImageTrackChanged();
 
-        void onEventStreamsReady(List<EventStream> eventStreamsList);
+        void onEventStreamsChanged(List<EventStream> eventStreamsList);
     }
 
     interface TracksErrorListener {
@@ -246,7 +246,7 @@ public class TrackSelectionHelper {
             }
 
             if (!eventStreamsList.isEmpty()) {
-                tracksInfoListener.onEventStreamsReady(eventStreamsList);
+                tracksInfoListener.onEventStreamsChanged(eventStreamsList);
             }
         }
 

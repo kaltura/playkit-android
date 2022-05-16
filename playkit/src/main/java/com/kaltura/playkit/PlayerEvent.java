@@ -42,7 +42,7 @@ public class PlayerEvent implements PKEvent {
     public static final Class<VideoTrackChanged> videoTrackChanged = VideoTrackChanged.class;
     public static final Class<AudioTrackChanged> audioTrackChanged = AudioTrackChanged.class;
     public static final Class<TextTrackChanged> textTrackChanged = TextTrackChanged.class;
-    public static final Class<EventStreamAvailable> eventStreamAvailable = EventStreamAvailable.class;
+    public static final Class<EventStreamChanged> eventStreamAvailable = EventStreamChanged.class;
     public static final Class<ImageTrackChanged> imageTrackChanged = ImageTrackChanged.class;
 
     public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
@@ -214,10 +214,10 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
-    public static class EventStreamAvailable extends PlayerEvent {
+    public static class EventStreamChanged extends PlayerEvent {
         public final List<EventStream> eventStreamsList;
-        public EventStreamAvailable(List<EventStream> eventStreams) {
-            super(Type.EVENT_STREAMS_AVAILABLE);
+        public EventStreamChanged(List<EventStream> eventStreams) {
+            super(Type.EVENT_STREAMS_CHANGED);
             this.eventStreamsList = eventStreams;
         }
     }
@@ -387,7 +387,7 @@ public class PlayerEvent implements PKEvent {
         BYTES_LOADED,           // Bytes were downloaded from the network
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
         ASPECT_RATIO_RESIZE_MODE_CHANGED, //Send when updating the Surface Vide Aspect Ratio size mode.
-        EVENT_STREAMS_AVAILABLE //Send event streams received from manifest
+        EVENT_STREAMS_CHANGED //Send event streams received from manifest
     }
 
     @Override
