@@ -217,7 +217,7 @@ public class PlayerEvent implements PKEvent {
     public static class EventStreamChanged extends PlayerEvent {
         public final List<EventStream> eventStreamList;
         public EventStreamChanged(List<EventStream> eventStreams) {
-            super(Type.EVENT_STREAMS_CHANGED);
+            super(Type.EVENT_STREAM_CHANGED);
             this.eventStreamList = eventStreams;
         }
     }
@@ -387,7 +387,7 @@ public class PlayerEvent implements PKEvent {
         BYTES_LOADED,           // Bytes were downloaded from the network
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
         ASPECT_RATIO_RESIZE_MODE_CHANGED, //Send when updating the Surface Vide Aspect Ratio size mode.
-        EVENT_STREAMS_CHANGED //Send event streams received from manifest
+        EVENT_STREAM_CHANGED //Send event streams received from manifest
     }
 
     @Override

@@ -970,7 +970,7 @@ public class PlayerController implements Player {
                         }
                         event = new PlayerEvent.TextTrackChanged(textTrack);
                         break;
-                    case EVENT_STREAMS_CHANGED:
+                    case EVENT_STREAM_CHANGED:
                         List<EventStream> eventStreamList = player.getEventStreams();
                         if (eventStreamList == null || eventStreamList.isEmpty()) {
                             return;

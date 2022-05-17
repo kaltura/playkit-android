@@ -956,7 +956,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                     List<EventStream> eventStreamList = ((DashManifest) player.getCurrentManifest()).getPeriod(0).eventStreams;
                     if (!eventStreamList.isEmpty()) {
                         eventStreams = eventStreamList;
-                        sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_CHANGED);
+                        sendDistinctEvent(PlayerEvent.Type.EVENT_STREAM_CHANGED);
                     }
                 }
             }
@@ -1631,7 +1631,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             @Override
             public void onEventStreamsChanged(List<EventStream> eventStreamList) {
                 eventStreams = eventStreamList;
-                sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_CHANGED);
+                sendDistinctEvent(PlayerEvent.Type.EVENT_STREAM_CHANGED);
             }
         };
     }
