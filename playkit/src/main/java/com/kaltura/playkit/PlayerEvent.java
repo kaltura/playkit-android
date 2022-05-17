@@ -215,10 +215,10 @@ public class PlayerEvent implements PKEvent {
     }
 
     public static class EventStreamChanged extends PlayerEvent {
-        public final List<EventStream> eventStreamsList;
+        public final List<EventStream> eventStreamList;
         public EventStreamChanged(List<EventStream> eventStreams) {
             super(Type.EVENT_STREAMS_CHANGED);
-            this.eventStreamsList = eventStreams;
+            this.eventStreamList = eventStreams;
         }
     }
 

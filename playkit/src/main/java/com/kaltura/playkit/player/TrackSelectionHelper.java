@@ -153,7 +153,7 @@ public class TrackSelectionHelper {
 
         void onImageTrackChanged();
 
-        void onEventStreamsChanged(List<EventStream> eventStreamsList);
+        void onEventStreamsChanged(List<EventStream> eventStreamList);
     }
 
     interface TracksErrorListener {
@@ -215,11 +215,11 @@ public class TrackSelectionHelper {
         warnAboutUnsupportedRendererTypes();
 
         List<CustomFormat> rawImageTracks = new ArrayList<>();
-        List<EventStream> eventStreamsList = new ArrayList<>();
+        List<EventStream> eventStreamList = new ArrayList<>();
 
         if (customDashManifest != null && customDashManifest.getPeriodCount() > 0) {
             for (int periodIndex = 0; periodIndex < customDashManifest.getPeriodCount(); periodIndex++) {
-                eventStreamsList.addAll(customDashManifest.getPeriod(periodIndex).eventStreams);
+                eventStreamList.addAll(customDashManifest.getPeriod(periodIndex).eventStreams);
                 List<CustomAdaptationSet> adaptationSets = customDashManifest.getPeriod(periodIndex).adaptationSets;
 
                 for (int adaptationSetIndex = 0 ; adaptationSetIndex < adaptationSets.size() ; adaptationSetIndex++) {
@@ -245,8 +245,8 @@ public class TrackSelectionHelper {
                 tracksInfoListener.onImageTrackChanged();
             }
 
-            if (!eventStreamsList.isEmpty()) {
-                tracksInfoListener.onEventStreamsChanged(eventStreamsList);
+            if (!eventStreamList.isEmpty()) {
+                tracksInfoListener.onEventStreamsChanged(eventStreamList);
             }
         }
 

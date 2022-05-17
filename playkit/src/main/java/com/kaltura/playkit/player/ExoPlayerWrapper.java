@@ -953,9 +953,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
             if (player.getCurrentManifest() instanceof DashManifest) {
                 if (((DashManifest) player.getCurrentManifest()).getPeriodCount() > 0) {
-                    List<EventStream> eventStreamsList = ((DashManifest) player.getCurrentManifest()).getPeriod(0).eventStreams;
-                    if (!eventStreamsList.isEmpty()) {
-                        eventStreams = eventStreamsList;
+                    List<EventStream> eventStreamList = ((DashManifest) player.getCurrentManifest()).getPeriod(0).eventStreams;
+                    if (!eventStreamList.isEmpty()) {
+                        eventStreams = eventStreamList;
                         sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_CHANGED);
                     }
                 }
@@ -1629,8 +1629,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             }
 
             @Override
-            public void onEventStreamsChanged(List<EventStream> eventStreamsList) {
-                eventStreams = eventStreamsList;
+            public void onEventStreamsChanged(List<EventStream> eventStreamList) {
+                eventStreams = eventStreamList;
                 sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_CHANGED);
             }
         };

@@ -971,11 +971,11 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.TextTrackChanged(textTrack);
                         break;
                     case EVENT_STREAMS_CHANGED:
-                        List<EventStream> eventStreams = player.getEventStreams();
-                        if (eventStreams == null || eventStreams.isEmpty()) {
+                        List<EventStream> eventStreamList = player.getEventStreams();
+                        if (eventStreamList == null || eventStreamList.isEmpty()) {
                             return;
                         }
-                        event = new PlayerEvent.EventStreamChanged(eventStreams);
+                        event = new PlayerEvent.EventStreamChanged(eventStreamList);
                         break;
                     case IMAGE_TRACK_CHANGED:
                         ImageTrack imageTrack = (ImageTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_IMAGE);
