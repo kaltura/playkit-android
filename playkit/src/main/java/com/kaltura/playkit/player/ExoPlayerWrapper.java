@@ -75,6 +75,7 @@ import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
+import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
@@ -129,6 +130,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private boolean rootViewUpdated;
 
     private PKTracks tracks;
+    private List<EventStream> eventStreams;
     private Timeline.Window window;
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
@@ -941,11 +943,23 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             }
         }
 
-        if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE && getDuration() != TIME_UNSET) {
-            if (!isLoadedMetaDataFired)  {
-                sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+        if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE) {
+            if (getDuration() != TIME_UNSET) {
+                if (!isLoadedMetaDataFired) {
+                    sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+                }
+                sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
             }
-            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
+
+            if (player.getCurrentManifest() instanceof DashManifest) {
+                if (((DashManifest) player.getCurrentManifest()).getPeriodCount() > 0) {
+                    List<EventStream> eventStreamList = ((DashManifest) player.getCurrentManifest()).getPeriod(0).eventStreams;
+                    if (!eventStreamList.isEmpty()) {
+                        eventStreams = eventStreamList;
+                        sendDistinctEvent(PlayerEvent.Type.EVENT_STREAM_CHANGED);
+                    }
+                }
+            }
         }
     }
 
@@ -1021,7 +1035,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                         dashManifestString = null;
                     }
                 }
-                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(tracksInfo, sourceConfig.getExternalVttThumbnailUrl() ,customDashManifest);
+                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(tracksInfo, sourceConfig.getExternalVttThumbnailUrl(), customDashManifest);
             }
         }
 
@@ -1613,6 +1627,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             public void onImageTrackChanged() {
                 sendEvent(PlayerEvent.Type.IMAGE_TRACK_CHANGED);
             }
+
+            @Override
+            public void onEventStreamsChanged(List<EventStream> eventStreamList) {
+                eventStreams = eventStreamList;
+                sendDistinctEvent(PlayerEvent.Type.EVENT_STREAM_CHANGED);
+            }
         };
     }
 
@@ -1673,6 +1693,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             return trackSelectionHelper.getLastSelectedTrack(renderType);
         }
         return null;
+    }
+
+    @Override
+    public List<EventStream> getEventStreams() {
+        return eventStreams;
     }
 
     @Override

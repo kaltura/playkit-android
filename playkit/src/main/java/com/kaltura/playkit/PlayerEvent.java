@@ -14,6 +14,7 @@ package com.kaltura.playkit;
 
 import androidx.annotation.NonNull;
 
+import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.ImageTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -41,6 +42,7 @@ public class PlayerEvent implements PKEvent {
     public static final Class<VideoTrackChanged> videoTrackChanged = VideoTrackChanged.class;
     public static final Class<AudioTrackChanged> audioTrackChanged = AudioTrackChanged.class;
     public static final Class<TextTrackChanged> textTrackChanged = TextTrackChanged.class;
+    public static final Class<EventStreamChanged> eventStreamChanged = EventStreamChanged.class;
     public static final Class<ImageTrackChanged> imageTrackChanged = ImageTrackChanged.class;
 
     public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
@@ -212,6 +214,14 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class EventStreamChanged extends PlayerEvent {
+        public final List<EventStream> eventStreamList;
+        public EventStreamChanged(List<EventStream> eventStreams) {
+            super(Type.EVENT_STREAM_CHANGED);
+            this.eventStreamList = eventStreams;
+        }
+    }
+
     public static class ImageTrackChanged extends PlayerEvent {
 
         public final ImageTrack newTrack;
@@ -376,7 +386,8 @@ public class PlayerEvent implements PKEvent {
         OUTPUT_BUFFER_COUNT_UPDATE,
         BYTES_LOADED,           // Bytes were downloaded from the network
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
-        ASPECT_RATIO_RESIZE_MODE_CHANGED //Send when updating the Surface Vide Aspect Ratio size mode.
+        ASPECT_RATIO_RESIZE_MODE_CHANGED, //Send when updating the Surface Vide Aspect Ratio size mode.
+        EVENT_STREAM_CHANGED //Send event streams received from manifest
     }
 
     @Override

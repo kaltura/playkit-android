@@ -30,6 +30,7 @@ import com.kaltura.android.exoplayer2.dashmanifestparser.CustomFormat;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomRepresentation;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
+import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.android.exoplayer2.text.Subtitle;
 import com.kaltura.android.exoplayer2.text.webvtt.WebvttCueInfo;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -151,6 +152,8 @@ public class TrackSelectionHelper {
         void onTextTrackChanged();
 
         void onImageTrackChanged();
+
+        void onEventStreamsChanged(List<EventStream> eventStreamList);
     }
 
     interface TracksErrorListener {
@@ -212,8 +215,11 @@ public class TrackSelectionHelper {
         warnAboutUnsupportedRendererTypes();
 
         List<CustomFormat> rawImageTracks = new ArrayList<>();
-        if (customDashManifest != null) {
+        List<EventStream> eventStreamList = new ArrayList<>();
+
+        if (customDashManifest != null && customDashManifest.getPeriodCount() > 0) {
             for (int periodIndex = 0; periodIndex < customDashManifest.getPeriodCount(); periodIndex++) {
+                eventStreamList.addAll(customDashManifest.getPeriod(periodIndex).eventStreams);
                 List<CustomAdaptationSet> adaptationSets = customDashManifest.getPeriod(periodIndex).adaptationSets;
 
                 for (int adaptationSetIndex = 0 ; adaptationSetIndex < adaptationSets.size() ; adaptationSetIndex++) {
@@ -237,6 +243,10 @@ public class TrackSelectionHelper {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
             if (!tracksInfo.getImageTracks().isEmpty()) {
                 tracksInfoListener.onImageTrackChanged();
+            }
+
+            if (!eventStreamList.isEmpty()) {
+                tracksInfoListener.onEventStreamsChanged(eventStreamList);
             }
         }
 
