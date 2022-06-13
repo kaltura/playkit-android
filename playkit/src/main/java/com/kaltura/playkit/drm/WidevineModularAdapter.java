@@ -258,6 +258,11 @@ public class WidevineModularAdapter extends DrmAdapter {
             throw new LocalAssetsManager.RegisterException("Unable to parse the widevine data", null);
         }
 
+        //no content protection, so there could not be any status info, so return null.
+        if (!assetParsingStatus.hasContentProtection) {
+            return null;
+        }
+
         byte[] widevineInitData = assetParsingStatus.initData;
         if (widevineInitData == null) {
             throw new NoWidevinePSSHException("No Widevine PSSH in media", null);
