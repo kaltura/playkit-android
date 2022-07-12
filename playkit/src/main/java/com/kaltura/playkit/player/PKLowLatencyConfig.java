@@ -20,7 +20,7 @@ import com.kaltura.playkit.utils.Consts;
  * is {@link com.kaltura.android.exoplayer2.source.dash.DashMediaSource#DEFAULT_FALLBACK_TARGET_LIVE_OFFSET_MS}.
  * <br>
  *    <br>
- * Its good practice to have `availabilityTimeOffset` in DASH manifest, it tells that how much
+ * It's a good practice to have `availabilityTimeOffset` in DASH manifest, it tells that how much
  * earlier the segments are available.
  * <br>
  *    <br>
