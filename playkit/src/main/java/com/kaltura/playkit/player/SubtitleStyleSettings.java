@@ -27,7 +27,7 @@ public class SubtitleStyleSettings {
     }
 
     public enum SubtitleTextSizeFraction {
-        SUBTITLE_FRACTION_50, SUBTITLE_FRACTION_75, SUBTITLE_FRACTION_100, SUBTITLE_FRACTION_125, SUBTITLE_FRACTION_150, SUBTITLE_FRACTION_200
+        SUBTITLE_FRACTION_50, SUBTITLE_FRACTION_75, SUBTITLE_FRACTION_100, SUBTITLE_FRACTION_125, SUBTITLE_FRACTION_150, SUBTITLE_FRACTION_175, SUBTITLE_FRACTION_200
     }
 
     public enum SubtitleStyleTypeface {
@@ -43,6 +43,7 @@ public class SubtitleStyleSettings {
     private static final float fraction100 = 1.0f;
     private static final float fraction125 = 1.25f;
     private static final float fraction150 = 1.50f;
+    private static final float fraction175 = 1.75f;
     private static final float fraction200 = 2.0f;
 
     private int subtitleTextColor = Color.WHITE;
@@ -155,6 +156,9 @@ public class SubtitleStyleSettings {
                 break;
             case SUBTITLE_FRACTION_150:
                 this.subtitleTextSizeFraction = fraction150;
+                break;
+            case SUBTITLE_FRACTION_175:
+                this.subtitleTextSizeFraction = fraction175;
                 break;
             case SUBTITLE_FRACTION_200:
                 this.subtitleTextSizeFraction = fraction200;
