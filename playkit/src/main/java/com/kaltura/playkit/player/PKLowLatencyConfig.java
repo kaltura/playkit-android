@@ -2,6 +2,31 @@ package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.utils.Consts;
 
+/**
+ * Low Latency configuration for the live medias.
+ * <br>
+ *    <br>
+ * If this config is set then player will use `targetOffsetMs` passed in this configuration.
+ * Player takes an account of the bandwidth as well where it tries to avoid re-buffer while
+ * approaching to the `targetOffsetMs`.
+ * <br>
+ *    <br>
+ * If app does not pass `PKLowLatencyConfig`
+ * then if the media manifest contains `suggestedPresentationDelayMs` tag OR `target` value in `Latency` tag
+ * then player will take those value as target offset.
+ * <br>
+ *    <br>
+ * If nothing fulfills in the above conditions, the default live offset
+ * is {@link com.kaltura.android.exoplayer2.source.dash.DashMediaSource#DEFAULT_FALLBACK_TARGET_LIVE_OFFSET_MS}.
+ * <br>
+ *    <br>
+ * It's a good practice to have `availabilityTimeOffset` in DASH manifest, it tells that how much
+ * earlier the segments are available.
+ * <br>
+ *    <br>
+ * For HLS, `#EXT-X-SERVER-CONTROL` tag should be there. `#EXT-X-PART` should be there for individual
+ * segments. `#EXT-X-PRELOAD_HINT` is a good practice to have to indicate the next part.
+ */
 public class PKLowLatencyConfig {
 
     private long targetOffsetMs;
