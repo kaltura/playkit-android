@@ -1808,6 +1808,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         }
 
         if (exoPlayerSubtitleView != null) {
+            exoPlayerSubtitleView.setApplyEmbeddedFontSizes(subtitleStyleSettings.isUseEmbeddedFontSizes());
+            exoPlayerSubtitleView.setApplyEmbeddedStyles(subtitleStyleSettings.isUseEmbeddedStyles());
             exoPlayerSubtitleView.setStyle(subtitleStyleSettings.toCaptionStyle());
             exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * subtitleStyleSettings.getTextSizeFraction());
         } else {

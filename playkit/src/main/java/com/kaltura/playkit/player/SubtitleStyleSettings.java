@@ -57,6 +57,8 @@ public class SubtitleStyleSettings {
     private Typeface subtitleTypeface = Typeface.DEFAULT;
     private String subtitleStyleName;
     private PKSubtitlePosition subtitlePosition;
+    private boolean useEmbeddedStyles;
+    private boolean useEmbeddedFontSizes;
 
     public SubtitleStyleSettings(String subtitleStyleName) {
         if (!TextUtils.isEmpty(subtitleStyleName)) {
@@ -100,6 +102,14 @@ public class SubtitleStyleSettings {
 
     public PKSubtitlePosition getSubtitlePosition() {
         return subtitlePosition;
+    }
+
+    public boolean isUseEmbeddedStyles() {
+        return useEmbeddedStyles;
+    }
+
+    public boolean isUseEmbeddedFontSizes() {
+        return useEmbeddedFontSizes;
     }
 
     public SubtitleStyleSettings setTextColor(int subtitleTextColor) {
@@ -212,6 +222,36 @@ public class SubtitleStyleSettings {
 
     public SubtitleStyleSettings setSubtitlePosition(PKSubtitlePosition subtitlePosition) {
         this.subtitlePosition = subtitlePosition;
+        return this;
+    }
+
+    /**
+     * If the text track cues have the styling then passing
+     * `useEmbeddedStyles` `true` will enable it and
+     * styling passed by app will be ignored.
+     *
+     * Default is `false` means disabled
+     *
+     * @param useEmbeddedStyles pass `true` to take embedded cues' styling
+     * @return SubtitleStyleSettings
+     */
+    public SubtitleStyleSettings setUseEmbeddedStyles(boolean useEmbeddedStyles) {
+        this.useEmbeddedStyles = useEmbeddedStyles;
+        return this;
+    }
+
+    /**
+     * If the text track cues have the font sizes then passing
+     * `useEmbeddedFontSizes` `true` will enable it and
+     * styling passed by app will be ignored.
+     *
+     * Default is `false` means disabled
+     *
+     * @param useEmbeddedFontSizes pass `true` to take embedded cues' font sizes
+     * @return SubtitleStyleSettings
+     */
+    public SubtitleStyleSettings setUseEmbeddedFontSizes(boolean useEmbeddedFontSizes) {
+        this.useEmbeddedFontSizes = useEmbeddedFontSizes;
         return this;
     }
 

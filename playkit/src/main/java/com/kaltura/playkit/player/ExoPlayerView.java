@@ -469,8 +469,7 @@ class ExoPlayerView extends BaseExoplayerView {
         if (subtitleViewPosition != null && cueList != null && !cueList.isEmpty()) {
             List<Cue> newCueList = new ArrayList<>();
             for (Cue cue : cueList) {
-                if ((cue.line !=  Cue.DIMEN_UNSET || cue.position != Cue.DIMEN_UNSET)
-                        && !subtitleViewPosition.isOverrideInlineCueConfig()) {
+                if (!subtitleViewPosition.isOverrideInlineCueConfig()) {
                     newCueList.add(cue);
                     continue;
                 }
