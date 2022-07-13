@@ -12,8 +12,8 @@ import com.kaltura.playkit.utils.Consts;
  * <br>
  *    <br>
  * If app does not pass `PKLowLatencyConfig`
- * then if the media contains `suggestedPresentationDelayMs` OR `target` in `Latency` tag
- * then player will take those value as offset.
+ * then if the media manifest contains `suggestedPresentationDelayMs` tag OR `target` value in `Latency` tag
+ * then player will take those value as target offset.
  * <br>
  *    <br>
  * If nothing fulfills in the above conditions, the default live offset
