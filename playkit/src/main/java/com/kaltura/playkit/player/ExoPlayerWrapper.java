@@ -1856,12 +1856,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         }
 
         pkLowLatencyConfig = validatePKLowLatencyConfig(pkLowLatencyConfig);
-
         playerSettings.setPKLowLatencyConfig(pkLowLatencyConfig);
+
         if (player != null && player.getCurrentMediaItem() != null) {
-
             MediaItem.LiveConfiguration liveConfiguration = getLowLatencyConfigFromPlayerSettings();
-
             player.setMediaItem(player.getCurrentMediaItem().buildUpon()
                     .setLiveConfiguration(liveConfiguration)
                     .build());
@@ -1880,13 +1878,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             if (pkLowLatencyConfig.getMinOffsetMs() <= 0) {
                 pkLowLatencyConfig.setMinOffsetMs(unsetPKLowLatencyConfig.getMinOffsetMs());
             }
-            if (playerSettings.getPKLowLatencyConfig().getMaxOffsetMs() <= 0) {
+            if (pkLowLatencyConfig.getMaxOffsetMs() <= 0) {
                 pkLowLatencyConfig.setMaxOffsetMs(unsetPKLowLatencyConfig.getMaxOffsetMs());
             }
-            if (playerSettings.getPKLowLatencyConfig().getMinPlaybackSpeed() <= 0) {
+            if (pkLowLatencyConfig.getMinPlaybackSpeed() <= 0) {
                 pkLowLatencyConfig.setMinPlaybackSpeed(unsetPKLowLatencyConfig.getMinPlaybackSpeed());
             }
-            if (playerSettings.getPKLowLatencyConfig().getMaxPlaybackSpeed() <= 0) {
+            if (pkLowLatencyConfig.getMaxPlaybackSpeed() <= 0) {
                 pkLowLatencyConfig.setMaxPlaybackSpeed(unsetPKLowLatencyConfig.getMaxPlaybackSpeed());
             }
         }
