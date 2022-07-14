@@ -1807,9 +1807,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             return;
         }
 
-        if (exoPlayerSubtitleView != null) {
-            exoPlayerSubtitleView.setApplyEmbeddedFontSizes(subtitleStyleSettings.isUseEmbeddedFontSizes());
-            exoPlayerSubtitleView.setApplyEmbeddedStyles(subtitleStyleSettings.isUseEmbeddedStyles());
+        if (exoPlayerSubtitleView != null ) {
+            // We are overriding the styling & font sizes given in the TTML or VTT/SRT file
+            exoPlayerSubtitleView.setApplyEmbeddedStyles(false);
+            exoPlayerSubtitleView.setApplyEmbeddedFontSizes(false);
+
             exoPlayerSubtitleView.setStyle(subtitleStyleSettings.toCaptionStyle());
             exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * subtitleStyleSettings.getTextSizeFraction());
         } else {
