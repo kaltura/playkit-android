@@ -11,9 +11,9 @@ public class PKSubtitlePosition {
 
     private int LINE_TYPE_FRACTION = 0;
 
-    private static float DIMEN_UNSET = -Float.MAX_VALUE;
+    private final float DIMEN_UNSET = -Float.MAX_VALUE;
 
-    private static int TYPE_UNSET = Integer.MIN_VALUE;
+    private final int TYPE_UNSET = Integer.MIN_VALUE;
 
     // Override the current subtitle Positioning with the In-stream subtitle text track configuration
     private boolean overrideInlineCueConfig;
