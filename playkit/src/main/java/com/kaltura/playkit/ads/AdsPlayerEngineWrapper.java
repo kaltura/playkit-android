@@ -18,6 +18,7 @@ import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayerEngineWrapper;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 
@@ -128,6 +129,21 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
             log.d("AdWrapper decorator Calling content player pause");
             super.pause();
         }
+    }
+
+    @Override
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        if (resizeMode == null) {
+            log.e("Resize mode is invalid");
+            return;
+        }
+
+        if (adsProvider != null && adsProvider.isAdDisplayed()) {
+            adsProvider.updateSurfaceAspectRatioResizeMode(resizeMode);
+            return;
+        }
+
+        super.updateSurfaceAspectRatioResizeMode(resizeMode);
     }
 
     @Override

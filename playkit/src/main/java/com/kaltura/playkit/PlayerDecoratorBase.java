@@ -240,7 +240,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+    public void updateSurfaceAspectRatioResizeMode(@NonNull PKAspectRatioResizeMode resizeMode) {
         player.updateSurfaceAspectRatioResizeMode(resizeMode);
     }
 

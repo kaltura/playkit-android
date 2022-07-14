@@ -204,7 +204,7 @@ public interface Player {
          * @param resizeMode Resize mode
          * @return - Player Settings
          */
-        Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
+        Settings setSurfaceAspectRatioResizeMode(@NonNull PKAspectRatioResizeMode resizeMode);
 
         /**
          * Do not prepare the content player when the Ad starts(if exists); instead content player will be prepared
@@ -632,7 +632,7 @@ public interface Player {
     /**
      * Update video size
      */
-    void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
+    void updateSurfaceAspectRatioResizeMode(@NonNull PKAspectRatioResizeMode resizeMode);
 
     /**
      * Update Low Latency configuration
