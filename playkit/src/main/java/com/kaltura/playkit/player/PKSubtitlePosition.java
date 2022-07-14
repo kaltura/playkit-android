@@ -11,7 +11,7 @@ public class PKSubtitlePosition {
 
     private int LINE_TYPE_FRACTION = 0;
 
-    public static float DIMEN_UNSET = -Float.MAX_VALUE;
+    private static float DIMEN_UNSET = -Float.MAX_VALUE;
 
     private static int TYPE_UNSET = Integer.MIN_VALUE;
 
