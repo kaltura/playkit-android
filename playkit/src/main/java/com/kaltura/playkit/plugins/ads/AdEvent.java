@@ -39,7 +39,7 @@ public class AdEvent implements PKEvent {
     public static final Class<DAISourceSelected> daiSourceSelected = DAISourceSelected.class;
     public static final Class<AdWaterFalling> adWaterFalling = AdWaterFalling.class;
     public static final Class<AdWaterFallingFailed> adWaterFallingFailed = AdWaterFallingFailed.class;
-    public static final Class<AdSurfaceAspectRatioResizeModeChanged> adSurfaceAspectRationSizeModeChanged = AdSurfaceAspectRatioResizeModeChanged.class;
+    public static final Class<AdSurfaceAspectRatioResizeModeChanged> adSurfaceAspectRatioSizeModeChanged = AdSurfaceAspectRatioResizeModeChanged.class;
 
     public static final AdEvent.Type adFirstPlay = Type.AD_FIRST_PLAY;
     public static final AdEvent.Type adDisplayedAfterContentPause = Type.AD_DISPLAYED_AFTER_CONTENT_PAUSE;
