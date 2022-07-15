@@ -138,9 +138,8 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
             return;
         }
 
-        if (adsProvider != null && adsProvider.isAdDisplayed()) {
+        if (adsProvider != null) {
             adsProvider.updateSurfaceAspectRatioResizeMode(resizeMode);
-            return;
         }
 
         super.updateSurfaceAspectRatioResizeMode(resizeMode);

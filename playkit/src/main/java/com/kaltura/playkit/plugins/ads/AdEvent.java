@@ -39,7 +39,6 @@ public class AdEvent implements PKEvent {
     public static final Class<DAISourceSelected> daiSourceSelected = DAISourceSelected.class;
     public static final Class<AdWaterFalling> adWaterFalling = AdWaterFalling.class;
     public static final Class<AdWaterFallingFailed> adWaterFallingFailed = AdWaterFallingFailed.class;
-    public static final Class<AdSurfaceAspectRatioResizeModeChanged> adSurfaceAspectRatioSizeModeChanged = AdSurfaceAspectRatioResizeModeChanged.class;
 
     public static final AdEvent.Type adFirstPlay = Type.AD_FIRST_PLAY;
     public static final AdEvent.Type adDisplayedAfterContentPause = Type.AD_DISPLAYED_AFTER_CONTENT_PAUSE;
@@ -224,20 +223,6 @@ public class AdEvent implements PKEvent {
         }
     }
 
-    /**
-     * This event is only being sent for IMA Ads not for IMADAI Ads
-     * For IMADAI ads event, listen to {@link com.kaltura.playkit.PlayerEvent#surfaceAspectRationSizeModeChanged}
-     */
-    public static class AdSurfaceAspectRatioResizeModeChanged extends AdEvent {
-
-        public final PKAspectRatioResizeMode resizeMode;
-
-        public AdSurfaceAspectRatioResizeModeChanged(PKAspectRatioResizeMode resizeMode) {
-            super(Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
-            this.resizeMode = resizeMode;
-        }
-    }
-
     public static class AdWaterFalling extends AdEvent {
 
         public final AdBreakConfig adBreakConfig;
@@ -293,7 +278,6 @@ public class AdEvent implements PKEvent {
         AD_PLAYBACK_INFO_UPDATED,
         ERROR,
         DAI_SOURCE_SELECTED,
-        ASPECT_RATIO_RESIZE_MODE_CHANGED,
         AD_WATERFALLING,
         AD_WATERFALLING_FAILED
     }
