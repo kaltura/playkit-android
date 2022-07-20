@@ -1808,7 +1808,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         }
 
         if (exoPlayerSubtitleView != null ) {
-            // We are overriding the styling & font sizes given in the TTML or VTT/SRT file
+            // We are overriding the styling & font sizes given in the TTML or VTT file
             exoPlayerSubtitleView.setApplyEmbeddedStyles(false);
             exoPlayerSubtitleView.setApplyEmbeddedFontSizes(false);
 
