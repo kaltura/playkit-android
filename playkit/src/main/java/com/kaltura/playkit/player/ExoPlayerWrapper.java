@@ -1797,7 +1797,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private void configureSubtitleView() {
         SubtitleView exoPlayerSubtitleView;
         SubtitleStyleSettings subtitleStyleSettings = playerSettings.getSubtitleStyleSettings();
-        if(exoPlayerView != null) {
+        if (exoPlayerView != null) {
             if (subtitleStyleSettings.getSubtitlePosition() != null) {
                 exoPlayerView.setSubtitleViewPosition(subtitleStyleSettings.getSubtitlePosition());
             }
@@ -1808,9 +1808,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         }
 
         if (exoPlayerSubtitleView != null ) {
-            // We are overriding the styling & font sizes given in the TTML or VTT file
-            exoPlayerSubtitleView.setApplyEmbeddedStyles(false);
-            exoPlayerSubtitleView.setApplyEmbeddedFontSizes(false);
+            // Setting `false` will tell ExoPlayer to remove the styling of the cue.
+            // In our API, for FE apps, default is `true` means override the styling
+            // Hence reverting the value coming in `subtitleStyleSettings.isOverrideCueStyling()`
+            exoPlayerSubtitleView.setApplyEmbeddedStyles(!subtitleStyleSettings.isOverrideCueStyling());
 
             exoPlayerSubtitleView.setStyle(subtitleStyleSettings.toCaptionStyle());
             exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * subtitleStyleSettings.getTextSizeFraction());

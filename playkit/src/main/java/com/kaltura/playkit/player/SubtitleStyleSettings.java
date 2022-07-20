@@ -56,6 +56,7 @@ public class SubtitleStyleSettings {
     private int subtitleEdgeColor = Color.WHITE;
     private Typeface subtitleTypeface = Typeface.DEFAULT;
     private String subtitleStyleName;
+    private boolean overrideCueStyling = true;
     private PKSubtitlePosition subtitlePosition;
 
     public SubtitleStyleSettings(String subtitleStyleName) {
@@ -96,6 +97,10 @@ public class SubtitleStyleSettings {
 
     public String getStyleName() {
         return subtitleStyleName;
+    }
+
+    public boolean isOverrideCueStyling() {
+        return overrideCueStyling;
     }
 
     public PKSubtitlePosition getSubtitlePosition() {
@@ -207,6 +212,28 @@ public class SubtitleStyleSettings {
         } else {
             subtitleTypeface = asstTypeface;
         }
+        return this;
+    }
+
+    /**
+     * If the text track cues have the styling inside then passing
+     * `overrideCueStyling` `false` will disable it and
+     * styling inside the cue will be used.
+     *
+     * If the styling does not exist inside the cue then passed
+     * styling will be applied. Passing `false` will be having no
+     * impact in that case because there is no styling inside the cue.
+     *
+     * It will override the font size as well.
+     *
+     * Default is `true` means enabled, We will override the cue styling
+     * anyways.
+     *
+     * @param overrideCueStyling pass `false` to take cue's styling
+     * @return SubtitleStyleSettings
+     */
+    public SubtitleStyleSettings overrideCueStyling(boolean overrideCueStyling) {
+        this.overrideCueStyling = overrideCueStyling;
         return this;
     }
 
