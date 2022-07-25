@@ -1810,6 +1810,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (exoPlayerSubtitleView != null ) {
             // Setting `false` will tell ExoPlayer to remove the styling 
             // and the font size of the cue.
+            // Separate ExoPlayer API to remove font size is `setApplyEmbeddedFontSizes`.
             // In our API, for FE apps, default is `true` means override the styling
             // Hence reverting the value coming in `subtitleStyleSettings.isOverrideCueStyling()`
             exoPlayerSubtitleView.setApplyEmbeddedStyles(!subtitleStyleSettings.isOverrideCueStyling());
