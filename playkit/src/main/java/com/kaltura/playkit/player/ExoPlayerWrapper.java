@@ -1808,7 +1808,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         }
 
         if (exoPlayerSubtitleView != null ) {
-            // Setting `false` will tell ExoPlayer to remove the styling of the cue.
+            // Setting `false` will tell ExoPlayer to remove the styling 
+            // and the font size of the cue.
             // In our API, for FE apps, default is `true` means override the styling
             // Hence reverting the value coming in `subtitleStyleSettings.isOverrideCueStyling()`
             exoPlayerSubtitleView.setApplyEmbeddedStyles(!subtitleStyleSettings.isOverrideCueStyling());
