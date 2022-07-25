@@ -241,7 +241,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
         window = new Timeline.Window();
         setPlayerListeners();
-        exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
+        if (playerSettings.getAspectRatioResizeMode() != null) {
+            configureAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
+        }
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured, playerSettings.isVideoViewHidden());
 
         player.setPlayWhenReady(false);
@@ -1844,8 +1846,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        if (resizeMode == null) {
+            log.e("Resize mode is invalid");
+            return;
+        }
         playerSettings.setSurfaceAspectRatioResizeMode(resizeMode);
-        configureAspectRatioResizeMode();
+        configureAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
         sendEvent(PlayerEvent.Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
     }
 
@@ -1891,9 +1897,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         return pkLowLatencyConfig;
     }
 
-    private void configureAspectRatioResizeMode() {
-        if(exoPlayerView != null){
-            exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
+    private void configureAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        if (exoPlayerView != null) {
+            exoPlayerView.setSurfaceAspectRatioResizeMode(resizeMode);
         }
     }
 
