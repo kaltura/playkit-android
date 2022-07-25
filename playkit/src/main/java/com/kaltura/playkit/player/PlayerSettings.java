@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.player;
 
+import androidx.annotation.NonNull;
+
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestConfig;
@@ -321,7 +323,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+    public Player.Settings setSurfaceAspectRatioResizeMode(@NonNull PKAspectRatioResizeMode resizeMode) {
         this.resizeMode = resizeMode;
         return this;
     }

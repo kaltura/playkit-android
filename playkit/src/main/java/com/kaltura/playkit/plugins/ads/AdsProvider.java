@@ -20,6 +20,7 @@ import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdPluginType;
 import com.kaltura.playkit.ads.PKAdProviderListener;
 import com.kaltura.playkit.ads.PKAdvertisingAdInfo;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 
 import java.util.List;
 
@@ -34,6 +35,8 @@ public interface AdsProvider {
     void pause();
 
     default void setVolume(float volume) {}
+
+    default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
 
     void contentCompleted();
 
