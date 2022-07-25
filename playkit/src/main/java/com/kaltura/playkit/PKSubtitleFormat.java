@@ -21,7 +21,8 @@ import java.util.Map;
 
 public enum PKSubtitleFormat {
     vtt(MimeTypes.TEXT_VTT, "vtt"),
-    srt(MimeTypes.APPLICATION_SUBRIP, "srt");
+    srt(MimeTypes.APPLICATION_SUBRIP, "srt"),
+    ttml(MimeTypes.APPLICATION_TTML, "ttml");
 
     public final String mimeType;
     public final String pathExt;

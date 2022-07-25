@@ -11,9 +11,9 @@ public class PKSubtitlePosition {
 
     private int LINE_TYPE_FRACTION = 0;
 
-    private float DIMEN_UNSET = -Float.MAX_VALUE;
+    private final float DIMEN_UNSET = -Float.MAX_VALUE;
 
-    private int TYPE_UNSET = Integer.MIN_VALUE;
+    private final int TYPE_UNSET = Integer.MIN_VALUE;
 
     // Override the current subtitle Positioning with the In-stream subtitle text track configuration
     private boolean overrideInlineCueConfig;
@@ -62,37 +62,10 @@ public class PKSubtitlePosition {
     }
 
     /**
-     * Allow the subtitle view to move left (ALIGN_NORMAL), middle (ALIGN_CENTER) and right (ALIGN_OPPOSITE)
-     * For RTL texts, Allow the subtitle view to move Right (ALIGN_NORMAL), middle (ALIGN_CENTER) and left (ALIGN_OPPOSITE)
-     *
-     * Set the horizontal(Left/Right viewport) positions, percentage starts from
-     * center(10 is for 10%) to Left/Right(100 is for 100%)
-     *
-     * @param horizontalPositionPercentage percentage to left/right viewport from center
-     * @param horizontalPosition subtitle view positioning
-     * @return PKSubtitlePosition
-     */
-    private PKSubtitlePosition setHorizontalPositionLevel(float horizontalPositionPercentage, Layout.Alignment horizontalPosition) {
-        this.subtitleHorizontalPosition = horizontalPosition;
-        this.horizontalPositionPercentage = horizontalPositionPercentage;
-        return this;
-    }
-
-    /**
-     * Set the vertical(Top to Bottom) positions, percentage starts from
-     * Top(10 is for 10%) to Bottom(100 is for 100%)
-     *
-     * @param verticalPositionPercentage percentage to vertical viewport from top to bottom
-     * @return PKSubtitlePosition
-     */
-    private PKSubtitlePosition setVerticalPositionLevel(float verticalPositionPercentage) {
-        this.verticalPositionPercentage = verticalPositionPercentage;
-        return this;
-    }
-
-    /**
      * Set the subtitle position any where on the video frame. This method allows to move in X-Y coordinates
      * To set the subtitle only in vertical direction (Y - coordinate) use {@link PKSubtitlePosition#setVerticalPosition(int)}
+     *
+     * If horizontal alignment and horizontal position is not valid then treat it as {@link PKSubtitlePosition#setVerticalPosition(int)}
      *
      * @param horizontalPositionPercentage Set the horizontal(Left/Right viewport) positions, percentage starts from
      *                                     center(10 is for 10%) to Left/Right(100 is for 100%)
@@ -139,15 +112,16 @@ public class PKSubtitlePosition {
     }
 
     /**
-     * If `overrideInlineCueConfig` is false that mean; app does not want to override the inline Cue configuration.
+     * If `overrideInlineCueConfig` is `false` that mean; app does not want to override the inline Cue configuration.
      * App wants to go with Cue configuration.
-     * BUT Beware that it will call {@link PKSubtitlePosition#setOverrideInlineCueConfig(boolean)} with false value
+     *
+     * BUT Beware that it will call {@link PKSubtitlePosition#setOverrideInlineCueConfig(boolean)} with `false` value
      * means after that in next call, app needs to {@link PKSubtitlePosition#setOverrideInlineCueConfig(boolean)}
      * with another value.
      *
      * OTHERWISE
      *
-     * If `overrideInlineCueConfig` is true then it will move subtitle to Bottom-Center which is a standard position for it
+     * If `overrideInlineCueConfig` is `true` then it will move subtitle to Bottom-Center which is a standard position for it
      *
      * @return PKSubtitlePosition
      */
@@ -175,6 +149,32 @@ public class PKSubtitlePosition {
     public PKSubtitlePosition setOverrideInlineCueConfig(boolean overrideInlineCueConfig) {
         this.overrideInlineCueConfig = overrideInlineCueConfig;
         return this;
+    }
+
+
+    /**
+     * Allow the subtitle view to move left (ALIGN_NORMAL), middle (ALIGN_CENTER) and right (ALIGN_OPPOSITE)
+     * For RTL texts, Allow the subtitle view to move Right (ALIGN_NORMAL), middle (ALIGN_CENTER) and left (ALIGN_OPPOSITE)
+     *
+     * Set the horizontal(Left/Right viewport) positions, percentage starts from
+     * center(10 is for 10%) to Left/Right(100 is for 100%)
+     *
+     * @param horizontalPositionPercentage percentage to left/right viewport from center
+     * @param horizontalPosition subtitle view positioning
+     */
+    private void setHorizontalPositionLevel(float horizontalPositionPercentage, Layout.Alignment horizontalPosition) {
+        this.subtitleHorizontalPosition = horizontalPosition;
+        this.horizontalPositionPercentage = horizontalPositionPercentage;
+    }
+
+    /**
+     * Set the vertical(Top to Bottom) positions, percentage starts from
+     * Top(10 is for 10%) to Bottom(100 is for 100%)
+     *
+     * @param verticalPositionPercentage percentage to vertical viewport from top to bottom
+     */
+    private void setVerticalPositionLevel(float verticalPositionPercentage) {
+        this.verticalPositionPercentage = verticalPositionPercentage;
     }
 
     private float checkPositionPercentageLimit(int positionPercentage) {

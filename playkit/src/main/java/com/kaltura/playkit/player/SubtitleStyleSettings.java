@@ -27,7 +27,7 @@ public class SubtitleStyleSettings {
     }
 
     public enum SubtitleTextSizeFraction {
-        SUBTITLE_FRACTION_50, SUBTITLE_FRACTION_75, SUBTITLE_FRACTION_100, SUBTITLE_FRACTION_125, SUBTITLE_FRACTION_150, SUBTITLE_FRACTION_200
+        SUBTITLE_FRACTION_50, SUBTITLE_FRACTION_75, SUBTITLE_FRACTION_100, SUBTITLE_FRACTION_125, SUBTITLE_FRACTION_150, SUBTITLE_FRACTION_175, SUBTITLE_FRACTION_200
     }
 
     public enum SubtitleStyleTypeface {
@@ -43,6 +43,7 @@ public class SubtitleStyleSettings {
     private static final float fraction100 = 1.0f;
     private static final float fraction125 = 1.25f;
     private static final float fraction150 = 1.50f;
+    private static final float fraction175 = 1.75f;
     private static final float fraction200 = 2.0f;
 
     private int subtitleTextColor = Color.WHITE;
@@ -55,6 +56,7 @@ public class SubtitleStyleSettings {
     private int subtitleEdgeColor = Color.WHITE;
     private Typeface subtitleTypeface = Typeface.DEFAULT;
     private String subtitleStyleName;
+    private boolean overrideCueStyling = true;
     private PKSubtitlePosition subtitlePosition;
 
     public SubtitleStyleSettings(String subtitleStyleName) {
@@ -95,6 +97,10 @@ public class SubtitleStyleSettings {
 
     public String getStyleName() {
         return subtitleStyleName;
+    }
+
+    public boolean isOverrideCueStyling() {
+        return overrideCueStyling;
     }
 
     public PKSubtitlePosition getSubtitlePosition() {
@@ -156,6 +162,9 @@ public class SubtitleStyleSettings {
             case SUBTITLE_FRACTION_150:
                 this.subtitleTextSizeFraction = fraction150;
                 break;
+            case SUBTITLE_FRACTION_175:
+                this.subtitleTextSizeFraction = fraction175;
+                break;
             case SUBTITLE_FRACTION_200:
                 this.subtitleTextSizeFraction = fraction200;
                 break;
@@ -203,6 +212,28 @@ public class SubtitleStyleSettings {
         } else {
             subtitleTypeface = asstTypeface;
         }
+        return this;
+    }
+
+    /**
+     * If the text track cues have the styling inside then passing
+     * `overrideCueStyling` `false` will disable it and
+     * styling inside the cue will be used.
+     *
+     * If the styling does not exist inside the cue then passed
+     * styling will be applied. Passing `false` will be having no
+     * impact in that case because there is no styling inside the cue.
+     *
+     * It will override the font size as well.
+     *
+     * Default is `true` means enabled, We will override the cue styling
+     * anyways.
+     *
+     * @param overrideCueStyling pass `false` to take cue's styling
+     * @return SubtitleStyleSettings
+     */
+    public SubtitleStyleSettings overrideCueStyling(boolean overrideCueStyling) {
+        this.overrideCueStyling = overrideCueStyling;
         return this;
     }
 
