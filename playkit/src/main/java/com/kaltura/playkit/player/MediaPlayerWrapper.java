@@ -372,6 +372,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
+    public void setRedirectedManifestURL(String redirectedManifestURL) {
+        // Not implemented
+    }
+
+    @Override
     public void release() {
         log.d("release");
         appInBackground = true;

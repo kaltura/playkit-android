@@ -196,6 +196,11 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     }
 
     @Override
+    public void setRedirectedManifestURL(String playbackRedirectedManifestUrl) {
+        super.setRedirectedManifestURL(playbackRedirectedManifestUrl);
+    }
+
+    @Override
     public void stop() {
         log.d("AdWrapper stop");
         if (adsProvider != null) {

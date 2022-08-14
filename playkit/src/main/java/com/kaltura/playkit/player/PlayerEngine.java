@@ -211,6 +211,7 @@ public interface PlayerEngine {
      */
     void setInputFormatChangedListener(Boolean enableListener);
 
+    void setRedirectedManifestURL(String redirectedManifestURL);
     /**
      * Release the current player.
      * Note, that {@link ExoPlayerWrapper} and {@link TrackSelectionHelper} objects, will be destroyed.
@@ -331,5 +332,6 @@ public interface PlayerEngine {
         void onConnectionAcquired(URIConnectionAcquiredInfo uriConnectionAcquiredInfo);
         void onLoadError(IOException error, boolean wasCanceled);
         void onDecoderDisabled(int skippedOutputBufferCount, int renderedOutputBufferCount);
+        void onManifestRedirected(String redirectedManifestUrl);
     }
 }

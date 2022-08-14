@@ -94,6 +94,9 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
             }
             log.v("onLoadCompleted trackType = " + mediaLoadData.trackType + ", mediaLoadData.dataType " + mediaLoadData.dataType + ", " + loadEventInfo.loadDurationMs + " " + loadEventInfo.uri.toString());
             if (listener != null) {
+                if (mediaLoadData.trackType == C.TRACK_TYPE_UNKNOWN && mediaLoadData.dataType == C.DATA_TYPE_MANIFEST) {
+                    listener.onManifestRedirected(loadEventInfo.uri.toString());
+                }
                 listener.onBytesLoaded(mediaLoadData.trackType, mediaLoadData.dataType, loadEventInfo.bytesLoaded, loadEventInfo.loadDurationMs, totalBytesLoaded);
             }
         }

@@ -523,6 +523,14 @@ public class PlayerController implements Player {
                             eventListener.onEvent(new PlayerEvent.OutputBufferCountUpdate(skippedOutputBufferCount, renderedOutputBufferCount));
                         }
                     }
+
+                    @Override
+                    public void onManifestRedirected(String redirectedUrl) {
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent.ManifestRedirected(redirectedUrl));
+                            player.setRedirectedManifestURL(redirectedUrl);
+                        }
+                    }
                 });
                 player.setInputFormatChangedListener(true);
             } else {
