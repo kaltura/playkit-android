@@ -1012,12 +1012,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition, @NonNull Player.PositionInfo newPosition, @Player.DiscontinuityReason int reason) {
         log.d("onPositionDiscontinuity reason = " + reason);
     }
-
-    @Override
-    public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
-        Player.Listener.super.onMediaItemTransition(mediaItem, reason);
-    }
-
+    
     @Override
     public void onTracksInfoChanged(@NonNull TracksInfo tracksInfo) {
         log.d("onTracksInfoChanged");
