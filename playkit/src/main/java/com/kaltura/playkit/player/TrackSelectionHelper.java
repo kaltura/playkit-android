@@ -411,6 +411,10 @@ public class TrackSelectionHelper {
         for (int trackIndex = 0; trackIndex < rawImageTracks.size(); trackIndex++) {
             CustomFormat imageFormat = rawImageTracks.get(trackIndex);
             CustomFormat.FormatThumbnailInfo formatThumbnailInfo = imageFormat.formatThumbnailInfo;
+            if (formatThumbnailInfo == null) {
+                continue;
+            }
+
             String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, trackIndex);
             String fixedImageTrackURL = formatThumbnailInfo.imageTemplateUrl;
             if (!TextUtils.isEmpty(mediaItemManifestURL) &&
@@ -435,7 +439,9 @@ public class TrackSelectionHelper {
             ));
         }
 
-        updateLastSelectedImageTrackIds();
+        if (!imageTracks.isEmpty()) {
+            updateLastSelectedImageTrackIds();
+        }
     }
 
     @NonNull

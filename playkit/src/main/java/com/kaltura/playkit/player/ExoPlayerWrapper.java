@@ -1417,7 +1417,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (player.getCurrentMediaItem() != null &&
                 player.getCurrentMediaItem().localConfiguration != null  &&
                 player.getCurrentMediaItem().localConfiguration.uri != null) {
-            this.trackSelectionHelper.setRedirectedManifestURL(player.getCurrentMediaItem().localConfiguration.uri.toString(), redirectedManifestURL);
+            trackSelectionHelper.setRedirectedManifestURL(player.getCurrentMediaItem().localConfiguration.uri.toString(), redirectedManifestURL);
         }
     }
 
