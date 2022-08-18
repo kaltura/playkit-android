@@ -386,7 +386,7 @@ public class PlayerEvent implements PKEvent {
         STOPPED, // sent when stop player api is called.
         METADATA_AVAILABLE, // Sent when there is metadata available for this entry.
         SOURCE_SELECTED, // Sent when the source was selected.
-        SOURCE_REDIRECTED, // Sent when there is manifest redirection for IMAGE tracks.
+        SOURCE_REDIRECTED, // Sent when there is manifest redirection.
         PLAYHEAD_UPDATED, //Send player position every 100 Milisec.
         VIDEO_TRACK_CHANGED,
         AUDIO_TRACK_CHANGED,
