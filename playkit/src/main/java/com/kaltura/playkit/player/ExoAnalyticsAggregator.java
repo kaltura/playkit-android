@@ -92,7 +92,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
             if (mediaLoadData.trackType == C.TRACK_TYPE_VIDEO  || mediaLoadData.trackType == C.TRACK_TYPE_AUDIO || mediaLoadData.trackType == C.TRACK_TYPE_DEFAULT) { // in HLS track type 0 is sent in dash type 1 is sent
                 totalBytesLoaded += loadEventInfo.bytesLoaded;
             }
-            log.v("onLoadCompleted trackType = " + mediaLoadData.trackType + ", mediaLoadData.dataType " + mediaLoadData.dataType + ", " + loadEventInfo.loadDurationMs + " " + loadEventInfo.uri.toString());
+            log.v("onLoadCompleted trackType = " + mediaLoadData.trackType + ", mediaLoadData.dataType " + mediaLoadData.dataType + ", " + loadEventInfo.loadDurationMs + " " + loadEventInfo.uri);
             if (listener != null) {
                 if (mediaLoadData.trackType == C.TRACK_TYPE_UNKNOWN && mediaLoadData.dataType == C.DATA_TYPE_MANIFEST) {
                     listener.onManifestRedirected(loadEventInfo.uri.toString());
@@ -114,7 +114,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
 
     @Override
     public void onLoadError(@NonNull EventTime eventTime, @NonNull LoadEventInfo loadEventInfo, @NonNull MediaLoadData mediaLoadData, @NonNull IOException error, boolean wasCanceled) {
-        log.v("onLoadError Uri = " + loadEventInfo.uri.toString());
+        log.v("onLoadError Uri = " + loadEventInfo.uri);
         onLoadCompleted(eventTime, loadEventInfo, mediaLoadData);   // in case there are bytes loaded
         if (listener != null) {
             listener.onLoadError(error, wasCanceled);
