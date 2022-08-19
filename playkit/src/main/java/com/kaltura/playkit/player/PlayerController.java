@@ -528,7 +528,7 @@ public class PlayerController implements Player {
                     @Override
                     public void onManifestRedirected(String redirectedUrl) {
                         if (TextUtils.isEmpty(redirectedUrl)) {
-                            log.e("onManifestRedirected url: " + redirectedUrl);
+                            log.e("onManifestRedirected: redirectedUrl is empty");
                             return;
                         }
                         if (eventListener != null) {
