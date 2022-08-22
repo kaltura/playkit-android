@@ -44,6 +44,7 @@ public class PlayerEvent implements PKEvent {
     public static final Class<TextTrackChanged> textTrackChanged = TextTrackChanged.class;
     public static final Class<EventStreamChanged> eventStreamChanged = EventStreamChanged.class;
     public static final Class<ImageTrackChanged> imageTrackChanged = ImageTrackChanged.class;
+    public static final Class<ManifestRedirected> sourceRedirected = ManifestRedirected.class;
 
     public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
     public static final Class<SubtitlesStyleChanged> subtitlesStyleChanged = SubtitlesStyleChanged.class;
@@ -306,6 +307,16 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class ManifestRedirected extends PlayerEvent {
+
+        public final String redirectedUrl;
+
+        public ManifestRedirected(String redirectedUrl) {
+            super(Type.SOURCE_REDIRECTED);
+            this.redirectedUrl = redirectedUrl;
+        }
+    }
+
     public static class BytesLoaded extends PlayerEvent {
 
         /*
@@ -364,7 +375,7 @@ public class PlayerEvent implements PKEvent {
         LOADED_METADATA,   //  The media's metadata has finished loading; all attributes now contain as much useful information as they're going to.
         PAUSE,   //  Sent when playback is paused.
         PLAY,    //  Sent when playback of the media starts after having been paused; that is, when playback is resumed after a prior pause event.
-        RETRY,   //  Sent when retry api is called by app
+        RETRY,   //  Sent when retry api is called by app.
         PLAYING,   //  Sent when the media begins to play (either for the first time, after having been paused, or after ending and then restarting).
         SEEKED,   //  Sent when a seek operation completes.
         SEEKING,   //  Sent when a seek operation begins.
@@ -372,22 +383,23 @@ public class PlayerEvent implements PKEvent {
         REPLAY, //Sent when replay happened.
         PLAYBACK_INFO_UPDATED, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackInfo.java object with relevant data.
         VOLUME_CHANGED, // Sent when volume is changed.
-        STOPPED, // sent when stop player api is called
+        STOPPED, // sent when stop player api is called.
         METADATA_AVAILABLE, // Sent when there is metadata available for this entry.
         SOURCE_SELECTED, // Sent when the source was selected.
-        PLAYHEAD_UPDATED, //Send player position every 100 Milisec
+        SOURCE_REDIRECTED, // Sent when there is manifest redirection.
+        PLAYHEAD_UPDATED, //Send player position every 100 Milisec.
         VIDEO_TRACK_CHANGED,
         AUDIO_TRACK_CHANGED,
         TEXT_TRACK_CHANGED,
         IMAGE_TRACK_CHANGED,
         PLAYBACK_RATE_CHANGED,
         CONNECTION_ACQUIRED,
-        VIDEO_FRAMES_DROPPED,   // Video frames were dropped, see PlayerEvent.VideoFramesDropped
+        VIDEO_FRAMES_DROPPED,   // Video frames were dropped, see PlayerEvent.VideoFramesDropped.
         OUTPUT_BUFFER_COUNT_UPDATE,
-        BYTES_LOADED,           // Bytes were downloaded from the network
+        BYTES_LOADED,           // Bytes were downloaded from the network.
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
         ASPECT_RATIO_RESIZE_MODE_CHANGED, //Send when updating the Surface Vide Aspect Ratio size mode.
-        EVENT_STREAM_CHANGED //Send event streams received from manifest
+        EVENT_STREAM_CHANGED //Send event streams received from manifest.
     }
 
     @Override

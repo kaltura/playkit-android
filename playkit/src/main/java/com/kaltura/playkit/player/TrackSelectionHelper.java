@@ -138,6 +138,8 @@ public class TrackSelectionHelper {
     private TracksErrorListener tracksErrorListener;
 
     private PlayerSettings playerSettings;
+    private String mediaItemManifestURL;
+    private String redirectPlaybackURL;
 
     interface TracksInfoListener {
 
@@ -189,6 +191,11 @@ public class TrackSelectionHelper {
         }
     }
 
+    public void setRedirectedManifestURL(String mediaItemManifestURL, String redirectPlaybackURL) {
+        this.mediaItemManifestURL = mediaItemManifestURL;
+        this.redirectPlaybackURL = redirectPlaybackURL;
+    }
+
     /**
      * Prepare {@link PKTracks} object for application.
      * When the object is created, notify {@link ExoPlayerWrapper} about that,
@@ -219,6 +226,7 @@ public class TrackSelectionHelper {
 
         if (customDashManifest != null && customDashManifest.getPeriodCount() > 0) {
             for (int periodIndex = 0; periodIndex < customDashManifest.getPeriodCount(); periodIndex++) {
+
                 eventStreamList.addAll(customDashManifest.getPeriod(periodIndex).eventStreams);
                 List<CustomAdaptationSet> adaptationSets = customDashManifest.getPeriod(periodIndex).adaptationSets;
 
@@ -231,6 +239,7 @@ public class TrackSelectionHelper {
                         if (representation.format == null || representation.format.formatThumbnailInfo == null) {
                             continue;
                         }
+
                         rawImageTracks.add(representation.format);
                     }
                 }
@@ -402,7 +411,18 @@ public class TrackSelectionHelper {
         for (int trackIndex = 0; trackIndex < rawImageTracks.size(); trackIndex++) {
             CustomFormat imageFormat = rawImageTracks.get(trackIndex);
             CustomFormat.FormatThumbnailInfo formatThumbnailInfo = imageFormat.formatThumbnailInfo;
+            if (formatThumbnailInfo == null) {
+                continue;
+            }
+
             String uniqueId = getUniqueId(TRACK_TYPE_IMAGE, TRACK_TYPE_IMAGE, trackIndex);
+            String fixedImageTrackURL = formatThumbnailInfo.imageTemplateUrl;
+            if (!TextUtils.isEmpty(mediaItemManifestURL) &&
+                    !TextUtils.isEmpty(redirectPlaybackURL) &&
+                    !TextUtils.equals(mediaItemManifestURL, redirectPlaybackURL)) {
+                fixedImageTrackURL = rebuildImageTrackURL(formatThumbnailInfo.imageTemplateUrl);
+            }
+
             imageTracks.add(trackIndex, new DashImageTrack(uniqueId,
                     imageFormat.id,
                     imageFormat.bitrate,
@@ -411,7 +431,7 @@ public class TrackSelectionHelper {
                     formatThumbnailInfo.tilesHorizontal,
                     formatThumbnailInfo.tilesVertical,
                     formatThumbnailInfo.segmentDuration * Consts.MILLISECONDS_MULTIPLIER,
-                    formatThumbnailInfo.imageTemplateUrl,
+                    fixedImageTrackURL,
                     formatThumbnailInfo.presentationTimeOffset,
                     formatThumbnailInfo.timeScale,
                     formatThumbnailInfo.startNumber,
@@ -419,7 +439,31 @@ public class TrackSelectionHelper {
             ));
         }
 
-        updateLastSelectedImageTrackIds();
+        if (!imageTracks.isEmpty()) {
+            updateLastSelectedImageTrackIds();
+        }
+    }
+
+    @NonNull
+    private String rebuildImageTrackURL(String fullImageUrl) {
+        if (mediaItemManifestURL.contains("?")) {
+            mediaItemManifestURL = mediaItemManifestURL.split("\\?")[0];
+        }
+        int index = mediaItemManifestURL.lastIndexOf('/');
+        if (index > 0) {
+            mediaItemManifestURL = mediaItemManifestURL.substring(0, index);
+        }
+
+        if (redirectPlaybackURL.contains("?")) {
+            redirectPlaybackURL = redirectPlaybackURL.split("\\?")[0];
+        }
+        index = redirectPlaybackURL.lastIndexOf('/');
+        if (index > 0) {
+            redirectPlaybackURL = redirectPlaybackURL.substring(0, index);
+        }
+        String fullImageUrlSuffix = fullImageUrl.replaceAll(mediaItemManifestURL, "");
+        fullImageUrl = redirectPlaybackURL + fullImageUrlSuffix;
+        return fullImageUrl;
     }
 
     private void createVttThumbnailImageTrack(String externalThumbnailWebVttUrl) {
@@ -2030,6 +2074,8 @@ public class TrackSelectionHelper {
         imageTracks.clear();
         currentVideoFormat = null;
         currentAudioFormat = null;
+        mediaItemManifestURL = null;
+        redirectPlaybackURL = null;
 
         if (originalVideoTracks != null) {
             originalVideoTracks.clear();

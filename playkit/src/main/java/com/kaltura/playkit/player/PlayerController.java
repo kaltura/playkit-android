@@ -16,6 +16,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
+import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -522,6 +523,18 @@ public class PlayerController implements Player {
                         if (eventListener != null) {
                             eventListener.onEvent(new PlayerEvent.OutputBufferCountUpdate(skippedOutputBufferCount, renderedOutputBufferCount));
                         }
+                    }
+
+                    @Override
+                    public void onManifestRedirected(String redirectedUrl) {
+                        if (TextUtils.isEmpty(redirectedUrl)) {
+                            log.e("onManifestRedirected: redirectedUrl is empty");
+                            return;
+                        }
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent.ManifestRedirected(redirectedUrl));
+                        }
+                        player.setRedirectedManifestURL(redirectedUrl);
                     }
                 });
                 player.setInputFormatChangedListener(true);

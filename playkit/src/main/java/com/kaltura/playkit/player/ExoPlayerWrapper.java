@@ -1012,7 +1012,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition, @NonNull Player.PositionInfo newPosition, @Player.DiscontinuityReason int reason) {
         log.d("onPositionDiscontinuity reason = " + reason);
     }
-
+    
     @Override
     public void onTracksInfoChanged(@NonNull TracksInfo tracksInfo) {
         log.d("onTracksInfoChanged");
@@ -1410,6 +1410,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     @Override
     public void setInputFormatChangedListener(Boolean enableListener) {
         this.analyticsAggregator.setInputFormatChangedListener(enableListener != null ? this : null);
+    }
+
+    @Override
+    public void setRedirectedManifestURL(String redirectedManifestURL) {
+        if (player.getCurrentMediaItem() != null &&
+                player.getCurrentMediaItem().localConfiguration != null  &&
+                player.getCurrentMediaItem().localConfiguration.uri != null) {
+            trackSelectionHelper.setRedirectedManifestURL(player.getCurrentMediaItem().localConfiguration.uri.toString(), redirectedManifestURL);
+        }
     }
 
     @Override

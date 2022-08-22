@@ -147,6 +147,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void setRedirectedManifestURL(String playbackRedirectedManifestUrl) {
+        playerEngine.setRedirectedManifestURL(playbackRedirectedManifestUrl);
+    }
+
+    @Override
     public void release() {
         playerEngine.release();
     }
