@@ -81,6 +81,7 @@ public class PlayerController implements Player {
     private boolean isVideoTracksReset;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
+    private String lastRedirectedUrl;
 
     private Handler handler = new Handler(Looper.getMainLooper());
 
@@ -326,6 +327,7 @@ public class PlayerController implements Player {
         mediaConfig = null;
         eventListener = null;
         currentPlayerType = PlayerEngineType.Unknown;
+        lastRedirectedUrl = null;
     }
 
     @Override
@@ -345,6 +347,7 @@ public class PlayerController implements Player {
             if (assertPlayerIsNotNull("stop()")) {
                 player.stop();
             }
+            lastRedirectedUrl = null;
         }
     }
 
@@ -531,10 +534,14 @@ public class PlayerController implements Player {
                             log.e("onManifestRedirected: redirectedUrl is empty");
                             return;
                         }
-                        if (eventListener != null) {
+                        boolean isNewRedirectUrl = !TextUtils.equals(lastRedirectedUrl, redirectedUrl);
+                        if (eventListener != null && isNewRedirectUrl) {
+                            lastRedirectedUrl = redirectedUrl;
                             eventListener.onEvent(new PlayerEvent.ManifestRedirected(redirectedUrl));
                         }
-                        player.setRedirectedManifestURL(redirectedUrl);
+                        if (isNewRedirectUrl) {
+                            player.setRedirectedManifestURL(redirectedUrl);
+                        }
                     }
                 });
                 player.setInputFormatChangedListener(true);
@@ -591,7 +598,7 @@ public class PlayerController implements Player {
         log.d("onApplicationPaused");
 
         profiler.onApplicationPaused();
-
+        lastRedirectedUrl = null;
         if (isPlayerStopped) {
             log.e("onApplicationPaused called during player state = STOPPED - return");
             return;
