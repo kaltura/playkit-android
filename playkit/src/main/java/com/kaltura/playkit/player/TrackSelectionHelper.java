@@ -306,6 +306,12 @@ public class TrackSelectionHelper {
                                     continue;
                                 }
 
+                                if (format.roleFlags == C.ROLE_FLAG_TRICK_PLAY) {
+                                    // ROLE_FLAG_TRICK_PLAY is not a video track
+                                    // in future handle that in hls case for thumbnailInfo
+                                    continue;
+                                }
+                                
                                 if (!videoTracksAvailable) {
                                     videoTracksAvailable = true;
                                 }
