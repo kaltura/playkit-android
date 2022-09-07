@@ -530,18 +530,19 @@ public class PlayerController implements Player {
 
                     @Override
                     public void onManifestRedirected(String redirectedUrl) {
-                        if (TextUtils.isEmpty(redirectedUrl)) {
-                            log.e("onManifestRedirected: redirectedUrl is empty");
+                        boolean isNewRedirectUrl = !TextUtils.equals(lastRedirectedUrl, redirectedUrl);
+
+                        if (TextUtils.isEmpty(redirectedUrl) || !isNewRedirectUrl) {
+                            log.v("onManifestRedirected event ignored");
                             return;
                         }
-                        boolean isNewRedirectUrl = !TextUtils.equals(lastRedirectedUrl, redirectedUrl);
-                        if (eventListener != null && isNewRedirectUrl) {
-                            lastRedirectedUrl = redirectedUrl;
+
+                        if (eventListener != null) {
                             eventListener.onEvent(new PlayerEvent.ManifestRedirected(redirectedUrl));
                         }
-                        if (isNewRedirectUrl) {
-                            player.setRedirectedManifestURL(redirectedUrl);
-                        }
+
+                        lastRedirectedUrl = redirectedUrl;
+                        player.setRedirectedManifestURL(redirectedUrl);
                     }
                 });
                 player.setInputFormatChangedListener(true);
