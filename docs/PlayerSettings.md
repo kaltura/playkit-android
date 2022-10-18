@@ -61,7 +61,7 @@ Once you created a player instance you can set the above settings on it.
  Player player = PlayKitManager.loadPlayer(context, pluginConfigs);
 ```
 
-### Apply PLayer Settings if required:
+### Apply Player Settings if required:
 
 ```
  // SELECTING if to use TextureView instead of surface view
