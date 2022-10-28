@@ -862,7 +862,7 @@ public class PlayerController implements Player {
 
         if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
-            if (eventListener != null && position > 0 && duration > 0) {
+            if (eventListener != null && position > 0 && (duration > 0 || getMediaFormat() == PKMediaFormat.udp)) {
                 eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, bufferPosition, duration));
             }
         }
