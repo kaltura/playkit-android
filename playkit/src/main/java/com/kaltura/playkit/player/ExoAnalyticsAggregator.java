@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.Tracks;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
 import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
@@ -119,6 +120,11 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
         if (listener != null) {
             listener.onLoadError(error, wasCanceled);
         }
+    }
+
+    @Override
+    public void onTracksChanged(EventTime eventTime, Tracks tracks) {
+        AnalyticsListener.super.onTracksChanged(eventTime, tracks);
     }
 
     @Override // OKHTTTP

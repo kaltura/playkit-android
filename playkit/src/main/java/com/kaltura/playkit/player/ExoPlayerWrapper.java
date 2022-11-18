@@ -35,7 +35,7 @@ import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.Timeline;
-import com.kaltura.android.exoplayer2.TracksInfo;
+import com.kaltura.android.exoplayer2.Tracks;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifestParser;
@@ -295,7 +295,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private DefaultTrackSelector initializeTrackSelector() {
 
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(context);
-        DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder(context);
+        DefaultTrackSelector.Parameters.Builder parametersBuilder = new DefaultTrackSelector.Parameters.Builder(context);
         trackSelectionHelper = new TrackSelectionHelper(context, trackSelector, lastSelectedTrackIds);
         trackSelectionHelper.updateTrackSelectorParameter(playerSettings, parametersBuilder);
         trackSelector.setParameters(parametersBuilder.build());
@@ -1014,12 +1014,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
     
     @Override
-    public void onTracksInfoChanged(@NonNull TracksInfo tracksInfo) {
-        log.d("onTracksInfoChanged");
+    public void onTracksChanged(@NonNull Tracks tracks) {
+        log.d("onTracksChanged");
 
-        //if onTracksInfoChanged happened when application went background, do not update the tracks.
-        if (assertTrackSelectionIsNotNull("onTracksInfoChanged()")) {
-
+        //if onTracksChanged happened when application went background, do not update the tracks.
+        if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
                 CustomDashManifest customDashManifest = null;
@@ -1037,11 +1036,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                         dashManifestString = null;
                     }
                 }
-                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(tracksInfo, sourceConfig.getExternalVttThumbnailUrl(), customDashManifest);
+                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(tracks, sourceConfig.getExternalVttThumbnailUrl(), customDashManifest);
             }
+            trackSelectionHelper.notifyAboutTrackChange(tracks);
         }
-
-        trackSelectionHelper.notifyAboutTrackChange(tracksInfo);
     }
 
     @Override

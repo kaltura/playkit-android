@@ -12,6 +12,7 @@ import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
+import com.kaltura.android.exoplayer2.Tracks;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
 import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
@@ -241,6 +242,11 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
+    public void onTracksChanged(EventTime eventTime, Tracks tracks) {
+        // TODO
+    }
+
+    /*@Override
     public void onTracksChanged(EventTime eventTime, TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
         LinkedHashSet<TrackGroup> trackGroupSet = new LinkedHashSet<>(trackGroups.length);
         for (int i = 0; i < trackSelections.length; i++) {
@@ -280,7 +286,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         log("TracksChanged",
                 field("available", jTrackGroups.toString()),
                 field("selected", jTrackSelections.toString()));
-    }
+    }*/
 
     private JsonObject toJSON(@Nullable Format format) {
 
