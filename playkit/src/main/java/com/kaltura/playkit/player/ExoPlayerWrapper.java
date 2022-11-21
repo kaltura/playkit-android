@@ -312,6 +312,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         metadataList.clear();
         isLoadedMetaDataFired = false;
         shouldGetTracksInfo = true;
+        // Need to clear the overrides of DefaultTrackSelector before loading the next media.
+        trackSelectionHelper.clearPreviousMediaOverrides();
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
         MediaSource mediaSource = null;

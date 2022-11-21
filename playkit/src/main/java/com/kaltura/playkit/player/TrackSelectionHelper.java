@@ -196,6 +196,17 @@ public class TrackSelectionHelper {
         this.redirectPlaybackURL = redirectPlaybackURL;
     }
 
+    public void clearPreviousMediaOverrides() {
+        if (trackSelectionOverridesBuilder != null && selector != null) {
+            // We are specially doing it for Text Track because we disable the tracks only for Text tracks.
+            trackSelectionOverridesBuilder.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false);
+            // Clearing all the overrides
+            trackSelectionOverridesBuilder.clearOverrides();
+            // Updating the default track selector of exoplayer
+            selector.setParameters(trackSelectionOverridesBuilder.build());
+        }
+    }
+
     /**
      * Prepare {@link PKTracks} object for application.
      * When the object is created, notify {@link ExoPlayerWrapper} about that,
@@ -1243,14 +1254,8 @@ public class TrackSelectionHelper {
             return;
         }
 
-        DefaultTrackSelector.Parameters.Builder parametersBuilder = selector.getParameters().buildUpon();
-        if (rendererIndex == TRACK_TYPE_TEXT) {
-            //Disable text track renderer if needed.
-            parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, uniqueTrackId[TRACK_INDEX] == TRACK_DISABLED);
-        }
-
         List<Integer> selectedTrackIndices = retrieveOverrideSelection(uniqueTrackId);
-        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices, parametersBuilder);
+        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices);
     }
 
     protected void overrideMediaVideoCodec() {
@@ -1275,10 +1280,8 @@ public class TrackSelectionHelper {
 
         requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
 
-        DefaultTrackSelector.Parameters.Builder parametersBuilder = selector.getParameters().buildUpon();
-
         List<Integer> selectedTrackIndices = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
-        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices, parametersBuilder);
+        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices);
     }
 
     protected void overrideMediaDefaultABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
@@ -1297,10 +1300,8 @@ public class TrackSelectionHelper {
         requestedChangeTrackIds[rendererIndex] = (NONE.equals(lastSelectedTrackIds[rendererIndex])) ?
                 uniqueIds.get(0) : lastSelectedTrackIds[rendererIndex];
 
-        DefaultTrackSelector.Parameters.Builder parametersBuilder = selector.getParameters().buildUpon();
-
         List<Integer> selectedTrackIndices = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
-        overrideTrack(rendererIndex,groupIndex, selectedTrackIndices, parametersBuilder);
+        overrideTrack(rendererIndex,groupIndex, selectedTrackIndices);
     }
 
     private List<String> getVideoTracksUniqueIds() {
@@ -1633,21 +1634,17 @@ public class TrackSelectionHelper {
      *                        This index is of the selected `Format` inside the `mappedTrackInfo`
      *                        Generally all the Formats come in one `Trackgroup` but for TEXT,
      *                        it comes individual `TrackGroup` for each TEXT `Format`
-     *
-     * @param parametersBuilder `DefaultTrackSelector` parameter builder object
      */
-    private void overrideTrack(int rendererIndex, int groupIndex, List<Integer> selectedIndices, DefaultTrackSelector.Parameters.Builder parametersBuilder) {
+    private void overrideTrack(int rendererIndex, int groupIndex, List<Integer> selectedIndices) {
         //actually change track.
         TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
         if (!selectedIndices.isEmpty()) {
             if (rendererIndex == TRACK_TYPE_TEXT && selectedIndices.get(0) == TRACK_DISABLED) {
-                // Just clear the selected indices,
-                // it will let exoplayer know that no tracks from trackGroup should be played
-                selectedIndices.clear();
+                trackSelectionOverridesBuilder.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true);
+            } else {
+                TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedIndices);
+                trackSelectionOverridesBuilder.setOverrideForType(trackSelectionOverride);
             }
-
-            TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedIndices);
-            trackSelectionOverridesBuilder.setOverrideForType(trackSelectionOverride);
         } else {
             //clear all the selections if selectedIndices are empty.
             trackSelectionOverridesBuilder.clearOverride(trackGroup);
@@ -1923,6 +1920,10 @@ public class TrackSelectionHelper {
             externalVttThumbnailRangesInfo.clear();
             externalVttThumbnailRangesInfo = null;
         }
+        if (trackSelectionOverridesBuilder != null) {
+            trackSelectionOverridesBuilder.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false);
+            selector.setParameters(trackSelectionOverridesBuilder.build());
+        }
     }
 
     protected void release() {
@@ -1991,7 +1992,11 @@ public class TrackSelectionHelper {
                 if (trackGroupInfo.getType() == C.TRACK_TYPE_TEXT &&
                         trackGroupInfo.isSelected() &&
                         trackGroupInfo.getMediaTrackGroup().length > 0) {
-                    return trackGroupInfo.getMediaTrackGroup().getFormat(0);
+                    for (int groupIndex = 0; groupIndex < trackGroupInfo.length; groupIndex++) {
+                        if (trackGroupInfo.isTrackSelected(groupIndex)) {
+                            return trackGroupInfo.getTrackFormat(groupIndex);
+                        }
+                    }
                 }
             }
         }
