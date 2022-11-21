@@ -1920,10 +1920,6 @@ public class TrackSelectionHelper {
             externalVttThumbnailRangesInfo.clear();
             externalVttThumbnailRangesInfo = null;
         }
-        if (trackSelectionOverridesBuilder != null) {
-            trackSelectionOverridesBuilder.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false);
-            selector.setParameters(trackSelectionOverridesBuilder.build());
-        }
     }
 
     protected void release() {
