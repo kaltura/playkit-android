@@ -113,16 +113,17 @@ public class TrackSelectionHelper {
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<VideoTrack> originalVideoTracks;
-    private List<AudioTrack> audioTracks = new ArrayList<>();
-    private List<TextTrack> textTracks = new ArrayList<>();
-    private List<ImageTrack> imageTracks = new ArrayList<>();
+    private final List<AudioTrack> audioTracks = new ArrayList<>();
+    private final List<TextTrack> textTracks = new ArrayList<>();
+    private final List<ImageTrack> imageTracks = new ArrayList<>();
+
     private @Nullable Format currentVideoFormat;
     private @Nullable Format currentAudioFormat;
-    private Map<Pair<Long,Long>, ThumbnailInfo> externalVttThumbnailRangesInfo;
 
-    private Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
-    private Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
-    private Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
+    private Map<Pair<Long,Long>, ThumbnailInfo> externalVttThumbnailRangesInfo;
+    private final Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
+    private final Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
+    private final Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
 
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
@@ -1927,19 +1928,13 @@ public class TrackSelectionHelper {
         tracksInfoListener = null;
         trackSelectionParameters = null;
         trackSelectionOverridesBuilder = null;
+        selector.release();
         clearTracksLists();
     }
 
     protected boolean isAudioOnlyStream() {
-        if (tracksInfo != null && !tracksInfo.getGroups().isEmpty()) {
-            boolean isVideoFormatAvailable = false;
-            for (Tracks.Group trackGroupInfo: tracksInfo.getGroups()) {
-                if (trackGroupInfo.getType() == C.TRACK_TYPE_VIDEO) {
-                    isVideoFormatAvailable = true;
-                    break;
-                }
-            }
-            return !isVideoFormatAvailable;
+        if (tracksInfo != null) {
+            return !tracksInfo.containsType(C.TRACK_TYPE_VIDEO);
         }
         return false;
     }
