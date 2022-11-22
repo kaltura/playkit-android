@@ -654,6 +654,20 @@ public interface Player {
     void resetABRSettings();
 
     /**
+     * Returns the media manifest of the window
+     * Manifest depends on the type of media being prepared.
+     * Must be called once the media preparation is complete (Means tracks are loaded)
+     *
+     * @return Manifest object depends on the media type
+     * ({@link com.kaltura.android.exoplayer2.source.hls.HlsManifest}
+     * or {@link com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest})
+     * <br>
+     * OR `null`
+     */
+    @Nullable
+    Object getCurrentMediaManifest();
+
+    /**
      * Add listener by event type as Class object. This generics-based method allows the caller to
      * avoid the otherwise required cast.
      * <p>
