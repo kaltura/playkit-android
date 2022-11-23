@@ -1,37 +1,6 @@
 package com.kaltura.playkit.profiler;
 
 
-import android.util.Pair;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.kaltura.android.exoplayer2.Format;
-import com.kaltura.android.exoplayer2.PlaybackException;
-import com.kaltura.android.exoplayer2.PlaybackParameters;
-import com.kaltura.android.exoplayer2.Player;
-import com.kaltura.android.exoplayer2.Tracks;
-import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
-import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
-import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
-import com.kaltura.android.exoplayer2.drm.DrmSession;
-import com.kaltura.android.exoplayer2.metadata.Metadata;
-import com.kaltura.android.exoplayer2.source.LoadEventInfo;
-import com.kaltura.android.exoplayer2.source.MediaLoadData;
-import com.kaltura.android.exoplayer2.source.TrackGroup;
-import com.kaltura.android.exoplayer2.source.TrackGroupArray;
-import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
-import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
-import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.kaltura.android.exoplayer2.video.VideoSize;
-import com.kaltura.playkit.PKPlaybackException;
-import com.kaltura.playkit.player.PKPlayerErrorType;
-
-import java.io.IOException;
-import java.util.LinkedHashSet;
-
 import static com.kaltura.android.exoplayer2.C.DATA_TYPE_AD;
 import static com.kaltura.android.exoplayer2.C.DATA_TYPE_DRM;
 import static com.kaltura.android.exoplayer2.C.DATA_TYPE_MANIFEST;
@@ -59,6 +28,33 @@ import static com.kaltura.playkit.profiler.PlayKitProfiler.field;
 import static com.kaltura.playkit.profiler.PlayKitProfiler.joinFields;
 import static com.kaltura.playkit.profiler.PlayKitProfiler.nullable;
 import static com.kaltura.playkit.profiler.PlayKitProfiler.timeField;
+
+import android.util.Pair;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.PlaybackException;
+import com.kaltura.android.exoplayer2.PlaybackParameters;
+import com.kaltura.android.exoplayer2.Player;
+import com.kaltura.android.exoplayer2.Tracks;
+import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
+import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
+import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
+import com.kaltura.android.exoplayer2.drm.DrmSession;
+import com.kaltura.android.exoplayer2.metadata.Metadata;
+import com.kaltura.android.exoplayer2.source.LoadEventInfo;
+import com.kaltura.android.exoplayer2.source.MediaLoadData;
+import com.kaltura.android.exoplayer2.source.TrackGroup;
+import com.kaltura.android.exoplayer2.video.VideoSize;
+import com.kaltura.playkit.PKPlaybackException;
+import com.kaltura.playkit.player.PKPlayerErrorType;
+
+import java.io.IOException;
+import java.util.List;
 
 class ExoPlayerProfilingListener implements AnalyticsListener {
 
@@ -243,50 +239,32 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onTracksChanged(EventTime eventTime, Tracks tracks) {
-        // TODO
-    }
+        // Tracks.Group contains video/audio/text track groups
+        List<Tracks.Group> trackGroups = tracks.getGroups();
+        JsonArray jTrackGroups = new JsonArray(trackGroups.size());
+        JsonArray jTrackSelections = new JsonArray();
 
-    /*@Override
-    public void onTracksChanged(EventTime eventTime, TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-        LinkedHashSet<TrackGroup> trackGroupSet = new LinkedHashSet<>(trackGroups.length);
-        for (int i = 0; i < trackSelections.length; i++) {
-            final TrackSelection trackSelection = trackSelections.get(i);
-            if (trackSelection != null) {
-                trackGroupSet.add(trackSelection.getTrackGroup());
-            }
-        }
+        for (Tracks.Group groups : trackGroups) {
+            JsonArray jTrackGroup = new JsonArray(groups.length);
 
-        // Add the rest
-        for (int i = 0; i < trackGroups.length; i++) {
-            final TrackGroup trackGroup = trackGroups.get(i);
-            trackGroupSet.add(trackGroup);
-        }
+            // Get track groups for each Video/Audio/Text
+            final TrackGroup trackGroup = groups.getMediaTrackGroup();
 
-        JsonArray jTrackGroups = new JsonArray(trackGroups.length);
-        for (TrackGroup trackGroup : trackGroupSet) {
-            JsonArray jTrackGroup = new JsonArray(trackGroup.length);
             for (int j = 0; j < trackGroup.length; j++) {
-                final Format format = trackGroup.getFormat(j);
+                // Get format of each track group present individually in video/audio/text
+                Format format = trackGroup.getFormat(j);
                 jTrackGroup.add(toJSON(format));
+                if (groups.isSelected() && groups.isTrackSelected(j)) {
+                    jTrackSelections.add(toJSON(format));
+                }
             }
             jTrackGroups.add(jTrackGroup);
-        }
-
-
-        JsonArray jTrackSelections = new JsonArray(trackSelections.length);
-        for (int i = 0; i < trackSelections.length; i++) {
-            ExoTrackSelection trackSelection = null;
-            if (trackSelections.get(i) instanceof ExoTrackSelection) {
-                trackSelection = (ExoTrackSelection) trackSelections.get(i);
-            }
-            final Format selectedFormat = trackSelection == null ? null : trackSelection.getSelectedFormat();
-            jTrackSelections.add(toJSON(selectedFormat));
         }
 
         log("TracksChanged",
                 field("available", jTrackGroups.toString()),
                 field("selected", jTrackSelections.toString()));
-    }*/
+    }
 
     private JsonObject toJSON(@Nullable Format format) {
 
