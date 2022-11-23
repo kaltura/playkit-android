@@ -62,7 +62,7 @@ public class PlayKitProfiler {
     private static final PKLog pkLog = PKLog.get("PlayKitProfiler");
 
     // Dev mode: shorter logs, write to local file, always enable
-    private static final boolean devMode = false;
+    private static final boolean devMode = true;
     private static final int SEND_INTERVAL_DEV = 60;    // in seconds
     private static final int SEND_PERCENTAGE_DEV = 100; // always
 

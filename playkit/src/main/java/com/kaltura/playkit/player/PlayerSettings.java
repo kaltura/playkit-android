@@ -42,6 +42,7 @@ public class PlayerSettings implements Player.Settings {
     //Only if IMA plugin is there then only this flag is set to true.
     private boolean forceSinglePlayerEngine = false;
     private boolean allowChunklessPreparation = true;
+    private boolean usePlatformDiagnostics = true;
 
     private PKWakeMode wakeMode = PKWakeMode.NONE;
     private VideoCodecSettings preferredVideoCodecSettings = new VideoCodecSettings();
@@ -157,6 +158,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isAllowChunklessPreparation() {
         return allowChunklessPreparation;
+    }
+
+    public boolean isUsePlatformDiagnostics() {
+        return usePlatformDiagnostics;
     }
 
     public VideoCodecSettings getPreferredVideoCodecSettings() {
@@ -337,6 +342,11 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings allowChunklessPreparation(boolean allowChunklessPreparation) {
         this.allowChunklessPreparation = allowChunklessPreparation;
+        return this;
+    }
+
+    public Player.Settings usePlatformDiagnostics(boolean usePlatformDiagnostics) {
+        this.usePlatformDiagnostics = usePlatformDiagnostics;
         return this;
     }
 
