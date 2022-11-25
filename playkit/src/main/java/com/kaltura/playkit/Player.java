@@ -242,21 +242,6 @@ public interface Player {
         Settings allowChunklessPreparation(boolean allowChunklessPreparation);
 
         /**
-         * Sets whether the player reports diagnostics data to the Android platform.
-         *
-         * <p>If enabled, the player will use the {@link android.media.metrics.MediaMetricsManager} to
-         * create a {@link android.media.metrics.PlaybackSession} and forward playback events and
-         * performance data to this session. This helps to provide system performance and debugging
-         * information for media playback on the device. This data may also be collected by Google <a
-         * href="https://support.google.com/accounts/answer/6078260">if sharing usage and diagnostics
-         * data is enabled</a> by the user of the device.
-         *
-         * @param UsePlatformDiagnostics Default is `true`.
-         * @return - Player Settings
-         */
-        Settings usePlatformDiagnostics(boolean UsePlatformDiagnostics);
-
-        /**
          * Set the flag which handles the video view
          *
          * @param hide video surface visibility

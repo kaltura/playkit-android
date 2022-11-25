@@ -249,7 +249,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                 .setLoadControl(getUpdatedLoadControl())
                 .setMediaSourceFactory(mediaSourceFactory)
                 .setBandwidthMeter(bandwidthMeter)
-                .setUsePlatformDiagnostics(playerSettings.isUsePlatformDiagnostics())
+                .setUsePlatformDiagnostics(false)
                 .build();
 
         player.setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus= */ playerSettings.isHandleAudioFocus());
