@@ -66,7 +66,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             Pattern.compile("([1-9]|[1-5][0-9]|6[0-3])=.*");
 
     /**
-     * Maps the value attribute of an AudioElementConfiguration with schemeIdUri
+     * Maps the value attribute of an AudioChannelConfiguration with schemeIdUri
      * "urn:mpeg:mpegB:cicp:ChannelConfiguration", as defined by ISO 23001-8 clause 8.1, to a channel
      * count.
      */
@@ -588,6 +588,9 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 case "urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed":
                     uuid = C.WIDEVINE_UUID;
                     break;
+                case "urn:uuid:e2719d58-a985-b3c9-781a-b030af78d30e":
+                    uuid = C.CLEARKEY_UUID;
+                    break;
                 default:
                     break;
             }
@@ -595,7 +598,9 @@ public class DashManifestParserForThumbnail extends DefaultHandler
 
         do {
             xpp.next();
-            if (XmlPullParserUtil.isStartTag(xpp, "ms:laurl")) {
+            if (XmlPullParserUtil.isStartTag(xpp, "clearkey:Laurl") && xpp.next() == XmlPullParser.TEXT) {
+                licenseServerUrl = xpp.getText();
+            } else if (XmlPullParserUtil.isStartTag(xpp, "ms:laurl")) {
                 licenseServerUrl = xpp.getAttributeValue(null, "licenseUrl");
             } else if (data == null
                     && XmlPullParserUtil.isStartTagIgnorePrefix(xpp, "pssh")
@@ -840,6 +845,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         ArrayList<SchemeData> drmSchemeDatas = representationInfo.drmSchemeDatas;
         drmSchemeDatas.addAll(extraDrmSchemeDatas);
         if (!drmSchemeDatas.isEmpty()) {
+            fillInClearKeyInformation(drmSchemeDatas);
             filterRedundantIncompleteSchemeDatas(drmSchemeDatas);
             formatBuilder.setDrmInitData(new DrmInitData(drmSchemeType, drmSchemeDatas));
         }
@@ -1086,13 +1092,14 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         String schemeIdUri = parseString(xpp, "schemeIdUri", "");
         String value = parseString(xpp, "value", "");
         long timescale = parseLong(xpp, "timescale", 1);
+        long presentationTimeOffset = parseLong(xpp, "presentationTimeOffset", 0);
         List<Pair<Long, EventMessage>> eventMessages = new ArrayList<>();
         ByteArrayOutputStream scratchOutputStream = new ByteArrayOutputStream(512);
         do {
             xpp.next();
             if (XmlPullParserUtil.isStartTag(xpp, "Event")) {
                 Pair<Long, EventMessage> event =
-                        parseEvent(xpp, schemeIdUri, value, timescale, scratchOutputStream);
+                        parseEvent(xpp, schemeIdUri, value, timescale, presentationTimeOffset, scratchOutputStream);
                 eventMessages.add(event);
             } else {
                 maybeSkipTag(xpp);
@@ -1125,6 +1132,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
      * @param schemeIdUri The schemeIdUri of the parent EventStream.
      * @param value The schemeIdUri of the parent EventStream.
      * @param timescale The timescale of the parent EventStream.
+     * @param presentationTimeOffset The unscaled presentation time offset of the parent EventStream.
      * @param scratchOutputStream A {@link ByteArrayOutputStream} that is used when parsing event
      *     objects.
      * @return A pair containing the node's presentation timestamp in microseconds and the parsed
@@ -1137,6 +1145,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             String schemeIdUri,
             String value,
             long timescale,
+            long presentationTimeOffset,
             ByteArrayOutputStream scratchOutputStream)
             throws IOException, XmlPullParserException {
         long id = parseLong(xpp, "id", 0);
@@ -1144,7 +1153,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         long presentationTime = parseLong(xpp, "presentationTime", 0);
         long durationMs = Util.scaleLargeTimestamp(duration, C.MILLIS_PER_SECOND, timescale);
         long presentationTimesUs =
-                Util.scaleLargeTimestamp(presentationTime, C.MICROS_PER_SECOND, timescale);
+                Util.scaleLargeTimestamp(presentationTime - presentationTimeOffset, C.MICROS_PER_SECOND, timescale);
         String messageData = parseString(xpp, "messageData", null);
         byte[] eventObject = parseEventObject(xpp, scratchOutputStream);
         return Pair.create(
@@ -1378,6 +1387,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
      *
      * @param xpp The parser from which to read.
      * @param parentBaseUrls The parent base URLs for resolving the parsed URLs.
+     * @param dvbProfileDeclared Whether the dvb profile is declared.
      * @throws XmlPullParserException If an error occurs parsing the element.
      * @throws IOException If an error occurs reading the element.
      * @return The list of parsed and resolved URLs.
@@ -1390,7 +1400,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                         ? Integer.parseInt(priorityValue)
                         : (dvbProfileDeclared ? DEFAULT_DVB_PRIORITY : PRIORITY_UNSET);
         @Nullable String weightValue = xpp.getAttributeValue(null, "dvb:weight");
-        int weight = weightValue != null ? Integer.parseInt(weightValue) : BaseUrl.DEFAULT_WEIGHT;
+        int weight = weightValue != null ? Integer.parseInt(weightValue) : DEFAULT_WEIGHT;
         @Nullable String serviceLocation = xpp.getAttributeValue(null, "serviceLocation");
         String baseUrl = parseText(xpp, "BaseURL");
         if (UriUtil.isAbsolute(baseUrl)) {
@@ -1450,6 +1460,13 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             case "urn:mpeg:mpegB:cicp:ChannelConfiguration":
                 audioChannels = parseMpegChannelConfiguration(xpp);
                 break;
+            case "tag:dts.com,2014:dash:audio_channel_configuration:2012":
+            case "urn:dts:dash:audio_channel_configuration:2012":
+                audioChannels = parseDtsChannelConfiguration(xpp);
+                break;
+            case "tag:dts.com,2018:uhd:audio_channel_configuration":
+                audioChannels = parseDtsxChannelConfiguration(xpp);
+                break;
             case "tag:dolby.com,2014:dash:audio_channel_configuration:2011":
             case "urn:dolby:dash:audio_channel_configuration:2011":
                 audioChannels = parseDolbyChannelConfiguration(xpp);
@@ -1465,9 +1482,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
     }
 
     // Selection flag parsing.
-
-    @C.SelectionFlags
-    protected int parseSelectionFlagsFromRoleDescriptors(List<Descriptor> roleDescriptors) {
+    protected @C.SelectionFlags int parseSelectionFlagsFromRoleDescriptors(List<Descriptor> roleDescriptors) {
         @C.SelectionFlags int result = 0;
         for (int i = 0; i < roleDescriptors.size(); i++) {
             Descriptor descriptor = roleDescriptors.get(i);
@@ -1478,15 +1493,14 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         return result;
     }
 
-    @C.SelectionFlags
-    protected int parseSelectionFlagsFromDashRoleScheme(@Nullable String value) {
+    protected @C.SelectionFlags int parseSelectionFlagsFromDashRoleScheme(@Nullable String value) {
         if (value == null) {
             return 0;
         }
         switch (value) {
-            case "main":
-                return C.SELECTION_FLAG_DEFAULT;
             case "forced_subtitle":
+                // Support both hyphen and underscore (https://github.com/google/ExoPlayer/issues/9727).
+            case "forced-subtitle":
                 return C.SELECTION_FLAG_FORCED;
             default:
                 return 0;
@@ -1494,9 +1508,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
     }
 
     // Role and Accessibility parsing.
-
-    @C.RoleFlags
-    protected int parseRoleFlagsFromRoleDescriptors(List<Descriptor> roleDescriptors) {
+    protected @C.RoleFlags int parseRoleFlagsFromRoleDescriptors(List<Descriptor> roleDescriptors) {
         @C.RoleFlags int result = 0;
         for (int i = 0; i < roleDescriptors.size(); i++) {
             Descriptor descriptor = roleDescriptors.get(i);
@@ -1507,8 +1519,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         return result;
     }
 
-    @C.RoleFlags
-    protected int parseRoleFlagsFromAccessibilityDescriptors(
+    protected @C.RoleFlags int parseRoleFlagsFromAccessibilityDescriptors(
             List<Descriptor> accessibilityDescriptors) {
         @C.RoleFlags int result = 0;
         for (int i = 0; i < accessibilityDescriptors.size(); i++) {
@@ -1523,8 +1534,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         return result;
     }
 
-    @C.RoleFlags
-    protected int parseRoleFlagsFromProperties(List<Descriptor> accessibilityDescriptors) {
+    protected @C.RoleFlags int parseRoleFlagsFromProperties(List<Descriptor> accessibilityDescriptors) {
         @C.RoleFlags int result = 0;
         for (int i = 0; i < accessibilityDescriptors.size(); i++) {
             Descriptor descriptor = accessibilityDescriptors.get(i);
@@ -1536,8 +1546,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         return result;
     }
 
-    @C.RoleFlags
-    protected int parseRoleFlagsFromDashRoleScheme(@Nullable String value) {
+    protected @C.RoleFlags int parseRoleFlagsFromDashRoleScheme(@Nullable String value) {
         if (value == null) {
             return 0;
         }
@@ -1557,6 +1566,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             case "caption":
                 return C.ROLE_FLAG_CAPTION;
             case "forced_subtitle":
+                // Support both hyphen and underscore (https://github.com/google/ExoPlayer/issues/9727).
+            case "forced-subtitle":
             case "subtitle":
                 return C.ROLE_FLAG_SUBTITLE;
             case "sign":
@@ -1570,8 +1581,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         }
     }
 
-    @C.RoleFlags
-    protected int parseTvaAudioPurposeCsValue(@Nullable String value) {
+    protected @C.RoleFlags int parseTvaAudioPurposeCsValue(@Nullable String value) {
         if (value == null) {
             return 0;
         }
@@ -1633,6 +1643,32 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         }
     }
 
+    private static void fillInClearKeyInformation(ArrayList<SchemeData> schemeDatas) {
+        // Find and remove ClearKey information.
+        @Nullable String clearKeyLicenseServerUrl = null;
+        for (int i = 0; i < schemeDatas.size(); i++) {
+            SchemeData schemeData = schemeDatas.get(i);
+            if (C.CLEARKEY_UUID.equals(schemeData.uuid) && schemeData.licenseServerUrl != null) {
+                clearKeyLicenseServerUrl = schemeData.licenseServerUrl;
+                schemeDatas.remove(i);
+                break;
+            }
+        }
+        if (clearKeyLicenseServerUrl == null) {
+            return;
+        }
+        // Fill in the ClearKey information into the existing PSSH schema data if applicable.
+        for (int i = 0; i < schemeDatas.size(); i++) {
+            SchemeData schemeData = schemeDatas.get(i);
+            if (C.COMMON_PSSH_UUID.equals(schemeData.uuid) && schemeData.licenseServerUrl == null) {
+                schemeDatas.set(
+                        i,
+                        new SchemeData(
+                                C.CLEARKEY_UUID, clearKeyLicenseServerUrl, schemeData.mimeType, schemeData.data));
+            }
+        }
+    }
+
     /**
      * Derives a sample mimeType from a container mimeType and codecs attribute.
      *
@@ -1647,12 +1683,11 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             return MimeTypes.getAudioMediaMimeType(codecs);
         } else if (MimeTypes.isVideo(containerMimeType)) {
             return MimeTypes.getVideoMediaMimeType(codecs);
-        } else if (MimeTypes.isText(containerMimeType)) {
-            if (MimeTypes.APPLICATION_RAWCC.equals(containerMimeType)) {
-                // RawCC is special because it's a text specific container format.
-                return MimeTypes.getTextMediaMimeType(codecs);
-            }
-            // All other text types are raw formats.
+        }  else if (MimeTypes.isText(containerMimeType)) {
+            // Text types are raw formats.
+            return containerMimeType;
+        } else if (MimeTypes.isImage(containerMimeType)) {
+            // Image types are raw formats.
             return containerMimeType;
         } else if (MimeTypes.APPLICATION_MP4.equals(containerMimeType)) {
             @Nullable String mimeType = MimeTypes.getMediaMimeType(codecs);
@@ -1695,7 +1730,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
      * @param secondType The second type.
      * @return The consistent type.
      */
-    private static int checkContentTypeConsistency(int firstType, int secondType) {
+    private static int checkContentTypeConsistency(
+            @C.TrackType int firstType, @C.TrackType int secondType) {
         if (firstType == C.TRACK_TYPE_UNKNOWN) {
             return secondType;
         } else if (secondType == C.TRACK_TYPE_UNKNOWN) {
@@ -1853,7 +1889,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
     }
 
     /**
-     * Parses the number of channels from the value attribute of an AudioElementConfiguration with
+     * Parses the number of channels from the value attribute of an AudioChannelConfiguration with
      * schemeIdUri "urn:mpeg:mpegB:cicp:ChannelConfiguration", as defined by ISO 23001-8 clause 8.1.
      *
      * @param xpp The parser from which to read.
@@ -1868,7 +1904,40 @@ public class DashManifestParserForThumbnail extends DefaultHandler
     }
 
     /**
-     * Parses the number of channels from the value attribute of an AudioElementConfiguration with
+     * Parses the number of channels from the value attribute of an AudioChannelConfiguration with
+     * schemeIdUri "tag:dts.com,2014:dash:audio_channel_configuration:2012" as defined by Annex G
+     * (3.2) in ETSI TS 102 114 V1.6.1, or by the legacy schemeIdUri
+     * "urn:dts:dash:audio_channel_configuration:2012".
+     *
+     * @param xpp The parser from which to read.
+     * @return The parsed number of channels, or {@link Format#NO_VALUE} if the channel count could
+     *     not be parsed.
+     */
+    protected static int parseDtsChannelConfiguration(XmlPullParser xpp) {
+        int channelCount = parseInt(xpp, "value", Format.NO_VALUE);
+        return 0 < channelCount && channelCount < 33 ? channelCount : Format.NO_VALUE;
+    }
+
+    /**
+     * Parses the number of channels from the value attribute of an AudioChannelConfiguration with
+     * schemeIdUri "tag:dts.com,2018:uhd:audio_channel_configuration" as defined by table B-5 in ETSI
+     * TS 103 491 v1.2.1.
+     *
+     * @param xpp The parser from which to read.
+     * @return The parsed number of channels, or {@link Format#NO_VALUE} if the channel count could
+     *     not be parsed.
+     */
+    protected static int parseDtsxChannelConfiguration(XmlPullParser xpp) {
+        @Nullable String value = xpp.getAttributeValue(null, "value");
+        if (value == null) {
+            return Format.NO_VALUE;
+        }
+        int channelCount = Integer.bitCount(Integer.parseInt(value, /* radix= */ 16));
+        return channelCount == 0 ? Format.NO_VALUE : channelCount;
+    }
+
+    /**
+     * Parses the number of channels from the value attribute of an AudioChannelConfiguration with
      * schemeIdUri "tag:dolby.com,2014:dash:audio_channel_configuration:2011", as defined by table E.5
      * in ETSI TS 102 366, or the legacy schemeIdUri
      * "urn:dolby:dash:audio_channel_configuration:2011".

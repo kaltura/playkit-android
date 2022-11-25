@@ -83,39 +83,6 @@ public class CustomDashManifest implements FilterableManifest<CustomDashManifest
 
     private final List<CustomPeriod> periods;
 
-    /**
-     * @deprecated Use {@link #CustomDashManifest(long, long, long, boolean, long, long, long, long,
-     *     ProgramInformation, UtcTimingElement, ServiceDescriptionElement, Uri, List)}.
-     */
-    @Deprecated
-    public CustomDashManifest(
-            long availabilityStartTimeMs,
-            long durationMs,
-            long minBufferTimeMs,
-            boolean dynamic,
-            long minUpdatePeriodMs,
-            long timeShiftBufferDepthMs,
-            long suggestedPresentationDelayMs,
-            long publishTimeMs,
-            @Nullable UtcTimingElement utcTiming,
-            @Nullable Uri location,
-            List<CustomPeriod> periods) {
-        this(
-                availabilityStartTimeMs,
-                durationMs,
-                minBufferTimeMs,
-                dynamic,
-                minUpdatePeriodMs,
-                timeShiftBufferDepthMs,
-                suggestedPresentationDelayMs,
-                publishTimeMs,
-                /* programInformation= */ null,
-                utcTiming,
-                /* serviceDescription= */ null,
-                location,
-                periods);
-    }
-
     public CustomDashManifest(
             long availabilityStartTimeMs,
             long durationMs,
