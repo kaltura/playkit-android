@@ -1641,11 +1641,12 @@ public class TrackSelectionHelper {
         TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
         if (!selectedIndices.isEmpty()) {
             if (rendererIndex == TRACK_TYPE_TEXT && selectedIndices.get(0) == TRACK_DISABLED) {
-                trackSelectionOverridesBuilder.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true);
-            } else {
-                TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedIndices);
-                trackSelectionOverridesBuilder.setOverrideForType(trackSelectionOverride);
+                // Just clear the selected indices,
+                // it will let exoplayer know that no tracks from trackGroup should be played
+                selectedIndices.clear();
             }
+            TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedIndices);
+            trackSelectionOverridesBuilder.setOverrideForType(trackSelectionOverride);
         } else {
             //clear all the selections if selectedIndices are empty.
             trackSelectionOverridesBuilder.clearOverride(trackGroup);
@@ -1978,12 +1979,13 @@ public class TrackSelectionHelper {
     @Nullable
     private Format getSelectedTextTrackFormat() {
         if (tracksInfo != null && !tracksInfo.getGroups().isEmpty()) {
-
             for (Tracks.Group trackGroupInfo : tracksInfo.getGroups()) {
+
                 if (trackGroupInfo.getType() == C.TRACK_TYPE_TEXT &&
                         trackGroupInfo.isSelected() &&
                         trackGroupInfo.getMediaTrackGroup().length > 0) {
                     for (int groupIndex = 0; groupIndex < trackGroupInfo.length; groupIndex++) {
+
                         if (trackGroupInfo.isTrackSelected(groupIndex)) {
                             return trackGroupInfo.getTrackFormat(groupIndex);
                         }

@@ -34,8 +34,10 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
@@ -115,13 +117,13 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onIsPlayingChanged(EventTime eventTime, boolean isPlaying) {
+    public void onIsPlayingChanged(@NonNull EventTime eventTime, boolean isPlaying) {
         log("IsPlayingChanged",
                 field("isPlaying", isPlaying));
     }
 
     @Override
-    public void onPlaybackStateChanged(EventTime eventTime,  int playbackState) {
+    public void onPlaybackStateChanged(@NonNull EventTime eventTime,  int playbackState) {
         String state;
         switch (playbackState) {
             case Player.STATE_IDLE:
@@ -143,18 +145,27 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onPlayWhenReadyChanged(EventTime eventTime, boolean playWhenReady, int reason) {
+    public void onPlayWhenReadyChanged(@NonNull EventTime eventTime, boolean playWhenReady, int reason) {
         shouldPlay = playWhenReady;
     }
 
     @Override
-    public void onTimelineChanged(EventTime eventTime, int reason) {
-
+    public void onTimelineChanged(@NonNull EventTime eventTime, int reason) {
+        String timeLineChangeReason = "NONE";
+        switch (reason) {
+            case Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE:
+                timeLineChangeReason = "SOURCE_UPDATE";
+                break;
+            case Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED:
+                timeLineChangeReason = "PLAYLIST_CHANGED";
+                break;
+        }
+        log("onTimelineChanged", field("reason", timeLineChangeReason));
     }
 
     @Override
-    public void onPositionDiscontinuity(EventTime eventTime, Player.PositionInfo oldPosition,
-                                        Player.PositionInfo newPosition, int reason) {
+    public void onPositionDiscontinuity(@NonNull EventTime eventTime, @NonNull Player.PositionInfo oldPosition,
+                                        @NonNull Player.PositionInfo newPosition, int reason) {
         String reasonString;
         switch (reason) {
             case DISCONTINUITY_REASON_AUTO_TRANSITION:
@@ -184,14 +195,14 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onPlaybackParametersChanged(EventTime eventTime, PlaybackParameters playbackParameters) {
+    public void onPlaybackParametersChanged(@NonNull EventTime eventTime, PlaybackParameters playbackParameters) {
         log("PlaybackParametersChanged",
                 field("speed", playbackParameters.speed),
                 field("pitch", playbackParameters.pitch));
     }
 
     @Override
-    public void onRepeatModeChanged(EventTime eventTime, int repeatMode) {
+    public void onRepeatModeChanged(@NonNull EventTime eventTime, int repeatMode) {
         String strMode;
         switch (repeatMode) {
             case Player.REPEAT_MODE_OFF:
@@ -211,36 +222,36 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onShuffleModeChanged(EventTime eventTime, boolean shuffleModeEnabled) {
+    public void onShuffleModeChanged(@NonNull EventTime eventTime, boolean shuffleModeEnabled) {
         log("ShuffleModeChanged", field("shuffleModeEnabled", shuffleModeEnabled));
     }
 
     @Override
-    public void onAudioCodecError(EventTime eventTime, Exception audioCodecError) {
+    public void onAudioCodecError(@NonNull EventTime eventTime, Exception audioCodecError) {
         log("PlayerError", field("type", "audioCodecError"), "cause={" + audioCodecError.getCause() + "}");
     }
 
     @Override
-    public void onAudioSinkError(EventTime eventTime, Exception audioSinkError) {
+    public void onAudioSinkError(@NonNull EventTime eventTime, Exception audioSinkError) {
         log("PlayerError", field("type", "audioSinkError"), "cause={" + audioSinkError.getCause() + "}");
     }
 
     @Override
-    public void onVideoCodecError(EventTime eventTime, Exception videoCodecError) {
+    public void onVideoCodecError(@NonNull EventTime eventTime, Exception videoCodecError) {
         log("PlayerError", field("type", "videoCodecError"), "cause={" + videoCodecError.getCause() + "}");
     }
 
     @Override
-    public void onPlayerError(EventTime eventTime, PlaybackException playbackException) {
+    public void onPlayerError(@NonNull EventTime eventTime, @NonNull PlaybackException playbackException) {
         Pair<PKPlayerErrorType, String> exceptionPair = PKPlaybackException.getPlaybackExceptionType(playbackException);
         String type = exceptionPair.first.toString();
         log("PlayerError", field("type", type), "cause={" + playbackException.getCause() + "}");
     }
 
     @Override
-    public void onTracksChanged(EventTime eventTime, Tracks tracks) {
+    public void onTracksChanged(@NonNull EventTime eventTime, Tracks tracks) {
         // Tracks.Group contains video/audio/text track groups
-        List<Tracks.Group> trackGroups = tracks.getGroups();
+        ImmutableList<Tracks.Group> trackGroups = tracks.getGroups();
         JsonArray jTrackGroups = new JsonArray(trackGroups.size());
         JsonArray jTrackSelections = new JsonArray();
 
@@ -303,28 +314,28 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onLoadStarted(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+    public void onLoadStarted(@NonNull EventTime eventTime, @NonNull LoadEventInfo loadEventInfo, @NonNull MediaLoadData mediaLoadData) {
         logLoadingEvent("LoadStarted", loadEventInfo, mediaLoadData, null, null);
         profiler.maybeLogServerInfo(loadEventInfo.uri);
     }
 
     @Override
-    public void onLoadCompleted(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+    public void onLoadCompleted(@NonNull EventTime eventTime, @NonNull LoadEventInfo loadEventInfo, @NonNull MediaLoadData mediaLoadData) {
         logLoadingEvent("LoadCompleted", loadEventInfo, mediaLoadData, null, null);
     }
 
     @Override
-    public void onLoadCanceled(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+    public void onLoadCanceled(@NonNull EventTime eventTime, @NonNull LoadEventInfo loadEventInfo, @NonNull MediaLoadData mediaLoadData) {
         logLoadingEvent("LoadCanceled", loadEventInfo, mediaLoadData, null, null);
     }
 
     @Override
-    public void onLoadError(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
+    public void onLoadError(@NonNull EventTime eventTime, @NonNull LoadEventInfo loadEventInfo, @NonNull MediaLoadData mediaLoadData, @NonNull IOException error, boolean wasCanceled) {
         logLoadingEvent("LoadError", loadEventInfo, mediaLoadData, error, wasCanceled);
     }
 
     @Override
-    public void onDownstreamFormatChanged(EventTime eventTime, MediaLoadData mediaLoadData) {
+    public void onDownstreamFormatChanged(@NonNull EventTime eventTime, MediaLoadData mediaLoadData) {
         String trackTypeString = trackTypeString(mediaLoadData.trackType);
         if (trackTypeString == null) {
             return;
@@ -334,7 +345,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onUpstreamDiscarded(EventTime eventTime, MediaLoadData mediaLoadData) {
+    public void onUpstreamDiscarded(@NonNull EventTime eventTime, MediaLoadData mediaLoadData) {
         String trackTypeString = trackTypeString(mediaLoadData.trackType);
         if (trackTypeString == null) {
             return;
@@ -343,7 +354,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onBandwidthEstimate(EventTime eventTime, int totalLoadTimeMs, long totalBytesLoaded, long bitrateEstimate) {
+    public void onBandwidthEstimate(@NonNull EventTime eventTime, int totalLoadTimeMs, long totalBytesLoaded, long bitrateEstimate) {
         log("BandwidthSample",
                 field("bandwidth", bitrateEstimate),
                 timeField("totalLoadTime", totalLoadTimeMs),
@@ -352,92 +363,92 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onMetadata(EventTime eventTime, Metadata metadata) {
+    public void onMetadata(@NonNull EventTime eventTime, @NonNull Metadata metadata) {
 
     }
 
     @Override
-    public void onAudioEnabled(EventTime eventTime, DecoderCounters counters) {
+    public void onAudioEnabled(@NonNull EventTime eventTime, @NonNull DecoderCounters counters) {
 
     }
 
     @Override
-    public void onVideoEnabled(EventTime eventTime, DecoderCounters counters) {
+    public void onVideoEnabled(@NonNull EventTime eventTime, @NonNull DecoderCounters counters) {
 
     }
 
     @Override
-    public void onVideoDecoderInitialized(EventTime eventTime, String decoderName, long initializedTimestampMs, long initializationDurationMs) {
+    public void onVideoDecoderInitialized(@NonNull EventTime eventTime, @NonNull String decoderName, long initializedTimestampMs, long initializationDurationMs) {
         log("DecoderInitialized", field("name", decoderName), field("duration", initializationDurationMs / MSEC_MULTIPLIER_FLOAT));
     }
 
     @Override
-    public void onVideoInputFormatChanged(EventTime eventTime, Format format, DecoderReuseEvaluation decoderReuseEvaluation) {
+    public void onVideoInputFormatChanged(@NonNull EventTime eventTime, Format format, DecoderReuseEvaluation decoderReuseEvaluation) {
         log("DecoderInputFormatChanged", field("id", format.id), field("codecs", format.codecs), field("bitrate", format.bitrate));
     }
 
     @Override
-    public void onVideoDisabled(EventTime eventTime, DecoderCounters decoderCounters) {
+    public void onVideoDisabled(@NonNull EventTime eventTime, @NonNull DecoderCounters decoderCounters) {
 
     }
 
     @Override
-    public void onAudioUnderrun(EventTime eventTime, int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
+    public void onAudioUnderrun(@NonNull EventTime eventTime, int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
 
     }
 
     @Override
-    public void onDroppedVideoFrames(EventTime eventTime, int droppedFrames, long elapsedMs) {
+    public void onDroppedVideoFrames(@NonNull EventTime eventTime, int droppedFrames, long elapsedMs) {
         log("DroppedFrames", field("count", droppedFrames), field("time", elapsedMs / MSEC_MULTIPLIER_FLOAT));
     }
 
     @Override
-    public void onVideoSizeChanged(EventTime eventTime, @NonNull VideoSize videoSize) {
+    public void onVideoSizeChanged(@NonNull EventTime eventTime, @NonNull VideoSize videoSize) {
         log("VideoSizeChanged", field("width", videoSize.width), field("height", videoSize.height));
     }
 
     @Override
-    public void onRenderedFirstFrame(EventTime eventTime, Object output, long renderTimeMs) {
+    public void onRenderedFirstFrame(@NonNull EventTime eventTime, @NonNull Object output, long renderTimeMs) {
         log("RenderedFirstFrame");
     }
 
     @Override
-    public void onSurfaceSizeChanged(EventTime eventTime, int width, int height) {
+    public void onSurfaceSizeChanged(@NonNull EventTime eventTime, int width, int height) {
         log("ViewportSizeChange", field("width", width), field("height", height));
     }
 
     @Override
-    public void onVolumeChanged(EventTime eventTime, float volume) {
+    public void onVolumeChanged(@NonNull EventTime eventTime, float volume) {
         log("VolumeChanged", field("volume", volume));
     }
 
     @Override
-    public void onDrmSessionAcquired(EventTime eventTime, @DrmSession.State int state) {
+    public void onDrmSessionAcquired(@NonNull EventTime eventTime, @DrmSession.State int state) {
         log("DrmSessionAcquired");
     }
 
     @Override
-    public void onDrmSessionReleased(EventTime eventTime) {
+    public void onDrmSessionReleased(@NonNull EventTime eventTime) {
         log("DrmSessionReleased");
     }
 
     @Override
-    public void onDrmKeysLoaded(EventTime eventTime) {
-
+    public void onDrmKeysLoaded(@NonNull EventTime eventTime) {
+        log("onDrmKeysLoaded");
     }
 
     @Override
-    public void onDrmSessionManagerError(EventTime eventTime, Exception error) {
-
+    public void onDrmSessionManagerError(@NonNull EventTime eventTime, @NonNull Exception error) {
+        log("onDrmSessionManagerError " + field("error", error.getMessage()));
     }
 
     @Override
-    public void onDrmKeysRestored(EventTime eventTime) {
-
+    public void onDrmKeysRestored(@NonNull EventTime eventTime) {
+        log("onDrmKeysRestored");
     }
 
     @Override
-    public void onDrmKeysRemoved(EventTime eventTime) {
-
+    public void onDrmKeysRemoved(@NonNull EventTime eventTime) {
+        log("onDrmKeysRemoved");
     }
 }
