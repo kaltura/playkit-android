@@ -1672,6 +1672,7 @@ public class TrackSelectionHelper {
         if (playerSettings.getPreferredVideoCodecSettings().getAllowMixedCodecAdaptiveness()) {
             parametersBuilder.setAllowVideoMixedMimeTypeAdaptiveness(true);
         }
+        parametersBuilder.setConstrainAudioChannelCountToDeviceCapabilities(playerSettings.isConstrainAudioChannelCountToDeviceCapabilities());
     }
 
     public ThumbnailInfo getThumbnailInfo(long positionMS) {

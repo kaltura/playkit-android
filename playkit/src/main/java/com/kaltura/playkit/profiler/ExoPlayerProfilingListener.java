@@ -37,7 +37,6 @@ import androidx.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
@@ -56,7 +55,6 @@ import com.kaltura.playkit.PKPlaybackException;
 import com.kaltura.playkit.player.PKPlayerErrorType;
 
 import java.io.IOException;
-import java.util.List;
 
 class ExoPlayerProfilingListener implements AnalyticsListener {
 

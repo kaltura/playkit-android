@@ -242,6 +242,21 @@ public interface Player {
         Settings allowChunklessPreparation(boolean allowChunklessPreparation);
 
         /**
+         * When enabled, the `DefaultTrackSelector` will prefer audio tracks whose
+         * channel count does not exceed the device output capabilities.
+         *
+         * On handheld devices, the DefaultTrackSelector will prefer stereo/mono over
+         * multichannel audio formats, unless the multichannel format can be Spatialized (Android 12L+)
+         * or is a Dolby surround sound format. In addition, on devices that support audio spatialization,
+         * the DefaultTrackSelector will monitor for changes in the Spatializer properties and
+         * trigger `tracksAvailable` event upon these.
+         *
+         * @param enabled Default is disabled.
+         * @return - Player Settings
+         */
+        Settings constrainAudioChannelCountToDeviceCapabilities(boolean enabled);
+
+        /**
          * Set the flag which handles the video view
          *
          * @param hide video surface visibility
