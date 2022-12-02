@@ -918,7 +918,6 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                                 adTagUrl = ads[0].ad
                             }
                         }
-
                     }
                 }
             }
@@ -939,6 +938,9 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                         adTagUrl = getAdFromAdPod(adPodList, adBreakConfig.adBreakPositionType, isTriggeredFromPlayerPosition)
                     }
                 }
+            }
+            AdState.ERROR -> {
+                // Do Nothing
             }
         }
 
