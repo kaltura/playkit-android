@@ -236,6 +236,10 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
 
     @Override
     public void onTracksChanged(@NonNull EventTime eventTime, @NonNull Tracks tracks) {
+        if (tracks.isEmpty() || tracks.getGroups().isEmpty()) {
+            return;
+        }
+
         ImmutableList<Tracks.Group> trackGroups = tracks.getGroups();
         StringBuilder logOutput = new StringBuilder();
         Set<String> availableTrackType = new HashSet<>();
