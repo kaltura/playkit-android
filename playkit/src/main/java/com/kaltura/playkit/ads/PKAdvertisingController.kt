@@ -939,7 +939,8 @@ class PKAdvertisingController: PKAdvertising, IMAEventsListener {
                     }
                 }
             }
-            AdState.ERROR -> {
+
+            else -> {
                 // Do Nothing
             }
         }
