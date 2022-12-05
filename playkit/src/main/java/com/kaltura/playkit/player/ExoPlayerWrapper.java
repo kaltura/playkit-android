@@ -229,7 +229,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        if (assertPlayerIsNotNull("onBandwidthSample") && player != null && trackSelectionHelper != null) {
+        if (assertPlayerIsNotNull("onBandwidthSample") && !isPlayerReleased && trackSelectionHelper != null) {
             sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
         }
     }
