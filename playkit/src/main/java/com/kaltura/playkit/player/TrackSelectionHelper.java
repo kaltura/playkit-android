@@ -23,7 +23,7 @@ import androidx.annotation.Nullable;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.RendererCapabilities;
-import com.kaltura.android.exoplayer2.TracksInfo;
+import com.kaltura.android.exoplayer2.Tracks;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomAdaptationSet;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomFormat;
@@ -36,7 +36,7 @@ import com.kaltura.android.exoplayer2.text.webvtt.WebvttCueInfo;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.kaltura.android.exoplayer2.trackselection.TrackSelectionOverrides;
+import com.kaltura.android.exoplayer2.trackselection.TrackSelectionOverride;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionParameters;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.PKAbrFilter;
@@ -106,23 +106,24 @@ public class TrackSelectionHelper {
 
     private final Context context;
     private final DefaultTrackSelector selector;
-    private TracksInfo tracksInfo;
+    private Tracks tracksInfo;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private TrackSelectionParameters trackSelectionParameters;
-    private TrackSelectionOverrides.Builder trackSelectionOverridesBuilder;
+    private TrackSelectionParameters.Builder trackSelectionParametersBuilder;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<VideoTrack> originalVideoTracks;
-    private List<AudioTrack> audioTracks = new ArrayList<>();
-    private List<TextTrack> textTracks = new ArrayList<>();
-    private List<ImageTrack> imageTracks = new ArrayList<>();
+    private final List<AudioTrack> audioTracks = new ArrayList<>();
+    private final List<TextTrack> textTracks = new ArrayList<>();
+    private final List<ImageTrack> imageTracks = new ArrayList<>();
+
     private @Nullable Format currentVideoFormat;
     private @Nullable Format currentAudioFormat;
-    private Map<Pair<Long,Long>, ThumbnailInfo> externalVttThumbnailRangesInfo;
 
-    private Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
-    private Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
-    private Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
+    private Map<Pair<Long,Long>, ThumbnailInfo> externalVttThumbnailRangesInfo;
+    private final Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
+    private final Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
+    private final Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
 
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
@@ -181,7 +182,7 @@ public class TrackSelectionHelper {
         this.lastSelectedTrackIds = lastSelectedTrackIds;
         this.requestedChangeTrackIds = Arrays.copyOf(lastSelectedTrackIds, lastSelectedTrackIds.length);
         trackSelectionParameters = TrackSelectionParameters.getDefaults(context);
-        trackSelectionOverridesBuilder = trackSelectionParameters.trackSelectionOverrides.buildUpon();
+        trackSelectionParametersBuilder = trackSelectionParameters.buildUpon();
     }
 
     public void setMappedTrackInfo(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
@@ -196,6 +197,17 @@ public class TrackSelectionHelper {
         this.redirectPlaybackURL = redirectPlaybackURL;
     }
 
+    public void clearPreviousMediaOverrides() {
+        if (trackSelectionParametersBuilder != null && selector != null) {
+            // We are specially doing it for Text Track because we disable the tracks only for Text tracks.
+            trackSelectionParametersBuilder.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false);
+            // Clearing all the overrides
+            trackSelectionParametersBuilder.clearOverrides();
+            // Updating the default track selector of exoplayer
+            selector.setParameters(trackSelectionParametersBuilder.build());
+        }
+    }
+
     /**
      * Prepare {@link PKTracks} object for application.
      * When the object is created, notify {@link ExoPlayerWrapper} about that,
@@ -204,7 +216,11 @@ public class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    boolean prepareTracks(TracksInfo trackSelections, String externalThumbnailWebVttUrl, CustomDashManifest customDashManifest) {
+    boolean prepareTracks(Tracks trackSelections, String externalThumbnailWebVttUrl, CustomDashManifest customDashManifest) {
+        if (assertTrackSelectorIsNull("prepareTracks")) {
+            return false;
+        }
+
         tracksInfo = trackSelections;
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
@@ -355,16 +371,15 @@ public class TrackSelectionHelper {
                                 if (format.language != null && hasExternalSubtitles) {
                                     int selectionFlag = format.selectionFlags;
                                     if (selector != null && (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH)) {
-                                        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
+                                        DefaultTrackSelector.Parameters.Builder parametersBuilder = selector.getParameters().buildUpon();
 
                                         if (discardTextTrackOnPreference(format)) {
-                                            trackSelectionOverridesBuilder.clearOverride(trackGroup);
+                                            trackSelectionParametersBuilder.clearOverride(trackGroup);
                                             parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, true);
                                             continue;
                                         } else {
-                                            TrackSelectionOverrides.TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverrides.TrackSelectionOverride(trackGroup, Collections.singletonList(trackIndex));
-                                            TrackSelectionOverrides trackSelectionOverrides = trackSelectionOverridesBuilder.setOverrideForType(trackSelectionOverride).build();
-                                            parametersBuilder.setTrackSelectionOverrides(trackSelectionOverrides);
+                                            TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, Collections.singletonList(trackIndex));
+                                            parametersBuilder.addOverride(trackSelectionOverride);
                                         }
 
                                         selector.setParameters(parametersBuilder);
@@ -1224,6 +1239,10 @@ public class TrackSelectionHelper {
      */
 
     protected void changeTrack(String uniqueId) {
+        if (assertTrackSelectorIsNull("changeTrack")) {
+            return;
+        }
+
         log.i("Request change track to uniqueID -> " + uniqueId);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
@@ -1244,14 +1263,8 @@ public class TrackSelectionHelper {
             return;
         }
 
-        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
-        if (rendererIndex == TRACK_TYPE_TEXT) {
-            //Disable text track renderer if needed.
-            parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, uniqueTrackId[TRACK_INDEX] == TRACK_DISABLED);
-        }
-
         List<Integer> selectedTrackIndices = retrieveOverrideSelection(uniqueTrackId);
-        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices, parametersBuilder);
+        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices);
     }
 
     protected void overrideMediaVideoCodec() {
@@ -1260,6 +1273,10 @@ public class TrackSelectionHelper {
             // No need to execute further as override track ignores the parameters given to the trackselector
             // so elemenating this behaviour
             // We will execute this only in case when video tracks have more than one type of video codec available
+            return;
+        }
+
+        if (assertTrackSelectorIsNull("overrideMediaVideoCodec")) {
             return;
         }
 
@@ -1276,13 +1293,14 @@ public class TrackSelectionHelper {
 
         requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
 
-        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
-
         List<Integer> selectedTrackIndices = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
-        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices, parametersBuilder);
+        overrideTrack(rendererIndex, groupIndex, selectedTrackIndices);
     }
 
     protected void overrideMediaDefaultABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
+        if (assertTrackSelectorIsNull("overrideMediaDefaultABR")) {
+            return;
+        }
 
         List<String> uniqueIds = getCodecUniqueIdsWithABR(minAbr, maxAbr, pkAbrFilter);
 
@@ -1298,10 +1316,8 @@ public class TrackSelectionHelper {
         requestedChangeTrackIds[rendererIndex] = (NONE.equals(lastSelectedTrackIds[rendererIndex])) ?
                 uniqueIds.get(0) : lastSelectedTrackIds[rendererIndex];
 
-        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
-
         List<Integer> selectedTrackIndices = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
-        overrideTrack(rendererIndex,groupIndex, selectedTrackIndices, parametersBuilder);
+        overrideTrack(rendererIndex,groupIndex, selectedTrackIndices);
     }
 
     private List<String> getVideoTracksUniqueIds() {
@@ -1634,10 +1650,12 @@ public class TrackSelectionHelper {
      *                        This index is of the selected `Format` inside the `mappedTrackInfo`
      *                        Generally all the Formats come in one `Trackgroup` but for TEXT,
      *                        it comes individual `TrackGroup` for each TEXT `Format`
-     *
-     * @param parametersBuilder `DefaultTrackSelector` parameter builder object
      */
-    private void overrideTrack(int rendererIndex, int groupIndex, List<Integer> selectedIndices, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
+    private void overrideTrack(int rendererIndex, int groupIndex, List<Integer> selectedIndices) {
+        if (assertTrackSelectorIsNull("overrideTrack")) {
+            return;
+        }
+
         //actually change track.
         TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
         if (!selectedIndices.isEmpty()) {
@@ -1646,19 +1664,17 @@ public class TrackSelectionHelper {
                 // it will let exoplayer know that no tracks from trackGroup should be played
                 selectedIndices.clear();
             }
-
-            TrackSelectionOverrides.TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverrides.TrackSelectionOverride(trackGroup, selectedIndices);
-            trackSelectionOverridesBuilder.setOverrideForType(trackSelectionOverride);
+            TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedIndices);
+            trackSelectionParametersBuilder.setOverrideForType(trackSelectionOverride);
         } else {
             //clear all the selections if selectedIndices are empty.
-            trackSelectionOverridesBuilder.clearOverride(trackGroup);
+            trackSelectionParametersBuilder.clearOverride(trackGroup);
         }
 
-        parametersBuilder.setTrackSelectionOverrides(trackSelectionOverridesBuilder.build());
-        selector.setParameters(parametersBuilder);
+        selector.setParameters(trackSelectionParametersBuilder.build());
     }
 
-    public void updateTrackSelectorParameter(PlayerSettings playerSettings, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
+    public void updateTrackSelectorParameter(PlayerSettings playerSettings, DefaultTrackSelector.Parameters.Builder parametersBuilder) {
         if (playerSettings == null) {
             return;
         }
@@ -1675,6 +1691,7 @@ public class TrackSelectionHelper {
         if (playerSettings.getPreferredVideoCodecSettings().getAllowMixedCodecAdaptiveness()) {
             parametersBuilder.setAllowVideoMixedMimeTypeAdaptiveness(true);
         }
+        parametersBuilder.setConstrainAudioChannelCountToDeviceCapabilities(playerSettings.isConstrainAudioChannelCountToDeviceCapabilities());
     }
 
     public ThumbnailInfo getThumbnailInfo(long positionMS) {
@@ -1928,23 +1945,24 @@ public class TrackSelectionHelper {
     }
 
     protected void release() {
-        tracksInfoListener.onRelease(lastSelectedTrackIds);
+        if (tracksInfoListener != null) {
+            tracksInfoListener.onRelease(lastSelectedTrackIds);
+        }
+
         tracksInfoListener = null;
         trackSelectionParameters = null;
-        trackSelectionOverridesBuilder = null;
+        trackSelectionParametersBuilder = null;
+
+        if (selector != null) {
+            selector.release();
+        }
+
         clearTracksLists();
     }
 
     protected boolean isAudioOnlyStream() {
-        if (tracksInfo != null && !tracksInfo.getTrackGroupInfos().isEmpty()) {
-            boolean isVideoFormatAvailable = false;
-            for (TracksInfo.TrackGroupInfo trackGroupInfo: tracksInfo.getTrackGroupInfos()) {
-                if (trackGroupInfo.getTrackType() == C.TRACK_TYPE_VIDEO) {
-                    isVideoFormatAvailable = true;
-                    break;
-                }
-            }
-            return !isVideoFormatAvailable;
+        if (tracksInfo != null) {
+            return !tracksInfo.containsType(C.TRACK_TYPE_VIDEO);
         }
         return false;
     }
@@ -1987,13 +2005,18 @@ public class TrackSelectionHelper {
 
     @Nullable
     private Format getSelectedTextTrackFormat() {
-        if (tracksInfo != null && !tracksInfo.getTrackGroupInfos().isEmpty()) {
+        if (tracksInfo != null && !tracksInfo.getGroups().isEmpty()) {
+            for (Tracks.Group trackGroupInfo : tracksInfo.getGroups()) {
 
-            for (TracksInfo.TrackGroupInfo trackGroupInfo : tracksInfo.getTrackGroupInfos()) {
-                if (trackGroupInfo.getTrackType() == C.TRACK_TYPE_TEXT &&
+                if (trackGroupInfo.getType() == C.TRACK_TYPE_TEXT &&
                         trackGroupInfo.isSelected() &&
-                        trackGroupInfo.getTrackGroup().length > 0) {
-                    return trackGroupInfo.getTrackGroup().getFormat(0);
+                        trackGroupInfo.getMediaTrackGroup().length > 0) {
+                    for (int groupIndex = 0; groupIndex < trackGroupInfo.length; groupIndex++) {
+
+                        if (trackGroupInfo.isTrackSelected(groupIndex)) {
+                            return trackGroupInfo.getTrackFormat(groupIndex);
+                        }
+                    }
                 }
             }
         }
@@ -2001,7 +2024,7 @@ public class TrackSelectionHelper {
         return null;
     }
 
-    protected void notifyAboutTrackChange(TracksInfo trackSelections) {
+    protected void notifyAboutTrackChange(Tracks trackSelections) {
 
         this.tracksInfo = trackSelections;
         if (tracksInfoListener == null) {
@@ -2278,6 +2301,15 @@ public class TrackSelectionHelper {
                 (preferredTextTrackConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredTextTrackConfig.getTrackLanguage() == null));
     }
 
+    private boolean assertTrackSelectorIsNull(String methodName) {
+        if (selector == null) {
+            String nullTrackSelectorMsgFormat = "Attempt to invoke '%s' on null instance of the track selector";
+            log.w(String.format(nullTrackSelectorMsgFormat, methodName));
+            return true;
+        }
+        return false;
+    }
+
     public void applyPlayerSettings(PlayerSettings settings) {
         if (settings != null) {
             this.playerSettings = settings;
@@ -2316,8 +2348,7 @@ public class TrackSelectionHelper {
         }
     }
 
-    private int findImageIndex(List<Pair<Long, Long>> sortedRangesList, int listSize, long positionMS)
-    {
+    private int findImageIndex(List<Pair<Long, Long>> sortedRangesList, int listSize, long positionMS) {
         int low = 0, high = listSize - 1;
 
         // Binary search

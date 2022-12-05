@@ -797,6 +797,16 @@ public class PlayerController implements Player {
         }
     }
 
+    @Nullable
+    @Override
+    public Object getCurrentMediaManifest() {
+        log.v("getCurrentMediaManifest");
+        if (assertPlayerIsNotNull("getCurrentMediaManifest")) {
+            return player.getCurrentMediaManifest();
+        }
+        return null;
+    }
+
     @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         Assert.shouldNeverHappen();

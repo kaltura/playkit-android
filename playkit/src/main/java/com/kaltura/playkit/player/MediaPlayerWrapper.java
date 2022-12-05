@@ -25,6 +25,7 @@ import android.os.Build;
 import android.view.SurfaceHolder;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKAbrFilter;
 import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
@@ -661,6 +662,13 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         //Do nothing
+    }
+
+    @Nullable
+    @Override
+    public Object getCurrentMediaManifest() {
+        // Do nothing
+        return null;
     }
 
     @NonNull

@@ -259,6 +259,12 @@ public class PlayerDecoratorBase implements Player {
         player.resetABRSettings();
     }
 
+    @Nullable
+    @Override
+    public Object getCurrentMediaManifest() {
+        return player.getCurrentMediaManifest();
+    }
+
     @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         player.addListener(groupId, type, listener);

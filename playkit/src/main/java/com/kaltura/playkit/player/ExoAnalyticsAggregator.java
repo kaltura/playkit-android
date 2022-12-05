@@ -1,33 +1,38 @@
 package com.kaltura.playkit.player;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
+
 import android.os.SystemClock;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.Tracks;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
 import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
 import com.kaltura.android.exoplayer2.source.LoadEventInfo;
 import com.kaltura.android.exoplayer2.source.MediaLoadData;
+import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import okhttp3.Call;
 import okhttp3.Connection;
 import okhttp3.EventListener;
 import okhttp3.Handshake;
-
-import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
 
 class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener {
 
@@ -227,6 +232,98 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
         if (inputFormatChangedListener != null) {
             inputFormatChangedListener.onAudioInputFormatChanged(format);
         }
+    }
+
+    @Override
+    public void onTracksChanged(@NonNull EventTime eventTime, @NonNull Tracks tracks) {
+        if (tracks.isEmpty() || tracks.getGroups().isEmpty()) {
+            return;
+        }
+
+        ImmutableList<Tracks.Group> trackGroups = tracks.getGroups();
+        StringBuilder logOutput = new StringBuilder();
+        Set<String> availableTrackType = new HashSet<>();
+
+        for (int groupIndex = 0; groupIndex < trackGroups.size(); groupIndex++) {
+            Tracks.Group trackGroup = trackGroups.get(groupIndex);
+            String trackType = getTrackType(trackGroup.getType());
+
+            if (!availableTrackType.contains(trackType)) {
+                availableTrackType.add(trackType);
+                logOutput
+                        .append("\n\"").append(trackType).append("\"")
+                        .append(":")
+                        .append(" [").append("\n");
+            }
+
+            final TrackGroup mediaTrackGroup = trackGroup.getMediaTrackGroup();
+
+            for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
+                boolean isTrackSelected = trackGroup.isTrackSelected(trackIndex);
+                // Get format of each track group present individually in video/audio/text
+                Format format = mediaTrackGroup.getFormat(trackIndex);
+                String mediaFormat = Format.toLogString(format);
+                logOutput.append("\t{").append("\n");
+
+                logOutput.append("\t\"").append("isTrackSelected").append("\"").append(":")
+                        .append("\t\"").append(isTrackSelected).append("\"")
+                        .append("\t,").append("\n");
+
+                logOutput.append("\t\"").append("Format").append("\"").append(":")
+                        .append("\t\"").append(mediaFormat).append("\"").append("\n");
+
+                logOutput.append("\t}");
+                if (trackIndex + 1 < trackGroup.length) {
+                    logOutput.append(",").append("\n");
+                }
+            }
+            String nextTrackType = "";
+            if (groupIndex + 1 < trackGroups.size()) {
+                Tracks.Group nextTrackGroup = trackGroups.get(groupIndex + 1);
+                nextTrackType = getTrackType(nextTrackGroup.getType());
+            }
+
+            if (!availableTrackType.contains(nextTrackType)) {
+                logOutput.append("]");
+            }
+
+            if (groupIndex + 1 < trackGroups.size()) {
+                logOutput.append(",");
+            }
+        }
+        log.d("{" + logOutput + "\n }");
+    }
+
+    private String getTrackType(int type) {
+        String trackType;
+        switch (type) {
+            case C.TRACK_TYPE_VIDEO:
+                trackType =  "Video";
+                break;
+            case C.TRACK_TYPE_AUDIO:
+                trackType =  "Audio";
+                break;
+            case C.TRACK_TYPE_TEXT:
+                trackType =  "Text";
+                break;
+            case C.TRACK_TYPE_IMAGE:
+                trackType =  "Image";
+                break;
+            default:
+                trackType =  "None";
+                break;
+        }
+        return trackType;
+    }
+
+    @Override
+    public void onVideoCodecError(@NonNull EventTime eventTime, @NonNull Exception videoCodecError) {
+        log.v("onVideoCodecError Exception " + videoCodecError.getMessage());
+    }
+
+    @Override
+    public void onDrmSessionManagerError(@NonNull EventTime eventTime, @NonNull Exception error) {
+        log.v("onDrmSessionManagerError Exception " + error.getMessage());
     }
 }
 

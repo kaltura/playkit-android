@@ -242,6 +242,21 @@ public interface Player {
         Settings allowChunklessPreparation(boolean allowChunklessPreparation);
 
         /**
+         * When enabled, the `DefaultTrackSelector` will prefer audio tracks whose
+         * channel count does not exceed the device output capabilities.
+         *
+         * On handheld devices, the DefaultTrackSelector will prefer stereo/mono over
+         * multichannel audio formats, unless the multichannel format can be Spatialized (Android 12L+)
+         * or is a Dolby surround sound format. In addition, on devices that support audio spatialization,
+         * the DefaultTrackSelector will monitor for changes in the Spatializer properties and
+         * trigger `tracksAvailable` event upon these.
+         *
+         * @param enabled Default is disabled.
+         * @return - Player Settings
+         */
+        Settings constrainAudioChannelCountToDeviceCapabilities(boolean enabled);
+
+        /**
          * Set the flag which handles the video view
          *
          * @param hide video surface visibility
@@ -652,6 +667,20 @@ public interface Player {
      * Reset existing ABRSettings
      */
     void resetABRSettings();
+
+    /**
+     * Returns the media manifest of the window
+     * Manifest depends on the type of media being prepared.
+     * Must be called once the media preparation is complete (Means tracks are loaded)
+     *
+     * @return Manifest object depends on the media type
+     * ({@link com.kaltura.android.exoplayer2.source.hls.HlsManifest}
+     * or {@link com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest})
+     * <br>
+     * OR `null`
+     */
+    @Nullable
+    Object getCurrentMediaManifest();
 
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to

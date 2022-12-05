@@ -30,7 +30,7 @@ import androidx.annotation.NonNull;
 import com.kaltura.android.exoplayer2.ExoPlayer;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.text.Cue;
-import com.kaltura.android.exoplayer2.text.TextOutput;
+import com.kaltura.android.exoplayer2.text.CueGroup;
 import com.kaltura.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.video.VideoSize;
@@ -274,7 +274,7 @@ class ExoPlayerView extends BaseExoplayerView {
     @Override
     public void applySubtitlesChanges() {
         if (subtitleView != null && lastReportedCues != null) {
-            subtitleView.onCues(getModifiedSubtitlePosition(lastReportedCues, subtitleViewPosition));
+            subtitleView.setCues(getModifiedSubtitlePosition(lastReportedCues, subtitleViewPosition));
         }
     }
 
@@ -323,17 +323,18 @@ class ExoPlayerView extends BaseExoplayerView {
     /**
      * Local listener implementation.
      */
-    private final class ComponentListener implements TextOutput, Player.Listener, OnLayoutChangeListener {
+    private final class ComponentListener implements Player.Listener, OnLayoutChangeListener {
 
         @Override
-        public void onCues(List<Cue> cues) {
-            lastReportedCues = cues;
+        public void onCues(CueGroup cueGroup) {
+            lastReportedCues = cueGroup.cues;
+            List<Cue> cueList = null;
             if (subtitleViewPosition != null) {
-                cues = getModifiedSubtitlePosition(cues, subtitleViewPosition);
+                cueList = getModifiedSubtitlePosition(lastReportedCues, subtitleViewPosition);
             }
 
             if (subtitleView != null) {
-                subtitleView.onCues(cues);
+                subtitleView.setCues((cueList != null && !cueList.isEmpty()) ? cueList : lastReportedCues);
             }
         }
 

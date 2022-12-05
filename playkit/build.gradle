@@ -3,14 +3,14 @@ apply plugin: 'kotlin-android'
 apply from: 'version.gradle'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 30
+        targetSdkVersion 33
         versionName playkitVersion  // defined in version.gradle
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String","VERSION_NAME","\"${playkitVersion}\"")
@@ -41,7 +41,7 @@ tasks.withType(Javadoc) {
 
 dependencies {
 
-    def exoPlayerVersion = '2.17.1'
+    def exoPlayerVersion = '2.18.2'
     api "com.kaltura.playkit:kexoplayer:$exoPlayerVersion"
 
     api 'com.google.code.gson:gson:2.8.6'
@@ -51,19 +51,20 @@ dependencies {
     api 'com.squareup.okhttp3:okhttp:4.9.2'
 
     // Kotlin Config
-    implementation 'androidx.core:core-ktx:1.3.2'
+    implementation 'androidx.core:core-ktx:1.9.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    def checkerframeworkVersion = '3.3.0'
-    def checkerframeworkCompatVersion = '2.5.0'
+    def checkerframeworkVersion = '3.13.0'
+    def checkerframeworkCompatVersion = '2.5.5'
 
     compileOnly 'org.checkerframework:checker-qual:' + checkerframeworkVersion
     compileOnly 'org.checkerframework:checker-compat-qual:' + checkerframeworkCompatVersion
 
-    def guavaVersion = '27.1-android'
+    def guavaVersion = '31.0.1-android'
 
     api ('com.google.guava:guava:' + guavaVersion) {
         exclude group: 'org.checkerframework', module: 'checker-compat-qual'
+        exclude group: 'org.checkerframework', module: 'checker-qual'
     }
     // Tests
     testImplementation 'junit:junit:4.13.2'

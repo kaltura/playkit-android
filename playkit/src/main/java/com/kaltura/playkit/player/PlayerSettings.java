@@ -38,10 +38,13 @@ public class PlayerSettings implements Player.Settings {
     private boolean handleAudioBecomingNoisyEnabled;
     private boolean handleAudioFocus;
 
-    //Flag helping to check if client app wants to use a single player instance at a time
-    //Only if IMA plugin is there then only this flag is set to true.
+    // Flag helping to check if client app wants to use a single player instance at a time
+    // Only if IMA plugin is there then only this flag is set to true.
     private boolean forceSinglePlayerEngine = false;
     private boolean allowChunklessPreparation = true;
+    // When enabled, the `DefaultTrackSelector` will prefer audio tracks whose channel
+    // count does not exceed the device output capabilities.
+    private boolean constrainAudioChannelCountToDeviceCapabilities = false;
 
     private PKWakeMode wakeMode = PKWakeMode.NONE;
     private VideoCodecSettings preferredVideoCodecSettings = new VideoCodecSettings();
@@ -157,6 +160,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isAllowChunklessPreparation() {
         return allowChunklessPreparation;
+    }
+
+    public boolean isConstrainAudioChannelCountToDeviceCapabilities() {
+        return constrainAudioChannelCountToDeviceCapabilities;
     }
 
     public VideoCodecSettings getPreferredVideoCodecSettings() {
@@ -341,6 +348,12 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
+    public Player.Settings constrainAudioChannelCountToDeviceCapabilities(boolean enabled) {
+        this.constrainAudioChannelCountToDeviceCapabilities = enabled;
+        return this;
+    }
+
+    @Override
     public Player.Settings setHideVideoViews(boolean hide) {
         isVideoViewHidden = hide;
         return this;
@@ -414,7 +427,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setMaxVideoSize(PKMaxVideoSize maxVideoSize) {
+    public Player.Settings setMaxVideoSize(@NonNull PKMaxVideoSize maxVideoSize) {
         ABRSettings abrSettings = getAbrSettings();
         if (maxVideoSize != null &&
                 (abrSettings.getMaxVideoHeight() == Long.MAX_VALUE || abrSettings.getMaxVideoWidth() == Long.MAX_VALUE)) {
@@ -425,7 +438,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setMaxVideoBitrate(Integer maxVideoBitrate) {
+    public Player.Settings setMaxVideoBitrate(@NonNull Integer maxVideoBitrate) {
         ABRSettings abrSettings = getAbrSettings();
         if (maxVideoBitrate > 0 && abrSettings.getMaxVideoBitrate() == Long.MAX_VALUE) {
             abrSettings.setMaxVideoBitrate(maxVideoBitrate);
@@ -434,7 +447,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setMaxAudioBitrate(Integer maxAudioBitrate) {
+    public Player.Settings setMaxAudioBitrate(@NonNull Integer maxAudioBitrate) {
         this.maxAudioBitrate = maxAudioBitrate;
         return this;
     }

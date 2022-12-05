@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.player;
 
+import androidx.annotation.Nullable;
+
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKAbrFilter;
 import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
@@ -299,6 +301,9 @@ public interface PlayerEngine {
      * Reset the ABR Settings
      */
     default void resetABRSettings() {}
+
+    @Nullable
+    Object getCurrentMediaManifest();
 
     /**
      * Generic getters for playkit controllers.

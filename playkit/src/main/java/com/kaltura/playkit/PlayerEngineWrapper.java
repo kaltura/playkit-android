@@ -1,5 +1,7 @@
 package com.kaltura.playkit;
 
+import androidx.annotation.Nullable;
+
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.playkit.player.ABRSettings;
@@ -239,6 +241,12 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public void resetABRSettings() {
         playerEngine.resetABRSettings();
+    }
+
+    @Nullable
+    @Override
+    public Object getCurrentMediaManifest() {
+        return playerEngine.getCurrentMediaManifest();
     }
 
     @Override

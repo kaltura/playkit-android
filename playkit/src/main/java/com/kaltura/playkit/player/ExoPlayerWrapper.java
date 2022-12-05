@@ -12,6 +12,10 @@
 
 package com.kaltura.playkit.player;
 
+import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
+
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
@@ -35,7 +39,7 @@ import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.Timeline;
-import com.kaltura.android.exoplayer2.TracksInfo;
+import com.kaltura.android.exoplayer2.Tracks;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifestParser;
@@ -56,6 +60,7 @@ import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
 import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParserForThumbnail;
+import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
@@ -75,8 +80,22 @@ import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
-import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
-import com.kaltura.playkit.*;
+import com.kaltura.playkit.LocalAssetsManager;
+import com.kaltura.playkit.LocalAssetsManagerExo;
+import com.kaltura.playkit.PKAbrFilter;
+import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKError;
+import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKPlaybackException;
+import com.kaltura.playkit.PKRequestConfig;
+import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PlaybackInfo;
+import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
@@ -100,10 +119,6 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
-
-import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
-import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
-import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
 public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, MetadataOutput, BandwidthMeter.EventListener, ExoAnalyticsAggregator.InputFormatChangedListener {
 
@@ -214,7 +229,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        if (!isPlayerReleased && player != null && trackSelectionHelper != null) {
+        if (assertPlayerIsNotNull("onBandwidthSample") && !isPlayerReleased && trackSelectionHelper != null) {
             sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
         }
     }
@@ -233,7 +248,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                 .setTrackSelector(trackSelector)
                 .setLoadControl(getUpdatedLoadControl())
                 .setMediaSourceFactory(mediaSourceFactory)
-                .setBandwidthMeter(bandwidthMeter).build();
+                .setBandwidthMeter(bandwidthMeter)
+                .setUsePlatformDiagnostics(false)
+                .build();
 
         player.setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus= */ playerSettings.isHandleAudioFocus());
         player.setHandleAudioBecomingNoisy(playerSettings.isHandleAudioBecomingNoisyEnabled());
@@ -295,7 +312,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private DefaultTrackSelector initializeTrackSelector() {
 
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(context);
-        DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder(context);
+        DefaultTrackSelector.Parameters.Builder parametersBuilder = new DefaultTrackSelector.Parameters.Builder(context);
         trackSelectionHelper = new TrackSelectionHelper(context, trackSelector, lastSelectedTrackIds);
         trackSelectionHelper.updateTrackSelectorParameter(playerSettings, parametersBuilder);
         trackSelector.setParameters(parametersBuilder.build());
@@ -312,6 +329,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         metadataList.clear();
         isLoadedMetaDataFired = false;
         shouldGetTracksInfo = true;
+        // Need to clear the overrides of DefaultTrackSelector before loading the next media.
+        trackSelectionHelper.clearPreviousMediaOverrides();
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
         MediaSource mediaSource = null;
@@ -327,7 +346,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             } else {
                 player.setMediaSources(Collections.singletonList(mediaSource), 0, playerPosition == TIME_UNSET ? 0 : playerPosition);
             }
-            
+
             player.prepare();
 
             changeState(PlayerState.LOADING);
@@ -1012,14 +1031,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition, @NonNull Player.PositionInfo newPosition, @Player.DiscontinuityReason int reason) {
         log.d("onPositionDiscontinuity reason = " + reason);
     }
-    
+
     @Override
-    public void onTracksInfoChanged(@NonNull TracksInfo tracksInfo) {
-        log.d("onTracksInfoChanged");
+    public void onTracksChanged(@NonNull Tracks tracks) {
+        log.d("onTracksChanged");
 
-        //if onTracksInfoChanged happened when application went background, do not update the tracks.
-        if (assertTrackSelectionIsNotNull("onTracksInfoChanged()")) {
-
+        //if onTracksChanged happened when application went background, do not update the tracks.
+        if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
                 CustomDashManifest customDashManifest = null;
@@ -1037,11 +1055,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                         dashManifestString = null;
                     }
                 }
-                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(tracksInfo, sourceConfig.getExternalVttThumbnailUrl(), customDashManifest);
+                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(tracks, sourceConfig.getExternalVttThumbnailUrl(), customDashManifest);
             }
+            trackSelectionHelper.notifyAboutTrackChange(tracks);
         }
-
-        trackSelectionHelper.notifyAboutTrackChange(tracksInfo);
     }
 
     @Override
@@ -1860,6 +1877,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
     }
 
+    @Nullable
+    @Override
+    public Object getCurrentMediaManifest() {
+        if (assertPlayerIsNotNull("getCurrentMediaManifest")) {
+            return player.getCurrentManifest();
+        }
+        return null;
+    }
+
     @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         if (resizeMode == null) {
@@ -1880,7 +1906,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         pkLowLatencyConfig = validatePKLowLatencyConfig(pkLowLatencyConfig);
         playerSettings.setPKLowLatencyConfig(pkLowLatencyConfig);
 
-        if (player != null && player.getCurrentMediaItem() != null) {
+        if (assertPlayerIsNotNull("updatePKLowLatencyConfig") && player.getCurrentMediaItem() != null) {
             MediaItem.LiveConfiguration liveConfiguration = getLowLatencyConfigFromPlayerSettings();
             player.setMediaItem(player.getCurrentMediaItem().buildUpon()
                     .setLiveConfiguration(liveConfiguration)
