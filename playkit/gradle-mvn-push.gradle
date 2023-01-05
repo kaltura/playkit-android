@@ -16,11 +16,11 @@ def getSnapshotRepositoryUrl() {
 }
 
 def getRepositoryUsername() {
-    return System.getenv("NEXUS_USERNAME")
+    return nexusUserName
 }
 
 def getRepositoryPassword() {
-    return System.getenv("NEXUS_PASSWORD")
+    return nexusPassword
 }
 
 afterEvaluate { project ->
@@ -76,12 +76,12 @@ afterEvaluate { project ->
     }
 
     signing {
-        allprojects { ext."signing.keyId" = System.getenv("MAVEN_KEYID") }
-        allprojects { ext."signing.password" = System.getenv("MAVEN_PASSWORD") }
-        allprojects { ext."signing.secretKeyRingFile" = System.getenv("MAVEN_SECRING_PATH") }
+        allprojects { ext."signing.keyId" = signingKeyId }
+        allprojects { ext."signing.password" = signingPassword }
+        allprojects { ext."signing.secretKeyRingFile" = SECRING_PATH }
 
         required { isReleaseBuild() && gradle.taskGraph.hasTask("publish") }
-        sign publishing.publications.mavenJava
+        sign publishing.publications
     }
 
     task androidJavadocs(type: Javadoc) {

@@ -1,4 +1,4 @@
-[![CI Status](https://travis-ci.org/kaltura/playkit-android.svg?branch=develop)](https://travis-ci.org/kaltura/playkit-android)
+[![CI Status](https://github.com/kaltura/playkit-android/actions/workflows/build.yml/badge.svg)](https://github.com/kaltura/playkit-android/actions/workflows/build.yml)
 [![Download](https://img.shields.io/maven-central/v/com.kaltura.playkit/playkit?label=Download)](https://search.maven.org/artifact/com.kaltura.playkit/playkit)
 [![License](https://img.shields.io/badge/license-AGPLv3-black.svg)](https://github.com/kaltura/playkit-android/blob/master/LICENSE)
 ![Android](https://img.shields.io/badge/platform-android-green.svg)
