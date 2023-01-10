@@ -6,10 +6,12 @@ package com.kaltura.playkit.player.vr;
 
 public class VRSettings {
 
+    public static final float DEFAULT_BARREL_DISTORTION_SCALE = 0.95f;
     private VRInteractionMode interactionMode = VRInteractionMode.Touch;
     private boolean vrModeEnabled; //false by default
     private boolean zoomWithPinchEnabled = true; // true by default.
     private boolean flingEnabled; //false by default.
+    private float barrelDistortionScale = DEFAULT_BARREL_DISTORTION_SCALE; // Default Value
 
     /**
      * Allows to enable/disable VR mode. Where content is shown in
@@ -62,6 +64,22 @@ public class VRSettings {
         return this;
     }
 
+    /**
+     * Allows to control fisheye glass
+     * Default is - 0.95 which is 95%.
+     *
+     * @param barrelDistortionScale - Value of scaling between 0.10 to 1.0
+     * @return - {@link VRSettings}
+     */
+    public VRSettings setBarrelDistortionScale(float barrelDistortionScale) {
+        if (barrelDistortionScale < 0.10 || barrelDistortionScale > 1.0) {
+            barrelDistortionScale = DEFAULT_BARREL_DISTORTION_SCALE;
+        }
+
+        this.barrelDistortionScale = barrelDistortionScale;
+        return this;
+    }
+
     public VRInteractionMode getInteractionMode() {
         return interactionMode;
     }
@@ -76,5 +94,9 @@ public class VRSettings {
 
     public boolean isFlingEnabled() {
         return flingEnabled;
+    }
+
+    public float getBarrelDistortionScale() {
+        return barrelDistortionScale;
     }
 }
