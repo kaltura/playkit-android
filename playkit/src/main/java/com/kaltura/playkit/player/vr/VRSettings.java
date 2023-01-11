@@ -12,7 +12,7 @@ public class VRSettings {
     private boolean vrModeEnabled; //false by default
     private boolean zoomWithPinchEnabled = true; // true by default.
     private boolean flingEnabled; //false by default.
-    private VRBarrelDistortionConfig vrBarrelDistortionConfig;
+    private VRDistortionConfig vrDistortionConfig;
 
     /**
      * Allows to enable/disable VR mode. Where content is shown in
@@ -65,8 +65,8 @@ public class VRSettings {
         return this;
     }
 
-    public VRSettings setVrBarrelDistortionConfig(@Nonnull VRBarrelDistortionConfig vrBarrelDistortionConfig) {
-        this.vrBarrelDistortionConfig = vrBarrelDistortionConfig;
+    public VRSettings setVrDistortionConfig(@Nonnull VRDistortionConfig vrDistortionConfig) {
+        this.vrDistortionConfig = vrDistortionConfig;
         return this;
     }
 
@@ -86,7 +86,7 @@ public class VRSettings {
         return flingEnabled;
     }
 
-    public VRBarrelDistortionConfig getVrBarrelDistortionConfig() {
-        return vrBarrelDistortionConfig;
+    public VRDistortionConfig getVrDistortionConfig() {
+        return vrDistortionConfig;
     }
 }
