@@ -2,6 +2,8 @@ package com.kaltura.playkit.player.vr;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import com.kaltura.playkit.player.BaseExoplayerView;
 import com.kaltura.playkit.player.PlayerEngine;
 
@@ -11,7 +13,7 @@ import com.kaltura.playkit.player.PlayerEngine;
 
 public interface VRPlayerFactory {
 
-    PlayerEngine newInstance(Context context, PlayerEngine player);
+    PlayerEngine newInstance(Context context, PlayerEngine player, @Nullable VRSettings vrSettings);
 
     BaseExoplayerView newVRViewInstance(Context context);
 }

@@ -1,5 +1,7 @@
 package com.kaltura.playkit.player.vr;
 
+import javax.annotation.Nonnull;
+
 /**
  * Created by anton.afanasiev on 25/03/2018.
  */
@@ -10,6 +12,7 @@ public class VRSettings {
     private boolean vrModeEnabled; //false by default
     private boolean zoomWithPinchEnabled = true; // true by default.
     private boolean flingEnabled; //false by default.
+    private VRDistortionConfig vrDistortionConfig;
 
     /**
      * Allows to enable/disable VR mode. Where content is shown in
@@ -62,6 +65,11 @@ public class VRSettings {
         return this;
     }
 
+    public VRSettings setVrDistortionConfig(@Nonnull VRDistortionConfig vrDistortionConfig) {
+        this.vrDistortionConfig = vrDistortionConfig;
+        return this;
+    }
+
     public VRInteractionMode getInteractionMode() {
         return interactionMode;
     }
@@ -76,5 +84,9 @@ public class VRSettings {
 
     public boolean isFlingEnabled() {
         return flingEnabled;
+    }
+
+    public VRDistortionConfig getVrDistortionConfig() {
+        return vrDistortionConfig;
     }
 }

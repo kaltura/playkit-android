@@ -47,7 +47,7 @@ class PlayerEngineFactory {
 
                 //Initialize ExoplayerWrapper for video playback which will use VRView for render purpose.
                 ExoPlayerWrapper exoWrapper = new ExoPlayerWrapper(context, vrPlayerFactory.newVRViewInstance(context), playerSettings, rootPlayerView);
-                return vrPlayerFactory.newInstance(context, exoWrapper);
+                return vrPlayerFactory.newInstance(context, exoWrapper, playerSettings.getVRSettings() != null ? playerSettings.getVRSettings() : null);
 
             default:
                 return new ExoPlayerWrapper(context, playerSettings, rootPlayerView);
