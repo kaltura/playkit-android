@@ -30,8 +30,8 @@ public class PKRequestParams {
         this.headers = headers != null ? headers : new HashMap<>();
     }
 
-    public void setPostBody(Map<String, String> postBody) {
-        this.postBody = postBody != null ? postBody : new HashMap<>();
+    public void setPostBody(@Nullable Map<String, String> postBody) {
+        this.postBody = postBody;
     }
 
     /**

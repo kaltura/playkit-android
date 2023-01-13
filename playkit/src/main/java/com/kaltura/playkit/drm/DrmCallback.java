@@ -39,6 +39,7 @@ public class DrmCallback implements MediaDrmCallback {
     private HttpMediaDrmCallback callback;
     private final Map<String, String> postBodyMap = new HashMap<>();
     private String licenseUrl;
+    private final Map<String, String> headers = new HashMap<>();;
     private final String KEY_DRM_INFO = "drm_info";
 
     public DrmCallback(HttpDataSource.Factory dataSourceFactory, PKRequestParams.Adapter adapter) {
@@ -75,10 +76,13 @@ public class DrmCallback implements MediaDrmCallback {
                 requestProperties.put(
                         "SOAPAction", "http://schemas.microsoft.com/DRM/2007/03/protocols/AcquireLicense");
             }
+            if (!headers.isEmpty()) {
+                requestProperties.putAll(headers);
+            }
             JSONObject postBodyJsonObject;
             try {
                 postBodyJsonObject = getPostBodyJson(request.getData(), postBodyMap);
-                return executePost(dataSourceFactory, licenseUrl, postBodyJsonObject.toString().getBytes() , requestProperties);
+                return executePost(dataSourceFactory, licenseUrl, postBodyJsonObject.toString().getBytes(), requestProperties);
             } catch (JSONException e) {
                 throw new MediaDrmCallbackException(
                         new DataSpec.Builder().setUri(licenseUrl).build(),
@@ -107,11 +111,12 @@ public class DrmCallback implements MediaDrmCallback {
                 postBodyMap.putAll(params.postBody);
             }
             if (params.url != null) {
-                this.licenseUrl = licenseUrl;
+                this.licenseUrl = params.url.toString();
             } else {
                 log.e("Adapter returned null license URL");
                 return;
             }
+            headers.putAll(params.headers);
         }
 
         callback = new HttpMediaDrmCallback(params.url.toString(), dataSourceFactory);
