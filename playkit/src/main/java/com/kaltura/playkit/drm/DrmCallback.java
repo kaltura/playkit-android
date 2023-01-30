@@ -105,11 +105,11 @@ public class DrmCallback implements MediaDrmCallback {
                 return;
             }
 
+            headers.putAll(params.headers);
+
             if (params.postBody != null && !params.postBody.isEmpty()) {
                 postBodyMap.putAll(params.postBody);
             }
-
-            headers.putAll(params.headers);
         }
 
         callback = new HttpMediaDrmCallback(params.url.toString(), dataSourceFactory);
