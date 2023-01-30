@@ -75,7 +75,7 @@ public class DrmCallback implements MediaDrmCallback {
             if (!headers.isEmpty()) {
                 requestProperties.putAll(headers);
             }
-            JSONObject postBodyJsonObject = adapter.updateDRMData(request.getData());
+            JSONObject postBodyJsonObject = adapter.buildDrmPostParams(request.getData());
             return executePost(dataSourceFactory, licenseUrl, postBodyJsonObject, requestProperties);
         } else {
             return callback.executeKeyRequest(uuid, request);
@@ -92,15 +92,17 @@ public class DrmCallback implements MediaDrmCallback {
 
         if (adapter != null) {
             params = adapter.adapt(params);
-            if (params.postBody != null && !params.postBody.isEmpty()) {
-                postBodyMap.putAll(params.postBody);
-            }
             if (params.url != null) {
                 this.licenseUrl = params.url.toString();
             } else {
                 log.e("Adapter returned null license URL");
                 return;
             }
+
+            if (params.postBody != null && !params.postBody.isEmpty()) {
+                postBodyMap.putAll(params.postBody);
+            }
+
             headers.putAll(params.headers);
         }
 

@@ -55,6 +55,14 @@ public class PKRequestParams {
 
         String getApplicationName();
 
-        default JSONObject updateDRMData(byte[] data) { return null;}
+        /**
+         * Return a potentially modified DrmData.
+         * The implementation can return the JSONObject by adding the post params.
+         *
+         * @param drmData The opaque key request data
+         * @return Modified JSONObject
+         */
+        @Nullable
+        default JSONObject buildDrmPostParams(@NonNull byte[] drmData) { return null;}
     }
 }
