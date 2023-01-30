@@ -34,9 +34,9 @@ public class DrmCallback implements MediaDrmCallback {
     private final HttpDataSource.Factory dataSourceFactory;
     private final PKRequestParams.Adapter adapter;
     private HttpMediaDrmCallback callback;
-    private final Map<String, String> postBodyMap = new HashMap<>();
     private String licenseUrl;
-    private final Map<String, String> headers = new HashMap<>();;
+    private final Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> postBodyMap = new HashMap<>();
 
     public DrmCallback(HttpDataSource.Factory dataSourceFactory, PKRequestParams.Adapter adapter) {
         this.dataSourceFactory = dataSourceFactory;
@@ -75,20 +75,26 @@ public class DrmCallback implements MediaDrmCallback {
             if (!headers.isEmpty()) {
                 requestProperties.putAll(headers);
             }
-            JSONObject postBodyJsonObject = adapter.buildDrmPostParams(request.getData());
+            JSONObject postBodyJsonObject = null;
             return executePost(dataSourceFactory, licenseUrl, postBodyJsonObject, requestProperties);
         } else {
             return callback.executeKeyRequest(uuid, request);
         }
     }
 
-    void setLicenseUrl(String licenseUrl) {
-        if (licenseUrl == null) {
+    /**
+     * In case if the adapter is given then
+     * set the license URL after adapting it from outside.
+     * Otherwise use the license URL as it is for {@link HttpMediaDrmCallback}
+     * @param url license URL
+     */
+    void setLicenseUrl(String url) {
+        if (url == null) {
             log.e("Invalid license URL = null");
             return;
         }
 
-        PKRequestParams params = new PKRequestParams(Uri.parse(licenseUrl), new HashMap<>());
+        PKRequestParams params = new PKRequestParams(Uri.parse(url), new HashMap<>());
 
         if (adapter != null) {
             params = adapter.adapt(params);
