@@ -16,6 +16,8 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,5 +54,7 @@ public class PKRequestParams {
         void updateParams(Player player);
 
         String getApplicationName();
+
+        default JSONObject updateDRMData(byte[] data) { return null;}
     }
 }

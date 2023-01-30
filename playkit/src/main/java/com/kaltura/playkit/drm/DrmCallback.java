@@ -22,8 +22,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.player.MediaSupport;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -33,14 +31,12 @@ import java.util.UUID;
 
 public class DrmCallback implements MediaDrmCallback {
     private static final PKLog log = PKLog.get("DrmCallback");
-
     private final HttpDataSource.Factory dataSourceFactory;
     private final PKRequestParams.Adapter adapter;
     private HttpMediaDrmCallback callback;
     private final Map<String, String> postBodyMap = new HashMap<>();
     private String licenseUrl;
     private final Map<String, String> headers = new HashMap<>();;
-    private final String KEY_DRM_INFO = "drm_info";
 
     public DrmCallback(HttpDataSource.Factory dataSourceFactory, PKRequestParams.Adapter adapter) {
         this.dataSourceFactory = dataSourceFactory;
@@ -79,25 +75,14 @@ public class DrmCallback implements MediaDrmCallback {
             if (!headers.isEmpty()) {
                 requestProperties.putAll(headers);
             }
-            JSONObject postBodyJsonObject;
-            try {
-                postBodyJsonObject = getPostBodyJson(request.getData(), postBodyMap);
-                return executePost(dataSourceFactory, licenseUrl, postBodyJsonObject.toString().getBytes(), requestProperties);
-            } catch (JSONException e) {
-                throw new MediaDrmCallbackException(
-                        new DataSpec.Builder().setUri(licenseUrl).build(),
-                        Uri.EMPTY,
-                        ImmutableMap.of(),
-                        0,
-                        new JSONException(e.getMessage()));
-            }
+            JSONObject postBodyJsonObject = adapter.updateDRMData(request.getData());
+            return executePost(dataSourceFactory, licenseUrl, postBodyJsonObject, requestProperties);
         } else {
             return callback.executeKeyRequest(uuid, request);
         }
     }
 
     void setLicenseUrl(String licenseUrl) {
-
         if (licenseUrl == null) {
             log.e("Invalid license URL = null");
             return;
@@ -127,69 +112,29 @@ public class DrmCallback implements MediaDrmCallback {
     }
 
     /**
-     * Create the post JSON payload having custom post key/values and drm data
-     * @param data drm data
-     * @param requestProperties custom post params
-     * @return JSONObject
-     * @throws JSONException if there is some exception in JSON creation
-     */
-    @NonNull
-    private JSONObject getPostBodyJson(byte[] data, Map<String, String> requestProperties) throws JSONException {
-        JSONObject json = new JSONObject();
-        for (Map.Entry<String, String> entry: requestProperties.entrySet()) {
-            if (TextUtils.equals(entry.getKey(), KEY_DRM_INFO)) {
-                JSONArray jsonArray = doMaskingOnDrmInfo(data);
-                if (jsonArray == null) {
-                    continue;
-                }
-                json.put(KEY_DRM_INFO, jsonArray);
-            } else {
-                json.put(entry.getKey(), entry.getValue());
-            }
-        }
-        return json;
-    }
-
-    /**
-     * Do bitmask for the drm data
-     * @param data drm data
-     * @return JSONArray of the bitmasked drm data
-     */
-    @Nullable
-    private JSONArray doMaskingOnDrmInfo(@Nullable byte[] data) {
-        if (data == null) {
-            log.e("Invalid key request data");
-            return null;
-        }
-
-        JSONArray jsonArray = new JSONArray();
-        int bitmask = 0x000000FF;
-        for (byte aData : data) {
-            jsonArray.put(bitmask & aData);
-        }
-        return jsonArray;
-    }
-
-    /**
      * Do network call with customized post params and get the key byte data in response
      * @throws MediaDrmCallbackException
      */
     private static byte[] executePost(
             DataSource.Factory dataSourceFactory,
             String url,
-            @Nullable byte[] httpBody,
+            @Nullable JSONObject httpBody,
             Map<String, String> requestProperties)
             throws MediaDrmCallbackException {
         StatsDataSource dataSource = new StatsDataSource(dataSourceFactory.createDataSource());
         int manualRedirectCount = 0;
-        DataSpec dataSpec =
+        DataSpec.Builder dataSpecBuilder =
                 new DataSpec.Builder()
                         .setUri(url)
                         .setHttpRequestHeaders(requestProperties)
                         .setHttpMethod(DataSpec.HTTP_METHOD_POST)
-                        .setHttpBody(httpBody)
-                        .setFlags(DataSpec.FLAG_ALLOW_GZIP)
-                        .build();
+                        .setFlags(DataSpec.FLAG_ALLOW_GZIP);
+
+        if (httpBody != null) {
+            dataSpecBuilder.setHttpBody(httpBody.toString().getBytes());
+        }
+
+        DataSpec dataSpec = dataSpecBuilder.build();
         DataSpec originalDataSpec = dataSpec;
         try {
             while (true) {
