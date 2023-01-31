@@ -75,7 +75,7 @@ public class DrmCallback implements MediaDrmCallback {
             if (!headers.isEmpty()) {
                 requestProperties.putAll(headers);
             }
-            JSONObject postBodyJsonObject = null;
+            JSONObject postBodyJsonObject = adapter.buildDrmPostParams(request.getData());
             return executePost(dataSourceFactory, licenseUrl, postBodyJsonObject, requestProperties);
         } else {
             return callback.executeKeyRequest(uuid, request);

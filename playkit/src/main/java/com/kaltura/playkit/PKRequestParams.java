@@ -62,7 +62,7 @@ public class PKRequestParams {
          * @param drmData The opaque key request data
          * @return Modified JSONObject
          */
-        @Nullable
-        default JSONObject buildDrmPostParams(@NonNull byte[] drmData) { return null;}
+
+        @Nullable default JSONObject buildDrmPostParams(@NonNull byte[] drmData) { return null;}
     }
 }
