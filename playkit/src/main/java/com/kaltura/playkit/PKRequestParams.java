@@ -14,6 +14,9 @@ package com.kaltura.playkit;
 
 import android.net.Uri;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,10 +25,15 @@ public class PKRequestParams {
 
     public final Uri url;
     @NonNull public final Map<String, String> headers;
+    @Nullable public Map<String, String> postBody;
 
     public PKRequestParams(Uri url, Map<String, String> headers) {
         this.url = url;
         this.headers = headers != null ? headers : new HashMap<>();
+    }
+
+    public void setPostBody(@Nullable Map<String, String> postBody) {
+        this.postBody = postBody;
     }
 
     /**
@@ -46,5 +54,15 @@ public class PKRequestParams {
         void updateParams(Player player);
 
         String getApplicationName();
+
+        /**
+         * Return a potentially modified DrmData.
+         * The implementation can return the JSONObject by adding the post params.
+         *
+         * @param drmData The opaque key request data
+         * @return Modified JSONObject
+         */
+
+        @Nullable default JSONObject buildDrmPostParams(@NonNull byte[] drmData) { return null;}
     }
 }
