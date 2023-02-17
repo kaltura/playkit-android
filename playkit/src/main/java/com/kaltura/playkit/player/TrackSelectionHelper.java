@@ -327,7 +327,7 @@ public class TrackSelectionHelper {
                                     // in future handle that in hls case for thumbnailInfo
                                     continue;
                                 }
-                                
+
                                 if (!videoTracksAvailable) {
                                     videoTracksAvailable = true;
                                 }
@@ -1149,11 +1149,16 @@ public class TrackSelectionHelper {
         //If track was previously selected and selection is differed from the default selection apply it.
         String defaultUniqueId = trackList.get(defaultTrackIndex).getUniqueId();
         if (!NONE.equals(lastSelectedTrackId) && !lastSelectedTrackId.equals(defaultUniqueId)) {
-            changeTrack(lastSelectedTrackId);
-            for (int i = 0; i < trackList.size(); i++) {
-                if (lastSelectedTrackId.equals(trackList.get(i).getUniqueId())) {
-                    return i;
+            try {
+                changeTrack(lastSelectedTrackId);
+                for (int i = 0; i < trackList.size(); i++) {
+                    if (lastSelectedTrackId.equals(trackList.get(i).getUniqueId())) {
+                        return i;
+                    }
                 }
+            } catch (IllegalArgumentException ex) {
+                PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Fatal, ex.getMessage(), ex);
+                tracksErrorListener.onUnsupportedTracksAvailableError(currentError);
             }
         }
 
@@ -1238,7 +1243,7 @@ public class TrackSelectionHelper {
      * @param uniqueId - unique identifier of the track to apply.
      */
 
-    protected void changeTrack(String uniqueId) {
+    protected void changeTrack(String uniqueId) throws IllegalArgumentException {
         if (assertTrackSelectorIsNull("changeTrack")) {
             return;
         }
@@ -1831,22 +1836,41 @@ public class TrackSelectionHelper {
                 || uniqueId.contains(TEXT_PREFIX)
                 || uniqueId.contains(IMAGE_PREFIX)
                 && uniqueId.contains(",")) {
-
+            int trackTypeId = getTrackTypeId(uniqueId);
             int[] parsedUniqueId = parseUniqueId(uniqueId);
             if (!isRendererTypeValid(parsedUniqueId[RENDERER_INDEX])) {
+                lastSelectedTrackIds[trackTypeId] = NONE;
                 throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid renderer index. " + parsedUniqueId[RENDERER_INDEX]);
             }
 
             if (!isGroupIndexValid(parsedUniqueId)) {
+                lastSelectedTrackIds[trackTypeId] = NONE;
                 throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid group index. " + parsedUniqueId[GROUP_INDEX]);
             }
 
             if (!isTrackIndexValid(parsedUniqueId)) {
+                lastSelectedTrackIds[trackTypeId] = NONE;
                 throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid track index. " + parsedUniqueId[TRACK_INDEX]);
             }
             return parsedUniqueId;
         }
         throw new IllegalArgumentException("Invalid structure of uniqueId " + uniqueId);
+    }
+
+    public int getTrackTypeId(String uniqueId) {
+        if (uniqueId.contains(VIDEO_PREFIX)) {
+            return TRACK_TYPE_VIDEO;
+        }
+        if (uniqueId.contains(AUDIO_PREFIX)) {
+            return TRACK_TYPE_AUDIO;
+        }
+        if (uniqueId.contains(TEXT_PREFIX)) {
+            return TRACK_TYPE_TEXT;
+        }
+        if (uniqueId.contains(IMAGE_PREFIX)) {
+            return TRACK_TYPE_IMAGE;
+        }
+        return -1;
     }
 
     private boolean isTrackIndexValid(int[] parsedUniqueId) {
