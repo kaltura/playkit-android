@@ -1023,7 +1023,7 @@ public class TrackSelectionHelper {
         String uniqueId = getUniqueId(TRACK_TYPE_TEXT, 0, TRACK_DISABLED);
         textTracks.add(0, new TextTrack(uniqueId, NONE, NONE, NONE, -1));
     }
-    
+
     /**
      * Find the default selected track, based on the media manifest.
      *
