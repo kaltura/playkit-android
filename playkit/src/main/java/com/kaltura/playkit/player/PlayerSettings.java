@@ -37,6 +37,9 @@ public class PlayerSettings implements Player.Settings {
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisyEnabled;
     private boolean handleAudioFocus;
+    private boolean allowDisableVideoTrack;
+    private boolean allowDisableAudioTrack;
+
 
     // Flag helping to check if client app wants to use a single player instance at a time
     // Only if IMA plugin is there then only this flag is set to true.
@@ -192,6 +195,14 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isHandleAudioFocus() {
         return handleAudioFocus;
+    }
+
+    public boolean isAllowDisableVideoTrack() {
+        return allowDisableVideoTrack;
+    }
+
+    public boolean isAllowDisableAudioTrack() {
+        return allowDisableAudioTrack;
     }
 
     public PKSubtitlePreference getSubtitlePreference() {
@@ -413,6 +424,18 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setHandleAudioFocus(boolean handleAudioFocus) {
         this.handleAudioFocus = handleAudioFocus;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setAllowDisableVideoTrack(boolean allowDisableVideoTrack) {
+        this.allowDisableVideoTrack = allowDisableVideoTrack;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setAllowDisableAudioTrack(boolean allowDisableAudioTrack) {
+        this.allowDisableAudioTrack = allowDisableAudioTrack;
         return this;
     }
 

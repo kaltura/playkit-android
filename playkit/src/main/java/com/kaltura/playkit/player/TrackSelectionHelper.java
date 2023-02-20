@@ -327,7 +327,7 @@ public class TrackSelectionHelper {
                                     // in future handle that in hls case for thumbnailInfo
                                     continue;
                                 }
-                                
+
                                 if (!videoTracksAvailable) {
                                     videoTracksAvailable = true;
                                 }
@@ -415,10 +415,16 @@ public class TrackSelectionHelper {
         // while taking the default track index. Indexing of track will not get any impact.
         videoTracks = filterVideoTracks();
         Collections.sort(videoTracks);
+        if (playerSettings.isAllowDisableVideoTrack()) {
+            maybeAddDisabledVideoTrack();
+        }
 
         //Leave only adaptive audio tracks for user selection if no extra config is set.
         ArrayList<AudioTrack> filteredAudioTracks = filterAdaptiveAudioTracks();
         Collections.sort(filteredAudioTracks);
+        if (playerSettings.isAllowDisableVideoTrack()) {
+            maybeAddDisabledAudioTrack(filteredAudioTracks);
+        }
 
         int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks, lastSelectedTrackIds[TRACK_TYPE_VIDEO]);
         int defaultAudioTrackIndex = getDefaultTrackIndex(filteredAudioTracks, lastSelectedTrackIds[TRACK_TYPE_AUDIO]);
@@ -973,6 +979,37 @@ public class TrackSelectionHelper {
     }
 
     /**
+     * Add "disable" video track option as last track in tracks list with bitrate -1.
+     * Will add this track only if there is at least one video track available.
+     * Selecting this track, will disable the video renderer.
+     */
+    private void maybeAddDisabledVideoTrack() {
+
+        if (videoTracks.isEmpty()) {
+            return;
+        }
+
+        String uniqueId = getUniqueId(TRACK_TYPE_VIDEO, 0, TRACK_DISABLED);
+        videoTracks.add(new VideoTrack(uniqueId, -1, -1, -1, -1,false, null, NONE));
+    }
+
+    /**
+     * Add "disable" audio track option as last track with bitrate -1 and language none.
+     * Will add this track only if there is at least one audio track available.
+     * Selecting this track, will disable the audio renderer.
+     */
+    private void maybeAddDisabledAudioTrack(ArrayList<AudioTrack> filteredAudioTracks) {
+
+        if (filteredAudioTracks.isEmpty()) {
+            return;
+        }
+
+        String uniqueId = getUniqueId(TRACK_TYPE_AUDIO, 0, TRACK_DISABLED);
+        filteredAudioTracks.add(new AudioTrack(uniqueId, NONE, NONE, -1 , -1, -1, false, null, NONE));
+    }
+
+
+    /**
      * Add "disable" text track option.
      * Will add this track only if there is at least one text track available.
      * Selecting this track, will disable the text renderer.
@@ -986,7 +1023,7 @@ public class TrackSelectionHelper {
         String uniqueId = getUniqueId(TRACK_TYPE_TEXT, 0, TRACK_DISABLED);
         textTracks.add(0, new TextTrack(uniqueId, NONE, NONE, NONE, -1));
     }
-
+    
     /**
      * Find the default selected track, based on the media manifest.
      *
@@ -1554,6 +1591,9 @@ public class TrackSelectionHelper {
                     for (int i = 0; i < videoTracks.size(); i++) {
 
                         videoTrack = videoTracks.get(i);
+                        if (videoTrack.getUniqueId().contains(String.valueOf(TRACK_DISABLED))) {
+                            continue;
+                        }
                         videoGroupIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX);
                         videoTrackIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX);
 
@@ -1570,6 +1610,9 @@ public class TrackSelectionHelper {
                     for (int i = 0; i < audioTracks.size(); i++) {
 
                         audioTrack = audioTracks.get(i);
+                        if (audioTrack.getUniqueId().contains(String.valueOf(TRACK_DISABLED))) {
+                            continue;
+                        }
                         audioGroupIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX);
                         audioTrackIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX);
 
@@ -1656,22 +1699,42 @@ public class TrackSelectionHelper {
             return;
         }
 
+        int exoTrackType = getExoTrackType(rendererIndex);
+
         //actually change track.
         TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
         if (!selectedIndices.isEmpty()) {
-            if (rendererIndex == TRACK_TYPE_TEXT && selectedIndices.get(0) == TRACK_DISABLED) {
-                // Just clear the selected indices,
-                // it will let exoplayer know that no tracks from trackGroup should be played
-                selectedIndices.clear();
+            if (selectedIndices.get(0) == TRACK_DISABLED) {
+                trackSelectionParametersBuilder.setTrackTypeDisabled(exoTrackType, true);
+                trackSelectionParametersBuilder.clearOverridesOfType(exoTrackType);
+            } else {
+                TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedIndices);
+                trackSelectionParametersBuilder.setOverrideForType(trackSelectionOverride);
+                trackSelectionParametersBuilder.setTrackTypeDisabled(exoTrackType, false);
             }
-            TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedIndices);
-            trackSelectionParametersBuilder.setOverrideForType(trackSelectionOverride);
         } else {
-            //clear all the selections if selectedIndices are empty.
-            trackSelectionParametersBuilder.clearOverride(trackGroup);
+            trackSelectionParametersBuilder.setTrackTypeDisabled(exoTrackType, false);
         }
-
         selector.setParameters(trackSelectionParametersBuilder.build());
+    }
+
+    private int getExoTrackType(int rendererIndex) {
+        int exoTrackType = -1;
+        switch(rendererIndex) {
+            case TRACK_TYPE_VIDEO:
+                exoTrackType = C.TRACK_TYPE_VIDEO;
+                break;
+            case TRACK_TYPE_AUDIO:
+                exoTrackType = C.TRACK_TYPE_AUDIO;
+                break;
+            case TRACK_TYPE_TEXT:
+                exoTrackType = C.TRACK_TYPE_TEXT;
+                break;
+            case TRACK_TYPE_IMAGE:
+                exoTrackType = C.TRACK_TYPE_IMAGE;
+                break;
+        }
+        return exoTrackType;
     }
 
     public void updateTrackSelectorParameter(PlayerSettings playerSettings, DefaultTrackSelector.Parameters.Builder parametersBuilder) {
@@ -1864,7 +1927,7 @@ public class TrackSelectionHelper {
                     && trackIndex < mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex).length;
         }
 
-        return trackIndex >= TRACK_ADAPTIVE
+        return trackIndex >= TRACK_DISABLED
                 && trackIndex < mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex).length;
     }
 

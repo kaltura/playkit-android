@@ -338,6 +338,22 @@ public interface Player {
         Settings setHandleAudioFocus(boolean handleAudioFocus);
 
         /**
+         * Set AllowDisableVideoTrack - expose video track to disable video playback. default: false (audio only experience)
+         *
+         * @param allowDisableVideoTrack
+         * @return - Player Settings
+         */
+        Settings setAllowDisableVideoTrack(boolean allowDisableVideoTrack);
+
+        /**
+         * Set AllowDisableVideoTrack - expose audio track to disable audio playback. default: false (video only experience)
+         *
+         * @param allowDisableAudioTrack
+         * @return - Player Settings
+         */
+        Settings setAllowDisableAudioTrack(boolean allowDisableAudioTrack);
+
+        /**
          * Set preference to choose internal subtitles over external subtitles (Only in the case if the same language is present
          * in both Internal and External subtitles) - Default is true (Internal is preferred)
          *
