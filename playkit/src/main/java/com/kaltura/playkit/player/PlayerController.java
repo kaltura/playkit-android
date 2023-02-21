@@ -918,7 +918,7 @@ public class PlayerController implements Player {
                         break;
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
-                        if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
+                        if ((getDuration() != Consts.TIME_UNSET || getMediaFormat() == PKMediaFormat.udp) && isNewEntry) {
                             if (mediaConfig.getStartPosition() != null) {
                                 if (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER > getDuration()) {
                                     mediaConfig.setStartPosition(getDuration() / MILLISECONDS_MULTIPLIER);

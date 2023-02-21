@@ -958,7 +958,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         log.d("onTimelineChanged reason = " + reason + " duration = " + getDuration());
         if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
             isLoadedMetaDataFired = false;
-            if (getDuration() != TIME_UNSET) {
+            if (getDuration() != TIME_UNSET || PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
                 sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
                 profiler.onDurationChanged(getDuration());
             }
@@ -1156,7 +1156,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             if (currentEvent == PlayerEvent.Type.ENDED) {
                 return;
             }
-
             sendDistinctEvent(PlayerEvent.Type.PAUSE);
             profiler.onPauseRequested();
             player.setPlayWhenReady(false);
@@ -1346,6 +1345,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             try {
                 trackSelectionHelper.changeTrack(uniqueId);
             } catch (IllegalArgumentException ex) {
+                int trackTypeId = trackSelectionHelper.getTrackTypeId(uniqueId);
+                if (trackTypeId >= 0) {
+                   lastSelectedTrackIds[trackTypeId] = TrackSelectionHelper.NONE;
+                }
                 sendTrackSelectionError(uniqueId, ex);
             }
         }
