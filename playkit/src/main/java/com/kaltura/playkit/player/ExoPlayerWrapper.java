@@ -79,7 +79,7 @@ import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
-import com.kaltura.android.exoplayer2.video.CustomLoadControl;
+import com.kaltura.android.exoplayer2.video.ConfigurableLoadControl;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalAssetsManagerExo;
 import com.kaltura.playkit.PKAbrFilter;
@@ -150,6 +150,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
     private MediaSource.Factory mediaSourceFactory;
+    private LoadControl configurableLoadControl;
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE;
     private PlayerState previousState;
@@ -243,10 +244,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         addCustomLoadErrorPolicy();
         mediaSourceFactory = new DefaultMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
         mediaSourceFactory.setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy);
-
+        configurableLoadControl = getUpdatedLoadControl();
         player = new ExoPlayer.Builder(context, renderersFactory)
                 .setTrackSelector(trackSelector)
-                .setLoadControl(getUpdatedLoadControl())
+                .setLoadControl(configurableLoadControl)
                 .setMediaSourceFactory(mediaSourceFactory)
                 .setBandwidthMeter(bandwidthMeter)
                 .setUsePlatformDiagnostics(false)
@@ -276,15 +277,42 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             if (!loadControl.isDefaultValuesModified()) {
                 return new DefaultLoadControl();
             }
-            return new CustomLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
-                    loadControl.getMaxPlayerBufferMs(), // minBufferVideoMs is set same as the maxBufferMs due to issue in exo player FEM-2707
+            return new ConfigurableLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
+                    loadControl.getMaxPlayerBufferMs(),
                     loadControl.getMaxPlayerBufferMs(),
                     loadControl.getMinBufferAfterInteractionMs(),
                     loadControl.getMinBufferAfterReBufferMs(),
-                    DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES,
-                    DefaultLoadControl.DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS,
+                    loadControl.getTargetBufferBytes(),
+                    loadControl.getPrioritizeTimeOverSizeThresholds(),
                     loadControl.getBackBufferDurationMs(),
                     loadControl.getRetainBackBufferFromKeyframe());
+        }
+    }
+
+    @Override
+    public void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers) {
+        if (configurableLoadControl != null) {
+            Handler playerHandler = new Handler(player.getApplicationLooper());
+            playerHandler.post(() -> {
+//                configurableLoadControl = new ConfigurableLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
+//                        loadControlBuffers.getMaxPlayerBufferMs(),
+//                        loadControlBuffers.getMaxPlayerBufferMs(),
+//                        loadControlBuffers.getMinBufferAfterInteractionMs(),
+//                        loadControlBuffers.getMinBufferAfterReBufferMs(),
+//                        loadControlBuffers.getTargetBufferBytes(),
+//                        loadControlBuffers.getPrioritizeTimeOverSizeThresholds(),
+//                        loadControlBuffers.getBackBufferDurationMs(),
+//                        loadControlBuffers.getRetainBackBufferFromKeyframe());
+
+                ((ConfigurableLoadControl)configurableLoadControl).setMaxBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
+                ((ConfigurableLoadControl)configurableLoadControl).setMinBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
+                ((ConfigurableLoadControl)configurableLoadControl).setBufferForPlaybackUs(loadControlBuffers.getMinBufferAfterInteractionMs());
+                ((ConfigurableLoadControl)configurableLoadControl).setBufferForPlaybackAfterRebufferUs(loadControlBuffers.getMinBufferAfterReBufferMs());
+                ((ConfigurableLoadControl)configurableLoadControl).setBackBufferDurationUs(loadControlBuffers.getBackBufferDurationMs());
+                ((ConfigurableLoadControl)configurableLoadControl).setRetainBackBufferFromKeyframe(loadControlBuffers.getRetainBackBufferFromKeyframe());
+                ((ConfigurableLoadControl)configurableLoadControl).setTargetBufferBytes(loadControlBuffers.getTargetBufferBytes());
+                ((ConfigurableLoadControl)configurableLoadControl).setPrioritizeTimeOverSizeThresholds(loadControlBuffers.getPrioritizeTimeOverSizeThresholds());
+            });
         }
     }
 
@@ -1138,7 +1166,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             if (isLiveMediaWithoutDvr()) {
                 player.seekToDefaultPosition();
             }
-
+            //trackSelectionHelper.disabledVideoTrack(false);
             profiler.onPlayRequested();
             player.setPlayWhenReady(true);
         }
@@ -1149,6 +1177,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         log.v("pause");
         if (assertPlayerIsNotNull("pause()")) {
             //If player already set to pause, return.
+            //trackSelectionHelper.disabledVideoTrack(true);
             if (!player.getPlayWhenReady()) {
                 return;
             }

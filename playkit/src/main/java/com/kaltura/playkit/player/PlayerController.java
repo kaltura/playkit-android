@@ -784,6 +784,16 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers) {
+        log.v("updateLoadControlBuffers");
+        if (assertPlayerIsNotNull("updateLoadControlBuffers")) {
+            if (loadControlBuffers != null) {
+                player.updateLoadControlBuffers(loadControlBuffers);
+            }
+        }
+    }
+
+    @Override
     public void resetABRSettings() {
         log.v("resetABRSettings");
 

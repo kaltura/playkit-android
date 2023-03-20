@@ -302,6 +302,8 @@ public interface PlayerEngine {
      */
     default void resetABRSettings() {}
 
+    default void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers) {}
+
     @Nullable
     Object getCurrentMediaManifest();
 

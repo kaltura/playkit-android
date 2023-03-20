@@ -5,7 +5,9 @@ import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_BUFFER_F
 import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS;
 import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_MAX_BUFFER_MS;
 import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_MIN_BUFFER_MS;
+import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS;
 import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME;
+import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES;
 import static com.kaltura.android.exoplayer2.DefaultRenderersFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS;
 
 public class LoadControlBuffers {
@@ -17,6 +19,8 @@ public class LoadControlBuffers {
     private int backBufferDurationMs = DEFAULT_BACK_BUFFER_DURATION_MS;
     private boolean retainBackBufferFromKeyframe = DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME;
     private long allowedVideoJoiningTimeMs = DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS; //Maximum duration for which a video renderer can attempt to seamlessly join an ongoing playback. Default is 5000ms
+    private int targetBufferBytes = DEFAULT_TARGET_BUFFER_BYTES;
+    private boolean prioritizeTimeOverSizeThresholds = DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS;
 
     public int getMinPlayerBufferMs() {
         return minPlayerBufferMs;
@@ -28,9 +32,9 @@ public class LoadControlBuffers {
     }
 
     public int getMaxPlayerBufferMs() {
-        if (maxPlayerBufferMs < minPlayerBufferMs) {
-            return minPlayerBufferMs;
-        }
+        //if (maxPlayerBufferMs < minPlayerBufferMs) {
+        //    return minPlayerBufferMs;
+        //}
         return maxPlayerBufferMs;
     }
 
@@ -90,6 +94,24 @@ public class LoadControlBuffers {
         return this;
     }
 
+    public int getTargetBufferBytes() {
+        return targetBufferBytes;
+    }
+
+    public LoadControlBuffers setTargetBufferBytes(int targetBufferBytes) {
+        this.targetBufferBytes = targetBufferBytes;
+        return this;
+    }
+
+    public boolean getPrioritizeTimeOverSizeThresholds() {
+        return prioritizeTimeOverSizeThresholds;
+    }
+
+    public LoadControlBuffers setPrioritizeTimeOverSizeThresholds(boolean prioritizeTimeOverSizeThresholds) {
+        this.prioritizeTimeOverSizeThresholds = prioritizeTimeOverSizeThresholds;
+        return this;
+    }
+
     public boolean isDefaultValuesModified() {
         return minPlayerBufferMs != DEFAULT_MIN_BUFFER_MS ||
                 maxPlayerBufferMs != DEFAULT_MAX_BUFFER_MS ||
@@ -97,6 +119,8 @@ public class LoadControlBuffers {
                 minBufferAfterReBufferMs != DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS ||
                 backBufferDurationMs != DEFAULT_BACK_BUFFER_DURATION_MS ||
                 retainBackBufferFromKeyframe != DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME ||
-                allowedVideoJoiningTimeMs != DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS;
+                allowedVideoJoiningTimeMs != DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS ||
+                targetBufferBytes != DEFAULT_TARGET_BUFFER_BYTES ||
+                prioritizeTimeOverSizeThresholds != DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS;
     }
 }

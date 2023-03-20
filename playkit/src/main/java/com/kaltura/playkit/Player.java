@@ -668,6 +668,7 @@ public interface Player {
      */
     void resetABRSettings();
 
+    void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers);
     /**
      * Returns the media manifest of the window
      * Manifest depends on the type of media being prepared.
