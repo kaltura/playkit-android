@@ -17,7 +17,7 @@ class PlayerEngineFactory {
             return PlayerEngineType.VRPlayer;
         }
 
-        if (mediaFormat == PKMediaFormat.wvm) {
+        if (mediaFormat == PKMediaFormat.wvm || mediaFormat == PKMediaFormat.udp) {
             return PlayerEngineType.MediaPlayer;
         }
 

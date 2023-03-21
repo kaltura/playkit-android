@@ -91,7 +91,9 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         this.context = context;
         player = new MediaPlayer();
         mediaPlayerView = new MediaPlayerView(context);
-        initDrmClient();
+        if (MediaSupport.widevineClassic()) {
+            initDrmClient();
+        }
     }
 
     private void initDrmClient() {
@@ -149,15 +151,17 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         } catch (IOException e) {
             log.e(e.toString());
         }
-        if (drmClient.needToAcquireRights(assetAcquireUri)) {
-            List<PKDrmParams> drmData = mediaSourceConfig.mediaSource.getDrmData();
-            if (drmData != null && !drmData.isEmpty()) {
-                licenseUri = drmData.get(0).getLicenseUri();
-                drmClient.acquireRights(assetAcquireUri, licenseUri);
-            } else {
-                log.e("Rights acq required but no DRM Params");
-                sendDistinctEvent(PlayerEvent.Type.ERROR);
-                return;
+        if (MediaSupport.widevineClassic()) {
+            if (drmClient.needToAcquireRights(assetAcquireUri)) {
+                List<PKDrmParams> drmData = mediaSourceConfig.mediaSource.getDrmData();
+                if (drmData != null && !drmData.isEmpty()) {
+                    licenseUri = drmData.get(0).getLicenseUri();
+                    drmClient.acquireRights(assetAcquireUri, licenseUri);
+                } else {
+                    log.e("Rights acq required but no DRM Params");
+                    sendDistinctEvent(PlayerEvent.Type.ERROR);
+                    return;
+                }
             }
         }
         if (!isFirstPlayback) {
