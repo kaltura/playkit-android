@@ -669,6 +669,13 @@ public interface Player {
     void resetABRSettings();
 
     void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers);
+
+    void disableVideoTracks(boolean isDisabled);
+
+    void disableAudioTracks(boolean isDisabled);
+
+    void disableTextTracks(boolean isDisabled);
+
     /**
      * Returns the media manifest of the window
      * Manifest depends on the type of media being prepared.

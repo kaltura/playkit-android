@@ -265,6 +265,21 @@ public class PlayerDecoratorBase implements Player {
         player.updateLoadControlBuffers(loadControlBuffers);
     }
 
+    @Override
+    public void disableVideoTracks(boolean isDisabled) {
+        player.disableVideoTracks(isDisabled);
+    }
+
+    @Override
+    public void disableAudioTracks(boolean isDisabled) {
+        player.disableAudioTracks(isDisabled);
+    }
+
+    @Override
+    public void disableTextTracks(boolean isDisabled) {
+        player.disableTextTracks(isDisabled);
+    }
+
     @Nullable
     @Override
     public Object getCurrentMediaManifest() {

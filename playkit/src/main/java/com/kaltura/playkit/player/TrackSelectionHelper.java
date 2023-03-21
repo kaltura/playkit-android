@@ -94,6 +94,7 @@ public class TrackSelectionHelper {
     private static final int TRACK_RENDERERS_AMOUNT = 3;
 
     static final String NONE = "none";
+    static final String DISABLED = "disabled";
     private static final String ADAPTIVE = "adaptive";
 
     private static final String VIDEO_PREFIX = "Video:";
@@ -126,6 +127,8 @@ public class TrackSelectionHelper {
     private final Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
 
     private String[] lastSelectedTrackIds;
+
+    private String[] lastDisabledTrackIds;
     private String[] requestedChangeTrackIds;
 
     // To know if application passed the external subtitles
@@ -146,7 +149,7 @@ public class TrackSelectionHelper {
 
         void onTracksInfoReady(PKTracks PKTracks);
 
-        void onRelease(String[] selectedTracks);
+        void onRelease(String[] selectedTracks, String[] disbledTrackIds);
 
         void onVideoTrackChanged();
 
@@ -176,10 +179,11 @@ public class TrackSelectionHelper {
      * @param lastSelectedTrackIds - last selected track id`s.
      */
     public TrackSelectionHelper(Context context, DefaultTrackSelector selector,
-                                String[] lastSelectedTrackIds) {
+                                String[] lastSelectedTrackIds, String[] lastDisabledTrackIds) {
         this.context = context;
         this.selector = selector;
         this.lastSelectedTrackIds = lastSelectedTrackIds;
+        this.lastDisabledTrackIds = lastDisabledTrackIds;
         this.requestedChangeTrackIds = Arrays.copyOf(lastSelectedTrackIds, lastSelectedTrackIds.length);
         trackSelectionParameters = TrackSelectionParameters.getDefaults(context);
         trackSelectionParametersBuilder = trackSelectionParameters.buildUpon();
@@ -1146,11 +1150,28 @@ public class TrackSelectionHelper {
      * @return - The index of the last selected track id.
      */
     private int restoreLastSelectedTrack(List<? extends BaseTrack> trackList, String lastSelectedTrackId, int defaultTrackIndex) {
+        boolean skipRestoreTrack = false;
+
+        if (trackList.get(0) instanceof VideoTrack && DISABLED.equals(lastDisabledTrackIds[TRACK_TYPE_VIDEO])) {
+            disableVideoTracks(true);
+            skipRestoreTrack = true;
+        }
+        if (trackList.get(0) instanceof AudioTrack && DISABLED.equals(lastDisabledTrackIds[TRACK_TYPE_VIDEO])) {
+            disableAudioTracks(true);
+            skipRestoreTrack = true;
+        }
+        if (trackList.get(0) instanceof TextTrack && DISABLED.equals(lastDisabledTrackIds[TRACK_TYPE_VIDEO])) {
+            disableTextTracks(true);
+            skipRestoreTrack = true;
+        }
+
         //If track was previously selected and selection is differed from the default selection apply it.
         String defaultUniqueId = trackList.get(defaultTrackIndex).getUniqueId();
         if (!NONE.equals(lastSelectedTrackId) && !lastSelectedTrackId.equals(defaultUniqueId)) {
             try {
-                changeTrack(lastSelectedTrackId);
+                if (!skipRestoreTrack) {
+                    changeTrack(lastSelectedTrackId);
+                }
                 for (int i = 0; i < trackList.size(); i++) {
                     if (lastSelectedTrackId.equals(trackList.get(i).getUniqueId())) {
                         return i;
@@ -1970,7 +1991,7 @@ public class TrackSelectionHelper {
 
     protected void release() {
         if (tracksInfoListener != null) {
-            tracksInfoListener.onRelease(lastSelectedTrackIds);
+            tracksInfoListener.onRelease(lastSelectedTrackIds, lastDisabledTrackIds);
         }
 
         tracksInfoListener = null;
@@ -2118,6 +2139,7 @@ public class TrackSelectionHelper {
     // clean previous selection
     protected void stop() {
         lastSelectedTrackIds = new String[]{NONE, NONE, NONE, NONE};
+        lastDisabledTrackIds = new String[]{NONE, NONE, NONE, NONE};
         requestedChangeTrackIds = new String[]{NONE, NONE, NONE, NONE};
         tracksInfo = null;
         mappedTrackInfo = null;
@@ -2394,5 +2416,141 @@ public class TrackSelectionHelper {
         }
         // Not found
         return -1;
+    }
+
+    private int getExoTrackType(int rendererIndex) {
+        int exoTrackType = -1;
+        switch(rendererIndex) {
+            case TRACK_TYPE_VIDEO:
+                exoTrackType = C.TRACK_TYPE_VIDEO;
+                break;
+            case TRACK_TYPE_AUDIO:
+                exoTrackType = C.TRACK_TYPE_AUDIO;
+                break;
+            case TRACK_TYPE_TEXT:
+                exoTrackType = C.TRACK_TYPE_TEXT;
+                break;
+            case TRACK_TYPE_IMAGE:
+                exoTrackType = C.TRACK_TYPE_IMAGE;
+                break;
+        }
+        return exoTrackType;
+    }
+
+    private void disableTrack(int rendererIndex) {
+        switch (rendererIndex) {
+            case TRACK_TYPE_VIDEO:
+                disableVideoTracks(true);
+                break;
+            case TRACK_TYPE_AUDIO:
+                disableAudioTracks(true);
+                break;
+            case TRACK_TYPE_TEXT:
+                disableTextTracks(true);
+                break;
+            default:
+                break;
+        }
+    }
+
+//    private void enableTrack(int rendererIndex, boolean isEnabled) {
+//        switch (rendererIndex) {
+//            case TRACK_TYPE_VIDEO:
+//                disabledVideoTracks(false);
+//                break;
+//            case TRACK_TYPE_AUDIO:
+//                disabledAudioTracks(false);
+//                break;
+//            case TRACK_TYPE_TEXT:
+//                disabledTextTracks(false);
+//                break;
+//            default:
+//                break;
+//        }
+//    }
+    public void disableVideoTracks(boolean isDisabled) {
+        String uniqueId = getUniqueId(TRACK_TYPE_VIDEO, 0, TRACK_DISABLED);
+        if (videoTracks.isEmpty()) {
+            return;
+        }
+        if (isDisabled) {
+            trackSelectionParametersBuilder.setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, isDisabled);
+            trackSelectionParametersBuilder.clearOverridesOfType(C.TRACK_TYPE_VIDEO);
+            lastSelectedTrackIds[TRACK_TYPE_VIDEO] = DISABLED;
+        } else {
+            String uniqueTrackId = lastSelectedTrackIds[TRACK_TYPE_VIDEO];
+            log.d("uniqueTrackId :" + uniqueTrackId);
+            if (!NONE.equals(uniqueTrackId)) {
+                int[] parsedUniqueId = parseUniqueId(uniqueTrackId);
+                int rendererIndex = parsedUniqueId[RENDERER_INDEX];
+                int groupIndex = parsedUniqueId[GROUP_INDEX];
+                TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
+
+                List<Integer> selectedTrackIndices = retrieveOverrideSelection(parsedUniqueId);
+
+                TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedTrackIndices);
+                trackSelectionParametersBuilder.setOverrideForType(trackSelectionOverride);
+                lastDisabledTrackIds[TRACK_TYPE_VIDEO] = NONE;
+            }
+            trackSelectionParametersBuilder.setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, isDisabled);
+        }
+        selector.setParameters(trackSelectionParametersBuilder.build());
+    }
+
+    public void disableAudioTracks(boolean isDisabled) {
+        String uniqueId = getUniqueId(TRACK_TYPE_AUDIO, 0, TRACK_DISABLED);
+        if (audioTracks.isEmpty()) {
+            return;
+        }
+        if (isDisabled) {
+            trackSelectionParametersBuilder.setTrackTypeDisabled(getExoTrackType(TRACK_TYPE_AUDIO), isDisabled);
+            trackSelectionParametersBuilder.clearOverridesOfType(C.TRACK_TYPE_AUDIO);
+            lastDisabledTrackIds[TRACK_TYPE_AUDIO] = DISABLED;
+        } else {
+            String uniqueTrackId = lastSelectedTrackIds[TRACK_TYPE_AUDIO];
+            log.d("uniqueTrackId :" + uniqueTrackId);
+            if (!NONE.equals(uniqueTrackId)) {
+                int[] parsedUniqueId = parseUniqueId(uniqueTrackId);
+                int rendererIndex = parsedUniqueId[RENDERER_INDEX];
+                int groupIndex = parsedUniqueId[GROUP_INDEX];
+                TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
+
+                List<Integer> selectedTrackIndices = retrieveOverrideSelection(parsedUniqueId);
+
+                TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedTrackIndices);
+                trackSelectionParametersBuilder.setOverrideForType(trackSelectionOverride);
+                lastDisabledTrackIds[TRACK_TYPE_AUDIO] = NONE;
+            }
+            trackSelectionParametersBuilder.setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, isDisabled);
+        }
+        selector.setParameters(trackSelectionParametersBuilder.build());
+    }
+
+    public void disableTextTracks(boolean isDisabled) {
+        if (textTracks.isEmpty()) {
+            return;
+        }
+        if (isDisabled) {
+            trackSelectionParametersBuilder.setTrackTypeDisabled(getExoTrackType(TRACK_TYPE_TEXT), isDisabled);
+            trackSelectionParametersBuilder.clearOverridesOfType(C.TRACK_TYPE_TEXT);
+            lastDisabledTrackIds[TRACK_TYPE_TEXT] = DISABLED;
+        } else {
+            String uniqueTrackId = lastSelectedTrackIds[TRACK_TYPE_TEXT];
+            log.d("uniqueTrackId :" + uniqueTrackId);
+            if (!NONE.equals(uniqueTrackId)) {
+                int[] parsedUniqueId = parseUniqueId(uniqueTrackId);
+                int rendererIndex = parsedUniqueId[RENDERER_INDEX];
+                int groupIndex = parsedUniqueId[GROUP_INDEX];
+                TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
+
+                List<Integer> selectedTrackIndices = retrieveOverrideSelection(parsedUniqueId);
+
+                TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedTrackIndices);
+                trackSelectionParametersBuilder.setOverrideForType(trackSelectionOverride);
+                lastDisabledTrackIds[TRACK_TYPE_TEXT] = NONE;
+            }
+            trackSelectionParametersBuilder.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, isDisabled);
+        }
+        selector.setParameters(trackSelectionParametersBuilder.build());
     }
 }

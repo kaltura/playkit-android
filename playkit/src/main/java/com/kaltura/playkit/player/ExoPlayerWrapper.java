@@ -15,6 +15,7 @@ package com.kaltura.playkit.player;
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 
 import android.content.Context;
 import android.net.Uri;
@@ -175,6 +176,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private List<PKMetadata> metadataList = new ArrayList<>();
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+    private String[] lastDisabledTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
@@ -341,7 +343,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(context);
         DefaultTrackSelector.Parameters.Builder parametersBuilder = new DefaultTrackSelector.Parameters.Builder(context);
-        trackSelectionHelper = new TrackSelectionHelper(context, trackSelector, lastSelectedTrackIds);
+        trackSelectionHelper = new TrackSelectionHelper(context, trackSelector, lastSelectedTrackIds, lastDisabledTrackIds);
         trackSelectionHelper.updateTrackSelectorParameter(playerSettings, parametersBuilder);
         trackSelector.setParameters(parametersBuilder.build());
 
@@ -1166,7 +1168,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             if (isLiveMediaWithoutDvr()) {
                 player.seekToDefaultPosition();
             }
-            //trackSelectionHelper.disabledVideoTrack(false);
+
             profiler.onPlayRequested();
             player.setPlayWhenReady(true);
         }
@@ -1177,7 +1179,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         log.v("pause");
         if (assertPlayerIsNotNull("pause()")) {
             //If player already set to pause, return.
-            //trackSelectionHelper.disabledVideoTrack(true);
             if (!player.getPlayWhenReady()) {
                 return;
             }
@@ -1384,6 +1385,47 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     @Override
+    public void disableVideoTracks(boolean isDisabled) {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'disableVideoTracks(" + isDisabled + ")' on null instance of the tracksSelectionHelper");
+            return;
+        }
+        trackSelectionHelper.disableVideoTracks(isDisabled);
+        if (isDisabled) {
+            lastDisabledTrackIds[TRACK_TYPE_VIDEO] = TrackSelectionHelper.DISABLED;
+        } else {
+            lastDisabledTrackIds[TRACK_TYPE_VIDEO] = TrackSelectionHelper.NONE;
+        }
+    }
+
+    @Override
+    public void disableAudioTracks(boolean isDisabled) {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'disableAudioTracks(" + isDisabled + ")'' on null instance of the tracksSelectionHelper");
+            return;
+        }
+        trackSelectionHelper.disableAudioTracks(isDisabled);
+        if (isDisabled) {
+            lastDisabledTrackIds[TRACK_TYPE_AUDIO] = TrackSelectionHelper.DISABLED;
+        } else {
+            lastDisabledTrackIds[TRACK_TYPE_AUDIO] = TrackSelectionHelper.NONE;
+        }
+    }
+
+    public void disableTextTracks(boolean isDisabled) {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'disableTextTracks(" + isDisabled + ")'' on null instance of the tracksSelectionHelper");
+            return;
+        }
+        trackSelectionHelper.disableTextTracks(isDisabled);
+        if (isDisabled) {
+            lastDisabledTrackIds[TRACK_TYPE_TEXT] = TrackSelectionHelper.DISABLED;
+        } else {
+            lastDisabledTrackIds[TRACK_TYPE_TEXT] = TrackSelectionHelper.NONE;
+        }
+    }
+
+    @Override
     public void overrideMediaDefaultABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the tracksSelectionHelper");
@@ -1550,6 +1592,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
         lastSelectedTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+        lastDisabledTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+
         if (assertTrackSelectionIsNotNull("stop()")) {
             trackSelectionHelper.stop();
         }
@@ -1662,8 +1706,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             }
 
             @Override
-            public void onRelease(String[] selectedTrackIds) {
+            public void onRelease(String[] selectedTrackIds, String[] disbledTrackIds) {
                 lastSelectedTrackIds = selectedTrackIds;
+                lastDisabledTrackIds = disbledTrackIds;
             }
 
             @Override

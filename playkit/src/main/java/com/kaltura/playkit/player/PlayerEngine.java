@@ -325,6 +325,12 @@ public interface PlayerEngine {
 
     default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
 
+    default void disableVideoTracks(boolean isDisabled) {}
+
+    default void disableAudioTracks(boolean isDisabled) {}
+
+    default void disableTextTracks(boolean isDisabled) {}
+
     interface EventListener {
         void onEvent(PlayerEvent.Type event);
     }
