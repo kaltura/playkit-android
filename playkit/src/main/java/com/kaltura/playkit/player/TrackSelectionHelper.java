@@ -2453,89 +2453,41 @@ public class TrackSelectionHelper {
         }
     }
 
-//    private void enableTrack(int rendererIndex, boolean isEnabled) {
-//        switch (rendererIndex) {
-//            case TRACK_TYPE_VIDEO:
-//                disabledVideoTracks(false);
-//                break;
-//            case TRACK_TYPE_AUDIO:
-//                disabledAudioTracks(false);
-//                break;
-//            case TRACK_TYPE_TEXT:
-//                disabledTextTracks(false);
-//                break;
-//            default:
-//                break;
-//        }
-//    }
     public void disableVideoTracks(boolean isDisabled) {
-        String uniqueId = getUniqueId(TRACK_TYPE_VIDEO, 0, TRACK_DISABLED);
-        if (videoTracks.isEmpty()) {
-            return;
-        }
-        if (isDisabled) {
-            trackSelectionParametersBuilder.setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, isDisabled);
-            trackSelectionParametersBuilder.clearOverridesOfType(C.TRACK_TYPE_VIDEO);
-            lastSelectedTrackIds[TRACK_TYPE_VIDEO] = DISABLED;
-        } else {
-            String uniqueTrackId = lastSelectedTrackIds[TRACK_TYPE_VIDEO];
-            log.d("uniqueTrackId :" + uniqueTrackId);
-            if (!NONE.equals(uniqueTrackId)) {
-                int[] parsedUniqueId = parseUniqueId(uniqueTrackId);
-                int rendererIndex = parsedUniqueId[RENDERER_INDEX];
-                int groupIndex = parsedUniqueId[GROUP_INDEX];
-                TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
-
-                List<Integer> selectedTrackIndices = retrieveOverrideSelection(parsedUniqueId);
-
-                TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedTrackIndices);
-                trackSelectionParametersBuilder.setOverrideForType(trackSelectionOverride);
-                lastDisabledTrackIds[TRACK_TYPE_VIDEO] = NONE;
-            }
-            trackSelectionParametersBuilder.setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, isDisabled);
-        }
-        selector.setParameters(trackSelectionParametersBuilder.build());
+        log.d("disableVideoTracks isDisabled:" + isDisabled);
+        disableTracks(TRACK_TYPE_VIDEO, isDisabled);
     }
 
     public void disableAudioTracks(boolean isDisabled) {
-        String uniqueId = getUniqueId(TRACK_TYPE_AUDIO, 0, TRACK_DISABLED);
-        if (audioTracks.isEmpty()) {
-            return;
-        }
-        if (isDisabled) {
-            trackSelectionParametersBuilder.setTrackTypeDisabled(getExoTrackType(TRACK_TYPE_AUDIO), isDisabled);
-            trackSelectionParametersBuilder.clearOverridesOfType(C.TRACK_TYPE_AUDIO);
-            lastDisabledTrackIds[TRACK_TYPE_AUDIO] = DISABLED;
-        } else {
-            String uniqueTrackId = lastSelectedTrackIds[TRACK_TYPE_AUDIO];
-            log.d("uniqueTrackId :" + uniqueTrackId);
-            if (!NONE.equals(uniqueTrackId)) {
-                int[] parsedUniqueId = parseUniqueId(uniqueTrackId);
-                int rendererIndex = parsedUniqueId[RENDERER_INDEX];
-                int groupIndex = parsedUniqueId[GROUP_INDEX];
-                TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex);
-
-                List<Integer> selectedTrackIndices = retrieveOverrideSelection(parsedUniqueId);
-
-                TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedTrackIndices);
-                trackSelectionParametersBuilder.setOverrideForType(trackSelectionOverride);
-                lastDisabledTrackIds[TRACK_TYPE_AUDIO] = NONE;
-            }
-            trackSelectionParametersBuilder.setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, isDisabled);
-        }
-        selector.setParameters(trackSelectionParametersBuilder.build());
+        log.d("disableAudioTracks isDisabled:" + isDisabled);
+        disableTracks(TRACK_TYPE_AUDIO, isDisabled);
     }
 
     public void disableTextTracks(boolean isDisabled) {
-        if (textTracks.isEmpty()) {
+        log.d("disableTextTracks isDisabled:" + isDisabled);
+        disableTracks(TRACK_TYPE_TEXT, isDisabled);
+    }
+
+    private void disableTracks(int trackType, boolean isDisabled) {
+
+        if (trackType == TRACK_TYPE_VIDEO && videoTracks.isEmpty()) {
             return;
         }
+
+        if (trackType == TRACK_TYPE_AUDIO && audioTracks.isEmpty()) {
+            return;
+        }
+
+        if (trackType == TRACK_TYPE_TEXT && textTracks.isEmpty()) {
+            return;
+        }
+
         if (isDisabled) {
-            trackSelectionParametersBuilder.setTrackTypeDisabled(getExoTrackType(TRACK_TYPE_TEXT), isDisabled);
-            trackSelectionParametersBuilder.clearOverridesOfType(C.TRACK_TYPE_TEXT);
-            lastDisabledTrackIds[TRACK_TYPE_TEXT] = DISABLED;
+            trackSelectionParametersBuilder.setTrackTypeDisabled(getExoTrackType(trackType), true);
+            trackSelectionParametersBuilder.clearOverridesOfType(getExoTrackType(trackType));
+            lastDisabledTrackIds[trackType] = DISABLED;
         } else {
-            String uniqueTrackId = lastSelectedTrackIds[TRACK_TYPE_TEXT];
+            String uniqueTrackId = lastSelectedTrackIds[trackType];
             log.d("uniqueTrackId :" + uniqueTrackId);
             if (!NONE.equals(uniqueTrackId)) {
                 int[] parsedUniqueId = parseUniqueId(uniqueTrackId);
@@ -2547,9 +2499,9 @@ public class TrackSelectionHelper {
 
                 TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, selectedTrackIndices);
                 trackSelectionParametersBuilder.setOverrideForType(trackSelectionOverride);
-                lastDisabledTrackIds[TRACK_TYPE_TEXT] = NONE;
+                lastDisabledTrackIds[trackType] = NONE;
             }
-            trackSelectionParametersBuilder.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, isDisabled);
+            trackSelectionParametersBuilder.setTrackTypeDisabled(getExoTrackType(trackType), false);
         }
         selector.setParameters(trackSelectionParametersBuilder.build());
     }
