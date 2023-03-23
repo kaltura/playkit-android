@@ -280,7 +280,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                 return new DefaultLoadControl();
             }
             return new ConfigurableLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
-                    loadControl.getMaxPlayerBufferMs(), // minBufferVideoMs is set same as the maxBufferMs due to issue in exo player FEM-2707
+                    loadControl.getMinPlayerBufferMs(),
                     loadControl.getMaxPlayerBufferMs(),
                     loadControl.getMinBufferAfterInteractionMs(),
                     loadControl.getMinBufferAfterReBufferMs(),
@@ -296,8 +296,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (configurableLoadControl != null) {
             Handler playerHandler = new Handler(player.getApplicationLooper());
             playerHandler.post(() -> {
+                ((ConfigurableLoadControl)configurableLoadControl).setMinBufferUs(loadControlBuffers.getMinPlayerBufferMs());
                 ((ConfigurableLoadControl)configurableLoadControl).setMaxBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
-                ((ConfigurableLoadControl)configurableLoadControl).setMinBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
                 ((ConfigurableLoadControl)configurableLoadControl).setBufferForPlaybackUs(loadControlBuffers.getMinBufferAfterInteractionMs());
                 ((ConfigurableLoadControl)configurableLoadControl).setBufferForPlaybackAfterRebufferUs(loadControlBuffers.getMinBufferAfterReBufferMs());
                 ((ConfigurableLoadControl)configurableLoadControl).setBackBufferDurationUs(loadControlBuffers.getBackBufferDurationMs());

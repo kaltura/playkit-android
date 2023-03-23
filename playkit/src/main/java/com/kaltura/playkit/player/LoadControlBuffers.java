@@ -23,6 +23,9 @@ public class LoadControlBuffers {
     private boolean prioritizeTimeOverSizeThresholds = DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS;
 
     public int getMinPlayerBufferMs() {
+        if (maxPlayerBufferMs < minPlayerBufferMs) {
+            return maxPlayerBufferMs;
+        }
         return minPlayerBufferMs;
     }
 
@@ -32,9 +35,9 @@ public class LoadControlBuffers {
     }
 
     public int getMaxPlayerBufferMs() {
-        //if (maxPlayerBufferMs < minPlayerBufferMs) {
-        //    return minPlayerBufferMs;
-        //}
+        if (maxPlayerBufferMs < minPlayerBufferMs) {
+            return minPlayerBufferMs;
+        }
         return maxPlayerBufferMs;
     }
 
