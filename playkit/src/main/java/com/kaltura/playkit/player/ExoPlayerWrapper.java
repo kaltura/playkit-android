@@ -280,7 +280,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                 return new DefaultLoadControl();
             }
             return new ConfigurableLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
-                    loadControl.getMaxPlayerBufferMs(),
+                    loadControl.getMaxPlayerBufferMs(), // minBufferVideoMs is set same as the maxBufferMs due to issue in exo player FEM-2707
                     loadControl.getMaxPlayerBufferMs(),
                     loadControl.getMinBufferAfterInteractionMs(),
                     loadControl.getMinBufferAfterReBufferMs(),
@@ -296,16 +296,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (configurableLoadControl != null) {
             Handler playerHandler = new Handler(player.getApplicationLooper());
             playerHandler.post(() -> {
-//                configurableLoadControl = new ConfigurableLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
-//                        loadControlBuffers.getMaxPlayerBufferMs(),
-//                        loadControlBuffers.getMaxPlayerBufferMs(),
-//                        loadControlBuffers.getMinBufferAfterInteractionMs(),
-//                        loadControlBuffers.getMinBufferAfterReBufferMs(),
-//                        loadControlBuffers.getTargetBufferBytes(),
-//                        loadControlBuffers.getPrioritizeTimeOverSizeThresholds(),
-//                        loadControlBuffers.getBackBufferDurationMs(),
-//                        loadControlBuffers.getRetainBackBufferFromKeyframe());
-
                 ((ConfigurableLoadControl)configurableLoadControl).setMaxBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
                 ((ConfigurableLoadControl)configurableLoadControl).setMinBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
                 ((ConfigurableLoadControl)configurableLoadControl).setBufferForPlaybackUs(loadControlBuffers.getMinBufferAfterInteractionMs());
