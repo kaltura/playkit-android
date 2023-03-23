@@ -6,6 +6,7 @@ import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.BaseTrack;
+import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
@@ -91,6 +92,21 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public void changeTrack(String uniqueId) {
         playerEngine.changeTrack(uniqueId);
+    }
+
+    @Override
+    public void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers) {
+        playerEngine.updateLoadControlBuffers(loadControlBuffers);
+    }
+
+    @Override
+    public void disableVideoTracks(boolean isDisabled) {
+        playerEngine.disableVideoTracks(isDisabled);
+    }
+
+    @Override
+    public void disableAudioTracks(boolean isDisabled) {
+       playerEngine.disableAudioTracks(isDisabled);
     }
 
     @Override

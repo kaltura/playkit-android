@@ -784,6 +784,40 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers) {
+        log.v("updateLoadControlBuffers");
+        if (assertPlayerIsNotNull("updateLoadControlBuffers")) {
+            if (loadControlBuffers != null) {
+                player.updateLoadControlBuffers(loadControlBuffers);
+            }
+        }
+    }
+
+    @Override
+    public void disableVideoTracks(boolean isDisabled) {
+        log.v("disabledVideoTracks");
+        if (assertPlayerIsNotNull("disabledVideoTracks")) {
+            player.disableVideoTracks(isDisabled);
+        }
+    }
+
+    @Override
+    public void disableAudioTracks(boolean isDisabled) {
+        log.v("disabledAudioTracks");
+        if (assertPlayerIsNotNull("disabledAudioTracks")) {
+            player.disableAudioTracks(isDisabled);
+        }
+    }
+
+    @Override
+    public void disableTextTracks(boolean isDisabled) {
+        log.v("disableTextTracks");
+        if (assertPlayerIsNotNull("disableTextTracks")) {
+            player.disableTextTracks(isDisabled);
+        }
+    }
+
+    @Override
     public void resetABRSettings() {
         log.v("resetABRSettings");
 

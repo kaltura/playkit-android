@@ -288,7 +288,11 @@ public interface PlayerEngine {
       * @param resizeMode
       */
     default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
-    
+
+    /**
+     * Update Low Latency Config
+     * @param pkLowLatencyConfig
+     */
     default void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {}
 
     /**
@@ -302,6 +306,15 @@ public interface PlayerEngine {
      */
     default void resetABRSettings() {}
 
+    /**
+     * Update Load Control Buffers
+     * @param loadControlBuffers
+     */
+    default void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers) {}
+
+    /**
+     * Get  Current Media Manifest
+     */
     @Nullable
     Object getCurrentMediaManifest();
 
@@ -321,7 +334,32 @@ public interface PlayerEngine {
 
     default void setDownloadCache(Cache downloadCache) {}
 
+    /**
+     * Get the thumbnail info for playback position
+     *
+     * @param positionMS - position in ms.
+     * @return - the {@link ThumbnailInfo} instance of specified ThumbnailInfo,
+     * otherwise return null.
+     */
     default ThumbnailInfo getThumbnailInfo(long positionMS) { return null; }
+
+    /**
+     * Disable/Enable Video Tracks
+     * @param isDisabled
+     */
+    default void disableVideoTracks(boolean isDisabled) {}
+
+    /**
+     * Disable/Enable Audio Tracks
+     * @param isDisabled
+     */
+    default void disableAudioTracks(boolean isDisabled) {}
+
+    /**
+     * Disable/Enable Text Tracks
+     * @param isDisabled
+     */
+    default void disableTextTracks(boolean isDisabled) {}
 
     interface EventListener {
         void onEvent(PlayerEvent.Type event);

@@ -19,6 +19,7 @@ import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.ads.AdvertisingConfig;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PlayerView;
@@ -257,6 +258,26 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void resetABRSettings() {
         player.resetABRSettings();
+    }
+
+    @Override
+    public void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers) {
+        player.updateLoadControlBuffers(loadControlBuffers);
+    }
+
+    @Override
+    public void disableVideoTracks(boolean isDisabled) {
+        player.disableVideoTracks(isDisabled);
+    }
+
+    @Override
+    public void disableAudioTracks(boolean isDisabled) {
+        player.disableAudioTracks(isDisabled);
+    }
+
+    @Override
+    public void disableTextTracks(boolean isDisabled) {
+        player.disableTextTracks(isDisabled);
     }
 
     @Nullable

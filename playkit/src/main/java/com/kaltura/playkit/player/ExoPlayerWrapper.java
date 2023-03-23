@@ -15,6 +15,7 @@ package com.kaltura.playkit.player;
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 
 import android.content.Context;
 import android.net.Uri;
@@ -79,7 +80,7 @@ import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
-import com.kaltura.android.exoplayer2.video.CustomLoadControl;
+import com.kaltura.android.exoplayer2.video.ConfigurableLoadControl;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalAssetsManagerExo;
 import com.kaltura.playkit.PKAbrFilter;
@@ -150,6 +151,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
     private MediaSource.Factory mediaSourceFactory;
+    private LoadControl configurableLoadControl;
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE;
     private PlayerState previousState;
@@ -174,6 +176,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private List<PKMetadata> metadataList = new ArrayList<>();
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+    private String[] lastDisabledTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
@@ -243,10 +246,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         addCustomLoadErrorPolicy();
         mediaSourceFactory = new DefaultMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
         mediaSourceFactory.setLoadErrorHandlingPolicy(customLoadErrorHandlingPolicy);
-
+        configurableLoadControl = getUpdatedLoadControl();
         player = new ExoPlayer.Builder(context, renderersFactory)
                 .setTrackSelector(trackSelector)
-                .setLoadControl(getUpdatedLoadControl())
+                .setLoadControl(configurableLoadControl)
                 .setMediaSourceFactory(mediaSourceFactory)
                 .setBandwidthMeter(bandwidthMeter)
                 .setUsePlatformDiagnostics(false)
@@ -276,15 +279,32 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             if (!loadControl.isDefaultValuesModified()) {
                 return new DefaultLoadControl();
             }
-            return new CustomLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
-                    loadControl.getMaxPlayerBufferMs(), // minBufferVideoMs is set same as the maxBufferMs due to issue in exo player FEM-2707
+            return new ConfigurableLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
+                    loadControl.getMinPlayerBufferMs(),
                     loadControl.getMaxPlayerBufferMs(),
                     loadControl.getMinBufferAfterInteractionMs(),
                     loadControl.getMinBufferAfterReBufferMs(),
-                    DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES,
-                    DefaultLoadControl.DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS,
+                    loadControl.getTargetBufferBytes(),
+                    loadControl.getPrioritizeTimeOverSizeThresholds(),
                     loadControl.getBackBufferDurationMs(),
                     loadControl.getRetainBackBufferFromKeyframe());
+        }
+    }
+
+    @Override
+    public void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers) {
+        if (configurableLoadControl != null) {
+            Handler playerHandler = new Handler(player.getApplicationLooper());
+            playerHandler.post(() -> {
+                ((ConfigurableLoadControl)configurableLoadControl).setMinBufferUs(loadControlBuffers.getMinPlayerBufferMs());
+                ((ConfigurableLoadControl)configurableLoadControl).setMaxBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
+                ((ConfigurableLoadControl)configurableLoadControl).setBufferForPlaybackUs(loadControlBuffers.getMinBufferAfterInteractionMs());
+                ((ConfigurableLoadControl)configurableLoadControl).setBufferForPlaybackAfterRebufferUs(loadControlBuffers.getMinBufferAfterReBufferMs());
+                ((ConfigurableLoadControl)configurableLoadControl).setBackBufferDurationUs(loadControlBuffers.getBackBufferDurationMs());
+                ((ConfigurableLoadControl)configurableLoadControl).setRetainBackBufferFromKeyframe(loadControlBuffers.getRetainBackBufferFromKeyframe());
+                ((ConfigurableLoadControl)configurableLoadControl).setTargetBufferBytes(loadControlBuffers.getTargetBufferBytes());
+                ((ConfigurableLoadControl)configurableLoadControl).setPrioritizeTimeOverSizeThresholds(loadControlBuffers.getPrioritizeTimeOverSizeThresholds());
+            });
         }
     }
 
@@ -313,7 +333,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(context);
         DefaultTrackSelector.Parameters.Builder parametersBuilder = new DefaultTrackSelector.Parameters.Builder(context);
-        trackSelectionHelper = new TrackSelectionHelper(context, trackSelector, lastSelectedTrackIds);
+        trackSelectionHelper = new TrackSelectionHelper(context, trackSelector, lastSelectedTrackIds, lastDisabledTrackIds);
         trackSelectionHelper.updateTrackSelectorParameter(playerSettings, parametersBuilder);
         trackSelector.setParameters(parametersBuilder.build());
 
@@ -1355,6 +1375,47 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     @Override
+    public void disableVideoTracks(boolean isDisabled) {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'disableVideoTracks(" + isDisabled + ")' on null instance of the tracksSelectionHelper");
+            return;
+        }
+        trackSelectionHelper.disableVideoTracks(isDisabled);
+        if (isDisabled) {
+            lastDisabledTrackIds[TRACK_TYPE_VIDEO] = TrackSelectionHelper.DISABLED;
+        } else {
+            lastDisabledTrackIds[TRACK_TYPE_VIDEO] = TrackSelectionHelper.NONE;
+        }
+    }
+
+    @Override
+    public void disableAudioTracks(boolean isDisabled) {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'disableAudioTracks(" + isDisabled + ")'' on null instance of the tracksSelectionHelper");
+            return;
+        }
+        trackSelectionHelper.disableAudioTracks(isDisabled);
+        if (isDisabled) {
+            lastDisabledTrackIds[TRACK_TYPE_AUDIO] = TrackSelectionHelper.DISABLED;
+        } else {
+            lastDisabledTrackIds[TRACK_TYPE_AUDIO] = TrackSelectionHelper.NONE;
+        }
+    }
+
+    public void disableTextTracks(boolean isDisabled) {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'disableTextTracks(" + isDisabled + ")'' on null instance of the tracksSelectionHelper");
+            return;
+        }
+        trackSelectionHelper.disableTextTracks(isDisabled);
+        if (isDisabled) {
+            lastDisabledTrackIds[TRACK_TYPE_TEXT] = TrackSelectionHelper.DISABLED;
+        } else {
+            lastDisabledTrackIds[TRACK_TYPE_TEXT] = TrackSelectionHelper.NONE;
+        }
+    }
+
+    @Override
     public void overrideMediaDefaultABR(long minAbr, long maxAbr, PKAbrFilter pkAbrFilter) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the tracksSelectionHelper");
@@ -1521,6 +1582,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
         lastSelectedTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+        lastDisabledTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+
         if (assertTrackSelectionIsNotNull("stop()")) {
             trackSelectionHelper.stop();
         }
@@ -1633,8 +1696,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             }
 
             @Override
-            public void onRelease(String[] selectedTrackIds) {
+            public void onRelease(String[] selectedTrackIds, String[] disbledTrackIds) {
                 lastSelectedTrackIds = selectedTrackIds;
+                lastDisabledTrackIds = disbledTrackIds;
             }
 
             @Override

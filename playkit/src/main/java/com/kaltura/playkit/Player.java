@@ -668,6 +668,29 @@ public interface Player {
      */
     void resetABRSettings();
 
+    /** Update LoadControlBuffers
+     * <br>
+     * Updating LoadControlBuffers in between one media playback to another if required like in case of Vod -> multicast
+     * <br>
+     * @param loadControlBuffers new LoadControlBuffers
+     */
+    void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers);
+
+    /** Disable/Enable VideoTracks from being fetched from the network after player is loaded with the media
+     * @param isDisabled if video tracks should be enabled or disabled
+     */
+    void disableVideoTracks(boolean isDisabled);
+
+    /** Disalbe/Enable AudioTracks from being fetched from the network after player is loaded with the media
+     * @param isDisabled if audio tracks should be enabled or disabled
+     */
+    void disableAudioTracks(boolean isDisabled);
+
+    /** Disalbe/Enable TextTracks from being fetched from the network after player is loaded with the media
+     * @param isDisabled if text tracks should be enabled or disabled
+     */
+    void disableTextTracks(boolean isDisabled);
+
     /**
      * Returns the media manifest of the window
      * Manifest depends on the type of media being prepared.
