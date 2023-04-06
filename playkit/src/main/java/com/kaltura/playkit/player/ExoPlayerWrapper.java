@@ -296,6 +296,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (configurableLoadControl instanceof ConfigurableLoadControl) {
             Handler playerHandler = new Handler(player.getApplicationLooper());
             playerHandler.post(() -> {
+<<<<<<< .merge_file_9HkaMS
                 ((ConfigurableLoadControl) configurableLoadControl).setMinBufferUs(loadControlBuffers.getMinPlayerBufferMs());
                 ((ConfigurableLoadControl) configurableLoadControl).setMaxBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
                 ((ConfigurableLoadControl) configurableLoadControl).setBufferForPlaybackUs(loadControlBuffers.getMinBufferAfterInteractionMs());
@@ -305,6 +306,18 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                 ((ConfigurableLoadControl) configurableLoadControl).setTargetBufferBytes(loadControlBuffers.getTargetBufferBytes());
                 ((ConfigurableLoadControl) configurableLoadControl).setPrioritizeTimeOverSizeThresholds(loadControlBuffers.getPrioritizeTimeOverSizeThresholds());
 
+=======
+                if (configurableLoadControl instanceof ConfigurableLoadControl) {
+                    ((ConfigurableLoadControl) configurableLoadControl).setMinBufferUs(loadControlBuffers.getMinPlayerBufferMs());
+                    ((ConfigurableLoadControl) configurableLoadControl).setMaxBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
+                    ((ConfigurableLoadControl) configurableLoadControl).setBufferForPlaybackUs(loadControlBuffers.getMinBufferAfterInteractionMs());
+                    ((ConfigurableLoadControl) configurableLoadControl).setBufferForPlaybackAfterRebufferUs(loadControlBuffers.getMinBufferAfterReBufferMs());
+                    ((ConfigurableLoadControl) configurableLoadControl).setBackBufferDurationUs(loadControlBuffers.getBackBufferDurationMs());
+                    ((ConfigurableLoadControl) configurableLoadControl).setRetainBackBufferFromKeyframe(loadControlBuffers.getRetainBackBufferFromKeyframe());
+                    ((ConfigurableLoadControl) configurableLoadControl).setTargetBufferBytes(loadControlBuffers.getTargetBufferBytes());
+                    ((ConfigurableLoadControl) configurableLoadControl).setPrioritizeTimeOverSizeThresholds(loadControlBuffers.getPrioritizeTimeOverSizeThresholds());
+                }
+>>>>>>> .merge_file_xq8AjR
             });
         }
     }
