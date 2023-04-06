@@ -293,19 +293,18 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     @Override
     public void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers) {
-        if (configurableLoadControl != null) {
+        if (configurableLoadControl instanceof ConfigurableLoadControl) {
             Handler playerHandler = new Handler(player.getApplicationLooper());
             playerHandler.post(() -> {
-                if (configurableLoadControl instanceof ConfigurableLoadControl) {
-                    ((ConfigurableLoadControl) configurableLoadControl).setMinBufferUs(loadControlBuffers.getMinPlayerBufferMs());
-                    ((ConfigurableLoadControl) configurableLoadControl).setMaxBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
-                    ((ConfigurableLoadControl) configurableLoadControl).setBufferForPlaybackUs(loadControlBuffers.getMinBufferAfterInteractionMs());
-                    ((ConfigurableLoadControl) configurableLoadControl).setBufferForPlaybackAfterRebufferUs(loadControlBuffers.getMinBufferAfterReBufferMs());
-                    ((ConfigurableLoadControl) configurableLoadControl).setBackBufferDurationUs(loadControlBuffers.getBackBufferDurationMs());
-                    ((ConfigurableLoadControl) configurableLoadControl).setRetainBackBufferFromKeyframe(loadControlBuffers.getRetainBackBufferFromKeyframe());
-                    ((ConfigurableLoadControl) configurableLoadControl).setTargetBufferBytes(loadControlBuffers.getTargetBufferBytes());
-                    ((ConfigurableLoadControl) configurableLoadControl).setPrioritizeTimeOverSizeThresholds(loadControlBuffers.getPrioritizeTimeOverSizeThresholds());
-                }
+                ((ConfigurableLoadControl) configurableLoadControl).setMinBufferUs(loadControlBuffers.getMinPlayerBufferMs());
+                ((ConfigurableLoadControl) configurableLoadControl).setMaxBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
+                ((ConfigurableLoadControl) configurableLoadControl).setBufferForPlaybackUs(loadControlBuffers.getMinBufferAfterInteractionMs());
+                ((ConfigurableLoadControl) configurableLoadControl).setBufferForPlaybackAfterRebufferUs(loadControlBuffers.getMinBufferAfterReBufferMs());
+                ((ConfigurableLoadControl) configurableLoadControl).setBackBufferDurationUs(loadControlBuffers.getBackBufferDurationMs());
+                ((ConfigurableLoadControl) configurableLoadControl).setRetainBackBufferFromKeyframe(loadControlBuffers.getRetainBackBufferFromKeyframe());
+                ((ConfigurableLoadControl) configurableLoadControl).setTargetBufferBytes(loadControlBuffers.getTargetBufferBytes());
+                ((ConfigurableLoadControl) configurableLoadControl).setPrioritizeTimeOverSizeThresholds(loadControlBuffers.getPrioritizeTimeOverSizeThresholds());
+
             });
         }
     }
@@ -1369,7 +1368,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             } catch (IllegalArgumentException ex) {
                 int trackTypeId = trackSelectionHelper.getTrackTypeId(uniqueId);
                 if (trackTypeId >= 0) {
-                   lastSelectedTrackIds[trackTypeId] = TrackSelectionHelper.NONE;
+                    lastSelectedTrackIds[trackTypeId] = TrackSelectionHelper.NONE;
                 }
                 sendTrackSelectionError(uniqueId, ex);
             }
