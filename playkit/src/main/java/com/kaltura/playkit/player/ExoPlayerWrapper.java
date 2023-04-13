@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
@@ -29,7 +30,6 @@ import androidx.annotation.Nullable;
 
 import com.google.common.base.Charsets;
 import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlayer;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
@@ -296,11 +296,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (configurableLoadControl instanceof ConfigurableLoadControl) {
             Handler playerHandler = new Handler(player.getApplicationLooper());
             playerHandler.post(() -> {
-                ((ConfigurableLoadControl) configurableLoadControl).setMinBufferUs(loadControlBuffers.getMinPlayerBufferMs());
-                ((ConfigurableLoadControl) configurableLoadControl).setMaxBufferUs(loadControlBuffers.getMaxPlayerBufferMs());
-                ((ConfigurableLoadControl) configurableLoadControl).setBufferForPlaybackUs(loadControlBuffers.getMinBufferAfterInteractionMs());
-                ((ConfigurableLoadControl) configurableLoadControl).setBufferForPlaybackAfterRebufferUs(loadControlBuffers.getMinBufferAfterReBufferMs());
-                ((ConfigurableLoadControl) configurableLoadControl).setBackBufferDurationUs(loadControlBuffers.getBackBufferDurationMs());
+                ((ConfigurableLoadControl) configurableLoadControl).setMinBufferUs(loadControlBuffers.getMinPlayerBufferMs() * MILLISECONDS_MULTIPLIER);
+                ((ConfigurableLoadControl) configurableLoadControl).setMaxBufferUs(loadControlBuffers.getMaxPlayerBufferMs() * MILLISECONDS_MULTIPLIER);
+                ((ConfigurableLoadControl) configurableLoadControl).setBufferForPlaybackUs(loadControlBuffers.getMinBufferAfterInteractionMs()* MILLISECONDS_MULTIPLIER);
+                ((ConfigurableLoadControl) configurableLoadControl).setBufferForPlaybackAfterRebufferUs(loadControlBuffers.getMinBufferAfterReBufferMs() * MILLISECONDS_MULTIPLIER);
+                ((ConfigurableLoadControl) configurableLoadControl).setBackBufferDurationUs(loadControlBuffers.getBackBufferDurationMs() * MILLISECONDS_MULTIPLIER);
                 ((ConfigurableLoadControl) configurableLoadControl).setRetainBackBufferFromKeyframe(loadControlBuffers.getRetainBackBufferFromKeyframe());
                 ((ConfigurableLoadControl) configurableLoadControl).setTargetBufferBytes(loadControlBuffers.getTargetBufferBytes());
                 ((ConfigurableLoadControl) configurableLoadControl).setPrioritizeTimeOverSizeThresholds(loadControlBuffers.getPrioritizeTimeOverSizeThresholds());
