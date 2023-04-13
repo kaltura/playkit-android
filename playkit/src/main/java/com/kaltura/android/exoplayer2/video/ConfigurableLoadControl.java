@@ -485,8 +485,8 @@ public class ConfigurableLoadControl implements LoadControl {
     public void setTargetBufferBytes(int targetBufferBytes) {
         this.targetBufferBytesOverwrite = targetBufferBytes;
         this.targetBufferBytes =
-                targetBufferBytesOverwrite != C.LENGTH_UNSET
-                        ? targetBufferBytesOverwrite
+                this.targetBufferBytesOverwrite != C.LENGTH_UNSET
+                        ? this.targetBufferBytesOverwrite
                         : DEFAULT_MIN_BUFFER_SIZE;
     }
 }
