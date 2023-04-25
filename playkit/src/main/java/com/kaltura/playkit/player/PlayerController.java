@@ -38,6 +38,7 @@ import com.kaltura.playkit.PKTracksAvailableStatus;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.ads.AdvertisingConfig;
@@ -906,12 +907,12 @@ public class PlayerController implements Player {
 
         if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
-            if (position < 0 && isMulticastMedia(getMediaFormat()) && playerSettings.getMulticastSettings().getExperimentalSeekToDefaultPosition()) {
+            if (position < 0 && Utils.isMulticastMedia(getMediaFormat()) && playerSettings.getMulticastSettings().getExperimentalSeekToDefaultPosition()) {
                 log.d("udp stream: seeking to 0, avoiding stuck issue on playback start");
                 player.seekToDefaultPosition(); // WA for multicast (udp) streams may stuck on loading as Exo is not sending ready event if position is negative (seekToDefaultPosition/0)
             }
 
-            if (eventListener != null && position > 0 && (duration > 0 || isMulticastMedia(getMediaFormat()))) {
+            if (eventListener != null && position > 0 && (duration > 0 || Utils.isMulticastMedia(getMediaFormat()))) {
                 eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, bufferPosition, duration));
             }
         }
@@ -947,7 +948,7 @@ public class PlayerController implements Player {
                 PKEvent event;
                 switch (eventType) {
                     case PLAYING:
-                        if (!isMulticastMedia(sourceConfig.mediaSource.getMediaFormat())) {
+                        if (!Utils.isMulticastMedia(sourceConfig.mediaSource.getMediaFormat())) {
                             updateProgress();
                         }
                         event = new PlayerEvent.Generic(eventType);
@@ -959,7 +960,7 @@ public class PlayerController implements Player {
                         break;
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
-                        if ((getDuration() != Consts.TIME_UNSET || isMulticastMedia(getMediaFormat())) && isNewEntry) {
+                        if ((getDuration() != Consts.TIME_UNSET || Utils.isMulticastMedia(getMediaFormat())) && isNewEntry) {
                             if (mediaConfig.getStartPosition() != null) {
                                 if (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER > getDuration()) {
                                     mediaConfig.setStartPosition(getDuration() / MILLISECONDS_MULTIPLIER);
@@ -987,7 +988,7 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailableStatus);
                         isVideoTracksUpdated = false;
                         isVideoTracksReset = false;
-                        if (isMulticastMedia(sourceConfig.mediaSource.getMediaFormat())) {
+                        if (Utils.isMulticastMedia(sourceConfig.mediaSource.getMediaFormat())) {
                             updateProgress();
                         }
                         break;
@@ -1075,10 +1076,6 @@ public class PlayerController implements Player {
                 eventListener.onEvent(event);
             }
         };
-    }
-
-    private boolean isMulticastMedia(PKMediaFormat mediaFormat) {
-        return PKMediaFormat.udp.equals(mediaFormat);
     }
 
     private boolean isLiveMediaWithDvr() {
