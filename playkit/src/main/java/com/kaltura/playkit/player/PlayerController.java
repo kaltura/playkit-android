@@ -907,7 +907,7 @@ public class PlayerController implements Player {
         if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
             if (position < 0 && PKMediaFormat.udp.equals(getMediaFormat())) {
-                log.d("UDP stream: seeking to 0 to fix potential stuck issue");
+                log.d("udp stream: seeking to 0, avoiding stuck issue on playback start");
                 player.seekTo(0); // WA for multicast (udp) streams may stuck on loading as Exo is not sending ready event if position is negative
             }
 
