@@ -293,4 +293,8 @@ public class Utils {
         }
         return deviceType;
     }
+
+    public static boolean isMulticastMedia(PKMediaFormat mediaFormat) {
+        return PKMediaFormat.udp.equals(mediaFormat);
+    }
 }

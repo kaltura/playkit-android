@@ -680,7 +680,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
         if (format == PKMediaFormat.dash || (format == PKMediaFormat.hls && sourceConfig.mediaSource.hasDrmParams())) {
             setMediaItemBuilderDRMParams(sourceConfig, builder);
-        } else  if (format == PKMediaFormat.udp) {
+        } else  if (Utils.isMulticastMedia(format)) {
             builder.setMimeType(null);
         }
         return builder.build();
@@ -978,7 +978,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         log.d("onTimelineChanged reason = " + reason + " duration = " + getDuration());
         if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
             isLoadedMetaDataFired = false;
-            if (getDuration() != TIME_UNSET || PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
+            if (getDuration() != TIME_UNSET || Utils.isMulticastMedia(sourceConfig.mediaSource.getMediaFormat())) {
                 sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
                 profiler.onDurationChanged(getDuration());
             }
@@ -1232,7 +1232,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             isSeeking = true;
             sendDistinctEvent(PlayerEvent.Type.SEEKING);
             profiler.onSeekRequested(position);
-            if (player.getDuration() == TIME_UNSET) {
+            if (player.getDuration() == TIME_UNSET && !Utils.isMulticastMedia(sourceConfig.mediaSource.getMediaFormat())) {
                 return;
             }
             if (isLive() && position >= player.getDuration()) {
