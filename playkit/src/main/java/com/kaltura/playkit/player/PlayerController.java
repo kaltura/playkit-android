@@ -906,12 +906,12 @@ public class PlayerController implements Player {
 
         if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
-            if (position < 0 && PKMediaFormat.udp.equals(getMediaFormat()) && playerSettings.getMulticastSettings().getExperimentalSeekToDefaultPosition()) {
+            if (position < 0 && isMulticastMedia(getMediaFormat()) && playerSettings.getMulticastSettings().getExperimentalSeekToDefaultPosition()) {
                 log.d("udp stream: seeking to 0, avoiding stuck issue on playback start");
                 player.seekToDefaultPosition(); // WA for multicast (udp) streams may stuck on loading as Exo is not sending ready event if position is negative (seekToDefaultPosition/0)
             }
 
-            if (eventListener != null && position > 0 && (duration > 0 || PKMediaFormat.udp.equals(getMediaFormat()))) {
+            if (eventListener != null && position > 0 && (duration > 0 || isMulticastMedia(getMediaFormat()))) {
                 eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, bufferPosition, duration));
             }
         }
@@ -947,7 +947,7 @@ public class PlayerController implements Player {
                 PKEvent event;
                 switch (eventType) {
                     case PLAYING:
-                        if (!PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
+                        if (!isMulticastMedia(sourceConfig.mediaSource.getMediaFormat())) {
                             updateProgress();
                         }
                         event = new PlayerEvent.Generic(eventType);
@@ -959,7 +959,7 @@ public class PlayerController implements Player {
                         break;
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
-                        if ((getDuration() != Consts.TIME_UNSET || getMediaFormat() == PKMediaFormat.udp) && isNewEntry) {
+                        if ((getDuration() != Consts.TIME_UNSET || isMulticastMedia(getMediaFormat())) && isNewEntry) {
                             if (mediaConfig.getStartPosition() != null) {
                                 if (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER > getDuration()) {
                                     mediaConfig.setStartPosition(getDuration() / MILLISECONDS_MULTIPLIER);
@@ -987,7 +987,7 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailableStatus);
                         isVideoTracksUpdated = false;
                         isVideoTracksReset = false;
-                        if (PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
+                        if (isMulticastMedia(sourceConfig.mediaSource.getMediaFormat())) {
                             updateProgress();
                         }
                         break;
@@ -1075,6 +1075,10 @@ public class PlayerController implements Player {
                 eventListener.onEvent(event);
             }
         };
+    }
+
+    private boolean isMulticastMedia(PKMediaFormat mediaFormat) {
+        return PKMediaFormat.udp.equals(mediaFormat);
     }
 
     private boolean isLiveMediaWithDvr() {
