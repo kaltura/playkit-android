@@ -734,7 +734,7 @@ public class PlayerController implements Player {
         }
         return null;
     }
-    
+
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         log.v("updateSubtitleStyle");
@@ -948,7 +948,7 @@ public class PlayerController implements Player {
                 switch (eventType) {
                     case PLAYING:
                         if (!PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
-                          updateProgress();
+                            updateProgress();
                         }
                         event = new PlayerEvent.Generic(eventType);
                         break;
@@ -1058,7 +1058,7 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.ImageTrackChanged(imageTrack);
-                        break;    
+                        break;
                     case PLAYBACK_RATE_CHANGED:
                         event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
                         break;
