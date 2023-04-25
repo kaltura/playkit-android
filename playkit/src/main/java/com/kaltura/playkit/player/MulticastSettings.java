@@ -4,6 +4,8 @@ public class MulticastSettings {
 
     // whether mulicast playback will use exo default config or app config
     private boolean useExoDefaultSettings = true;
+    private boolean experimentalSeekToDefaultPosition = false;
+
     // maxPacketSize The maximum datagram packet size, in bytes.
     private int maxPacketSize = 3000;
     // socketTimeoutMillis The socket timeout in milliseconds. A timeout of zero is interpreted
@@ -28,6 +30,15 @@ public class MulticastSettings {
 
     public boolean getUseExoDefaultSettings() {
         return useExoDefaultSettings;
+    }
+
+    public boolean getExperimentalSeekToDefaultPosition() {
+        return experimentalSeekToDefaultPosition;
+    }
+
+    public MulticastSettings setExperimentalSeekToStartOnMediaLoad(boolean experimentalSeekToDefaultPosition) {
+        this.experimentalSeekToDefaultPosition = experimentalSeekToDefaultPosition;
+        return this;
     }
 
     public int getMaxPacketSize() {

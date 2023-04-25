@@ -906,9 +906,9 @@ public class PlayerController implements Player {
 
         if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
-            if (position < 0 && PKMediaFormat.udp.equals(getMediaFormat())) {
+            if (position < 0 && PKMediaFormat.udp.equals(getMediaFormat()) && playerSettings.getMulticastSettings().getExperimentalSeekToDefaultPosition()) {
                 log.d("udp stream: seeking to 0, avoiding stuck issue on playback start");
-                player.seekTo(0); // WA for multicast (udp) streams may stuck on loading as Exo is not sending ready event if position is negative
+                player.seekToDefaultPosition(); // WA for multicast (udp) streams may stuck on loading as Exo is not sending ready event if position is negative (seek to Default position/0)
             }
 
             if (eventListener != null && position > 0 && (duration > 0 || PKMediaFormat.udp.equals(getMediaFormat()))) {
@@ -947,7 +947,8 @@ public class PlayerController implements Player {
                 PKEvent event;
                 switch (eventType) {
                     case PLAYING:
-                        if (!PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
+                        if (!PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat()) &&
+                                playerSettings.getMulticastSettings().getExperimentalSeekToDefaultPosition()) {
                             updateProgress();
                         }
                         event = new PlayerEvent.Generic(eventType);
@@ -987,7 +988,8 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailableStatus);
                         isVideoTracksUpdated = false;
                         isVideoTracksReset = false;
-                        if (PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
+                        if (PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat()) &&
+                                playerSettings.getMulticastSettings().getExperimentalSeekToDefaultPosition()) {
                             updateProgress();
                         }
                         break;
