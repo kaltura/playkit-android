@@ -4,8 +4,9 @@ public class MulticastSettings {
 
     // whether mulicast playback will use exo default config or app config
     private boolean useExoDefaultSettings = true;
+    
+    // experimental value to control whether to seek to default position if we get negative position on udp media load time 
     private boolean experimentalSeekToDefaultPosition = false;
-
     // maxPacketSize The maximum datagram packet size, in bytes.
     private int maxPacketSize = 3000;
     // socketTimeoutMillis The socket timeout in milliseconds. A timeout of zero is interpreted
