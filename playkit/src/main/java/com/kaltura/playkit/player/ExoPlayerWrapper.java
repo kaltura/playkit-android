@@ -1232,7 +1232,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             isSeeking = true;
             sendDistinctEvent(PlayerEvent.Type.SEEKING);
             profiler.onSeekRequested(position);
-            if (player.getDuration() == TIME_UNSET) {
+            if (player.getDuration() == TIME_UNSET && !PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
                 return;
             }
             if (isLive() && position >= player.getDuration()) {

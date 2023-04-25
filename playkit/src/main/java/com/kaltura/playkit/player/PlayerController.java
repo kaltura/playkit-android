@@ -906,7 +906,12 @@ public class PlayerController implements Player {
 
         if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
-            if (eventListener != null && position > 0 && (duration > 0 || getMediaFormat() == PKMediaFormat.udp)) {
+            if (position < 0 && PKMediaFormat.udp.equals(getMediaFormat())) {
+                log.d("UDP stream: seeking to 0 to fix potential stuck issue");
+                player.seekTo(0); // WA for multicast (udp) streams may stuck on loading as Exo is not sending ready event if position is negative
+            }
+
+            if (eventListener != null && position > 0 && (duration > 0 || PKMediaFormat.udp.equals(getMediaFormat()))) {
                 eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, bufferPosition, duration));
             }
         }
@@ -942,7 +947,9 @@ public class PlayerController implements Player {
                 PKEvent event;
                 switch (eventType) {
                     case PLAYING:
-                        updateProgress();
+                        if (!PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
+                          updateProgress();
+                        }
                         event = new PlayerEvent.Generic(eventType);
                         break;
                     case PAUSE:
@@ -980,6 +987,9 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailableStatus);
                         isVideoTracksUpdated = false;
                         isVideoTracksReset = false;
+                        if (PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
+                            updateProgress();
+                        }
                         break;
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
