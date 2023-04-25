@@ -947,8 +947,7 @@ public class PlayerController implements Player {
                 PKEvent event;
                 switch (eventType) {
                     case PLAYING:
-                        if (!PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat()) &&
-                                playerSettings.getMulticastSettings().getExperimentalSeekToDefaultPosition()) {
+                        if (!PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
                             updateProgress();
                         }
                         event = new PlayerEvent.Generic(eventType);
