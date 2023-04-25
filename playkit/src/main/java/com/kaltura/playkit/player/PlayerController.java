@@ -987,8 +987,7 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.TracksAvailable(player.getPKTracks(), pkTracksAvailableStatus);
                         isVideoTracksUpdated = false;
                         isVideoTracksReset = false;
-                        if (PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat()) &&
-                                playerSettings.getMulticastSettings().getExperimentalSeekToDefaultPosition()) {
+                        if (PKMediaFormat.udp.equals(sourceConfig.mediaSource.getMediaFormat())) {
                             updateProgress();
                         }
                         break;
