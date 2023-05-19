@@ -1056,6 +1056,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     public void onTracksChanged(@NonNull Tracks tracks) {
         log.d("onTracksChanged");
 
+        if (!isTypeSupportedTracks(tracks)) {
+            return;
+        }
+
         //if onTracksChanged happened when application went background, do not update the tracks.
         if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
@@ -1079,6 +1083,28 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             }
             trackSelectionHelper.notifyAboutTrackChange(tracks);
         }
+    }
+
+    private boolean isTypeSupportedTracks(@NonNull Tracks tracks) {
+        if (tracks.containsType(C.TRACK_TYPE_VIDEO)
+                && !tracks.isTypeSupported(C.TRACK_TYPE_VIDEO, /* allowExceedsCapabilities= */ true)) {
+            String errorMessage = "Media includes video tracks, but none are playable by this device";
+            currentError = new PKError(PKPlayerErrorType.SOURCE_ERROR, PKError.Severity.Fatal, errorMessage, new IllegalArgumentException(errorMessage));
+            if (eventListener != null) {
+               eventListener.onEvent(PlayerEvent.Type.ERROR);
+            }
+            return false;
+        }
+        if (tracks.containsType(C.TRACK_TYPE_AUDIO)
+                && !tracks.isTypeSupported(C.TRACK_TYPE_AUDIO, /* allowExceedsCapabilities= */ true)) {
+            String errorMessage = "Media includes audio tracks, but none are playable by this device";
+            currentError = new PKError(PKPlayerErrorType.SOURCE_ERROR, PKError.Severity.Fatal, errorMessage, new IllegalArgumentException(errorMessage));
+            if (eventListener != null) {
+                eventListener.onEvent(PlayerEvent.Type.ERROR);
+            }
+            return false;
+        }
+        return true;
     }
 
     @Override
