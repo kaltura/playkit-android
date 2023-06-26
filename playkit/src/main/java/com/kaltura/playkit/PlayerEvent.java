@@ -63,8 +63,8 @@ public class PlayerEvent implements PKEvent {
     public static final PlayerEvent.Type seeked = Type.SEEKED;
     public static final PlayerEvent.Type replay = Type.REPLAY;
     public static final PlayerEvent.Type stopped = Type.STOPPED;
-    public static final PlayerEvent.Type videoTrackEnabled = Type.VIDEO_TRACKS_ENABLED;
-    public static final PlayerEvent.Type videoTrackDisabled = Type.VIDEO_TRACKS_DISABLED;
+    public static final PlayerEvent.Type videoTracksEnabled = Type.VIDEO_TRACKS_ENABLED;
+    public static final PlayerEvent.Type videoTracksDisabled = Type.VIDEO_TRACKS_DISABLED;
 
 
 

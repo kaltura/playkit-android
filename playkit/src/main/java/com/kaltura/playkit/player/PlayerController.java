@@ -532,14 +532,14 @@ public class PlayerController implements Player {
                     @Override
                     public void onVideoDisabled() {
                         if (eventListener != null) {
-                            eventListener.onEvent(new PlayerEvent(PlayerEvent.videoTrackDisabled));
+                            eventListener.onEvent(new PlayerEvent(PlayerEvent.videoTracksDisabled));
                         }
                     }
 
                     @Override
                     public void onVideoEnabled() {
                         if (eventListener != null) {
-                            eventListener.onEvent(new PlayerEvent(PlayerEvent.videoTrackEnabled));
+                            eventListener.onEvent(new PlayerEvent(PlayerEvent.videoTracksEnabled));
                         }
                     }
 
