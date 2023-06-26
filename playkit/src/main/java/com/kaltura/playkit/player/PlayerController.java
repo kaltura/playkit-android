@@ -530,6 +530,20 @@ public class PlayerController implements Player {
                     }
 
                     @Override
+                    public void onVideoDisabled() {
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent(PlayerEvent.videoTrackDisabled));
+                        }
+                    }
+
+                    @Override
+                    public void onVideoEnabled() {
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent(PlayerEvent.videoTrackEnabled));
+                        }
+                    }
+
+                    @Override
                     public void onManifestRedirected(String redirectedUrl) {
                         boolean isNewRedirectUrl = !TextUtils.equals(lastRedirectedUrl, redirectedUrl);
 
