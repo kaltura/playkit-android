@@ -375,6 +375,8 @@ public interface PlayerEngine {
         void onConnectionAcquired(URIConnectionAcquiredInfo uriConnectionAcquiredInfo);
         void onLoadError(IOException error, boolean wasCanceled);
         void onDecoderDisabled(int skippedOutputBufferCount, int renderedOutputBufferCount);
+        void onVideoDisabled();
+        void onVideoEnabled();
         void onManifestRedirected(String redirectedManifestUrl);
     }
 }

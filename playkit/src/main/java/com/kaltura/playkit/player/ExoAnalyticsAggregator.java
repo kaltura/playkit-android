@@ -88,6 +88,14 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
         renderedOutputBufferCount = decoderCounters.renderedOutputBufferCount;
         if (listener != null) {
             listener.onDecoderDisabled(skippedOutputBufferCount, renderedOutputBufferCount);
+            listener.onVideoDisabled();
+        }
+    }
+
+    @Override
+    public void onVideoEnabled(EventTime eventTime, DecoderCounters decoderCounters) {
+        if (listener != null) {
+            listener.onVideoEnabled();
         }
     }
 

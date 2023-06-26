@@ -63,6 +63,10 @@ public class PlayerEvent implements PKEvent {
     public static final PlayerEvent.Type seeked = Type.SEEKED;
     public static final PlayerEvent.Type replay = Type.REPLAY;
     public static final PlayerEvent.Type stopped = Type.STOPPED;
+    public static final PlayerEvent.Type videoTracksEnabled = Type.VIDEO_TRACKS_ENABLED;
+    public static final PlayerEvent.Type videoTracksDisabled = Type.VIDEO_TRACKS_DISABLED;
+
+
 
     public final Type type;
 
@@ -396,6 +400,8 @@ public class PlayerEvent implements PKEvent {
         CONNECTION_ACQUIRED,
         VIDEO_FRAMES_DROPPED,   // Video frames were dropped, see PlayerEvent.VideoFramesDropped.
         OUTPUT_BUFFER_COUNT_UPDATE,
+        VIDEO_TRACKS_ENABLED,
+        VIDEO_TRACKS_DISABLED,
         BYTES_LOADED,           // Bytes were downloaded from the network.
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
         ASPECT_RATIO_RESIZE_MODE_CHANGED, //Send when updating the Surface Vide Aspect Ratio size mode.
