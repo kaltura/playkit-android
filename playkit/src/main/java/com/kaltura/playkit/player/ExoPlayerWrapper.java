@@ -39,9 +39,14 @@ import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
+import com.kaltura.android.exoplayer2.Renderer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.Tracks;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
+import com.kaltura.android.exoplayer2.audio.AudioRendererEventListener;
+import com.kaltura.android.exoplayer2.audio.AudioSink;
+import com.kaltura.android.exoplayer2.audio.KMediaCodecAudioRenderer;
+import com.kaltura.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
 import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifestParser;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
@@ -50,6 +55,7 @@ import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
 import com.kaltura.android.exoplayer2.extractor.ExtractorsFactory;
 import com.kaltura.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory;
 import com.kaltura.android.exoplayer2.extractor.ts.TsExtractor;
+import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
 import com.kaltura.android.exoplayer2.source.DefaultMediaSourceFactory;
@@ -81,6 +87,9 @@ import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.ConfigurableLoadControl;
+import com.kaltura.android.exoplayer2.video.KMediaCodecVideoRenderer;
+import com.kaltura.android.exoplayer2.video.MediaCodecVideoRenderer;
+import com.kaltura.android.exoplayer2.video.VideoRendererEventListener;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalAssetsManagerExo;
 import com.kaltura.playkit.PKAbrFilter;
@@ -161,6 +170,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private boolean isSeeking;
     private boolean useTextureView;
+    private boolean useSpeedAdjustingRenderer;
     private boolean isSurfaceSecured;
     private boolean shouldGetTracksInfo;
     private boolean preferredLanguageWasSelected;
@@ -190,7 +200,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private Cache downloadCache;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
-        this(context, new ExoPlayerView(context), playerSettings, rootPlayerView);
+        this(context, new ExoPlayerView(context, playerSettings.isShutterStaysOnRenderedFirstFrame()), playerSettings, rootPlayerView);
     }
 
     ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings settings, PlayerView rootPlayerView) {
@@ -239,7 +249,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context);
+        if (exoPlayerView instanceof ExoPlayerView) {
+            ((ExoPlayerView)exoPlayerView).setUsingSpeedAdjustedRenderer(this.useSpeedAdjustingRenderer);
+        }
+        DefaultRenderersFactory renderersFactory = this.useSpeedAdjustingRenderer
+                ? getSpeedAdjustedRenderersFactory()
+                : new DefaultRenderersFactory(context);
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
@@ -267,6 +282,96 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured, playerSettings.isVideoViewHidden());
 
         player.setPlayWhenReady(false);
+    }
+
+    private DefaultRenderersFactory getSpeedAdjustedRenderersFactory() {
+        return new DefaultRenderersFactory(context) {
+            @Override
+            protected void buildAudioRenderers(@NonNull Context context,
+                                               int extensionRendererMode,
+                                               @NonNull MediaCodecSelector mediaCodecSelector,
+                                               boolean enableDecoderFallback,
+                                               @NonNull AudioSink audioSink,
+                                               @NonNull Handler eventHandler,
+                                               @NonNull AudioRendererEventListener eventListener,
+                                               @NonNull ArrayList<Renderer> out) {
+                ArrayList<Renderer> renderersArrayList = new ArrayList<>();
+                super.buildAudioRenderers(context,
+                        extensionRendererMode,
+                        mediaCodecSelector,
+                        enableDecoderFallback,
+                        audioSink,
+                        eventHandler,
+                        eventListener,
+                        renderersArrayList);
+                for (Renderer renderer : renderersArrayList) {
+                    if (renderer instanceof MediaCodecAudioRenderer) {
+                        if (playerSettings.getMulticastSettings() != null) {
+                            out.add(new KMediaCodecAudioRenderer(
+                                    context,
+                                    getCodecAdapterFactory(),
+                                    mediaCodecSelector,
+                                    enableDecoderFallback,
+                                    eventHandler,
+                                    eventListener,
+                                    audioSink,
+                                    playerSettings.getMulticastSettings().getExperimentalMaxAudioGapThreshold(),
+                                    playerSettings.getMulticastSettings().getExperimentalMaxSpeedFactor(),
+                                    playerSettings.getMulticastSettings().getExperimentalSpeedStep(),
+                                    playerSettings.getMulticastSettings().getExperimentalAVGapForSpeedAdjustment(),
+                                    playerSettings.getMulticastSettings().getExperimentalContinuousSpeedAdjustment()));
+                        } else {
+                            out.add(new KMediaCodecAudioRenderer(
+                                    context,
+                                    getCodecAdapterFactory(),
+                                    mediaCodecSelector,
+                                    enableDecoderFallback,
+                                    eventHandler,
+                                    eventListener,
+                                    audioSink));
+                        }
+                    } else {
+                        out.add(renderer);
+                    }
+                }
+            }
+
+            @Override
+            protected void buildVideoRenderers(@NonNull Context context,
+                                               int extensionRendererMode,
+                                               @NonNull MediaCodecSelector mediaCodecSelector,
+                                               boolean enableDecoderFallback,
+                                               @NonNull Handler eventHandler,
+                                               @NonNull VideoRendererEventListener eventListener,
+                                               long allowedVideoJoiningTimeMs,
+                                               @NonNull ArrayList<Renderer> out) {
+                ArrayList<Renderer> renderersArrayList = new ArrayList<>();
+                super.buildVideoRenderers(context,
+                        extensionRendererMode,
+                        mediaCodecSelector,
+                        enableDecoderFallback,
+                        eventHandler,
+                        eventListener,
+                        allowedVideoJoiningTimeMs,
+                        renderersArrayList);
+                for (Renderer renderer : renderersArrayList) {
+                    if (renderer instanceof MediaCodecVideoRenderer) {
+                        out.add(new KMediaCodecVideoRenderer(
+                                context,
+                                this.getCodecAdapterFactory(),
+                                mediaCodecSelector,
+                                allowedVideoJoiningTimeMs,
+                                enableDecoderFallback,
+                                eventHandler,
+                                eventListener,
+                                MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY,
+                                exoPlayerView));
+                    } else {
+                        out.add(renderer);
+                    }
+                }
+            }
+        };
     }
 
     @NonNull
@@ -1108,10 +1213,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (player == null) {
             this.useTextureView = playerSettings.useTextureView();
             this.isSurfaceSecured = playerSettings.isSurfaceSecured();
+            this.useSpeedAdjustingRenderer =
+                    mediaSourceConfig.mediaSource.getMediaFormat() == PKMediaFormat.udp
+                            && playerSettings.getMulticastSettings().getExperimentalAdjustSpeedOnNegativePosition();
             initializePlayer();
         } else {
             // for change media case need to verify if surface swap is needed
             maybeChangePlayerRenderView();
+
+            // for change speed adjustment case need to verify if re-init is required
+            maybeReInitPlayerOnSpeedAdjustmentChange(mediaSourceConfig.mediaSource.getMediaFormat() == PKMediaFormat.udp);
         }
         preparePlayer(mediaSourceConfig);
     }
@@ -1133,6 +1244,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         this.useTextureView = playerSettings.useTextureView();
         this.isSurfaceSecured = playerSettings.isSurfaceSecured();
         exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden());
+    }
+
+    private void maybeReInitPlayerOnSpeedAdjustmentChange(boolean isMulticastSource) {
+        boolean useSpeedAdjustingRenderer = isMulticastSource
+                && playerSettings.getMulticastSettings().getExperimentalAdjustSpeedOnNegativePosition();
+        if (useSpeedAdjustingRenderer != this.useSpeedAdjustingRenderer) {
+            destroyPlayer();
+            initializePlayer();
+        }
+        this.useSpeedAdjustingRenderer = useSpeedAdjustingRenderer;
     }
 
     @Override
@@ -1347,6 +1468,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         log.v("destroy");
         closeProfilerSession();
         removeCustomLoadErrorPolicy();
+        destroyPlayer();
+    }
+
+    private void destroyPlayer() {
         if (assertPlayerIsNotNull("destroy()")) {
             player.release();
         }

@@ -61,22 +61,42 @@ class ExoPlayerView extends BaseExoplayerView {
     private PKSubtitlePosition subtitleViewPosition;
     private boolean isVideoViewVisible;
     private List<Cue> lastReportedCues;
+    private boolean shutterStaysOnRenderedFirstFrame;
 
-    ExoPlayerView(Context context) {
-        this(context, null);
+    private boolean usingSpeedAdjustedRenderer;
+
+    ExoPlayerView(Context context, boolean shutterStaysOnRenderedFirstFrame) {
+        this(context, null, shutterStaysOnRenderedFirstFrame);
     }
 
-    ExoPlayerView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+    ExoPlayerView(Context context, AttributeSet attrs, boolean shutterStaysOnRenderedFirstFrame) {
+        this(context, attrs, 0, shutterStaysOnRenderedFirstFrame);
     }
 
-    ExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
+    ExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr, boolean shutterStaysOnRenderedFirstFrame) {
         super(context, attrs, defStyleAttr);
         componentListener = new ComponentListener();
         playerEventListener = getPlayerEventListener();
         initContentFrame();
         initSubtitleLayout();
         initPosterView();
+        setShutterStaysOnRenderedFirstFrame(shutterStaysOnRenderedFirstFrame);
+    }
+
+    public void setShutterStaysOnRenderedFirstFrame(boolean shutterStaysOnRenderedFirstFrame) {
+        this.shutterStaysOnRenderedFirstFrame = shutterStaysOnRenderedFirstFrame;
+    }
+
+    public void setUsingSpeedAdjustedRenderer(boolean usingSpeedAdjustedRenderer) {
+        this.usingSpeedAdjustedRenderer = usingSpeedAdjustedRenderer;
+    }
+
+    @Override
+    public void onRenderedFirstFrameWhenStarted() {
+        log.d("onRenderedFirstFrameWhenStarted");
+        if (shutterView != null) {
+            shutterView.setVisibility(INVISIBLE);
+        }
     }
 
     @NonNull
@@ -85,11 +105,18 @@ class ExoPlayerView extends BaseExoplayerView {
             @Override
             public void onPlaybackStateChanged(int playbackState) {
                 switch (playbackState) {
+                    case Player.STATE_IDLE:
+                        if (shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer) {
+                            if (shutterView != null) {
+                                shutterView.setVisibility(VISIBLE);
+                            }
+                        }
+                        break;
 
                     case Player.STATE_READY:
                         if (player != null && player.getPlayWhenReady()) {
                             log.d("ExoPlayerView READY. playWhenReady => true");
-                            if (shutterView != null) {
+                            if (shutterView != null && !(shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer)) {
                                 shutterView.setVisibility(INVISIBLE);
                             }
                         }
@@ -97,7 +124,6 @@ class ExoPlayerView extends BaseExoplayerView {
 
                     case Player.STATE_BUFFERING:
                     case Player.STATE_ENDED:
-                    case Player.STATE_IDLE:
                     default:
                         break;
                 }
@@ -106,7 +132,7 @@ class ExoPlayerView extends BaseExoplayerView {
             @Override
             public void onIsPlayingChanged(boolean isPlaying) {
                 log.d("ExoPlayerView onIsPlayingChanged isPlaying = " + isPlaying);
-                if (isPlaying && shutterView != null) {
+                if (isPlaying && !(shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer) && shutterView != null) {
                     shutterView.setVisibility(INVISIBLE);
                 }
             }
@@ -375,7 +401,7 @@ class ExoPlayerView extends BaseExoplayerView {
 
         @Override
         public void onRenderedFirstFrame() {
-            if (shutterView != null) {
+            if (shutterView != null && !(shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer)) {
                 shutterView.setVisibility(GONE);
             }
         }
