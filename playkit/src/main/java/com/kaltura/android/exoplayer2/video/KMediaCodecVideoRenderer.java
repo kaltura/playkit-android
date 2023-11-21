@@ -22,22 +22,6 @@ public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer{
 
     @Nullable private KVideoRendererFirstFrameWhenStartedEventListener rendererFirstFrameWhenStartedEventListener;
 
-    public KMediaCodecVideoRenderer(Context context, MediaCodecSelector mediaCodecSelector) {
-        super(context, mediaCodecSelector);
-    }
-
-    public KMediaCodecVideoRenderer(Context context, MediaCodecSelector mediaCodecSelector, long allowedJoiningTimeMs) {
-        super(context, mediaCodecSelector, allowedJoiningTimeMs);
-    }
-
-    public KMediaCodecVideoRenderer(Context context, MediaCodecSelector mediaCodecSelector, long allowedJoiningTimeMs, @Nullable Handler eventHandler, @Nullable VideoRendererEventListener eventListener, int maxDroppedFramesToNotify) {
-        super(context, mediaCodecSelector, allowedJoiningTimeMs, eventHandler, eventListener, maxDroppedFramesToNotify);
-    }
-
-    public KMediaCodecVideoRenderer(Context context, MediaCodecSelector mediaCodecSelector, long allowedJoiningTimeMs, boolean enableDecoderFallback, @Nullable Handler eventHandler, @Nullable VideoRendererEventListener eventListener, int maxDroppedFramesToNotify) {
-        super(context, mediaCodecSelector, allowedJoiningTimeMs, enableDecoderFallback, eventHandler, eventListener, maxDroppedFramesToNotify);
-    }
-
     public KMediaCodecVideoRenderer(Context context,
                                     MediaCodecAdapter.Factory codecAdapterFactory,
                                     MediaCodecSelector mediaCodecSelector,
@@ -49,10 +33,6 @@ public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer{
                                     KVideoRendererFirstFrameWhenStartedEventListener rendererFirstFrameWhenStartedEventListener) {
         super(context, codecAdapterFactory, mediaCodecSelector, allowedJoiningTimeMs, enableDecoderFallback, eventHandler, eventListener, maxDroppedFramesToNotify);
         this.rendererFirstFrameWhenStartedEventListener = rendererFirstFrameWhenStartedEventListener;
-    }
-
-    public KMediaCodecVideoRenderer(Context context, MediaCodecAdapter.Factory codecAdapterFactory, MediaCodecSelector mediaCodecSelector, long allowedJoiningTimeMs, boolean enableDecoderFallback, @Nullable Handler eventHandler, @Nullable VideoRendererEventListener eventListener, int maxDroppedFramesToNotify, float assumedMinimumCodecOperatingRate) {
-        super(context, codecAdapterFactory, mediaCodecSelector, allowedJoiningTimeMs, enableDecoderFallback, eventHandler, eventListener, maxDroppedFramesToNotify, assumedMinimumCodecOperatingRate);
     }
 
     @Override

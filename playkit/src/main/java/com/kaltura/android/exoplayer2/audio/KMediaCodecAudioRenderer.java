@@ -137,6 +137,8 @@ public class KMediaCodecAudioRenderer extends MediaCodecAudioRenderer {
                     .getDeclaredField(CURRENT_POSITION_US_FIELD_NAME);
             currentPositionUsField.setAccessible(true);
             if (allowFirstBufferPositionDiscontinuityField.getBoolean(this) && !buffer.isDecodeOnly()) {
+                log.d("KMediaCodecAudioRenderer", "A/V start buffers gap measured: "
+                        + Math.abs(buffer.timeUs - currentPositionUsField.getLong(this)) + " uS");
                 if (Math.abs(buffer.timeUs - currentPositionUsField.getLong(this)) > getMaxAudioGapThreshold()) {
                     currentPositionUsField.setLong(this, buffer.timeUs);
                 }

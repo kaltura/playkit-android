@@ -99,6 +99,10 @@ class ExoPlayerView extends BaseExoplayerView {
         }
     }
 
+    private boolean shouldHideShutterView() {
+        return shutterView != null && !(shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer);
+    }
+
     @NonNull
     private Player.Listener getPlayerEventListener() {
         return new Player.Listener() {
@@ -116,7 +120,7 @@ class ExoPlayerView extends BaseExoplayerView {
                     case Player.STATE_READY:
                         if (player != null && player.getPlayWhenReady()) {
                             log.d("ExoPlayerView READY. playWhenReady => true");
-                            if (shutterView != null && !(shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer)) {
+                            if (shouldHideShutterView()) {
                                 shutterView.setVisibility(INVISIBLE);
                             }
                         }
@@ -132,7 +136,7 @@ class ExoPlayerView extends BaseExoplayerView {
             @Override
             public void onIsPlayingChanged(boolean isPlaying) {
                 log.d("ExoPlayerView onIsPlayingChanged isPlaying = " + isPlaying);
-                if (isPlaying && !(shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer) && shutterView != null) {
+                if (isPlaying && shouldHideShutterView()) {
                     shutterView.setVisibility(INVISIBLE);
                 }
             }
@@ -401,7 +405,7 @@ class ExoPlayerView extends BaseExoplayerView {
 
         @Override
         public void onRenderedFirstFrame() {
-            if (shutterView != null && !(shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer)) {
+            if (shouldHideShutterView()) {
                 shutterView.setVisibility(GONE);
             }
         }
