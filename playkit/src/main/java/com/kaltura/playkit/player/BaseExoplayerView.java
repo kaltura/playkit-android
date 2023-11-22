@@ -5,8 +5,9 @@ import android.util.AttributeSet;
 
 import com.kaltura.android.exoplayer2.ExoPlayer;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
+import com.kaltura.android.exoplayer2.video.KVideoRendererFirstFrameWhenStartedEventListener;
 
-public abstract class BaseExoplayerView extends PlayerView {
+public abstract class BaseExoplayerView extends PlayerView implements KVideoRendererFirstFrameWhenStartedEventListener {
 
     public BaseExoplayerView(Context context) {
         super(context);

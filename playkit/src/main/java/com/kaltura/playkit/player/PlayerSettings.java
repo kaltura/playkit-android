@@ -37,6 +37,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisyEnabled;
     private boolean handleAudioFocus;
+    private boolean shutterStaysOnRenderedFirstFrame;
 
     // Flag helping to check if client app wants to use a single player instance at a time
     // Only if IMA plugin is there then only this flag is set to true.
@@ -192,6 +193,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isHandleAudioFocus() {
         return handleAudioFocus;
+    }
+
+    public boolean isShutterStaysOnRenderedFirstFrame() {
+        return shutterStaysOnRenderedFirstFrame;
     }
 
     public PKSubtitlePreference getSubtitlePreference() {
@@ -413,6 +418,11 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setHandleAudioFocus(boolean handleAudioFocus) {
         this.handleAudioFocus = handleAudioFocus;
+        return this;
+    }
+
+    public Player.Settings setShutterStaysOnRenderedFirstFrame(boolean shutterStaysOnRenderedFirstFrame) {
+        this.shutterStaysOnRenderedFirstFrame = shutterStaysOnRenderedFirstFrame;
         return this;
     }
 

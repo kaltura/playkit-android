@@ -338,6 +338,14 @@ public interface Player {
         Settings setHandleAudioFocus(boolean handleAudioFocus);
 
         /**
+         * Set shutterStaysOnRenderedFirstFrame - Whether shutter view being hide on first frame rendered
+         *
+         * @param shutterStaysOnRenderedFirstFrame
+         * @return - Player Settings
+         */
+        Settings setShutterStaysOnRenderedFirstFrame(boolean shutterStaysOnRenderedFirstFrame);
+
+        /**
          * Set preference to choose internal subtitles over external subtitles (Only in the case if the same language is present
          * in both Internal and External subtitles) - Default is true (Internal is preferred)
          *

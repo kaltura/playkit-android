@@ -96,6 +96,7 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.SpeedAdjustedRenderersFactory;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
@@ -161,6 +162,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private boolean isSeeking;
     private boolean useTextureView;
+    private boolean useSpeedAdjustingRenderer;
     private boolean isSurfaceSecured;
     private boolean shouldGetTracksInfo;
     private boolean preferredLanguageWasSelected;
@@ -190,7 +192,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private Cache downloadCache;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
-        this(context, new ExoPlayerView(context), playerSettings, rootPlayerView);
+        this(context, new ExoPlayerView(context, playerSettings.isShutterStaysOnRenderedFirstFrame()), playerSettings, rootPlayerView);
     }
 
     ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings settings, PlayerView rootPlayerView) {
@@ -239,7 +241,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context);
+        if (exoPlayerView instanceof ExoPlayerView) {
+            ((ExoPlayerView)exoPlayerView).setUsingSpeedAdjustedRenderer(this.useSpeedAdjustingRenderer);
+        }
+        DefaultRenderersFactory renderersFactory = this.useSpeedAdjustingRenderer
+                ? SpeedAdjustedRenderersFactory.createSpeedAdjustedRenderersFactory(context, playerSettings, exoPlayerView)
+                : new DefaultRenderersFactory(context);
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
@@ -1108,12 +1115,21 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (player == null) {
             this.useTextureView = playerSettings.useTextureView();
             this.isSurfaceSecured = playerSettings.isSurfaceSecured();
+            this.useSpeedAdjustingRenderer = shouldUseSpeedAdjustingRenderer(mediaSourceConfig.mediaSource.getMediaFormat());
             initializePlayer();
         } else {
             // for change media case need to verify if surface swap is needed
             maybeChangePlayerRenderView();
+
+            // for change speed adjustment case need to verify if re-init is required
+            maybeReInitPlayerOnSpeedAdjustmentChange(mediaSourceConfig.mediaSource.getMediaFormat());
         }
         preparePlayer(mediaSourceConfig);
+    }
+
+    private boolean shouldUseSpeedAdjustingRenderer(PKMediaFormat format) {
+        return format == PKMediaFormat.udp
+                && playerSettings.getMulticastSettings().getExperimentalAdjustSpeedOnNegativePosition();
     }
 
     private boolean isBehindLiveWindow(PlaybackException e) {
@@ -1133,6 +1149,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         this.useTextureView = playerSettings.useTextureView();
         this.isSurfaceSecured = playerSettings.isSurfaceSecured();
         exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden());
+    }
+
+    private void maybeReInitPlayerOnSpeedAdjustmentChange(PKMediaFormat format) {
+        boolean useSpeedAdjustingRenderer = shouldUseSpeedAdjustingRenderer(format);
+        if (useSpeedAdjustingRenderer != this.useSpeedAdjustingRenderer) {
+            destroyPlayer();
+            initializePlayer();
+        }
+        this.useSpeedAdjustingRenderer = useSpeedAdjustingRenderer;
     }
 
     @Override
@@ -1347,6 +1372,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         log.v("destroy");
         closeProfilerSession();
         removeCustomLoadErrorPolicy();
+        destroyPlayer();
+    }
+
+    private void destroyPlayer() {
         if (assertPlayerIsNotNull("destroy()")) {
             player.release();
         }
