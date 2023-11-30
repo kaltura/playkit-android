@@ -116,6 +116,9 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     public void setPlayer(@NonNull Looper looper, @NonNull PlayerId playerId) {
         playbackLooper = looper;
         playbackPlayerId = playerId;
+        if (drmSessionManager != null) {
+            drmSessionManager.setPlayer(playbackLooper, playbackPlayerId);
+        }
     }
 
     @Nullable
@@ -143,8 +146,6 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
                 drmSessionListener.onError(error);
             }
         }
-
-        drmSessionManager.setPlayer(playbackLooper, playbackPlayerId);
         return drmSessionManager.acquireSession(eventDispatcher, format);
     }
 
