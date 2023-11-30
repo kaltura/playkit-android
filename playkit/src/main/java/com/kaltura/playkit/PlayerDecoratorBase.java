@@ -96,6 +96,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public PKMediaSource getMediaSource() {
+        return player.getMediaSource();
+    }
+
+    @Override
     public void setPlaybackRate(float rate) {
         player.setPlaybackRate(rate);
     }

@@ -619,6 +619,12 @@ public interface Player {
     PKMediaFormat getMediaFormat();
 
     /**
+     * @return - Getter for the current mediaSource
+     * or {@link null} if the media source is not set yet
+     */
+    PKMediaSource getMediaSource();
+
+    /**
      * Change player speed (pitch = 1.0f by default)
      *
      * @param rate - desired rate (ex. 0.5f 1.0f 1.5f, 2.0f).
