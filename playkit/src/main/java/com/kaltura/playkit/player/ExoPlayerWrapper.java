@@ -1154,7 +1154,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private void maybeReInitPlayerOnSpeedAdjustmentChange(PKMediaFormat format) {
         boolean useSpeedAdjustingRenderer = shouldUseSpeedAdjustingRenderer(format);
         if (useSpeedAdjustingRenderer != this.useSpeedAdjustingRenderer) {
-            destroyPlayer();
+            destroyPlayer(false);
             initializePlayer();
         }
         this.useSpeedAdjustingRenderer = useSpeedAdjustingRenderer;
@@ -1372,19 +1372,21 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         log.v("destroy");
         closeProfilerSession();
         removeCustomLoadErrorPolicy();
-        destroyPlayer();
+        destroyPlayer(true);
     }
 
-    private void destroyPlayer() {
+    private void destroyPlayer(boolean releasePlayerView) {
         if (assertPlayerIsNotNull("destroy()")) {
             player.release();
         }
         window = null;
         player = null;
-        if (exoPlayerView != null) {
-            exoPlayerView.removeAllViews();
+        if (releasePlayerView) {
+            if (exoPlayerView != null) {
+                exoPlayerView.removeAllViews();
+            }
+            exoPlayerView = null;
         }
-        exoPlayerView = null;
         playerPosition = TIME_UNSET;
     }
 
