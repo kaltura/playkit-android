@@ -701,6 +701,14 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public PKMediaSource getMediaSource() {
+        if (sourceConfig != null) {
+            return sourceConfig.mediaSource;
+        }
+        return null;
+    }
+
+    @Override
     public void setPlaybackRate(float rate) {
         log.v("setPlaybackRate");
         if (rate > 0) {
