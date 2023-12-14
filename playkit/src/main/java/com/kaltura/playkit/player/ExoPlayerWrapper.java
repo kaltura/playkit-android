@@ -74,6 +74,8 @@ import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DefaultDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.upstream.KBandwidthMeter;
+import com.kaltura.android.exoplayer2.upstream.KDefaultBandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.TeeDataSource;
 import com.kaltura.android.exoplayer2.upstream.TransferListener;
 import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
@@ -201,19 +203,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
 
-        buildBandwidthMeter();
-
-        period = new Timeline.Period();
-        this.exoPlayerView = exoPlayerView;
-    }
-
-    private void buildBandwidthMeter() {
-        clearBandwidthMeter();
         LoadControlStrategy customLoadControlStrategy = getCustomLoadControlStrategy();
         if (customLoadControlStrategy != null && customLoadControlStrategy.getCustomBandwidthMeter() != null) {
             bandwidthMeter = customLoadControlStrategy.getCustomBandwidthMeter();
         } else {
-            DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context);
+            KDefaultBandwidthMeter.Builder bandwidthMeterBuilder = new KDefaultBandwidthMeter.Builder(context);
 
             Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
 
@@ -226,6 +220,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (bandwidthMeter != null) {
             bandwidthMeter.addEventListener(mainHandler, this);
         }
+
+        period = new Timeline.Period();
+        this.exoPlayerView = exoPlayerView;
     }
 
     private LoadControlStrategy getCustomLoadControlStrategy() {
@@ -1126,13 +1123,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             // for change media case need to verify if surface swap is needed
             maybeChangePlayerRenderView();
 
-            if (!maybeReInitPlayerOnABRPolicy()) {
-                // Only check speed adjustment change case if player wasn't re-initialized by ABRSettings policy
-                // Otherwise, speed adjustment will already be handled on re-initialization
+            maybeResetBitrateEstimate();
 
-                // for change speed adjustment case need to verify if re-init is required
-                maybeReInitPlayerOnSpeedAdjustmentChange(mediaSourceConfig.mediaSource.getMediaFormat());
-            }
+            // for change speed adjustment case need to verify if re-init is required
+            maybeReInitPlayerOnSpeedAdjustmentChange(mediaSourceConfig.mediaSource.getMediaFormat());
         }
         preparePlayer(mediaSourceConfig);
     }
@@ -1161,26 +1155,21 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden());
     }
 
-    private void reInitPlayer() {
-        destroyPlayer(false);
-        initializePlayer();
-    }
-
     private void maybeReInitPlayerOnSpeedAdjustmentChange(PKMediaFormat format) {
         boolean useSpeedAdjustingRenderer = shouldUseSpeedAdjustingRenderer(format);
         if (useSpeedAdjustingRenderer != this.useSpeedAdjustingRenderer) {
-            reInitPlayer();
+            destroyPlayer(false);
+            initializePlayer();
         }
         this.useSpeedAdjustingRenderer = useSpeedAdjustingRenderer;
     }
 
-    private boolean maybeReInitPlayerOnABRPolicy() {
+    private void maybeResetBitrateEstimate() {
         if (playerSettings.getAbrSettings().getAbrInitialBitrateEstimatePolicy() == ABRSettings.InitialBitrateEstimatePolicy.RESET_ON_MEDIA_CHANGE) {
-            buildBandwidthMeter();
-            reInitPlayer();
-            return true;
+            if (bandwidthMeter instanceof KBandwidthMeter) {
+                ((KBandwidthMeter)bandwidthMeter).resetBitrateEstimate();
+            }
         }
-        return false;
     }
 
     @Override
@@ -1331,12 +1320,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         return TIME_UNSET;
     }
 
-    private void clearBandwidthMeter() {
-        if (bandwidthMeter != null) {
-            bandwidthMeter.removeEventListener(this);
-        }
-    }
-
     @Override
     public void release() {
         log.v("release");
@@ -1344,7 +1327,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             savePlayerPosition();
             player.release();
             player = null;
-            clearBandwidthMeter();
+            if (bandwidthMeter != null) {
+                bandwidthMeter.removeEventListener(this);
+            }
             removeCustomLoadErrorPolicy();
             if (assertTrackSelectionIsNotNull("release()")) {
                 trackSelectionHelper.release();
