@@ -201,6 +201,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
 
+        buildBandwidthMeter();
+
+        period = new Timeline.Period();
+        this.exoPlayerView = exoPlayerView;
+    }
+
+    private void buildBandwidthMeter() {
+        clearBandwidthMeter();
         LoadControlStrategy customLoadControlStrategy = getCustomLoadControlStrategy();
         if (customLoadControlStrategy != null && customLoadControlStrategy.getCustomBandwidthMeter() != null) {
             bandwidthMeter = customLoadControlStrategy.getCustomBandwidthMeter();
@@ -218,9 +226,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (bandwidthMeter != null) {
             bandwidthMeter.addEventListener(mainHandler, this);
         }
-
-        period = new Timeline.Period();
-        this.exoPlayerView = exoPlayerView;
     }
 
     private LoadControlStrategy getCustomLoadControlStrategy() {
@@ -1121,8 +1126,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             // for change media case need to verify if surface swap is needed
             maybeChangePlayerRenderView();
 
-            // for change speed adjustment case need to verify if re-init is required
-            maybeReInitPlayerOnSpeedAdjustmentChange(mediaSourceConfig.mediaSource.getMediaFormat());
+            if (!maybeReInitPlayerOnABRPolicy()) {
+                // Only check speed adjustment change case if player wasn't re-initialized by ABRSettings policy
+                // Otherwise, speed adjustment will already be handled on re-initialization
+
+                // for change speed adjustment case need to verify if re-init is required
+                maybeReInitPlayerOnSpeedAdjustmentChange(mediaSourceConfig.mediaSource.getMediaFormat());
+            }
         }
         preparePlayer(mediaSourceConfig);
     }
@@ -1151,13 +1161,26 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden());
     }
 
+    private void reInitPlayer() {
+        destroyPlayer(false);
+        initializePlayer();
+    }
+
     private void maybeReInitPlayerOnSpeedAdjustmentChange(PKMediaFormat format) {
         boolean useSpeedAdjustingRenderer = shouldUseSpeedAdjustingRenderer(format);
         if (useSpeedAdjustingRenderer != this.useSpeedAdjustingRenderer) {
-            destroyPlayer(false);
-            initializePlayer();
+            reInitPlayer();
         }
         this.useSpeedAdjustingRenderer = useSpeedAdjustingRenderer;
+    }
+
+    private boolean maybeReInitPlayerOnABRPolicy() {
+        if (playerSettings.getAbrSettings().getAbrInitialBitrateEstimatePolicy() == ABRSettings.InitialBitrateEstimatePolicy.RESET_ON_MEDIA_CHANGE) {
+            buildBandwidthMeter();
+            reInitPlayer();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -1308,6 +1331,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         return TIME_UNSET;
     }
 
+    private void clearBandwidthMeter() {
+        if (bandwidthMeter != null) {
+            bandwidthMeter.removeEventListener(this);
+        }
+    }
+
     @Override
     public void release() {
         log.v("release");
@@ -1315,9 +1344,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             savePlayerPosition();
             player.release();
             player = null;
-            if (bandwidthMeter != null) {
-                bandwidthMeter.removeEventListener(this);
-            }
+            clearBandwidthMeter();
             removeCustomLoadErrorPolicy();
             if (assertTrackSelectionIsNotNull("release()")) {
                 trackSelectionHelper.release();
