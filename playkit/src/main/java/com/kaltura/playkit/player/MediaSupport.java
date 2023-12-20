@@ -26,8 +26,8 @@ import androidx.annotation.RequiresApi;
 import android.util.Base64;
 import android.util.Log;
 
-import com.kaltura.android.exoplayer2.drm.ExoMediaDrm;
-import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
+import com.kaltura.androidx.media3.exoplayer.drm.ExoMediaDrm;
+import com.kaltura.androidx.media3.exoplayer.drm.FrameworkMediaDrm;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;

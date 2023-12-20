@@ -1,11 +1,11 @@
 package com.kaltura.playkit.player.thumbnail;
 
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.text.Cue;
-import com.kaltura.android.exoplayer2.text.Subtitle;
-import com.kaltura.android.exoplayer2.text.webvtt.WebvttCueInfo;
-import com.kaltura.android.exoplayer2.util.Assertions;
-import com.kaltura.android.exoplayer2.util.Util;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.common.text.Cue;
+import com.kaltura.androidx.media3.extractor.text.Subtitle;
+import com.kaltura.androidx.media3.extractor.text.webvtt.WebvttCueInfo;
+import com.kaltura.androidx.media3.common.util.Assertions;
+import com.kaltura.androidx.media3.common.util.Util;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,14 +1,14 @@
 package com.kaltura.playkit.player;
 
-import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_BACK_BUFFER_DURATION_MS;
-import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS;
-import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS;
-import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_MAX_BUFFER_MS;
-import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_MIN_BUFFER_MS;
-import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS;
-import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME;
-import static com.kaltura.android.exoplayer2.DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES;
-import static com.kaltura.android.exoplayer2.DefaultRenderersFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS;
+import static com.kaltura.androidx.media3.exoplayer.DefaultLoadControl.DEFAULT_BACK_BUFFER_DURATION_MS;
+import static com.kaltura.androidx.media3.exoplayer.DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS;
+import static com.kaltura.androidx.media3.exoplayer.DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS;
+import static com.kaltura.androidx.media3.exoplayer.DefaultLoadControl.DEFAULT_MAX_BUFFER_MS;
+import static com.kaltura.androidx.media3.exoplayer.DefaultLoadControl.DEFAULT_MIN_BUFFER_MS;
+import static com.kaltura.androidx.media3.exoplayer.DefaultLoadControl.DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS;
+import static com.kaltura.androidx.media3.exoplayer.DefaultLoadControl.DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME;
+import static com.kaltura.androidx.media3.exoplayer.DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES;
+import static com.kaltura.androidx.media3.exoplayer.DefaultRenderersFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS;
 
 public class LoadControlBuffers {
 

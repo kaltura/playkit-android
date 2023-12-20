@@ -9,15 +9,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.Format;
-import com.kaltura.android.exoplayer2.Tracks;
-import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
-import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
-import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
-import com.kaltura.android.exoplayer2.source.LoadEventInfo;
-import com.kaltura.android.exoplayer2.source.MediaLoadData;
-import com.kaltura.android.exoplayer2.source.TrackGroup;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.common.Format;
+import com.kaltura.androidx.media3.common.Tracks;
+import com.kaltura.androidx.media3.exoplayer.analytics.AnalyticsListener;
+import com.kaltura.androidx.media3.exoplayer.DecoderCounters;
+import com.kaltura.androidx.media3.exoplayer.DecoderReuseEvaluation;
+import com.kaltura.androidx.media3.exoplayer.source.LoadEventInfo;
+import com.kaltura.androidx.media3.exoplayer.source.MediaLoadData;
+import com.kaltura.androidx.media3.common.TrackGroup;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 

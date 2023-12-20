@@ -1,6 +1,6 @@
 package com.kaltura.playkit.player;
 
-import com.kaltura.android.exoplayer2.ui.AspectRatioFrameLayout;
+import com.kaltura.androidx.media3.ui.AspectRatioFrameLayout;
 
 public enum PKAspectRatioResizeMode {
     fit,

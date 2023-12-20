@@ -1,9 +1,9 @@
-package com.kaltura.android.exoplayer2.dashmanifestparser;
+package com.kaltura.androidx.media3.exoplayer.dashmanifestparser;
 
 import androidx.annotation.Nullable;
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.source.dash.manifest.Descriptor;
-import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.Descriptor;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.EventStream;
 
 import java.util.Collections;
 import java.util.List;

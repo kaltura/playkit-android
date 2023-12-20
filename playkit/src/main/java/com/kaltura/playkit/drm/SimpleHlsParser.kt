@@ -2,12 +2,12 @@ package com.kaltura.playkit.drm
 
 import android.net.Uri
 import android.os.Build
-import com.kaltura.android.exoplayer2.Format
-import com.kaltura.android.exoplayer2.drm.DrmInitData
-import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil
-import com.kaltura.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist
-import com.kaltura.android.exoplayer2.source.hls.playlist.HlsMultivariantPlaylist
-import com.kaltura.android.exoplayer2.source.hls.playlist.HlsPlaylistParser
+import com.kaltura.androidx.media3.common.Format
+import com.kaltura.androidx.media3.common.DrmInitData
+import com.kaltura.androidx.media3.extractor.mp4.PsshAtomUtil
+import com.kaltura.androidx.media3.exoplayer.hls.playlist.HlsMediaPlaylist
+import com.kaltura.androidx.media3.exoplayer.hls.playlist.HlsMultivariantPlaylist
+import com.kaltura.androidx.media3.exoplayer.hls.playlist.HlsPlaylistParser
 import com.kaltura.playkit.PKLog
 import com.kaltura.playkit.player.MediaSupport
 import java.io.BufferedInputStream

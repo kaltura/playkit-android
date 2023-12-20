@@ -4,8 +4,8 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.MediaItem;
-import com.kaltura.android.exoplayer2.source.MediaSource;
+import com.kaltura.androidx.media3.common.MediaItem;
+import com.kaltura.androidx.media3.exoplayer.source.MediaSource;
 import com.kaltura.playkit.drm.WidevineModularAdapter;
 
 import java.util.Map;

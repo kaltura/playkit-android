@@ -17,17 +17,17 @@ import android.os.Handler;
 
 import androidx.annotation.NonNull;
 
-import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
-import com.kaltura.android.exoplayer2.Renderer;
-import com.kaltura.android.exoplayer2.audio.AudioRendererEventListener;
-import com.kaltura.android.exoplayer2.audio.AudioSink;
-import com.kaltura.android.exoplayer2.audio.KMediaCodecAudioRenderer;
-import com.kaltura.android.exoplayer2.audio.MediaCodecAudioRenderer;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
-import com.kaltura.android.exoplayer2.video.KMediaCodecVideoRenderer;
-import com.kaltura.android.exoplayer2.video.KVideoRendererFirstFrameWhenStartedEventListener;
-import com.kaltura.android.exoplayer2.video.MediaCodecVideoRenderer;
-import com.kaltura.android.exoplayer2.video.VideoRendererEventListener;
+import com.kaltura.androidx.media3.exoplayer.DefaultRenderersFactory;
+import com.kaltura.androidx.media3.exoplayer.Renderer;
+import com.kaltura.androidx.media3.exoplayer.audio.AudioRendererEventListener;
+import com.kaltura.androidx.media3.exoplayer.audio.AudioSink;
+import com.kaltura.androidx.media3.exoplayer.audio.KMediaCodecAudioRenderer;
+import com.kaltura.androidx.media3.exoplayer.audio.MediaCodecAudioRenderer;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
+import com.kaltura.androidx.media3.exoplayer.video.KMediaCodecVideoRenderer;
+import com.kaltura.androidx.media3.exoplayer.video.KVideoRendererFirstFrameWhenStartedEventListener;
+import com.kaltura.androidx.media3.exoplayer.video.MediaCodecVideoRenderer;
+import com.kaltura.androidx.media3.exoplayer.video.VideoRendererEventListener;
 import com.kaltura.playkit.player.PlayerSettings;
 
 import java.util.ArrayList;

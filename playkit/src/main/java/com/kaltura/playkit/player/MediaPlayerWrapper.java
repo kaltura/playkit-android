@@ -28,7 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKAbrFilter;
-import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.EventStream;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;

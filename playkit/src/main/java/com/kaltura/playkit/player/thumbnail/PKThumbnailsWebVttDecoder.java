@@ -4,15 +4,15 @@ import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.ParserException;
-import com.kaltura.android.exoplayer2.text.SimpleSubtitleDecoder;
-import com.kaltura.android.exoplayer2.text.Subtitle;
-import com.kaltura.android.exoplayer2.text.SubtitleDecoderException;
-import com.kaltura.android.exoplayer2.text.webvtt.WebvttCssStyle;
-import com.kaltura.android.exoplayer2.text.webvtt.WebvttCueInfo;
-import com.kaltura.android.exoplayer2.text.webvtt.WebvttCueParser;
-import com.kaltura.android.exoplayer2.text.webvtt.WebvttParserUtil;
-import com.kaltura.android.exoplayer2.util.ParsableByteArray;
+import com.kaltura.androidx.media3.common.ParserException;
+import com.kaltura.androidx.media3.extractor.text.SimpleSubtitleDecoder;
+import com.kaltura.androidx.media3.extractor.text.Subtitle;
+import com.kaltura.androidx.media3.extractor.text.SubtitleDecoderException;
+import com.kaltura.androidx.media3.extractor.text.webvtt.WebvttCssStyle;
+import com.kaltura.androidx.media3.extractor.text.webvtt.WebvttCueInfo;
+import com.kaltura.androidx.media3.extractor.text.webvtt.WebvttCueParser;
+import com.kaltura.androidx.media3.extractor.text.webvtt.WebvttParserUtil;
+import com.kaltura.androidx.media3.common.util.ParsableByteArray;
 
 import java.util.ArrayList;
 import java.util.List;

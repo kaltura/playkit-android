@@ -1,4 +1,4 @@
-package com.kaltura.android.exoplayer2.source.dash.manifest;
+package com.kaltura.androidx.media3.exoplayer.dashmanifestparser;
 
 import android.net.Uri;
 import android.text.TextUtils;
@@ -12,24 +12,27 @@ import com.google.common.base.Ascii;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.Format;
-import com.kaltura.android.exoplayer2.ParserException;
-import com.kaltura.android.exoplayer2.drm.DrmInitData;
-import com.kaltura.android.exoplayer2.drm.DrmInitData.SchemeData;
-import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
-import com.kaltura.android.exoplayer2.metadata.emsg.EventMessage;
-import com.kaltura.android.exoplayer2.source.dash.manifest.SegmentBase.SegmentList;
-import com.kaltura.android.exoplayer2.source.dash.manifest.SegmentBase.SegmentTemplate;
-import com.kaltura.android.exoplayer2.source.dash.manifest.SegmentBase.SegmentTimelineElement;
-import com.kaltura.android.exoplayer2.source.dash.manifest.SegmentBase.SingleSegmentBase;
-import com.kaltura.android.exoplayer2.upstream.ParsingLoadable;
-import com.kaltura.android.exoplayer2.util.Assertions;
-import com.kaltura.android.exoplayer2.util.Log;
-import com.kaltura.android.exoplayer2.util.MimeTypes;
-import com.kaltura.android.exoplayer2.util.UriUtil;
-import com.kaltura.android.exoplayer2.util.Util;
-import com.kaltura.android.exoplayer2.util.XmlPullParserUtil;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.common.Format;
+import com.kaltura.androidx.media3.common.ParserException;
+import com.kaltura.androidx.media3.common.DrmInitData;
+import com.kaltura.androidx.media3.common.DrmInitData.SchemeData;
+import com.kaltura.androidx.media3.extractor.mp4.PsshAtomUtil;
+import com.kaltura.androidx.media3.extractor.metadata.emsg.EventMessage;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.BaseUrl;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.Descriptor;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.EventStream;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.ProgramInformation;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.RangedUri;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.ServiceDescriptionElement;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.UrlTemplate;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.UtcTimingElement;
+import com.kaltura.androidx.media3.common.util.Assertions;
+import com.kaltura.androidx.media3.common.util.Log;
+import com.kaltura.androidx.media3.common.MimeTypes;
+import com.kaltura.androidx.media3.common.util.UriUtil;
+import com.kaltura.androidx.media3.common.util.Util;
+import com.kaltura.androidx.media3.common.util.XmlPullParserUtil;
 
 import org.checkerframework.checker.nullness.compatqual.NullableType;
 import org.xml.sax.helpers.DefaultHandler;
@@ -40,22 +43,20 @@ import org.xmlpull.v1.XmlSerializer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.kaltura.android.exoplayer2.source.dash.manifest.BaseUrl.DEFAULT_DVB_PRIORITY;
-import static com.kaltura.android.exoplayer2.source.dash.manifest.BaseUrl.DEFAULT_WEIGHT;
-import static com.kaltura.android.exoplayer2.source.dash.manifest.BaseUrl.PRIORITY_UNSET;
+import static com.kaltura.androidx.media3.exoplayer.dash.manifest.BaseUrl.DEFAULT_DVB_PRIORITY;
+import static com.kaltura.androidx.media3.exoplayer.dash.manifest.BaseUrl.DEFAULT_WEIGHT;
+import static com.kaltura.androidx.media3.exoplayer.dash.manifest.BaseUrl.PRIORITY_UNSET;
+import static com.kaltura.androidx.media3.common.MimeTypes.BASE_TYPE_IMAGE;
 
-/**
- * A parser of media presentation description files.
- */
-public class DashManifestParserForThumbnail extends DefaultHandler
-        implements ParsingLoadable.Parser<DashManifest> {
+/** A parser of media presentation description files. */
+public class CustomDashManifestParser extends DefaultHandler {
 
     private static final String TAG = "MpdParser";
 
@@ -77,7 +78,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
 
     private final XmlPullParserFactory xmlParserFactory;
 
-    public DashManifestParserForThumbnail() {
+    public CustomDashManifestParser() {
         try {
             xmlParserFactory = XmlPullParserFactory.newInstance();
         } catch (XmlPullParserException e) {
@@ -87,11 +88,10 @@ public class DashManifestParserForThumbnail extends DefaultHandler
 
     // MPD parsing.
 
-    @Override
-    public DashManifest parse(Uri uri, InputStream inputStream) throws IOException {
+    public CustomDashManifest parse(Uri uri, String dashManifest) throws IOException {
         try {
             XmlPullParser xpp = xmlParserFactory.newPullParser();
-            xpp.setInput(inputStream, null);
+            xpp.setInput(new StringReader(dashManifest));
             int eventType = xpp.next();
             if (eventType != XmlPullParser.START_TAG || !"MPD".equals(xpp.getName())) {
                 throw ParserException.createForMalformedManifest(
@@ -104,7 +104,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         }
     }
 
-    protected DashManifest parseMediaPresentationDescription(
+    protected CustomDashManifest parseMediaPresentationDescription(
             XmlPullParser xpp, Uri documentBaseUri) throws XmlPullParserException, IOException {
         boolean dvbProfileDeclared =
                 isDvbProfileDeclared(parseProfiles(xpp, "profiles", new String[0]));
@@ -133,7 +133,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                         DEFAULT_WEIGHT);
         ArrayList<BaseUrl> parentBaseUrls = Lists.newArrayList(documentBaseUrl);
 
-        List<Period> periods = new ArrayList<>();
+        List<CustomPeriod> periods = new ArrayList<>();
         ArrayList<BaseUrl> baseUrls = new ArrayList<>();
         long nextPeriodStartMs = dynamic ? C.TIME_UNSET : 0;
         boolean seenEarlyAccessPeriod = false;
@@ -156,7 +156,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             } else if (XmlPullParserUtil.isStartTag(xpp, "ServiceDescription")) {
                 serviceDescription = parseServiceDescription(xpp);
             } else if (XmlPullParserUtil.isStartTag(xpp, "Period") && !seenEarlyAccessPeriod) {
-                Pair<Period, Long> periodWithDurationMs =
+                Pair<CustomPeriod, Long> periodWithDurationMs =
                         parsePeriod(
                                 xpp,
                                 !baseUrls.isEmpty() ? baseUrls : parentBaseUrls,
@@ -165,7 +165,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                                 availabilityStartTime,
                                 timeShiftBufferDepthMs,
                                 dvbProfileDeclared);
-                Period period = periodWithDurationMs.first;
+                CustomPeriod period = periodWithDurationMs.first;
                 if (period.startMs == C.TIME_UNSET) {
                     if (dynamic) {
                         // This is an early access period. Ignore it. All subsequent periods must also be
@@ -216,7 +216,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 periods);
     }
 
-    protected DashManifest buildMediaPresentationDescription(
+    protected CustomDashManifest buildMediaPresentationDescription(
             long availabilityStartTime,
             long durationMs,
             long minBufferTimeMs,
@@ -229,8 +229,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             @Nullable UtcTimingElement utcTiming,
             @Nullable ServiceDescriptionElement serviceDescription,
             @Nullable Uri location,
-            List<Period> periods) {
-        return new DashManifest(
+            List<CustomPeriod> periods) {
+        return new CustomDashManifest(
                 availabilityStartTime,
                 durationMs,
                 minBufferTimeMs,
@@ -278,7 +278,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 targetOffsetMs, minOffsetMs, maxOffsetMs, minPlaybackSpeed, maxPlaybackSpeed);
     }
 
-    protected Pair<Period, Long> parsePeriod(
+    protected Pair<CustomPeriod, Long> parsePeriod(
             XmlPullParser xpp,
             List<BaseUrl> parentBaseUrls,
             long defaultStartMs,
@@ -292,9 +292,9 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         long periodStartUnixTimeMs =
                 availabilityStartTimeMs != C.TIME_UNSET ? availabilityStartTimeMs + startMs : C.TIME_UNSET;
         long durationMs = parseDuration(xpp, "duration", C.TIME_UNSET);
-        @Nullable SegmentBase segmentBase = null;
+        @Nullable CustomSegmentBase segmentBase = null;
         @Nullable Descriptor assetIdentifier = null;
-        List<AdaptationSet> adaptationSets = new ArrayList<>();
+        List<CustomAdaptationSet> adaptationSets = new ArrayList<>();
         List<EventStream> eventStreams = new ArrayList<>();
         ArrayList<BaseUrl> baseUrls = new ArrayList<>();
         boolean seenFirstBaseUrl = false;
@@ -360,21 +360,21 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 buildPeriod(id, startMs, adaptationSets, eventStreams, assetIdentifier), durationMs);
     }
 
-    protected Period buildPeriod(
+    protected CustomPeriod buildPeriod(
             @Nullable String id,
             long startMs,
-            List<AdaptationSet> adaptationSets,
+            List<CustomAdaptationSet> adaptationSets,
             List<EventStream> eventStreams,
             @Nullable Descriptor assetIdentifier) {
-        return new Period(id, startMs, adaptationSets, eventStreams, assetIdentifier);
+        return new CustomPeriod(id, startMs, adaptationSets, eventStreams, assetIdentifier);
     }
 
     // AdaptationSet parsing.
 
-    protected AdaptationSet parseAdaptationSet(
+    protected CustomAdaptationSet parseAdaptationSet(
             XmlPullParser xpp,
             List<BaseUrl> parentBaseUrls,
-            @Nullable SegmentBase segmentBase,
+            @Nullable CustomSegmentBase segmentBase,
             long periodDurationMs,
             long baseUrlAvailabilityTimeOffsetUs,
             long segmentBaseAvailabilityTimeOffsetUs,
@@ -382,10 +382,15 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             long timeShiftBufferDepthMs,
             boolean dvbProfileDeclared)
             throws XmlPullParserException, IOException {
-        int id = parseInt(xpp, "id", AdaptationSet.ID_UNSET);
+        int id = parseInt(xpp, "id", CustomAdaptationSet.ID_UNSET);
         @C.TrackType int contentType = parseContentType(xpp);
 
         String mimeType = xpp.getAttributeValue(null, "mimeType");
+
+        if (contentType == -1 && ("image/jpeg".equals(mimeType) || "image/png".equals(mimeType))) {
+            contentType = C.TRACK_TYPE_IMAGE;
+        }
+
         String codecs = xpp.getAttributeValue(null, "codecs");
         int width = parseInt(xpp, "width", Format.NO_VALUE);
         int height = parseInt(xpp, "height", Format.NO_VALUE);
@@ -464,14 +469,14 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                                 contentType, MimeTypes.getTrackType(representationInfo.format.sampleMimeType));
                 representationInfos.add(representationInfo);
             } else if (XmlPullParserUtil.isStartTag(xpp, "SegmentBase")) {
-                segmentBase = parseSegmentBase(xpp, (SingleSegmentBase) segmentBase);
+                segmentBase = parseSegmentBase(xpp, (CustomSegmentBase.SingleSegmentBase) segmentBase);
             } else if (XmlPullParserUtil.isStartTag(xpp, "SegmentList")) {
                 segmentBaseAvailabilityTimeOffsetUs =
                         parseAvailabilityTimeOffsetUs(xpp, segmentBaseAvailabilityTimeOffsetUs);
                 segmentBase =
                         parseSegmentList(
                                 xpp,
-                                (SegmentList) segmentBase,
+                                (CustomSegmentBase.SegmentList) segmentBase,
                                 periodStartUnixTimeMs,
                                 periodDurationMs,
                                 baseUrlAvailabilityTimeOffsetUs,
@@ -483,7 +488,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 segmentBase =
                         parseSegmentTemplate(
                                 xpp,
-                                (SegmentTemplate) segmentBase,
+                                (CustomSegmentBase.SegmentTemplate) segmentBase,
                                 supplementalProperties,
                                 periodStartUnixTimeMs,
                                 periodDurationMs,
@@ -500,7 +505,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         } while (!XmlPullParserUtil.isEndTag(xpp, "AdaptationSet"));
 
         // Build the representations.
-        List<Representation> representations = new ArrayList<>(representationInfos.size());
+        List<CustomRepresentation> representations = new ArrayList<>(representationInfos.size());
         for (int i = 0; i < representationInfos.size(); i++) {
             representations.add(
                     buildRepresentation(
@@ -508,7 +513,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                             label,
                             drmSchemeType,
                             drmSchemeDatas,
-                            inbandEventStreams));
+                            inbandEventStreams,
+                            baseUrls));
         }
 
         return buildAdaptationSet(
@@ -520,14 +526,14 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 supplementalProperties);
     }
 
-    protected AdaptationSet buildAdaptationSet(
+    protected CustomAdaptationSet buildAdaptationSet(
             int id,
             @C.TrackType int contentType,
-            List<Representation> representations,
+            List<CustomRepresentation> representations,
             List<Descriptor> accessibilityDescriptors,
             List<Descriptor> essentialProperties,
             List<Descriptor> supplementalProperties) {
-        return new AdaptationSet(
+        return new CustomAdaptationSet(
                 id,
                 contentType,
                 representations,
@@ -536,16 +542,13 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 supplementalProperties);
     }
 
-    protected int parseContentType(XmlPullParser xpp) {
+    protected @C.TrackType int parseContentType(XmlPullParser xpp) {
         String contentType = xpp.getAttributeValue(null, "contentType");
-        return TextUtils.isEmpty(contentType)
-                ? C.TRACK_TYPE_UNKNOWN
-                : MimeTypes.BASE_TYPE_AUDIO.equals(contentType)
-                ? C.TRACK_TYPE_AUDIO
-                : MimeTypes.BASE_TYPE_VIDEO.equals(contentType)
-                ? C.TRACK_TYPE_VIDEO
-                : MimeTypes.BASE_TYPE_TEXT.equals(contentType)
-                ? C.TRACK_TYPE_TEXT
+        return TextUtils.isEmpty(contentType) ? C.TRACK_TYPE_UNKNOWN
+                : MimeTypes.BASE_TYPE_AUDIO.equals(contentType) ? C.TRACK_TYPE_AUDIO
+                : MimeTypes.BASE_TYPE_VIDEO.equals(contentType) ? C.TRACK_TYPE_VIDEO
+                : MimeTypes.BASE_TYPE_TEXT.equals(contentType) ? C.TRACK_TYPE_TEXT
+                : BASE_TYPE_IMAGE.equals(contentType) ? C.TRACK_TYPE_IMAGE
                 : C.TRACK_TYPE_UNKNOWN;
     }
 
@@ -658,7 +661,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             List<Descriptor> adaptationSetAccessibilityDescriptors,
             List<Descriptor> adaptationSetEssentialProperties,
             List<Descriptor> adaptationSetSupplementalProperties,
-            @Nullable SegmentBase segmentBase,
+            @Nullable CustomSegmentBase segmentBase,
             long periodStartUnixTimeMs,
             long periodDurationMs,
             long baseUrlAvailabilityTimeOffsetUs,
@@ -697,14 +700,14 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             } else if (XmlPullParserUtil.isStartTag(xpp, "AudioChannelConfiguration")) {
                 audioChannels = parseAudioChannelConfiguration(xpp);
             } else if (XmlPullParserUtil.isStartTag(xpp, "SegmentBase")) {
-                segmentBase = parseSegmentBase(xpp, (SingleSegmentBase) segmentBase);
+                segmentBase = parseSegmentBase(xpp, (CustomSegmentBase.SingleSegmentBase) segmentBase);
             } else if (XmlPullParserUtil.isStartTag(xpp, "SegmentList")) {
                 segmentBaseAvailabilityTimeOffsetUs =
                         parseAvailabilityTimeOffsetUs(xpp, segmentBaseAvailabilityTimeOffsetUs);
                 segmentBase =
                         parseSegmentList(
                                 xpp,
-                                (SegmentList) segmentBase,
+                                (CustomSegmentBase.SegmentList) segmentBase,
                                 periodStartUnixTimeMs,
                                 periodDurationMs,
                                 baseUrlAvailabilityTimeOffsetUs,
@@ -716,7 +719,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 segmentBase =
                         parseSegmentTemplate(
                                 xpp,
-                                (SegmentTemplate) segmentBase,
+                                (CustomSegmentBase.SegmentTemplate) segmentBase,
                                 adaptationSetSupplementalProperties,
                                 periodStartUnixTimeMs,
                                 periodDurationMs,
@@ -742,7 +745,9 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             }
         } while (!XmlPullParserUtil.isEndTag(xpp, "Representation"));
 
-        Format format =
+        String baseUrl = (!baseUrls.isEmpty() && baseUrls.size() > 0) ? baseUrls.get(0).url : parentBaseUrls.get(0).url;
+
+        CustomFormat format =
                 buildFormat(
                         id,
                         mimeType,
@@ -757,8 +762,11 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                         adaptationSetAccessibilityDescriptors,
                         codecs,
                         essentialProperties,
-                        supplementalProperties);
-        segmentBase = segmentBase != null ? segmentBase : new SingleSegmentBase();
+                        supplementalProperties,
+                        segmentBase,
+                        baseUrl);
+
+        segmentBase = segmentBase != null ? segmentBase : new CustomSegmentBase.SingleSegmentBase();
 
         return new RepresentationInfo(
                 format,
@@ -769,10 +777,10 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 inbandEventStreams,
                 essentialProperties,
                 supplementalProperties,
-                Representation.REVISION_ID_DEFAULT);
+                CustomRepresentation.REVISION_ID_DEFAULT);
     }
 
-    protected Format buildFormat(
+    protected CustomFormat buildFormat(
             @Nullable String id,
             @Nullable String containerMimeType,
             int width,
@@ -786,7 +794,9 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             List<Descriptor> accessibilityDescriptors,
             @Nullable String codecs,
             List<Descriptor> essentialProperties,
-            List<Descriptor> supplementalProperties) {
+            List<Descriptor> supplementalProperties,
+            CustomSegmentBase segmentBase,
+            String baseURL) {
         @Nullable String sampleMimeType = getSampleMimeType(containerMimeType, codecs);
         if (MimeTypes.AUDIO_E_AC3.equals(sampleMimeType)) {
             sampleMimeType = parseEac3SupplementalProperties(supplementalProperties);
@@ -794,14 +804,20 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 codecs = MimeTypes.CODEC_E_AC3_JOC;
             }
         }
+
+        CustomFormat.FormatThumbnailInfo formatThumbnailInfo = null;
+        if (isImage(containerMimeType)) {
+            formatThumbnailInfo = buildFormatThumbnailInfo(baseURL, id, bitrate, segmentBase, essentialProperties);
+        }
+
         @C.SelectionFlags int selectionFlags = parseSelectionFlagsFromRoleDescriptors(roleDescriptors);
         @C.RoleFlags int roleFlags = parseRoleFlagsFromRoleDescriptors(roleDescriptors);
         roleFlags |= parseRoleFlagsFromAccessibilityDescriptors(accessibilityDescriptors);
         roleFlags |= parseRoleFlagsFromProperties(essentialProperties);
         roleFlags |= parseRoleFlagsFromProperties(supplementalProperties);
 
-        Format.Builder formatBuilder =
-                new Format.Builder()
+        CustomFormat.Builder formatBuilder =
+                new CustomFormat.Builder()
                         .setId(id)
                         .setContainerMimeType(containerMimeType)
                         .setSampleMimeType(sampleMimeType)
@@ -810,6 +826,11 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                         .setSelectionFlags(selectionFlags)
                         .setRoleFlags(roleFlags)
                         .setLanguage(language);
+
+        if (isImage(containerMimeType)) {
+            formatBuilder.setFormatThumbnailInfo(formatThumbnailInfo);
+            formatBuilder.setWidth(width).setHeight(height);
+        }
 
         if (MimeTypes.isVideo(sampleMimeType)) {
             formatBuilder.setWidth(width).setHeight(height).setFrameRate(frameRate);
@@ -823,21 +844,52 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 accessibilityChannel = parseCea708AccessibilityChannel(accessibilityDescriptors);
             }
             formatBuilder.setAccessibilityChannel(accessibilityChannel);
+        } else if (MimeTypes.isImage(sampleMimeType)) {
+            formatBuilder.setWidth(width).setHeight(height);
         }
 
         return formatBuilder.build();
     }
 
-    protected Representation buildRepresentation(
+    /** Returns whether the given string is a image MIME type. */
+    public static boolean isImage(@Nullable String mimeType) {
+        return BASE_TYPE_IMAGE.equals(getTopLevelType(mimeType));
+    }
+
+    private static String getTopLevelType(@Nullable String mimeType) {
+        if (mimeType == null) {
+            return null;
+        }
+        int indexOfSlash = mimeType.indexOf('/');
+        if (indexOfSlash == -1) {
+            return null;
+        }
+        return mimeType.substring(0, indexOfSlash);
+    }
+
+    protected CustomRepresentation buildRepresentation(
             RepresentationInfo representationInfo,
             @Nullable String label,
             @Nullable String extraDrmSchemeType,
             ArrayList<SchemeData> extraDrmSchemeDatas,
-            ArrayList<Descriptor> extraInbandEventStreams) {
-        Format.Builder formatBuilder = representationInfo.format.buildUpon();
+            ArrayList<Descriptor> extraInbandEventStreams,
+            List<BaseUrl> parentBaseUrls) {
+        CustomFormat.Builder formatBuilder = representationInfo.format.buildUpon();
         if (label != null) {
             formatBuilder.setLabel(label);
         }
+
+        if (isImage(representationInfo.format.containerMimeType)) {
+            if (representationInfo.format.formatThumbnailInfo == null) {
+                String baseUrl = (!representationInfo.baseUrls.isEmpty() && representationInfo.baseUrls.size() > 0) ?
+                        representationInfo.baseUrls.get(0).url :
+                        parentBaseUrls.get(0).url;
+                formatBuilder.setFormatThumbnailInfo(buildFormatThumbnailInfo(baseUrl, representationInfo.format.id, representationInfo.format.bitrate, representationInfo.segmentBase, null));
+            } else {
+                formatBuilder.setFormatThumbnailInfo(representationInfo.format.formatThumbnailInfo);
+            }
+        }
+
         @Nullable String drmSchemeType = representationInfo.drmSchemeType;
         if (drmSchemeType == null) {
             drmSchemeType = extraDrmSchemeType;
@@ -851,7 +903,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         }
         ArrayList<Descriptor> inbandEventStreams = representationInfo.inbandEventStreams;
         inbandEventStreams.addAll(extraInbandEventStreams);
-        return Representation.newInstance(
+        return CustomRepresentation.newInstance(
                 representationInfo.revisionId,
                 formatBuilder.build(),
                 representationInfo.baseUrls,
@@ -862,10 +914,52 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 /* cacheKey= */ null);
     }
 
+    private CustomFormat.FormatThumbnailInfo buildFormatThumbnailInfo(String baseURL, String id, int bitrate, CustomSegmentBase segmentBase, List<Descriptor> essentialProperties) {
+        CustomFormat.FormatThumbnailInfo.Builder thumbnailInfoBuilder = new CustomFormat.FormatThumbnailInfo.Builder();
+        String structure = "";
+        int tilesHorizontal = 1;
+        int tilesVertical = 1;
+
+        if (essentialProperties != null && essentialProperties.size() == 1) {
+            structure = essentialProperties.get(0).value;
+            if (!TextUtils.isEmpty(structure) && structure.contains("x")) {
+                String[] structureContent = structure.split("x");
+                if (TextUtils.isDigitsOnly(structureContent[0]) && TextUtils.isDigitsOnly(structureContent[1])) {
+                    tilesHorizontal = Integer.parseInt(structureContent[0]);
+                    tilesVertical = Integer.parseInt(structureContent[1]);
+                }
+            }
+        }
+        long presentationTimeOffset = ((CustomSegmentBase.SegmentTemplate)segmentBase).getPresentationTimeOffset();
+        long timeScale = ((CustomSegmentBase.SegmentTemplate)segmentBase).getTimescale();
+        long startNumber = ((CustomSegmentBase.SegmentTemplate)segmentBase).getStartNumber();
+        long endNumber = ((CustomSegmentBase.SegmentTemplate)segmentBase).getEndNumber();
+        UrlTemplate urlTemplate = ((CustomSegmentBase.SegmentTemplate)segmentBase).getInitializationTemplate();
+        if (urlTemplate == null) {
+            urlTemplate = ((CustomSegmentBase.SegmentTemplate)segmentBase).mediaTemplate;
+        }
+        String imageTemplateUrl = "";
+        if (urlTemplate != null) {
+            imageTemplateUrl = baseURL +  urlTemplate.buildUri(id, 900000009, bitrate, 800000008);
+            imageTemplateUrl = imageTemplateUrl.replace("900000009", "$Number$").replace("800000008", "$Time$");
+
+        }
+        thumbnailInfoBuilder.setImageTemplateUrl(imageTemplateUrl);
+        thumbnailInfoBuilder.setSegmentDuration(((CustomSegmentBase.SegmentTemplate)segmentBase).duration);
+        thumbnailInfoBuilder.setStructure(structure);
+        thumbnailInfoBuilder.setTilesHorizontal(tilesHorizontal);
+        thumbnailInfoBuilder.setTilesVertical(tilesVertical);
+        thumbnailInfoBuilder.setPresentationTimeOffset(presentationTimeOffset);
+        thumbnailInfoBuilder.setTimeScale(timeScale);
+        thumbnailInfoBuilder.setStartNumber(startNumber);
+        thumbnailInfoBuilder.setEndNumber(endNumber);
+        return thumbnailInfoBuilder.build();
+    }
+
     // SegmentBase, SegmentList and SegmentTemplate parsing.
 
-    protected SingleSegmentBase parseSegmentBase(
-            XmlPullParser xpp, @Nullable SingleSegmentBase parent)
+    protected CustomSegmentBase.SingleSegmentBase parseSegmentBase(
+            XmlPullParser xpp, @Nullable CustomSegmentBase.SingleSegmentBase parent)
             throws XmlPullParserException, IOException {
 
         long timescale = parseLong(xpp, "timescale", parent != null ? parent.timescale : 1);
@@ -896,19 +990,19 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 initialization, timescale, presentationTimeOffset, indexStart, indexLength);
     }
 
-    protected SingleSegmentBase buildSingleSegmentBase(
+    protected CustomSegmentBase.SingleSegmentBase buildSingleSegmentBase(
             RangedUri initialization,
             long timescale,
             long presentationTimeOffset,
             long indexStart,
             long indexLength) {
-        return new SingleSegmentBase(
+        return new CustomSegmentBase.SingleSegmentBase(
                 initialization, timescale, presentationTimeOffset, indexStart, indexLength);
     }
 
-    protected SegmentList parseSegmentList(
+    protected CustomSegmentBase.SegmentList parseSegmentList(
             XmlPullParser xpp,
-            @Nullable SegmentList parent,
+            @Nullable CustomSegmentBase.SegmentList parent,
             long periodStartUnixTimeMs,
             long periodDurationMs,
             long baseUrlAvailabilityTimeOffsetUs,
@@ -927,7 +1021,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                         baseUrlAvailabilityTimeOffsetUs, segmentBaseAvailabilityTimeOffsetUs);
 
         RangedUri initialization = null;
-        List<SegmentTimelineElement> timeline = null;
+        List<CustomSegmentBase.SegmentTimelineElement> timeline = null;
         List<RangedUri> segments = null;
 
         do {
@@ -965,18 +1059,18 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 periodStartUnixTimeMs);
     }
 
-    protected SegmentList buildSegmentList(
+    protected CustomSegmentBase.SegmentList buildSegmentList(
             RangedUri initialization,
             long timescale,
             long presentationTimeOffset,
             long startNumber,
             long duration,
-            @Nullable List<SegmentTimelineElement> timeline,
+            @Nullable List<CustomSegmentBase.SegmentTimelineElement> timeline,
             long availabilityTimeOffsetUs,
             @Nullable List<RangedUri> segments,
             long timeShiftBufferDepthMs,
             long periodStartUnixTimeMs) {
-        return new SegmentList(
+        return new CustomSegmentBase.SegmentList(
                 initialization,
                 timescale,
                 presentationTimeOffset,
@@ -989,9 +1083,9 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 Util.msToUs(periodStartUnixTimeMs));
     }
 
-    protected SegmentTemplate parseSegmentTemplate(
+    protected CustomSegmentBase.SegmentTemplate parseSegmentTemplate(
             XmlPullParser xpp,
-            @Nullable SegmentTemplate parent,
+            @Nullable CustomSegmentBase.SegmentTemplate parent,
             List<Descriptor> adaptationSetSupplementalProperties,
             long periodStartUnixTimeMs,
             long periodDurationMs,
@@ -1018,7 +1112,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                         xpp, "initialization", parent != null ? parent.initializationTemplate : null);
 
         RangedUri initialization = null;
-        List<SegmentTimelineElement> timeline = null;
+        List<CustomSegmentBase.SegmentTimelineElement> timeline = null;
 
         do {
             xpp.next();
@@ -1051,20 +1145,20 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 periodStartUnixTimeMs);
     }
 
-    protected SegmentTemplate buildSegmentTemplate(
+    protected CustomSegmentBase.SegmentTemplate buildSegmentTemplate(
             RangedUri initialization,
             long timescale,
             long presentationTimeOffset,
             long startNumber,
             long endNumber,
             long duration,
-            List<SegmentTimelineElement> timeline,
+            List<CustomSegmentBase.SegmentTimelineElement> timeline,
             long availabilityTimeOffsetUs,
             @Nullable UrlTemplate initializationTemplate,
             @Nullable UrlTemplate mediaTemplate,
             long timeShiftBufferDepthMs,
             long periodStartUnixTimeMs) {
-        return new SegmentTemplate(
+        return new CustomSegmentBase.SegmentTemplate(
                 initialization,
                 timescale,
                 presentationTimeOffset,
@@ -1235,10 +1329,10 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         return new EventMessage(schemeIdUri, value, durationMs, id, messageData);
     }
 
-    protected List<SegmentTimelineElement> parseSegmentTimeline(
+    protected List<CustomSegmentBase.SegmentTimelineElement> parseSegmentTimeline(
             XmlPullParser xpp, long timescale, long periodDurationMs)
             throws XmlPullParserException, IOException {
-        List<SegmentTimelineElement> segmentTimeline = new ArrayList<>();
+        List<CustomSegmentBase.SegmentTimelineElement> segmentTimeline = new ArrayList<>();
         long startTime = 0;
         long elementDuration = C.TIME_UNSET;
         int elementRepeatCount = 0;
@@ -1290,7 +1384,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
      * @return Calculated next start time.
      */
     private long addSegmentTimelineElementsToList(
-            List<SegmentTimelineElement> segmentTimeline,
+            List<CustomSegmentBase.SegmentTimelineElement> segmentTimeline,
             long startTime,
             long elementDuration,
             int elementRepeatCount,
@@ -1306,8 +1400,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         return startTime;
     }
 
-    protected SegmentTimelineElement buildSegmentTimelineElement(long startTime, long duration) {
-        return new SegmentTimelineElement(startTime, duration);
+    protected CustomSegmentBase.SegmentTimelineElement buildSegmentTimelineElement(long startTime, long duration) {
+        return new CustomSegmentBase.SegmentTimelineElement(startTime, duration);
     }
 
     @Nullable
@@ -1491,6 +1585,14 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             }
         }
         return result;
+    }
+
+    protected String[] parseProfiles(XmlPullParser xpp, String attributeName, String[] defaultValue) {
+        @Nullable String attributeValue = xpp.getAttributeValue(/* namespace= */ null, attributeName);
+        if (attributeValue == null) {
+            return defaultValue;
+        }
+        return attributeValue.split(",");
     }
 
     protected @C.SelectionFlags int parseSelectionFlagsFromDashRoleScheme(@Nullable String value) {
@@ -1683,7 +1785,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
             return MimeTypes.getAudioMediaMimeType(codecs);
         } else if (MimeTypes.isVideo(containerMimeType)) {
             return MimeTypes.getVideoMediaMimeType(codecs);
-        }  else if (MimeTypes.isText(containerMimeType)) {
+        } else if (MimeTypes.isText(containerMimeType)) {
             // Text types are raw formats.
             return containerMimeType;
         } else if (MimeTypes.isImage(containerMimeType)) {
@@ -1859,6 +1961,15 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         return text;
     }
 
+    private boolean isDvbProfileDeclared(String[] profiles) {
+        for (String profile : profiles) {
+            if (profile.startsWith("urn:dvb:dash:profile:dvb-dash:")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected static int parseInt(XmlPullParser xpp, String name, int defaultValue) {
         String value = xpp.getAttributeValue(null, name);
         return value == null ? defaultValue : Integer.parseInt(value);
@@ -1903,6 +2014,7 @@ public class DashManifestParserForThumbnail extends DefaultHandler
                 : Format.NO_VALUE;
     }
 
+
     /**
      * Parses the number of channels from the value attribute of an AudioChannelConfiguration with
      * schemeIdUri "tag:dts.com,2014:dash:audio_channel_configuration:2012" as defined by Annex G
@@ -1938,8 +2050,8 @@ public class DashManifestParserForThumbnail extends DefaultHandler
 
     /**
      * Parses the number of channels from the value attribute of an AudioChannelConfiguration with
-     * schemeIdUri "tag:dolby.com,2014:dash:audio_channel_configuration:2011", as defined by table E.5
-     * in ETSI TS 102 366, or the legacy schemeIdUri
+     * schemeIdUri "tag:dolby.com,2014:dash:audio_channel_configuration:2011" as defined by table E.5
+     * in ETSI TS 102 366, or by the legacy schemeIdUri
      * "urn:dolby:dash:audio_channel_configuration:2011".
      *
      * @param xpp The parser from which to read.
@@ -1977,23 +2089,6 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         return C.INDEX_UNSET;
     }
 
-    private boolean isDvbProfileDeclared(String[] profiles) {
-        for (String profile : profiles) {
-            if (profile.startsWith("urn:dvb:dash:profile:dvb-dash:")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected String[] parseProfiles(XmlPullParser xpp, String attributeName, String[] defaultValue) {
-        @Nullable String attributeValue = xpp.getAttributeValue(/* namespace= */ null, attributeName);
-        if (attributeValue == null) {
-            return defaultValue;
-        }
-        return attributeValue.split(",");
-    }
-
     private static long getFinalAvailabilityTimeOffset(
             long baseUrlAvailabilityTimeOffsetUs, long segmentBaseAvailabilityTimeOffsetUs) {
         long availabilityTimeOffsetUs = segmentBaseAvailabilityTimeOffsetUs;
@@ -2011,9 +2106,9 @@ public class DashManifestParserForThumbnail extends DefaultHandler
     /** A parsed Representation element. */
     protected static final class RepresentationInfo {
 
-        public final Format format;
+        public final CustomFormat format;
         public final ImmutableList<BaseUrl> baseUrls;
-        public final SegmentBase segmentBase;
+        public final CustomSegmentBase segmentBase;
         @Nullable public final String drmSchemeType;
         public final ArrayList<SchemeData> drmSchemeDatas;
         public final ArrayList<Descriptor> inbandEventStreams;
@@ -2022,9 +2117,9 @@ public class DashManifestParserForThumbnail extends DefaultHandler
         public final List<Descriptor> supplementalProperties;
 
         public RepresentationInfo(
-                Format format,
+                CustomFormat format,
                 List<BaseUrl> baseUrls,
-                SegmentBase segmentBase,
+                CustomSegmentBase segmentBase,
                 @Nullable String drmSchemeType,
                 ArrayList<SchemeData> drmSchemeDatas,
                 ArrayList<Descriptor> inbandEventStreams,

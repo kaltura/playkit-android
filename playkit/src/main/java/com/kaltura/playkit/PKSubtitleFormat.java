@@ -14,7 +14,7 @@ package com.kaltura.playkit;
 
 import android.net.Uri;
 
-import com.kaltura.android.exoplayer2.util.MimeTypes;
+import com.kaltura.androidx.media3.common.MimeTypes;
 
 import java.util.HashMap;
 import java.util.Map;

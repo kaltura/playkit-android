@@ -14,9 +14,9 @@ package com.kaltura.playkit.player;
 
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.androidx.media3.datasource.cache.Cache;
 import com.kaltura.playkit.PKAbrFilter;
-import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.EventStream;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlaybackInfo;

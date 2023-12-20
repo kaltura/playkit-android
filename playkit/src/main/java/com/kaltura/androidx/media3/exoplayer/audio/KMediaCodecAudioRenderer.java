@@ -1,6 +1,6 @@
-package com.kaltura.android.exoplayer2.audio;
+package com.kaltura.androidx.media3.exoplayer.audio;
 
-import static com.kaltura.android.exoplayer2.audio.DefaultAudioSink.DEFAULT_PLAYBACK_SPEED;
+import static com.kaltura.androidx.media3.exoplayer.audio.DefaultAudioSink.DEFAULT_PLAYBACK_SPEED;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -10,12 +10,12 @@ import android.os.Handler;
 
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.ExoPlaybackException;
-import com.kaltura.android.exoplayer2.Format;
-import com.kaltura.android.exoplayer2.PlaybackParameters;
-import com.kaltura.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecAdapter;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
+import com.kaltura.androidx.media3.exoplayer.ExoPlaybackException;
+import com.kaltura.androidx.media3.common.Format;
+import com.kaltura.androidx.media3.common.PlaybackParameters;
+import com.kaltura.androidx.media3.decoder.DecoderInputBuffer;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecAdapter;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
 import com.kaltura.playkit.PKLog;
 
 import java.lang.reflect.Field;
@@ -126,7 +126,7 @@ public class KMediaCodecAudioRenderer extends MediaCodecAudioRenderer {
     }
 
     @Override
-    protected void onQueueInputBuffer(DecoderInputBuffer buffer) {
+    protected void onQueueInputBuffer(DecoderInputBuffer buffer) throws ExoPlaybackException {
         try {
             Field allowFirstBufferPositionDiscontinuityField = Objects.requireNonNull(
                             getClass().getSuperclass())

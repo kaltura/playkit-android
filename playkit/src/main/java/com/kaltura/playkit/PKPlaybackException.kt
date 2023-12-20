@@ -2,11 +2,11 @@ package com.kaltura.playkit
 
 import android.media.MediaCodec.CryptoException
 import android.util.Pair
-import com.kaltura.android.exoplayer2.ExoPlaybackException
-import com.kaltura.android.exoplayer2.ExoTimeoutException
-import com.kaltura.android.exoplayer2.PlaybackException
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer.DecoderInitializationException
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil
+import com.kaltura.androidx.media3.exoplayer.ExoPlaybackException
+import com.kaltura.androidx.media3.exoplayer.ExoTimeoutException
+import com.kaltura.androidx.media3.common.PlaybackException
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecRenderer.DecoderInitializationException
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecUtil
 import com.kaltura.playkit.player.PKPlayerErrorType
 
 class PKPlaybackException {
