@@ -29,58 +29,58 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.common.base.Charsets;
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
-import com.kaltura.android.exoplayer2.ExoPlayer;
-import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
-import com.kaltura.android.exoplayer2.Format;
-import com.kaltura.android.exoplayer2.LoadControl;
-import com.kaltura.android.exoplayer2.MediaItem;
-import com.kaltura.android.exoplayer2.PlaybackException;
-import com.kaltura.android.exoplayer2.PlaybackParameters;
-import com.kaltura.android.exoplayer2.Player;
-import com.kaltura.android.exoplayer2.Timeline;
-import com.kaltura.android.exoplayer2.Tracks;
-import com.kaltura.android.exoplayer2.audio.AudioAttributes;
-import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifest;
-import com.kaltura.android.exoplayer2.dashmanifestparser.CustomDashManifestParser;
-import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
-import com.kaltura.android.exoplayer2.drm.DrmSessionManagerProvider;
-import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
-import com.kaltura.android.exoplayer2.extractor.ExtractorsFactory;
-import com.kaltura.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory;
-import com.kaltura.android.exoplayer2.extractor.ts.TsExtractor;
-import com.kaltura.android.exoplayer2.metadata.Metadata;
-import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
-import com.kaltura.android.exoplayer2.source.DefaultMediaSourceFactory;
-import com.kaltura.android.exoplayer2.source.MediaSource;
-import com.kaltura.android.exoplayer2.source.MergingMediaSource;
-import com.kaltura.android.exoplayer2.source.ProgressiveMediaSource;
-import com.kaltura.android.exoplayer2.source.SingleSampleMediaSource;
-import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
-import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
-import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
-import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParserForThumbnail;
-import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
-import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
-import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.kaltura.android.exoplayer2.ui.SubtitleView;
-import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
-import com.kaltura.android.exoplayer2.upstream.ByteArrayDataSink;
-import com.kaltura.android.exoplayer2.upstream.DataSource;
-import com.kaltura.android.exoplayer2.upstream.DataSpec;
-import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
-import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.kaltura.android.exoplayer2.upstream.DefaultDataSource;
-import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
-import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
-import com.kaltura.android.exoplayer2.upstream.TeeDataSource;
-import com.kaltura.android.exoplayer2.upstream.TransferListener;
-import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
-import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
-import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
-import com.kaltura.android.exoplayer2.video.ConfigurableLoadControl;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.common.MediaLibraryInfo;
+import com.kaltura.androidx.media3.exoplayer.DefaultRenderersFactory;
+import com.kaltura.androidx.media3.exoplayer.ExoPlayer;
+import com.kaltura.androidx.media3.common.Format;
+import com.kaltura.androidx.media3.exoplayer.LoadControl;
+import com.kaltura.androidx.media3.common.MediaItem;
+import com.kaltura.androidx.media3.common.PlaybackException;
+import com.kaltura.androidx.media3.common.PlaybackParameters;
+import com.kaltura.androidx.media3.common.Player;
+import com.kaltura.androidx.media3.common.Timeline;
+import com.kaltura.androidx.media3.common.Tracks;
+import com.kaltura.androidx.media3.common.AudioAttributes;
+import com.kaltura.androidx.media3.exoplayer.dashmanifestparser.CustomDashManifest;
+import com.kaltura.androidx.media3.exoplayer.dashmanifestparser.CustomDashManifestParser;
+import com.kaltura.androidx.media3.exoplayer.drm.DrmSessionManager;
+import com.kaltura.androidx.media3.exoplayer.drm.DrmSessionManagerProvider;
+import com.kaltura.androidx.media3.datasource.okhttp.OkHttpDataSource;
+import com.kaltura.androidx.media3.extractor.ExtractorsFactory;
+import com.kaltura.androidx.media3.extractor.ts.DefaultTsPayloadReaderFactory;
+import com.kaltura.androidx.media3.extractor.ts.TsExtractor;
+import com.kaltura.androidx.media3.common.Metadata;
+import com.kaltura.androidx.media3.exoplayer.metadata.MetadataOutput;
+import com.kaltura.androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
+import com.kaltura.androidx.media3.exoplayer.source.MediaSource;
+import com.kaltura.androidx.media3.exoplayer.source.MergingMediaSource;
+import com.kaltura.androidx.media3.exoplayer.source.ProgressiveMediaSource;
+import com.kaltura.androidx.media3.exoplayer.source.SingleSampleMediaSource;
+import com.kaltura.androidx.media3.exoplayer.dash.DashMediaSource;
+import com.kaltura.androidx.media3.exoplayer.dash.DefaultDashChunkSource;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.DashManifest;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.DashManifestParserForThumbnail;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.EventStream;
+import com.kaltura.androidx.media3.exoplayer.hls.HlsMediaSource;
+import com.kaltura.androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
+import com.kaltura.androidx.media3.ui.SubtitleView;
+import com.kaltura.androidx.media3.exoplayer.upstream.BandwidthMeter;
+import com.kaltura.androidx.media3.datasource.ByteArrayDataSink;
+import com.kaltura.androidx.media3.datasource.DataSource;
+import com.kaltura.androidx.media3.datasource.DataSpec;
+import com.kaltura.androidx.media3.exoplayer.upstream.DefaultAllocator;
+import com.kaltura.androidx.media3.exoplayer.upstream.DefaultBandwidthMeter;
+import com.kaltura.androidx.media3.datasource.DefaultDataSource;
+import com.kaltura.androidx.media3.datasource.DefaultHttpDataSource;
+import com.kaltura.androidx.media3.datasource.HttpDataSource;
+import com.kaltura.androidx.media3.datasource.TeeDataSource;
+import com.kaltura.androidx.media3.datasource.TransferListener;
+import com.kaltura.androidx.media3.datasource.UdpDataSource;
+import com.kaltura.androidx.media3.datasource.cache.Cache;
+import com.kaltura.androidx.media3.datasource.cache.CacheDataSource;
+import com.kaltura.androidx.media3.common.util.TimestampAdjuster;
+import com.kaltura.androidx.media3.exoplayer.video.ConfigurableLoadControl;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalAssetsManagerExo;
 import com.kaltura.playkit.PKAbrFilter;
@@ -322,14 +322,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
 //            PlaybackStatsListener playbackStatsListener  = new PlaybackStatsListener(true, new PlaybackStatsListener.Callback() {
 //                @Override
-//            public void onPlaybackStatsReady(com.kaltura.android.exoplayer2.analytics.AnalyticsListener.EventTime eventTime, PlaybackStats playbackStats) {
+//            public void onPlaybackStatsReady(com.kaltura.androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime eventTime, PlaybackStats playbackStats) {
 //                    log.d("PlaybackStatsListener playbackCount = " + playbackStats.playbackCount);
 //                }
 //            });
 //            player.addAnalyticsListener(playbackStatsListener);
 
             player.addAnalyticsListener(analyticsAggregator);
-            final com.kaltura.android.exoplayer2.analytics.AnalyticsListener exoAnalyticsListener = profiler.getExoAnalyticsListener();
+            final com.kaltura.androidx.media3.exoplayer.analytics.AnalyticsListener exoAnalyticsListener = profiler.getExoAnalyticsListener();
             if (exoAnalyticsListener != null) {
                 player.addAnalyticsListener(exoAnalyticsListener);
             }
@@ -856,7 +856,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     private static String getUserAgent(Context context) {
-        return Utils.getUserAgent(context) + " ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
+        return Utils.getUserAgent(context) + " " + MediaLibraryInfo.VERSION_SLASHY;
     }
 
     private void changeState(PlayerState newState) {

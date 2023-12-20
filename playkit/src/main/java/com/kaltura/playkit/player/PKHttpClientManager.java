@@ -1,6 +1,6 @@
 package com.kaltura.playkit.player;
 
-import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.kaltura.androidx.media3.datasource.DefaultHttpDataSource;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
 

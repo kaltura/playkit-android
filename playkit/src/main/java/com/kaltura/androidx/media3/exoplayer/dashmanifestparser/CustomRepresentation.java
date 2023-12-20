@@ -1,20 +1,20 @@
-package com.kaltura.android.exoplayer2.dashmanifestparser;
+package com.kaltura.androidx.media3.exoplayer.dashmanifestparser;
 
 import android.net.Uri;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.google.common.collect.ImmutableList;
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.source.dash.DashSegmentIndex;
-import com.kaltura.android.exoplayer2.source.dash.manifest.BaseUrl;
-import com.kaltura.android.exoplayer2.source.dash.manifest.Descriptor;
-import com.kaltura.android.exoplayer2.source.dash.manifest.RangedUri;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.exoplayer.dash.DashSegmentIndex;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.BaseUrl;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.Descriptor;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.RangedUri;
 
 import java.util.Collections;
 import java.util.List;
 
-import static com.kaltura.android.exoplayer2.util.Assertions.checkArgument;
+import static com.kaltura.androidx.media3.common.util.Assertions.checkArgument;
 
 /**
  * A DASH representation.

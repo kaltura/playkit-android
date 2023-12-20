@@ -19,8 +19,8 @@ import android.media.MediaDrmException;
 import android.os.Build;
 import androidx.annotation.NonNull;
 
-import com.kaltura.android.exoplayer2.drm.DrmInitData;
-import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
+import com.kaltura.androidx.media3.common.DrmInitData;
+import com.kaltura.androidx.media3.exoplayer.drm.FrameworkMediaDrm;
 import com.kaltura.playkit.player.MediaSupport;
 
 import java.util.Collections;

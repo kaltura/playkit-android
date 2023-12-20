@@ -23,13 +23,13 @@ import android.net.Uri;
 import android.os.Build;
 import androidx.annotation.NonNull;
 
-import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
-import com.kaltura.android.exoplayer2.drm.ExoMediaDrm;
-import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
-import com.kaltura.android.exoplayer2.drm.HttpMediaDrmCallback;
-import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
-import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
-import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.androidx.media3.common.MediaLibraryInfo;
+import com.kaltura.androidx.media3.exoplayer.drm.ExoMediaDrm;
+import com.kaltura.androidx.media3.exoplayer.drm.FrameworkMediaDrm;
+import com.kaltura.androidx.media3.exoplayer.drm.HttpMediaDrmCallback;
+import com.kaltura.androidx.media3.exoplayer.drm.UnsupportedDrmException;
+import com.kaltura.androidx.media3.datasource.DefaultHttpDataSource;
+import com.kaltura.androidx.media3.datasource.HttpDataSource;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.MediaSupport;
 
@@ -423,7 +423,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         String sdkName = "PlayKit/" + BuildConfig.VERSION_NAME;
 
         return sdkName + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
-                + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
+                + ") " + MediaLibraryInfo.VERSION_SLASHY;
     }
 
     private static class NoWidevinePSSHException extends LocalAssetsManager.RegisterException {

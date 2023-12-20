@@ -1,7 +1,7 @@
 package com.kaltura.playkit.player.thumbnail;
 
-import com.kaltura.android.exoplayer2.text.Subtitle;
-import com.kaltura.android.exoplayer2.text.SubtitleDecoderException;
+import com.kaltura.androidx.media3.extractor.text.Subtitle;
+import com.kaltura.androidx.media3.extractor.text.SubtitleDecoderException;
 import com.kaltura.playkit.Utils;
 
 import java.io.IOException;

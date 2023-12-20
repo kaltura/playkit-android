@@ -17,7 +17,7 @@ import com.kaltura.playkit.utils.Consts;
  * <br>
  *    <br>
  * If nothing fulfills in the above conditions, the default live offset
- * is {@link com.kaltura.android.exoplayer2.source.dash.DashMediaSource#DEFAULT_FALLBACK_TARGET_LIVE_OFFSET_MS}.
+ * is {@link com.kaltura.androidx.media3.exoplayer.source.dash.DashMediaSource#DEFAULT_FALLBACK_TARGET_LIVE_OFFSET_MS}.
  * <br>
  *    <br>
  * It's a good practice to have `availabilityTimeOffset` in DASH manifest, it tells that how much

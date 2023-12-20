@@ -1,6 +1,6 @@
-package com.kaltura.android.exoplayer2.dashmanifestparser;
+package com.kaltura.androidx.media3.exoplayer.dashmanifestparser;
 
-import static com.kaltura.android.exoplayer2.source.dash.DashSegmentIndex.INDEX_UNBOUNDED;
+import static com.kaltura.androidx.media3.exoplayer.dash.DashSegmentIndex.INDEX_UNBOUNDED;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -8,12 +8,12 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.google.common.math.BigIntegerMath;
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.source.dash.DashSegmentIndex;
-import com.kaltura.android.exoplayer2.source.dash.manifest.RangedUri;
-import com.kaltura.android.exoplayer2.source.dash.manifest.Representation;
-import com.kaltura.android.exoplayer2.source.dash.manifest.UrlTemplate;
-import com.kaltura.android.exoplayer2.util.Util;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.exoplayer.dash.DashSegmentIndex;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.RangedUri;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.Representation;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.UrlTemplate;
+import com.kaltura.androidx.media3.common.util.Util;
 
 import java.math.BigInteger;
 import java.math.RoundingMode;

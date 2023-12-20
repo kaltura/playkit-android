@@ -12,17 +12,17 @@
 
 package com.kaltura.playkit.player.metadata;
 
-import com.kaltura.android.exoplayer2.metadata.Metadata;
-import com.kaltura.android.exoplayer2.metadata.emsg.EventMessage;
-import com.kaltura.android.exoplayer2.metadata.id3.ApicFrame;
-import com.kaltura.android.exoplayer2.metadata.id3.BinaryFrame;
-import com.kaltura.android.exoplayer2.metadata.id3.ChapterFrame;
-import com.kaltura.android.exoplayer2.metadata.id3.ChapterTocFrame;
-import com.kaltura.android.exoplayer2.metadata.id3.CommentFrame;
-import com.kaltura.android.exoplayer2.metadata.id3.GeobFrame;
-import com.kaltura.android.exoplayer2.metadata.id3.PrivFrame;
-import com.kaltura.android.exoplayer2.metadata.id3.TextInformationFrame;
-import com.kaltura.android.exoplayer2.metadata.id3.UrlLinkFrame;
+import com.kaltura.androidx.media3.common.Metadata;
+import com.kaltura.androidx.media3.extractor.metadata.emsg.EventMessage;
+import com.kaltura.androidx.media3.extractor.metadata.id3.ApicFrame;
+import com.kaltura.androidx.media3.extractor.metadata.id3.BinaryFrame;
+import com.kaltura.androidx.media3.extractor.metadata.id3.ChapterFrame;
+import com.kaltura.androidx.media3.extractor.metadata.id3.ChapterTocFrame;
+import com.kaltura.androidx.media3.extractor.metadata.id3.CommentFrame;
+import com.kaltura.androidx.media3.extractor.metadata.id3.GeobFrame;
+import com.kaltura.androidx.media3.extractor.metadata.id3.PrivFrame;
+import com.kaltura.androidx.media3.extractor.metadata.id3.TextInformationFrame;
+import com.kaltura.androidx.media3.extractor.metadata.id3.UrlLinkFrame;
 
 import java.util.ArrayList;
 import java.util.Arrays;
