@@ -335,7 +335,8 @@ public class PlayerController implements Player {
     public void stop() {
         log.v("stop");
         if (eventListener != null && !isPlayerStopped) {
-            PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
+            PlayerEvent event = new PlayerEvent.Stopped(PlayerEvent.Type.STOPPED,
+                    getMediaSource() != null ? getMediaSource().getUrl() : null);
             cancelUpdateProgress();
 
             log.d("stop() isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
