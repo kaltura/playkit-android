@@ -80,6 +80,14 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class Stopped extends PlayerEvent {
+        public final String mediaSourceUrl;
+        public Stopped(Type type, String mediaSourceUrl) {
+            super(type);
+            this.mediaSourceUrl = mediaSourceUrl;
+        }
+    }
+
     public static class StateChanged extends PlayerEvent {
         public final PlayerState newState;
         public final PlayerState oldState;
