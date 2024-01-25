@@ -2,7 +2,13 @@ package com.kaltura.playkit.player;
 
 public class ABRSettings {
 
+    public enum InitialBitrateEstimatePolicy {
+        INITIAL_SETUP_ONLY,
+        RESET_ON_MEDIA_CHANGE
+    }
+
     private Long initialBitrateEstimate = null;
+    private InitialBitrateEstimatePolicy initialBitrateEstimatePolicy = InitialBitrateEstimatePolicy.INITIAL_SETUP_ONLY;
     private Long maxVideoBitrate = Long.MAX_VALUE;
     private Long minVideoBitrate = Long.MIN_VALUE;
     private Long maxVideoHeight = Long.MAX_VALUE;
@@ -40,6 +46,27 @@ public class ABRSettings {
      */
     public ABRSettings setInitialBitrateEstimate(Long initialBitrateEstimate) {
         this.initialBitrateEstimate = initialBitrateEstimate;
+        return this;
+    }
+
+    /**
+     * Sets the initial bitrate estimate policy.
+     *
+     * <br>
+     * <br>
+     * Using {@link ABRSettings.InitialBitrateEstimatePolicy#INITIAL_SETUP_ONLY}
+     * will set the provided initial bitrate only on start on playback
+     * <br>
+     * Using {@link ABRSettings.InitialBitrateEstimatePolicy#RESET_ON_MEDIA_CHANGE}
+     * will set the provided initial bitrate on each media change
+     * <br>
+     * Default is {@link ABRSettings.InitialBitrateEstimatePolicy#INITIAL_SETUP_ONLY}
+     *
+     * @param initialBitrateEstimatePolicy The initial bitrate estimate policy.
+     * @return ABRSettings
+     */
+    public ABRSettings setInitialBitrateEstimatePolicy(InitialBitrateEstimatePolicy initialBitrateEstimatePolicy) {
+        this.initialBitrateEstimatePolicy = initialBitrateEstimatePolicy;
         return this;
     }
 
@@ -137,6 +164,10 @@ public class ABRSettings {
 
     public Long getInitialBitrateEstimate() {
         return initialBitrateEstimate;
+    }
+
+    public InitialBitrateEstimatePolicy getAbrInitialBitrateEstimatePolicy() {
+        return initialBitrateEstimatePolicy;
     }
 
     public Long getMaxVideoHeight() {
