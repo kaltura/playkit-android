@@ -110,7 +110,7 @@ class ExoPlayerView extends BaseExoplayerView {
             public void onPlaybackStateChanged(int playbackState) {
                 switch (playbackState) {
                     case Player.STATE_IDLE:
-                        if (shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer) {
+                        if (shutterStaysOnRenderedFirstFrame) {
                             if (shutterView != null) {
                                 shutterView.setVisibility(VISIBLE);
                             }
