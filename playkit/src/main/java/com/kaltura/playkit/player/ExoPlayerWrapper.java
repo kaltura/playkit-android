@@ -74,6 +74,8 @@ import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DefaultDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.upstream.KBandwidthMeter;
+import com.kaltura.android.exoplayer2.upstream.KDefaultBandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.TeeDataSource;
 import com.kaltura.android.exoplayer2.upstream.TransferListener;
 import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
@@ -205,7 +207,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         if (customLoadControlStrategy != null && customLoadControlStrategy.getCustomBandwidthMeter() != null) {
             bandwidthMeter = customLoadControlStrategy.getCustomBandwidthMeter();
         } else {
-            DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context);
+            KDefaultBandwidthMeter.Builder bandwidthMeterBuilder = new KDefaultBandwidthMeter.Builder(context);
 
             Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
 
@@ -1121,6 +1123,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             // for change media case need to verify if surface swap is needed
             maybeChangePlayerRenderView();
 
+            maybeResetBitrateEstimate();
+
             // for change speed adjustment case need to verify if re-init is required
             maybeReInitPlayerOnSpeedAdjustmentChange(mediaSourceConfig.mediaSource.getMediaFormat());
         }
@@ -1158,6 +1162,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             initializePlayer();
         }
         this.useSpeedAdjustingRenderer = useSpeedAdjustingRenderer;
+    }
+
+    private void maybeResetBitrateEstimate() {
+        if (playerSettings.getAbrSettings().getAbrInitialBitrateEstimatePolicy() == ABRSettings.InitialBitrateEstimatePolicy.RESET_ON_MEDIA_CHANGE) {
+            if (bandwidthMeter instanceof KBandwidthMeter) {
+                ((KBandwidthMeter)bandwidthMeter).resetBitrateEstimate();
+            }
+        }
     }
 
     @Override
