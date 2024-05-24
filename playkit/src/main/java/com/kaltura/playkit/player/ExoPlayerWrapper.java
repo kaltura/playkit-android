@@ -83,6 +83,7 @@ import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.ConfigurableLoadControl;
+import com.kaltura.playkit.KDefaultRenderersFactory;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalAssetsManagerExo;
 import com.kaltura.playkit.PKAbrFilter;
@@ -248,7 +249,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         }
         DefaultRenderersFactory renderersFactory = this.useSpeedAdjustingRenderer
                 ? SpeedAdjustedRenderersFactory.createSpeedAdjustedRenderersFactory(context, playerSettings, exoPlayerView)
-                : new DefaultRenderersFactory(context);
+                : KDefaultRenderersFactory.createDecoderInitErrorRetryFactory(context);
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
