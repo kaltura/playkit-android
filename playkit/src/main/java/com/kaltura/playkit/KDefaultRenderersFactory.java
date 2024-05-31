@@ -17,6 +17,9 @@ import java.util.ArrayList;
 
 public class KDefaultRenderersFactory {
     private static final PKLog log = PKLog.get("KDefaultRenderersFactory");
+    private static final int DEFAULT_INIT_CODEC_FAILURE_RETRY_TIMEOUT_MS = 100;
+    private static final int DEFAULT_INIT_CODEC_FAILURE_RETRY_COUNT = 10;
+
     public static DefaultRenderersFactory createDecoderInitErrorRetryFactory(
             Context context
     ) {
@@ -56,14 +59,29 @@ public class KDefaultRenderersFactory {
                                             super.render(positionUs, elapsedRealtimeUs);
                                         } catch (ExoPlaybackException e) {
                                             if (e.errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED) {
-                                                // try one more time
-                                                try {
-                                                    Thread.sleep(50);
-                                                } catch (Exception e1) {
-                                                    log.d("Interrupted while sleeping: " + e.getMessage());
-                                                    e.printStackTrace();
+                                                for(int i = 0; i < DEFAULT_INIT_CODEC_FAILURE_RETRY_COUNT; i++) {
+                                                    log.d("Retrying on coded init failure (" + i + ")");
+                                                    super.onReset();
+                                                    try {
+                                                        Thread.sleep(DEFAULT_INIT_CODEC_FAILURE_RETRY_TIMEOUT_MS);
+                                                    } catch (Exception e1) {
+                                                        log.d("Interrupted while sleeping: " + e1.getMessage());
+                                                        e1.printStackTrace();
+                                                    }
+                                                    try {
+                                                        super.render(positionUs, elapsedRealtimeUs);
+                                                        log.d("Retrying on coded init failure successful");
+                                                        // Stop retrying if no exception was thrown
+                                                        break;
+                                                    } catch (ExoPlaybackException e2) {
+                                                        if (e2.errorCode != PlaybackException.ERROR_CODE_DECODER_INIT_FAILED
+                                                            || i == DEFAULT_INIT_CODEC_FAILURE_RETRY_COUNT - 1) {
+                                                            // Some other error happened or last retry. Throw exception to the caller
+                                                            log.d("Codec init retry failed: " + e2.getMessage());
+                                                            throw e2;
+                                                        }
+                                                    }
                                                 }
-                                                super.render(positionUs, elapsedRealtimeUs);
                                             }
                                         }
                                     }
