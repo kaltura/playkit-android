@@ -12,16 +12,16 @@ import com.kaltura.android.exoplayer2.Renderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.kaltura.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.kaltura.android.exoplayer2.video.VideoRendererEventListener;
+import com.kaltura.playkit.player.PlayerSettings;
 
 import java.util.ArrayList;
 
 public class KDefaultRenderersFactory {
     private static final PKLog log = PKLog.get("KDefaultRenderersFactory");
-    private static final int DEFAULT_INIT_CODEC_FAILURE_RETRY_TIMEOUT_MS = 100;
-    private static final int DEFAULT_INIT_CODEC_FAILURE_RETRY_COUNT = 10;
 
     public static DefaultRenderersFactory createDecoderInitErrorRetryFactory(
-            Context context
+            Context context,
+            PlayerSettings playerSettings
     ) {
         return new DefaultRenderersFactory(context) {
             @Override
@@ -58,12 +58,13 @@ public class KDefaultRenderersFactory {
                                         try {
                                             super.render(positionUs, elapsedRealtimeUs);
                                         } catch (ExoPlaybackException e) {
-                                            if (e.errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED) {
-                                                for(int i = 0; i < DEFAULT_INIT_CODEC_FAILURE_RETRY_COUNT; i++) {
+                                            if (e.errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED
+                                                    && playerSettings.getCodecFailureRetryCount() > 0 && playerSettings.getCodecFailureRetryTimeout() > 0) {
+                                                for(int i = 0; i < playerSettings.getCodecFailureRetryCount(); i++) {
                                                     log.d("Retrying on coded init failure (" + i + ")");
                                                     super.onReset();
                                                     try {
-                                                        Thread.sleep(DEFAULT_INIT_CODEC_FAILURE_RETRY_TIMEOUT_MS);
+                                                        Thread.sleep(playerSettings.getCodecFailureRetryTimeout());
                                                     } catch (Exception e1) {
                                                         log.d("Interrupted while sleeping: " + e1.getMessage());
                                                         e1.printStackTrace();
@@ -75,7 +76,7 @@ public class KDefaultRenderersFactory {
                                                         break;
                                                     } catch (ExoPlaybackException e2) {
                                                         if (e2.errorCode != PlaybackException.ERROR_CODE_DECODER_INIT_FAILED
-                                                            || i == DEFAULT_INIT_CODEC_FAILURE_RETRY_COUNT - 1) {
+                                                            || i == playerSettings.getCodecFailureRetryCount() - 1) {
                                                             // Some other error happened or last retry. Throw exception to the caller
                                                             log.d("Codec init retry failed: " + e2.getMessage());
                                                             throw e2;

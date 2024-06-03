@@ -70,6 +70,8 @@ public class PlayerSettings implements Player.Settings {
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
     private Object customLoadControlStrategy = null;
+    private int codecFailureRetryCount = -1;
+    private int codecFailureRetryTimeout = -1;
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -177,6 +179,14 @@ public class PlayerSettings implements Player.Settings {
 
     public Object getCustomLoadControlStrategy() {
         return customLoadControlStrategy;
+    }
+
+    public int getCodecFailureRetryCount() {
+        return codecFailureRetryCount;
+    }
+
+    public int getCodecFailureRetryTimeout() {
+        return codecFailureRetryTimeout;
     }
 
     public boolean isTunneledAudioPlayback() {
@@ -392,6 +402,18 @@ public class PlayerSettings implements Player.Settings {
 
     public Player.Settings setCustomLoadControlStrategy(Object customLoadControlStrategy) {
         this.customLoadControlStrategy = customLoadControlStrategy;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setCodecFailureRetryCount(int codecFailureRetryCount) {
+        this.codecFailureRetryCount = codecFailureRetryCount;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setCodecFailureRetryTimeout(int codecFailureRetryTimeout) {
+        this.codecFailureRetryTimeout = codecFailureRetryTimeout;
         return this;
     }
 

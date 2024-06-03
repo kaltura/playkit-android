@@ -249,7 +249,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         }
         DefaultRenderersFactory renderersFactory = this.useSpeedAdjustingRenderer
                 ? SpeedAdjustedRenderersFactory.createSpeedAdjustedRenderersFactory(context, playerSettings, exoPlayerView)
-                : KDefaultRenderersFactory.createDecoderInitErrorRetryFactory(context);
+                : KDefaultRenderersFactory.createDecoderInitErrorRetryFactory(context, playerSettings);
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
