@@ -8,8 +8,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
+import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecAdapter;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
+import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.playkit.PKLog;
 
 public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer{
@@ -21,6 +23,7 @@ public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer{
     private static final PKLog log = PKLog.get("KMediaCodecVideoRenderer");
 
     @Nullable private KVideoRendererFirstFrameWhenStartedEventListener rendererFirstFrameWhenStartedEventListener;
+    private final MediaCodecSupportFormatHelper mediaCodecSupportFormatHelper;
 
     public KMediaCodecVideoRenderer(Context context,
                                     MediaCodecAdapter.Factory codecAdapterFactory,
@@ -33,6 +36,7 @@ public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer{
                                     KVideoRendererFirstFrameWhenStartedEventListener rendererFirstFrameWhenStartedEventListener) {
         super(context, codecAdapterFactory, mediaCodecSelector, allowedJoiningTimeMs, enableDecoderFallback, eventHandler, eventListener, maxDroppedFramesToNotify);
         this.rendererFirstFrameWhenStartedEventListener = rendererFirstFrameWhenStartedEventListener;
+        this.mediaCodecSupportFormatHelper = new MediaCodecSupportFormatHelper(context);
     }
 
     @Override
@@ -68,5 +72,10 @@ public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer{
             }
         }
         super.renderOutputBufferV21(codec, index, presentationTimeUs, releaseTimeNs);
+    }
+
+    @Override
+    protected int supportsFormat(MediaCodecSelector mediaCodecSelector, Format format) throws MediaCodecUtil.DecoderQueryException {
+        return mediaCodecSupportFormatHelper.supportsFormat(mediaCodecSelector, format);
     }
 }

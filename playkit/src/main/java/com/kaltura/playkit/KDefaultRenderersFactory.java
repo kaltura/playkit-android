@@ -7,9 +7,12 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
+import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.Renderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
+import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
+import com.kaltura.android.exoplayer2.video.MediaCodecSupportFormatHelper;
 import com.kaltura.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.kaltura.android.exoplayer2.video.VideoRendererEventListener;
 import com.kaltura.playkit.player.PlayerSettings;
@@ -23,6 +26,7 @@ public class KDefaultRenderersFactory {
             Context context,
             PlayerSettings playerSettings
     ) {
+        final MediaCodecSupportFormatHelper mediaCodecSupportFormatHelper = new MediaCodecSupportFormatHelper(context);
         return new DefaultRenderersFactory(context) {
             @Override
             protected void buildVideoRenderers(@NonNull Context context,
@@ -85,6 +89,11 @@ public class KDefaultRenderersFactory {
                                                 }
                                             }
                                         }
+                                    }
+
+                                    @Override
+                                    protected int supportsFormat(MediaCodecSelector mediaCodecSelector, Format format) throws MediaCodecUtil.DecoderQueryException {
+                                        return mediaCodecSupportFormatHelper.supportsFormat(mediaCodecSelector, format);
                                     }
                                 }
                         );
