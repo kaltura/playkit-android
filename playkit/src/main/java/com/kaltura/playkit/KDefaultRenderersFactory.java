@@ -10,6 +10,8 @@ import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.PlaybackException;
 import com.kaltura.android.exoplayer2.Renderer;
+import com.kaltura.android.exoplayer2.decoder.DecoderReuseEvaluation;
+import com.kaltura.android.exoplayer2.mediacodec.MediaCodecInfo;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.video.MediaCodecSupportFormatHelper;
@@ -94,6 +96,15 @@ public class KDefaultRenderersFactory {
                                     @Override
                                     protected int supportsFormat(MediaCodecSelector mediaCodecSelector, Format format) throws MediaCodecUtil.DecoderQueryException {
                                         return mediaCodecSupportFormatHelper.supportsFormat(mediaCodecSelector, format);
+                                    }
+
+                                    @NonNull
+                                    @Override
+                                    protected DecoderReuseEvaluation canReuseCodec(@NonNull MediaCodecInfo codecInfo, @NonNull Format oldFormat, @NonNull Format newFormat) {
+                                        return new DecoderReuseEvaluation(codecInfo.name,
+                                                oldFormat, newFormat,
+                                                DecoderReuseEvaluation.REUSE_RESULT_NO,
+                                                DecoderReuseEvaluation.DISCARD_REASON_APP_OVERRIDE);
                                     }
                                 }
                         );
