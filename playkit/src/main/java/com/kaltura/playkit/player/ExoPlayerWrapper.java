@@ -195,7 +195,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private Cache downloadCache;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
-        this(context, new ExoPlayerView(context, playerSettings.isShutterStaysOnRenderedFirstFrame()), playerSettings, rootPlayerView);
+        this(context, new ExoPlayerView(context,
+                playerSettings.isShutterStaysOnRenderedFirstFrame(),
+                playerSettings.isMuteWhenShutterVisible()), playerSettings, rootPlayerView);
     }
 
     ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings settings, PlayerView rootPlayerView) {
@@ -1159,10 +1161,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private void maybeReInitPlayerOnSpeedAdjustmentChange(PKMediaFormat format) {
         boolean useSpeedAdjustingRenderer = shouldUseSpeedAdjustingRenderer(format);
         if (useSpeedAdjustingRenderer != this.useSpeedAdjustingRenderer) {
+            this.useSpeedAdjustingRenderer = useSpeedAdjustingRenderer;
             destroyPlayer(false);
             initializePlayer();
         }
-        this.useSpeedAdjustingRenderer = useSpeedAdjustingRenderer;
     }
 
     private void maybeResetBitrateEstimate() {

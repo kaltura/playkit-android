@@ -101,10 +101,14 @@ public class KDefaultRenderersFactory {
                                     @NonNull
                                     @Override
                                     protected DecoderReuseEvaluation canReuseCodec(@NonNull MediaCodecInfo codecInfo, @NonNull Format oldFormat, @NonNull Format newFormat) {
-                                        return new DecoderReuseEvaluation(codecInfo.name,
-                                                oldFormat, newFormat,
-                                                DecoderReuseEvaluation.REUSE_RESULT_NO,
-                                                DecoderReuseEvaluation.DISCARD_REASON_APP_OVERRIDE);
+                                        if (playerSettings.isDoNotReuseVideoCodecOnMediaChange()) {
+                                            return new DecoderReuseEvaluation(codecInfo.name,
+                                                    oldFormat, newFormat,
+                                                    DecoderReuseEvaluation.REUSE_RESULT_NO,
+                                                    DecoderReuseEvaluation.DISCARD_REASON_APP_OVERRIDE);
+                                        } else {
+                                            return super.canReuseCodec(codecInfo, oldFormat, newFormat);
+                                        }
                                     }
                                 }
                         );

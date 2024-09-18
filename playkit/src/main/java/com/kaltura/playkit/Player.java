@@ -346,6 +346,22 @@ public interface Player {
         Settings setShutterStaysOnRenderedFirstFrame(boolean shutterStaysOnRenderedFirstFrame);
 
         /**
+         * Set muteWhenShutterVisible - Whether player being muted when shutter view is visible
+         *
+         * @param muteWhenShutterVisible
+         * @return - Player Settings
+         */
+        Settings setMuteWhenShutterVisible(boolean muteWhenShutterVisible);
+
+        /**
+         * Set doNotReuseVideoCodecOnMediaChange - Whether player will not use default codec re-usage logic on each media change
+         *
+         * @param doNotReuseVideoCodecOnMediaChange
+         * @return - Player Settings
+         */
+        Settings setDoNotReuseVideoCodecOnMediaChange(boolean doNotReuseVideoCodecOnMediaChange);
+
+        /**
          * Set codecFailureRetryCount - count of the codec initialization failure retries
          *
          * @param codecFailureRetryCount

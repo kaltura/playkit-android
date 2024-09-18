@@ -38,6 +38,8 @@ public class PlayerSettings implements Player.Settings {
     private boolean handleAudioBecomingNoisyEnabled;
     private boolean handleAudioFocus;
     private boolean shutterStaysOnRenderedFirstFrame;
+    private boolean muteWhenShutterVisible;
+    private boolean doNotReuseVideoCodecOnMediaChange;
 
     // Flag helping to check if client app wants to use a single player instance at a time
     // Only if IMA plugin is there then only this flag is set to true.
@@ -207,6 +209,14 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isShutterStaysOnRenderedFirstFrame() {
         return shutterStaysOnRenderedFirstFrame;
+    }
+
+    public boolean isMuteWhenShutterVisible() {
+        return muteWhenShutterVisible;
+    }
+
+    public boolean isDoNotReuseVideoCodecOnMediaChange() {
+        return doNotReuseVideoCodecOnMediaChange;
     }
 
     public PKSubtitlePreference getSubtitlePreference() {
@@ -445,6 +455,16 @@ public class PlayerSettings implements Player.Settings {
 
     public Player.Settings setShutterStaysOnRenderedFirstFrame(boolean shutterStaysOnRenderedFirstFrame) {
         this.shutterStaysOnRenderedFirstFrame = shutterStaysOnRenderedFirstFrame;
+        return this;
+    }
+
+    public Player.Settings setMuteWhenShutterVisible(boolean muteWhenShutterVisible) {
+        this.muteWhenShutterVisible = muteWhenShutterVisible;
+        return this;
+    }
+
+    public Player.Settings setDoNotReuseVideoCodecOnMediaChange(boolean doNotReuseVideoCodecOnMediaChange) {
+        this.doNotReuseVideoCodecOnMediaChange = doNotReuseVideoCodecOnMediaChange;
         return this;
     }
 
