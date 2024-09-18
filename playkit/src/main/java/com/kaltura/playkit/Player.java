@@ -354,12 +354,12 @@ public interface Player {
         Settings setMuteWhenShutterVisible(boolean muteWhenShutterVisible);
 
         /**
-         * Set doNotReuseVideoCodecOnMediaChange - Whether player will not use default codec re-usage logic on each media change
+         * Set canReuseCodec - Whether player will not use default codec re-usage logic on each media change
          *
-         * @param doNotReuseVideoCodecOnMediaChange
+         * @param canReuseCodec
          * @return - Player Settings
          */
-        Settings setDoNotReuseVideoCodecOnMediaChange(boolean doNotReuseVideoCodecOnMediaChange);
+        Settings setCanReuseCodec(boolean canReuseCodec);
 
         /**
          * Set codecFailureRetryCount - count of the codec initialization failure retries
