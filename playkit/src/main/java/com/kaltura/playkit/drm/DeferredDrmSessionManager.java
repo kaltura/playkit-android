@@ -66,8 +66,6 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     private DrmSessionManager drmSessionManager;
     private final boolean allowClearLead;
     private final boolean forceWidevineL3Playback;
-    private Looper playbackLooper;
-    private PlayerId playbackPlayerId;
 
     public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead, boolean forceWidevineL3Playback) {
         this.mainHandler = mainHandler;
@@ -114,8 +112,9 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
 
     @Override
     public void setPlayer(@NonNull Looper looper, @NonNull PlayerId playerId) {
-        playbackLooper = looper;
-        playbackPlayerId = playerId;
+        if (drmSessionManager != null) {
+            drmSessionManager.setPlayer(looper, playerId);
+        }
     }
 
     @Nullable
@@ -143,8 +142,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
                 drmSessionListener.onError(error);
             }
         }
-
-        drmSessionManager.setPlayer(playbackLooper, playbackPlayerId);
+        
         return drmSessionManager.acquireSession(eventDispatcher, format);
     }
 

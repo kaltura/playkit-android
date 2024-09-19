@@ -8,13 +8,12 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import com.google.common.base.Joiner;
-import com.kaltura.androidx.media3.common.Bundleable;
 import com.kaltura.androidx.media3.common.C;
 import com.kaltura.androidx.media3.common.Format;
 import com.kaltura.androidx.media3.common.DrmInitData;
 import com.kaltura.androidx.media3.common.Metadata;
-import com.kaltura.androidx.media3.common.util.BundleableUtil;
 import com.kaltura.androidx.media3.common.MimeTypes;
+import com.kaltura.androidx.media3.common.util.BundleCollectionUtil;
 import com.kaltura.androidx.media3.common.util.Util;
 import com.kaltura.androidx.media3.common.ColorInfo;
 
@@ -105,7 +104,7 @@ import java.util.UUID;
  *   <li>{@link #accessibilityChannel}
  * </ul>
  */
-public final class CustomFormat implements Bundleable {
+public final class CustomFormat {
 
     /**
      * Builds {@link CustomFormat} instances.
@@ -1772,7 +1771,6 @@ public final class CustomFormat implements Bundleable {
     private static final int FIELD_ACCESSIBILITY_CHANNEL = 28;
     private static final int FIELD_CRYPTO_TYPE = 29;
 
-    @Override
     public Bundle toBundle() {
         Bundle bundle = new Bundle();
         bundle.putString(keyForField(FIELD_ID), id);
@@ -1823,14 +1821,9 @@ public final class CustomFormat implements Bundleable {
         return bundle;
     }
 
-    /**
-     * Object that can restore {@code Format} from a {@link Bundle}.
-     */
-    public static final Creator<CustomFormat> CREATOR = CustomFormat::fromBundle;
-
     private static CustomFormat fromBundle(Bundle bundle) {
         Builder builder = new Builder();
-        BundleableUtil.ensureClassLoader(bundle);
+        BundleCollectionUtil.ensureClassLoader(bundle);
         builder
                 .setId(defaultIfNull(bundle.getString(keyForField(FIELD_ID)), DEFAULT.id))
                 .setLabel(defaultIfNull(bundle.getString(keyForField(FIELD_LABEL)), DEFAULT.label))
@@ -1882,7 +1875,7 @@ public final class CustomFormat implements Bundleable {
 
         Bundle colorInfoBundle = bundle.getBundle(keyForField(FIELD_COLOR_INFO));
         if (colorInfoBundle != null) {
-            builder.setColorInfo(ColorInfo.CREATOR.fromBundle(colorInfoBundle));
+            builder.setColorInfo(ColorInfo.fromBundle(colorInfoBundle));
         }
         
         // Audio specific.

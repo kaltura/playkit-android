@@ -24,13 +24,7 @@ import java.util.Objects;
 
 public class KMediaCodecAudioRenderer extends MediaCodecAudioRenderer {
 
-    private static final String ALLOW_FIRST_BUFFER_POSITION_DISCONTINUITY_FIELD_NAME = "allowFirstBufferPositionDiscontinuity";
-
-    private static final String CURRENT_POSITION_US_FIELD_NAME = "currentPositionUs";
-
     private static final String DECRYPT_ONLY_CODEC_FORMAT_FIELD_NAME = "decryptOnlyCodecFormat";
-
-    private static final long DEFAULT_MAX_AUDIO_GAP_THRESHOLD = 3_000_000L;
 
     private static final boolean DEFAULT_USE_CONTINUOUS_SPEED_ADJUSTMENT = false;
 
@@ -39,8 +33,6 @@ public class KMediaCodecAudioRenderer extends MediaCodecAudioRenderer {
     private static final float DEFAULT_SPEED_STEP = 3.0f;
 
     private static final long DEFAULT_MAX_AV_GAP = 600_000L;
-
-    private final long maxAudioGapThreshold;
 
     private final boolean useContinuousSpeedAdjustment;
 
@@ -68,7 +60,6 @@ public class KMediaCodecAudioRenderer extends MediaCodecAudioRenderer {
                 eventHandler,
                 eventListener,
                 audioSink,
-                DEFAULT_MAX_AUDIO_GAP_THRESHOLD,
                 DEFAULT_MAX_SPEED_FACTOR,
                 DEFAULT_SPEED_STEP,
                 DEFAULT_MAX_AV_GAP,
@@ -82,13 +73,11 @@ public class KMediaCodecAudioRenderer extends MediaCodecAudioRenderer {
                                     @Nullable Handler eventHandler,
                                     @Nullable AudioRendererEventListener eventListener,
                                     AudioSink audioSink,
-                                    long maxAudioGapThreshold,
                                     float maxSpeedFactor,
                                     float speedStep,
                                     long maxAVGap,
                                     boolean useContinuousSpeedAdjustment) {
         super(context, codecAdapterFactory, mediaCodecSelector, enableDecoderFallback, eventHandler, eventListener, audioSink);
-        this.maxAudioGapThreshold = maxAudioGapThreshold;
         this.maxSpeedFactor = maxSpeedFactor;
         this.speedStep = speedStep;
         this.maxAVGap = maxAVGap;
@@ -97,10 +86,6 @@ public class KMediaCodecAudioRenderer extends MediaCodecAudioRenderer {
                 ", getSpeedFactor()=" + getMaxSpeedFactor() +
                 ", getSpeedStep()=" + getSpeedStep() +
                 ", continuousSpeedAdjustment=" + getContinuousSpeedAdjustment());
-    }
-
-    protected long getMaxAudioGapThreshold() {
-        return maxAudioGapThreshold;
     }
 
     protected float getMaxSpeedFactor() {
@@ -123,32 +108,6 @@ public class KMediaCodecAudioRenderer extends MediaCodecAudioRenderer {
     protected void onPositionReset(long positionUs, boolean joining) throws ExoPlaybackException {
         super.onPositionReset(positionUs, joining);
         speedAdjustedAfterPositionReset = false;
-    }
-
-    @Override
-    protected void onQueueInputBuffer(DecoderInputBuffer buffer) throws ExoPlaybackException {
-        try {
-            Field allowFirstBufferPositionDiscontinuityField = Objects.requireNonNull(
-                            getClass().getSuperclass())
-                    .getDeclaredField(ALLOW_FIRST_BUFFER_POSITION_DISCONTINUITY_FIELD_NAME);
-            allowFirstBufferPositionDiscontinuityField.setAccessible(true);
-            Field currentPositionUsField = Objects.requireNonNull(
-                            getClass().getSuperclass())
-                    .getDeclaredField(CURRENT_POSITION_US_FIELD_NAME);
-            currentPositionUsField.setAccessible(true);
-            if (allowFirstBufferPositionDiscontinuityField.getBoolean(this) && !buffer.isDecodeOnly()) {
-                log.d("KMediaCodecAudioRenderer", "A/V start buffers gap measured: "
-                        + Math.abs(buffer.timeUs - currentPositionUsField.getLong(this)) + " uS");
-                if (Math.abs(buffer.timeUs - currentPositionUsField.getLong(this)) > getMaxAudioGapThreshold()) {
-                    currentPositionUsField.setLong(this, buffer.timeUs);
-                }
-                allowFirstBufferPositionDiscontinuityField.setBoolean(this, false);
-            }
-        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException | NullPointerException e) {
-            log.e("KMediaCodecAudioRenderer", "Error subclassing audio renderer: " + e.getMessage());
-            // Fallback to superclass in case something goes wrong
-            super.onQueueInputBuffer(buffer);
-        }
     }
 
     @Override

@@ -79,7 +79,6 @@ public class SpeedAdjustedRenderersFactory {
                                     eventHandler,
                                     eventListener,
                                     audioSink,
-                                    playerSettings.getMulticastSettings().getExperimentalMaxAudioGapThreshold(),
                                     playerSettings.getMulticastSettings().getExperimentalMaxSpeedFactor(),
                                     playerSettings.getMulticastSettings().getExperimentalSpeedStep(),
                                     playerSettings.getMulticastSettings().getExperimentalAVGapForSpeedAdjustment(),
