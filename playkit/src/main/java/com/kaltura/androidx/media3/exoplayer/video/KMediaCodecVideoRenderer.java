@@ -2,14 +2,16 @@ package com.kaltura.androidx.media3.exoplayer.video;
 
 import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+
+import com.kaltura.androidx.media3.common.Format;
 import com.kaltura.androidx.media3.exoplayer.ExoPlaybackException;
 import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecAdapter;
 import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecUtil;
 import com.kaltura.playkit.PKLog;
 
 public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer {
@@ -21,6 +23,7 @@ public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer {
     private static final PKLog log = PKLog.get("KMediaCodecVideoRenderer");
 
     @Nullable private KVideoRendererFirstFrameWhenStartedEventListener rendererFirstFrameWhenStartedEventListener;
+    private final MediaCodecSupportFormatHelper mediaCodecSupportFormatHelper;
 
     public KMediaCodecVideoRenderer(Context context,
                                     MediaCodecAdapter.Factory codecAdapterFactory,
@@ -33,6 +36,7 @@ public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer {
                                     KVideoRendererFirstFrameWhenStartedEventListener rendererFirstFrameWhenStartedEventListener) {
         super(context, codecAdapterFactory, mediaCodecSelector, allowedJoiningTimeMs, enableDecoderFallback, eventHandler, eventListener, maxDroppedFramesToNotify);
         this.rendererFirstFrameWhenStartedEventListener = rendererFirstFrameWhenStartedEventListener;
+        this.mediaCodecSupportFormatHelper = new MediaCodecSupportFormatHelper(context);
     }
 
     // TODO: This should be revisited once migartion to media3 is complete.
@@ -70,5 +74,10 @@ public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer {
             }
         }
         super.renderOutputBufferV21(codec, index, presentationTimeUs, releaseTimeNs);
+    }
+
+    @Override
+    protected int supportsFormat(MediaCodecSelector mediaCodecSelector, Format format) throws MediaCodecUtil.DecoderQueryException {
+        return mediaCodecSupportFormatHelper.supportsFormat(mediaCodecSelector, format);
     }
 }

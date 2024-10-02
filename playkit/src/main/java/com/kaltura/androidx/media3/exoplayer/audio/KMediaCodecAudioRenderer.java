@@ -139,9 +139,9 @@ public class KMediaCodecAudioRenderer extends MediaCodecAudioRenderer {
         }
 
         if (!speedAdjustedAfterPositionReset || getContinuousSpeedAdjustment()) {
-            log.d("KMediaCodecAudioRenderer", "currentSpeed=" + getPlaybackParameters().speed +
-                    ", bufferPresentationTimeUs=" + bufferPresentationTimeUs +
-                    ", positionUs=" + positionUs);
+//            log.d("KMediaCodecAudioRenderer", "currentSpeed=" + getPlaybackParameters().speed +
+//                    ", bufferPresentationTimeUs=" + bufferPresentationTimeUs +
+//                    ", positionUs=" + positionUs);
             if (bufferPresentationTimeUs - positionUs > getMaxAVGap()
                     && getPlaybackParameters().speed < getMaxSpeedFactor()) {
                 float newSpeed = getPlaybackParameters().speed + getSpeedStep();

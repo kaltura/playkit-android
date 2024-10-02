@@ -346,6 +346,22 @@ public interface Player {
         Settings setShutterStaysOnRenderedFirstFrame(boolean shutterStaysOnRenderedFirstFrame);
 
         /**
+         * Set codecFailureRetryCount - count of the codec initialization failure retries
+         *
+         * @param codecFailureRetryCount
+         * @return - Player Settings
+         */
+        Settings setCodecFailureRetryCount(int codecFailureRetryCount);
+
+        /**
+         * Set codecFailureRetryTimeout - timeout to wait between retries of codec re-initialization on failure
+         *
+         * @param codecFailureRetryTimeout
+         * @return - Player Settings
+         */
+        Settings setCodecFailureRetryTimeout(int codecFailureRetryTimeout);
+
+        /**
          * Set preference to choose internal subtitles over external subtitles (Only in the case if the same language is present
          * in both Internal and External subtitles) - Default is true (Internal is preferred)
          *
