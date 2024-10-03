@@ -7,7 +7,7 @@ ext["signingKeyId"] = System.getenv('SIGNING_KEYID')
 ext["signingPassword"] = System.getenv('SIGNING_PASSWORD')
 
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.8.0'
     repositories {
         google()
         mavenCentral()
