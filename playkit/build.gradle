@@ -3,14 +3,15 @@ apply plugin: 'kotlin-android'
 apply from: 'version.gradle'
 
 android {
-    compileSdkVersion 33
+    namespace 'com.kaltura.playkit'
+    compileSdk 34
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 33
+        minSdkVersion 21
+        targetSdkVersion 34
         versionName playkitVersion  // defined in version.gradle
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String","VERSION_NAME","\"${playkitVersion}\"")
@@ -28,10 +29,19 @@ android {
 
     lintOptions {
         lintConfig file("lint.xml")
+        disable 'UnsafeOptInUsageError'
     }
-
+    buildFeatures {
+        buildConfig = true
+    }
+    publishing {
+        publishing {
+            singleVariant('release') {
+            }
+        }
+    }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
 }
 
@@ -41,8 +51,8 @@ tasks.withType(Javadoc) {
 
 dependencies {
 
-    def exoPlayerVersion = '2.18.4'
-    api "com.kaltura.playkit:kexoplayer:$exoPlayerVersion"
+    def media3ExoPlayerVersion = '1.4.1'
+    api "com.kaltura.playkit:mediakexoplayer:$media3ExoPlayerVersion"
 
     api 'com.google.code.gson:gson:2.8.6'
     implementation 'androidx.annotation:annotation:1.2.0'

@@ -20,19 +20,19 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.Format;
-import com.kaltura.android.exoplayer2.analytics.PlayerId;
-import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
-import com.kaltura.android.exoplayer2.drm.DrmInitData;
-import com.kaltura.android.exoplayer2.drm.DrmSession;
-import com.kaltura.android.exoplayer2.drm.DrmSessionEventListener;
-import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
-import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
-import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
-import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
-import com.kaltura.android.exoplayer2.source.MediaSource;
-import com.kaltura.android.exoplayer2.util.Util;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.common.Format;
+import com.kaltura.androidx.media3.exoplayer.analytics.PlayerId;
+import com.kaltura.androidx.media3.exoplayer.drm.DefaultDrmSessionManager;
+import com.kaltura.androidx.media3.common.DrmInitData;
+import com.kaltura.androidx.media3.exoplayer.drm.DrmSession;
+import com.kaltura.androidx.media3.exoplayer.drm.DrmSessionEventListener;
+import com.kaltura.androidx.media3.exoplayer.drm.DrmSessionManager;
+import com.kaltura.androidx.media3.exoplayer.drm.FrameworkMediaDrm;
+import com.kaltura.androidx.media3.exoplayer.drm.UnsupportedDrmException;
+import com.kaltura.androidx.media3.extractor.mp4.PsshAtomUtil;
+import com.kaltura.androidx.media3.exoplayer.source.MediaSource;
+import com.kaltura.androidx.media3.common.util.Util;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
@@ -66,8 +66,6 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     private DrmSessionManager drmSessionManager;
     private final boolean allowClearLead;
     private final boolean forceWidevineL3Playback;
-    private Looper playbackLooper;
-    private PlayerId playbackPlayerId;
 
     public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead, boolean forceWidevineL3Playback) {
         this.mainHandler = mainHandler;
@@ -114,8 +112,9 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
 
     @Override
     public void setPlayer(@NonNull Looper looper, @NonNull PlayerId playerId) {
-        playbackLooper = looper;
-        playbackPlayerId = playerId;
+        if (drmSessionManager != null) {
+            drmSessionManager.setPlayer(looper, playerId);
+        }
     }
 
     @Nullable
@@ -143,8 +142,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
                 drmSessionListener.onError(error);
             }
         }
-
-        drmSessionManager.setPlayer(playbackLooper, playbackPlayerId);
+        
         return drmSessionManager.acquireSession(eventDispatcher, format);
     }
 

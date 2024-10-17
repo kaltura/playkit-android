@@ -1,14 +1,15 @@
-package com.kaltura.android.exoplayer2.video;
+package com.kaltura.androidx.media3.exoplayer.video;
 
 import static android.view.Display.DEFAULT_DISPLAY;
-import static com.kaltura.android.exoplayer2.RendererCapabilities.ADAPTIVE_NOT_SEAMLESS;
-import static com.kaltura.android.exoplayer2.RendererCapabilities.ADAPTIVE_SEAMLESS;
-import static com.kaltura.android.exoplayer2.RendererCapabilities.DECODER_SUPPORT_FALLBACK;
-import static com.kaltura.android.exoplayer2.RendererCapabilities.DECODER_SUPPORT_FALLBACK_MIMETYPE;
-import static com.kaltura.android.exoplayer2.RendererCapabilities.DECODER_SUPPORT_PRIMARY;
-import static com.kaltura.android.exoplayer2.RendererCapabilities.HARDWARE_ACCELERATION_NOT_SUPPORTED;
-import static com.kaltura.android.exoplayer2.RendererCapabilities.HARDWARE_ACCELERATION_SUPPORTED;
-import static com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil.getAlternativeCodecMimeType;
+
+import static com.kaltura.androidx.media3.exoplayer.RendererCapabilities.ADAPTIVE_NOT_SEAMLESS;
+import static com.kaltura.androidx.media3.exoplayer.RendererCapabilities.ADAPTIVE_SEAMLESS;
+import static com.kaltura.androidx.media3.exoplayer.RendererCapabilities.DECODER_SUPPORT_FALLBACK;
+import static com.kaltura.androidx.media3.exoplayer.RendererCapabilities.DECODER_SUPPORT_FALLBACK_MIMETYPE;
+import static com.kaltura.androidx.media3.exoplayer.RendererCapabilities.DECODER_SUPPORT_PRIMARY;
+import static com.kaltura.androidx.media3.exoplayer.RendererCapabilities.HARDWARE_ACCELERATION_NOT_SUPPORTED;
+import static com.kaltura.androidx.media3.exoplayer.RendererCapabilities.HARDWARE_ACCELERATION_SUPPORTED;
+import static com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecUtil.getAlternativeCodecMimeType;
 
 import android.content.Context;
 import android.hardware.display.DisplayManager;
@@ -19,24 +20,21 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.google.common.collect.ImmutableList;
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.C.FormatSupport;
-import com.kaltura.android.exoplayer2.Format;
-import com.kaltura.android.exoplayer2.RendererCapabilities;
-import com.kaltura.android.exoplayer2.RendererCapabilities.AdaptiveSupport;
-import com.kaltura.android.exoplayer2.RendererCapabilities.HardwareAccelerationSupport;
-import com.kaltura.android.exoplayer2.RendererCapabilities.TunnelingSupport;
-import com.kaltura.android.exoplayer2.drm.DrmInitData;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecInfo;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil.DecoderQueryException;
-import com.kaltura.android.exoplayer2.util.MimeTypes;
-import com.kaltura.android.exoplayer2.util.Util;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.common.DrmInitData;
+import com.kaltura.androidx.media3.common.Format;
+import com.kaltura.androidx.media3.common.MimeTypes;
+import com.kaltura.androidx.media3.common.util.UnstableApi;
+import com.kaltura.androidx.media3.common.util.Util;
+import com.kaltura.androidx.media3.exoplayer.RendererCapabilities;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecInfo;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecUtil;
 import com.kaltura.playkit.PKLog;
 
 import java.util.List;
 
+@UnstableApi
 public class MediaCodecSupportFormatHelper {
 
     private static final PKLog log = PKLog.get("MediaCodecSupport");
@@ -46,7 +44,7 @@ public class MediaCodecSupportFormatHelper {
         this.context = context;
     }
 
-    public int supportsFormat(MediaCodecSelector mediaCodecSelector, Format format) throws DecoderQueryException {
+    public int supportsFormat(MediaCodecSelector mediaCodecSelector, Format format) throws MediaCodecUtil.DecoderQueryException {
         String mimeType = format.sampleMimeType;
         if (!MimeTypes.isVideo(mimeType)) {
             return RendererCapabilities.create(C.FORMAT_UNSUPPORTED_TYPE);
@@ -102,16 +100,16 @@ public class MediaCodecSupportFormatHelper {
                 }
             }
         }
-        @FormatSupport int formatSupport = isFormatSupported ? C.FORMAT_HANDLED : C.FORMAT_EXCEEDS_CAPABILITIES;
-        @AdaptiveSupport int adaptiveSupport = decoderInfo.isSeamlessAdaptationSupported(format) ? ADAPTIVE_SEAMLESS : ADAPTIVE_NOT_SEAMLESS;
-        @HardwareAccelerationSupport int hardwareAccelerationSupport = decoderInfo.hardwareAccelerated ? HARDWARE_ACCELERATION_SUPPORTED : HARDWARE_ACCELERATION_NOT_SUPPORTED;
+        @C.FormatSupport int formatSupport = isFormatSupported ? C.FORMAT_HANDLED : C.FORMAT_EXCEEDS_CAPABILITIES;
+        @RendererCapabilities.AdaptiveSupport int adaptiveSupport = decoderInfo.isSeamlessAdaptationSupported(format) ? ADAPTIVE_SEAMLESS : ADAPTIVE_NOT_SEAMLESS;
+        @RendererCapabilities.HardwareAccelerationSupport int hardwareAccelerationSupport = decoderInfo.hardwareAccelerated ? HARDWARE_ACCELERATION_SUPPORTED : HARDWARE_ACCELERATION_NOT_SUPPORTED;
         @RendererCapabilities.DecoderSupport int decoderSupport = isPreferredDecoder ? DECODER_SUPPORT_PRIMARY : DECODER_SUPPORT_FALLBACK;
 
         if (Util.SDK_INT >= 26 && MimeTypes.VIDEO_DOLBY_VISION.equals(format.sampleMimeType) && !Api26.doesDisplaySupportDolbyVision(context)) {
             decoderSupport = DECODER_SUPPORT_FALLBACK_MIMETYPE;
         }
 
-        @TunnelingSupport int tunnelingSupport = RendererCapabilities.TUNNELING_NOT_SUPPORTED;
+        @RendererCapabilities.TunnelingSupport int tunnelingSupport = RendererCapabilities.TUNNELING_NOT_SUPPORTED;
         if (isFormatSupported) {
             List<MediaCodecInfo> tunnelingDecoderInfos = getDecoderInfos(context, mediaCodecSelector, format, requiresSecureDecryption,
                     /* requiresTunnelingDecoder= */ true);
@@ -147,9 +145,9 @@ public class MediaCodecSupportFormatHelper {
      * @param requiresSecureDecoder    Whether a secure decoder is required.
      * @param requiresTunnelingDecoder Whether a tunneling decoder is required.
      * @return A list of {@link MediaCodecInfo}s corresponding to decoders. May be empty.
-     * @throws DecoderQueryException Thrown if there was an error querying decoders.
+     * @throws MediaCodecUtil.DecoderQueryException Thrown if there was an error querying decoders.
      */
-    private static List<MediaCodecInfo> getDecoderInfos(Context context, MediaCodecSelector mediaCodecSelector, Format format, boolean requiresSecureDecoder, boolean requiresTunnelingDecoder) throws DecoderQueryException {
+    private static List<MediaCodecInfo> getDecoderInfos(Context context, MediaCodecSelector mediaCodecSelector, Format format, boolean requiresSecureDecoder, boolean requiresTunnelingDecoder) throws MediaCodecUtil.DecoderQueryException {
         if (format.sampleMimeType == null) {
             return ImmutableList.of();
         }
@@ -162,7 +160,7 @@ public class MediaCodecSupportFormatHelper {
         return getDecoderInfosSoftMatch(mediaCodecSelector, format, requiresSecureDecoder, requiresTunnelingDecoder);
     }
 
-    public static List<MediaCodecInfo> getAlternativeDecoderInfos(MediaCodecSelector mediaCodecSelector, Format format, boolean requiresSecureDecoder, boolean requiresTunnelingDecoder) throws DecoderQueryException {
+    public static List<MediaCodecInfo> getAlternativeDecoderInfos(MediaCodecSelector mediaCodecSelector, Format format, boolean requiresSecureDecoder, boolean requiresTunnelingDecoder) throws MediaCodecUtil.DecoderQueryException {
         @Nullable String alternativeMimeType = getAlternativeCodecMimeType(format);
         if (alternativeMimeType == null) {
             return ImmutableList.of();
@@ -170,7 +168,7 @@ public class MediaCodecSupportFormatHelper {
         return mediaCodecSelector.getDecoderInfos(alternativeMimeType, requiresSecureDecoder, requiresTunnelingDecoder);
     }
 
-    public static List<MediaCodecInfo> getDecoderInfosSoftMatch(MediaCodecSelector mediaCodecSelector, Format format, boolean requiresSecureDecoder, boolean requiresTunnelingDecoder) throws DecoderQueryException {
+    public static List<MediaCodecInfo> getDecoderInfosSoftMatch(MediaCodecSelector mediaCodecSelector, Format format, boolean requiresSecureDecoder, boolean requiresTunnelingDecoder) throws MediaCodecUtil.DecoderQueryException {
         List<MediaCodecInfo> decoderInfos = mediaCodecSelector.getDecoderInfos(format.sampleMimeType, requiresSecureDecoder, requiresTunnelingDecoder);
         List<MediaCodecInfo> alternativeDecoderInfos = getAlternativeDecoderInfos(mediaCodecSelector, format, requiresSecureDecoder, requiresTunnelingDecoder);
         return ImmutableList.<MediaCodecInfo>builder().addAll(decoderInfos).addAll(alternativeDecoderInfos).build();

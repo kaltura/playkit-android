@@ -8,7 +8,7 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-import com.kaltura.android.exoplayer2.util.MimeTypes;
+import com.kaltura.androidx.media3.common.MimeTypes;
 import com.kaltura.playkit.PKLog;
 
 import java.util.ArrayList;

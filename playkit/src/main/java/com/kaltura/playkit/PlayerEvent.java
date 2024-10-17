@@ -14,7 +14,7 @@ package com.kaltura.playkit;
 
 import androidx.annotation.NonNull;
 
-import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.EventStream;
 import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.ImageTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;

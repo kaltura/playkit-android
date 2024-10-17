@@ -5,16 +5,16 @@ import android.os.Handler;
 
 import androidx.annotation.NonNull;
 
-import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
-import com.kaltura.android.exoplayer2.ExoPlaybackException;
-import com.kaltura.android.exoplayer2.Format;
-import com.kaltura.android.exoplayer2.PlaybackException;
-import com.kaltura.android.exoplayer2.Renderer;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
-import com.kaltura.android.exoplayer2.video.MediaCodecSupportFormatHelper;
-import com.kaltura.android.exoplayer2.video.MediaCodecVideoRenderer;
-import com.kaltura.android.exoplayer2.video.VideoRendererEventListener;
+import com.kaltura.androidx.media3.common.Format;
+import com.kaltura.androidx.media3.common.PlaybackException;
+import com.kaltura.androidx.media3.exoplayer.DefaultRenderersFactory;
+import com.kaltura.androidx.media3.exoplayer.ExoPlaybackException;
+import com.kaltura.androidx.media3.exoplayer.Renderer;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecUtil;
+import com.kaltura.androidx.media3.exoplayer.video.MediaCodecSupportFormatHelper;
+import com.kaltura.androidx.media3.exoplayer.video.MediaCodecVideoRenderer;
+import com.kaltura.androidx.media3.exoplayer.video.VideoRendererEventListener;
 import com.kaltura.playkit.player.PlayerSettings;
 
 import java.util.ArrayList;

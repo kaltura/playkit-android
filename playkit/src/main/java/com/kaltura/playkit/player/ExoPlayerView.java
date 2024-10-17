@@ -27,13 +27,13 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
-import com.kaltura.android.exoplayer2.ExoPlayer;
-import com.kaltura.android.exoplayer2.Player;
-import com.kaltura.android.exoplayer2.text.Cue;
-import com.kaltura.android.exoplayer2.text.CueGroup;
-import com.kaltura.android.exoplayer2.ui.AspectRatioFrameLayout;
-import com.kaltura.android.exoplayer2.ui.SubtitleView;
-import com.kaltura.android.exoplayer2.video.VideoSize;
+import com.kaltura.androidx.media3.exoplayer.ExoPlayer;
+import com.kaltura.androidx.media3.common.Player;
+import com.kaltura.androidx.media3.common.text.Cue;
+import com.kaltura.androidx.media3.common.text.CueGroup;
+import com.kaltura.androidx.media3.ui.AspectRatioFrameLayout;
+import com.kaltura.androidx.media3.ui.SubtitleView;
+import com.kaltura.androidx.media3.common.VideoSize;
 import com.kaltura.playkit.PKLog;
 
 import java.util.ArrayList;
@@ -370,7 +370,7 @@ class ExoPlayerView extends BaseExoplayerView {
 
         @Override
         public void onVideoSizeChanged(@NonNull VideoSize videoSize) {
-            if (contentFrame == null) {
+            if (contentFrame == null || videoSize.equals(VideoSize.UNKNOWN)) {
                 return;
             }
 

@@ -6,7 +6,11 @@ import android.os.Handler;
 import androidx.annotation.Nullable;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.kaltura.android.exoplayer2.util.Clock;
+import com.kaltura.androidx.media3.common.util.Clock;
+import com.kaltura.androidx.media3.datasource.DataSource;
+import com.kaltura.androidx.media3.datasource.DataSpec;
+import com.kaltura.androidx.media3.datasource.TransferListener;
+import com.kaltura.androidx.media3.exoplayer.upstream.DefaultBandwidthMeter;
 
 
 public class KDefaultBandwidthMeter implements KBandwidthMeter, TransferListener {

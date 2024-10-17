@@ -15,7 +15,7 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.androidx.media3.datasource.cache.Cache;
 import com.kaltura.playkit.ads.AdvertisingConfig;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
@@ -727,8 +727,8 @@ public interface Player {
      * Must be called once the media preparation is complete (Means tracks are loaded)
      *
      * @return Manifest object depends on the media type
-     * ({@link com.kaltura.android.exoplayer2.source.hls.HlsManifest}
-     * or {@link com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest})
+     * ({@link com.kaltura.androidx.media3.exoplayer.source.hls.HlsManifest}
+     * or {@link com.kaltura.androidx.media3.exoplayer.source.dash.manifest.DashManifest})
      * <br>
      * OR `null`
      */

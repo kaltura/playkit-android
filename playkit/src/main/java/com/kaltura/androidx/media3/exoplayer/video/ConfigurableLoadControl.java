@@ -1,21 +1,21 @@
-package com.kaltura.android.exoplayer2.video;
+package com.kaltura.androidx.media3.exoplayer.video;
 
-import static com.kaltura.android.exoplayer2.util.Assertions.checkState;
+import static com.kaltura.androidx.media3.common.util.Assertions.checkState;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import androidx.annotation.Nullable;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.LoadControl;
-import com.kaltura.android.exoplayer2.Renderer;
-import com.kaltura.android.exoplayer2.source.TrackGroupArray;
-import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
-import com.kaltura.android.exoplayer2.upstream.Allocator;
-import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
-import com.kaltura.android.exoplayer2.util.Assertions;
-import com.kaltura.android.exoplayer2.util.Util;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.exoplayer.LoadControl;
+import com.kaltura.androidx.media3.exoplayer.Renderer;
+import com.kaltura.androidx.media3.exoplayer.source.TrackGroupArray;
+import com.kaltura.androidx.media3.exoplayer.trackselection.ExoTrackSelection;
+import com.kaltura.androidx.media3.exoplayer.upstream.Allocator;
+import com.kaltura.androidx.media3.exoplayer.upstream.DefaultAllocator;
+import com.kaltura.androidx.media3.common.util.Assertions;
+import com.kaltura.androidx.media3.common.util.Util;
 import com.kaltura.playkit.PKLog;
 
 /** The default {@link LoadControl} implementation. */
