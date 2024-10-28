@@ -26,7 +26,8 @@ public class KDefaultRenderersFactory {
 
     public static DefaultRenderersFactory createDecoderInitErrorRetryFactory(
             Context context,
-            PlayerSettings playerSettings
+            PlayerSettings playerSettings,
+            boolean skipFirstCodecReusage
     ) {
         final MediaCodecSupportFormatHelper mediaCodecSupportFormatHelper = new MediaCodecSupportFormatHelper(context);
         return new DefaultRenderersFactory(context) {
@@ -59,6 +60,9 @@ public class KDefaultRenderersFactory {
                                 eventHandler,
                                 eventListener,
                                 MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY) {
+
+                                    private boolean firstCodecReusageSkipped = false;
+
                                     @Override
                                     public void render(long positionUs, long elapsedRealtimeUs) throws ExoPlaybackException {
                                         try {
@@ -101,9 +105,12 @@ public class KDefaultRenderersFactory {
                                     @NonNull
                                     @Override
                                     protected DecoderReuseEvaluation canReuseCodec(@NonNull MediaCodecInfo codecInfo, @NonNull Format oldFormat, @NonNull Format newFormat) {
-                                        if (playerSettings.canReuseCodec()) {
+                                        if (playerSettings.canReuseCodec() && (!skipFirstCodecReusage || firstCodecReusageSkipped)) {
                                             return super.canReuseCodec(codecInfo, oldFormat, newFormat);
                                         } else {
+                                            if (skipFirstCodecReusage) {
+                                                firstCodecReusageSkipped = true;
+                                            }
                                             return new DecoderReuseEvaluation(codecInfo.name,
                                                     oldFormat, newFormat,
                                                     DecoderReuseEvaluation.REUSE_RESULT_NO,
