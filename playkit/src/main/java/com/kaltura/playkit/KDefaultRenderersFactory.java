@@ -7,9 +7,11 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.androidx.media3.common.Format;
 import com.kaltura.androidx.media3.common.PlaybackException;
+import com.kaltura.androidx.media3.exoplayer.DecoderReuseEvaluation;
 import com.kaltura.androidx.media3.exoplayer.DefaultRenderersFactory;
 import com.kaltura.androidx.media3.exoplayer.ExoPlaybackException;
 import com.kaltura.androidx.media3.exoplayer.Renderer;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecInfo;
 import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
 import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecUtil;
 import com.kaltura.androidx.media3.exoplayer.video.MediaCodecSupportFormatHelper;
@@ -24,7 +26,8 @@ public class KDefaultRenderersFactory {
 
     public static DefaultRenderersFactory createDecoderInitErrorRetryFactory(
             Context context,
-            PlayerSettings playerSettings
+            PlayerSettings playerSettings,
+            boolean skipFirstCodecReusage
     ) {
         final MediaCodecSupportFormatHelper mediaCodecSupportFormatHelper = new MediaCodecSupportFormatHelper(context);
         return new DefaultRenderersFactory(context) {
@@ -57,6 +60,9 @@ public class KDefaultRenderersFactory {
                                 eventHandler,
                                 eventListener,
                                 MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY) {
+
+                                    private boolean firstCodecReusageSkipped = false;
+
                                     @Override
                                     public void render(long positionUs, long elapsedRealtimeUs) throws ExoPlaybackException {
                                         try {
@@ -94,6 +100,22 @@ public class KDefaultRenderersFactory {
                                     @Override
                                     protected int supportsFormat(MediaCodecSelector mediaCodecSelector, Format format) throws MediaCodecUtil.DecoderQueryException {
                                         return mediaCodecSupportFormatHelper.supportsFormat(mediaCodecSelector, format);
+                                    }
+
+                                    @NonNull
+                                    @Override
+                                    protected DecoderReuseEvaluation canReuseCodec(@NonNull MediaCodecInfo codecInfo, @NonNull Format oldFormat, @NonNull Format newFormat) {
+                                        if (playerSettings.canReuseCodec() && (!skipFirstCodecReusage || firstCodecReusageSkipped)) {
+                                            return super.canReuseCodec(codecInfo, oldFormat, newFormat);
+                                        } else {
+                                            if (skipFirstCodecReusage) {
+                                                firstCodecReusageSkipped = true;
+                                            }
+                                            return new DecoderReuseEvaluation(codecInfo.name,
+                                                    oldFormat, newFormat,
+                                                    DecoderReuseEvaluation.REUSE_RESULT_NO,
+                                                    DecoderReuseEvaluation.DISCARD_REASON_APP_OVERRIDE);
+                                        }
                                     }
                                 }
                         );

@@ -62,18 +62,19 @@ class ExoPlayerView extends BaseExoplayerView {
     private boolean isVideoViewVisible;
     private List<Cue> lastReportedCues;
     private boolean shutterStaysOnRenderedFirstFrame;
+    private boolean muteWhenShutterVisible;
 
     private boolean usingSpeedAdjustedRenderer;
 
-    ExoPlayerView(Context context, boolean shutterStaysOnRenderedFirstFrame) {
-        this(context, null, shutterStaysOnRenderedFirstFrame);
+    ExoPlayerView(Context context, boolean shutterStaysOnRenderedFirstFrame, boolean muteWhenShutterVisible) {
+        this(context, null, shutterStaysOnRenderedFirstFrame, muteWhenShutterVisible);
     }
 
-    ExoPlayerView(Context context, AttributeSet attrs, boolean shutterStaysOnRenderedFirstFrame) {
-        this(context, attrs, 0, shutterStaysOnRenderedFirstFrame);
+    ExoPlayerView(Context context, AttributeSet attrs, boolean shutterStaysOnRenderedFirstFrame, boolean muteWhenShutterVisible) {
+        this(context, attrs, 0, shutterStaysOnRenderedFirstFrame, muteWhenShutterVisible);
     }
 
-    ExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr, boolean shutterStaysOnRenderedFirstFrame) {
+    ExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr, boolean shutterStaysOnRenderedFirstFrame, boolean muteWhenShutterVisible) {
         super(context, attrs, defStyleAttr);
         componentListener = new ComponentListener();
         playerEventListener = getPlayerEventListener();
@@ -81,10 +82,15 @@ class ExoPlayerView extends BaseExoplayerView {
         initSubtitleLayout();
         initPosterView();
         setShutterStaysOnRenderedFirstFrame(shutterStaysOnRenderedFirstFrame);
+        setMuteWhenShutterVisible(muteWhenShutterVisible);
     }
 
     public void setShutterStaysOnRenderedFirstFrame(boolean shutterStaysOnRenderedFirstFrame) {
         this.shutterStaysOnRenderedFirstFrame = shutterStaysOnRenderedFirstFrame;
+    }
+
+    public void setMuteWhenShutterVisible(boolean muteWhenShutterVisible) {
+        this.muteWhenShutterVisible = muteWhenShutterVisible;
     }
 
     public void setUsingSpeedAdjustedRenderer(boolean usingSpeedAdjustedRenderer) {
@@ -96,6 +102,9 @@ class ExoPlayerView extends BaseExoplayerView {
         log.d("onRenderedFirstFrameWhenStarted");
         if (shutterView != null) {
             shutterView.setVisibility(INVISIBLE);
+            if (shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer && muteWhenShutterVisible) {
+                player.setVolume(1.0f);
+            }
         }
     }
 
@@ -111,9 +120,7 @@ class ExoPlayerView extends BaseExoplayerView {
                 switch (playbackState) {
                     case Player.STATE_IDLE:
                         if (shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer) {
-                            if (shutterView != null) {
-                                shutterView.setVisibility(VISIBLE);
-                            }
+                            showShutterView();
                         }
                         break;
 
@@ -341,10 +348,17 @@ class ExoPlayerView extends BaseExoplayerView {
         contentFrame.addView(subtitleView);
     }
 
-    private void resetViews() {
+    private void showShutterView() {
         if (shutterView != null) {
             shutterView.setVisibility(VISIBLE);
+            if (shutterStaysOnRenderedFirstFrame && usingSpeedAdjustedRenderer && muteWhenShutterVisible) {
+                player.setVolume(0.0f);
+            }
         }
+    }
+
+    private void resetViews() {
+        showShutterView();
         if (subtitleView != null) {
             subtitleView.setCues(null);
         }

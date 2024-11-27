@@ -195,7 +195,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private Cache downloadCache;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
-        this(context, new ExoPlayerView(context, playerSettings.isShutterStaysOnRenderedFirstFrame()), playerSettings, rootPlayerView);
+        this(context, new ExoPlayerView(context,
+                playerSettings.isShutterStaysOnRenderedFirstFrame(),
+                playerSettings.isMuteWhenShutterVisible()), playerSettings, rootPlayerView);
     }
 
     ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings settings, PlayerView rootPlayerView) {
@@ -243,13 +245,17 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     private void initializePlayer() {
+        initializePlayer(false);
+    }
+
+    private void initializePlayer(boolean skipFirstCodecReusage) {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
         if (exoPlayerView instanceof ExoPlayerView) {
             ((ExoPlayerView)exoPlayerView).setUsingSpeedAdjustedRenderer(this.useSpeedAdjustingRenderer);
         }
         DefaultRenderersFactory renderersFactory = this.useSpeedAdjustingRenderer
                 ? SpeedAdjustedRenderersFactory.createSpeedAdjustedRenderersFactory(context, playerSettings, exoPlayerView)
-                : KDefaultRenderersFactory.createDecoderInitErrorRetryFactory(context, playerSettings);
+                : KDefaultRenderersFactory.createDecoderInitErrorRetryFactory(context, playerSettings, skipFirstCodecReusage);
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
@@ -1159,10 +1165,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     private void maybeReInitPlayerOnSpeedAdjustmentChange(PKMediaFormat format) {
         boolean useSpeedAdjustingRenderer = shouldUseSpeedAdjustingRenderer(format);
         if (useSpeedAdjustingRenderer != this.useSpeedAdjustingRenderer) {
+            // Do not reuse codec first time after switching from multicast to dash content
+            boolean skipFirstCodecReusage = !useSpeedAdjustingRenderer;
+            this.useSpeedAdjustingRenderer = useSpeedAdjustingRenderer;
             destroyPlayer(false);
-            initializePlayer();
+            initializePlayer(skipFirstCodecReusage);
         }
-        this.useSpeedAdjustingRenderer = useSpeedAdjustingRenderer;
     }
 
     private void maybeResetBitrateEstimate() {
