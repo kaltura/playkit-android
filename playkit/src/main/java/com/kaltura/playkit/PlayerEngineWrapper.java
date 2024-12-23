@@ -2,8 +2,8 @@ package com.kaltura.playkit;
 
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
-import com.kaltura.android.exoplayer2.source.dash.manifest.EventStream;
+import com.kaltura.androidx.media3.datasource.cache.Cache;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.EventStream;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.LoadControlBuffers;

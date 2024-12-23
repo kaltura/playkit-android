@@ -1,14 +1,14 @@
-package com.kaltura.android.exoplayer2.dashmanifestparser;
+package com.kaltura.androidx.media3.exoplayer.dashmanifestparser;
 
 import android.net.Uri;
 import androidx.annotation.Nullable;
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.offline.FilterableManifest;
-import com.kaltura.android.exoplayer2.offline.StreamKey;
-import com.kaltura.android.exoplayer2.source.dash.manifest.ProgramInformation;
-import com.kaltura.android.exoplayer2.source.dash.manifest.ServiceDescriptionElement;
-import com.kaltura.android.exoplayer2.source.dash.manifest.UtcTimingElement;
-import com.kaltura.android.exoplayer2.util.Util;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.exoplayer.offline.FilterableManifest;
+import com.kaltura.androidx.media3.common.StreamKey;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.ProgramInformation;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.ServiceDescriptionElement;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.UtcTimingElement;
+import com.kaltura.androidx.media3.common.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;

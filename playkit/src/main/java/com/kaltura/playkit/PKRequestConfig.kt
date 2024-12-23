@@ -1,7 +1,7 @@
 package com.kaltura.playkit
 
 import androidx.annotation.NonNull
-import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource
+import com.kaltura.androidx.media3.datasource.DefaultHttpDataSource
 import com.kaltura.playkit.player.CustomLoadErrorHandlingPolicy
 
 /**

@@ -1,9 +1,9 @@
-package com.kaltura.android.exoplayer2.dashmanifestparser;
+package com.kaltura.androidx.media3.exoplayer.dashmanifestparser;
 
 
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.source.dash.DashSegmentIndex;
-import com.kaltura.android.exoplayer2.source.dash.manifest.RangedUri;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.exoplayer.dash.DashSegmentIndex;
+import com.kaltura.androidx.media3.exoplayer.dash.manifest.RangedUri;
 
 /**
  * A {@link DashSegmentIndex} that defines a single segment.

@@ -1,7 +1,7 @@
 apply plugin: 'maven-publish'
 
 task androidSourcesJar(type: Jar) {
-    classifier 'sources'
+    archiveClassifier = 'sources'
     from android.sourceSets.main.java.sourceFiles
 }
 
@@ -9,7 +9,7 @@ project.afterEvaluate {
     publishing {
         publications {
             mavenJava(MavenPublication) {
-                from components.release
+                from components.findByName('release')
             }
         }
         repositories {

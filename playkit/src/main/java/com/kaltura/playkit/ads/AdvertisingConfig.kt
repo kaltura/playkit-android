@@ -15,7 +15,7 @@ import androidx.annotation.NonNull
  * @param returnToLive: Default is false - Only for Live Medias (If true then after ad playback,
  * player will go to the live edge else it will try to resume from the same position, if possible)
  */
-data class AdvertisingConfig(@NonNull val advertising: List<AdBreak?>?,
+data class AdvertisingConfig(val advertising: List<AdBreak?>?,
                              @NonNull val adTimeUnit: AdTimeUnit = AdTimeUnit.SECONDS,
                              @NonNull val adType: AdType = AdType.AD_URL,
                              @NonNull val playAdsAfterTime: Long = Long.MIN_VALUE,

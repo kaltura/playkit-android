@@ -12,7 +12,7 @@
 
 package com.kaltura.playkit.utils;
 
-import com.kaltura.android.exoplayer2.C;
+import com.kaltura.androidx.media3.common.C;
 
 /**
  * Created by anton.afanasiev on 04/12/2016.

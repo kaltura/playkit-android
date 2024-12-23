@@ -1,20 +1,20 @@
-package com.kaltura.android.exoplayer2.video;
+package com.kaltura.androidx.media3.exoplayer.video;
 
 import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.kaltura.android.exoplayer2.ExoPlaybackException;
-import com.kaltura.android.exoplayer2.Format;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecAdapter;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
-import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
+
+import com.kaltura.androidx.media3.common.Format;
+import com.kaltura.androidx.media3.exoplayer.ExoPlaybackException;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecAdapter;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
+import com.kaltura.androidx.media3.exoplayer.mediacodec.MediaCodecUtil;
 import com.kaltura.playkit.PKLog;
 
-public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer{
+public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer {
 
     private boolean renderedFirstFrameAfterResetAfterReady = false;
 
@@ -39,20 +39,22 @@ public class KMediaCodecVideoRenderer extends MediaCodecVideoRenderer{
         this.mediaCodecSupportFormatHelper = new MediaCodecSupportFormatHelper(context);
     }
 
-    @Override
-    void maybeNotifyRenderedFirstFrame() {
-        super.maybeNotifyRenderedFirstFrame();
-        if (this.shouldNotifyRenderedFirstFrameAfterStarted) {
-            log.d("KMediaCodecVideoRenderer", "maybeNotifyRenderedFirstFrame");
-            this.shouldNotifyRenderedFirstFrameAfterStarted = false;
-            new Handler(Looper.getMainLooper()).post(() -> {
-                if (rendererFirstFrameWhenStartedEventListener != null) {
-                    log.d("KMediaCodecVideoRenderer", "onRenderedFirstFrameWhenStarted");
-                    rendererFirstFrameWhenStartedEventListener.onRenderedFirstFrameWhenStarted();
-                }
-            });
-        }
-    }
+    // TODO: This should be revisited once migartion to media3 is complete.
+    //  Seems like it's not needed anymore for media3
+//    @Override
+//    void maybeNotifyRenderedFirstFrame() {
+//        super.maybeNotifyRenderedFirstFrame();
+//        if (this.shouldNotifyRenderedFirstFrameAfterStarted) {
+//            log.d("KMediaCodecVideoRenderer", "maybeNotifyRenderedFirstFrame");
+//            this.shouldNotifyRenderedFirstFrameAfterStarted = false;
+//            new Handler(Looper.getMainLooper()).post(() -> {
+//                if (rendererFirstFrameWhenStartedEventListener != null) {
+//                    log.d("KMediaCodecVideoRenderer", "onRenderedFirstFrameWhenStarted");
+//                    rendererFirstFrameWhenStartedEventListener.onRenderedFirstFrameWhenStarted();
+//                }
+//            });
+//        }
+//    }
 
     @Override
     protected void onPositionReset(long positionUs, boolean joining) throws ExoPlaybackException {

@@ -2,7 +2,7 @@ package com.kaltura.playkit.player;
 
 import androidx.annotation.NonNull;
 
-import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
+import com.kaltura.androidx.media3.exoplayer.analytics.AnalyticsListener;
 import com.kaltura.playkit.PKMediaConfig;
 
 import okhttp3.EventListener;

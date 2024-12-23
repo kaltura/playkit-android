@@ -20,9 +20,6 @@ public class MulticastSettings {
     // experimental value to control whether adjusting speed (in case if gap) should happen only once on start
     // or should be adjusted all the time
     private boolean experimentalContinuousSpeedAdjustment = false;
-    // experimental value to control maximum audio gap between first audio and video buffers, which should be
-    // treated as normal one
-    private long experimentalMaxAudioGapThreshold = 3_000_000L;
     // experimental value to control maximum playback speed used during speed adjustment
     private float experimentalMaxSpeedFactor = 4.0f;
     // experimental value to control speed adjustment step during speed adjustment
@@ -111,10 +108,6 @@ public class MulticastSettings {
         return experimentalContinuousSpeedAdjustment;
     }
 
-    public long getExperimentalMaxAudioGapThreshold() {
-        return experimentalMaxAudioGapThreshold;
-    }
-
     public float getExperimentalMaxSpeedFactor() {
         return experimentalMaxSpeedFactor;
     }
@@ -133,10 +126,6 @@ public class MulticastSettings {
 
     public void setExperimentalContinuousSpeedAdjustment(boolean experimentalContinuousSpeedAdjustment) {
         this.experimentalContinuousSpeedAdjustment = experimentalContinuousSpeedAdjustment;
-    }
-
-    public void setExperimentalMaxAudioGapThreshold(long experimentalMaxAudioGapThreshold) {
-        this.experimentalMaxAudioGapThreshold = experimentalMaxAudioGapThreshold;
     }
 
     public void setExperimentalMaxSpeedFactor(float experimentalMaxSpeedFactor) {

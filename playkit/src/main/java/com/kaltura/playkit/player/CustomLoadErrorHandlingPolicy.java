@@ -2,9 +2,9 @@ package com.kaltura.playkit.player;
 
 import android.net.Uri;
 
-import com.kaltura.android.exoplayer2.upstream.DataSpec;
-import com.kaltura.android.exoplayer2.upstream.DefaultLoadErrorHandlingPolicy;
-import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.androidx.media3.datasource.DataSpec;
+import com.kaltura.androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy;
+import com.kaltura.androidx.media3.datasource.HttpDataSource;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKSubtitleFormat;
