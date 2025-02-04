@@ -13,6 +13,8 @@
 package com.kaltura.playkit;
 
 
+import android.app.Activity;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -22,6 +24,7 @@ import java.util.Map;
  */
 public class PKPluginConfigs implements Iterable<Map.Entry<String, Object>> {
 
+    private Activity playerActivity;
     private Map<String, Object> configs = new HashMap<>();
 
     public Object getPluginConfig(String pluginName) {
@@ -38,5 +41,13 @@ public class PKPluginConfigs implements Iterable<Map.Entry<String, Object>> {
 
     public Iterator<Map.Entry<String, Object>> iterator() {
         return configs.entrySet().iterator();
+    }
+
+    public void setPlayerActivity(Activity playerActivity) {
+        this.playerActivity = playerActivity;
+    }
+
+    public Activity getPlayerActivity() {
+        return playerActivity;
     }
 }
