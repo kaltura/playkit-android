@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
@@ -84,7 +85,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         for (Map.Entry<String, Object> entry : pluginsConfig) {
             String name = entry.getKey();
-            PKPlugin plugin = loadPlugin(name, player, entry.getValue(), messageBus, context);
+            PKPlugin plugin = loadPlugin(name, player, entry.getValue(), messageBus, context, pluginsConfig.getPlayerActivity());
 
             if (plugin == null) {
                 log.w("Plugin not found: " + name);
@@ -281,10 +282,10 @@ class PlayerLoader extends PlayerDecoratorBase {
         return Pair.create(kavaPartnerId, kavaEntryId);
     }
 
-    private PKPlugin loadPlugin(String name, Player player, Object config, MessageBus messageBus, Context context) {
+    private PKPlugin loadPlugin(String name, Player player, Object config, MessageBus messageBus, Context context, Activity playerActivity) {
         PKPlugin plugin = PlayKitManager.createPlugin(name);
         if (plugin != null) {
-            plugin.onLoad(player, config, messageBus, context);
+            plugin.onLoad(player, config, messageBus, context, playerActivity);
         }
         return plugin;
     }
