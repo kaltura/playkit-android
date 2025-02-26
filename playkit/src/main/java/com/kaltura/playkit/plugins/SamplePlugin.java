@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.plugins;
 
+import android.app.Activity;
 import android.content.Context;
 
 import com.google.gson.JsonObject;
@@ -60,7 +61,7 @@ public class SamplePlugin extends PKPlugin {
     };
 
     @Override
-    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context, Activity playerActivity) {
         log.i("Loading");
         this.player = player;
         this.context = context;

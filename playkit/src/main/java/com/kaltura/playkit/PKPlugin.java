@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit;
 
+import android.app.Activity;
 import android.content.Context;
 
 public abstract class PKPlugin {
@@ -26,7 +27,7 @@ public abstract class PKPlugin {
         void warmUp(Context context);
     }
 
-    protected abstract void onLoad(Player player, Object config, MessageBus messageBus, Context context);
+    protected abstract void onLoad(Player player, Object config, MessageBus messageBus, Context context, Activity playerActivity);
 
     protected abstract void onUpdateMedia(PKMediaConfig mediaConfig);
 
