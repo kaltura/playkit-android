@@ -27,6 +27,7 @@ import java.util.Map;
 public class PKMediaEntry implements Parcelable {
 
     private String id;
+    private String vfastAssetId;
     private String name;
     private List<PKMediaSource> sources;
     private long duration; //in milliseconds
@@ -41,6 +42,11 @@ public class PKMediaEntry implements Parcelable {
 
     public PKMediaEntry setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public PKMediaEntry setVfastAssetId(String vfastAssetId) {
+        this.vfastAssetId = vfastAssetId;
         return this;
     }
 
@@ -88,6 +94,10 @@ public class PKMediaEntry implements Parcelable {
 
     public String getId() {
         return id;
+    }
+
+    public String getVfastAssetId() {
+        return vfastAssetId;
     }
 
     public String getName() {
