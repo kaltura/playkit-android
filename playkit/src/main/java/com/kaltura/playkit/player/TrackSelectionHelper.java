@@ -458,6 +458,7 @@ public class TrackSelectionHelper {
                     formatThumbnailInfo.segmentDuration * Consts.MILLISECONDS_MULTIPLIER,
                     fixedImageTrackURL,
                     formatThumbnailInfo.presentationTimeOffset,
+                    formatThumbnailInfo.availabilityStartTimeMs,
                     formatThumbnailInfo.timeScale,
                     formatThumbnailInfo.startNumber,
                     formatThumbnailInfo.endNumber
@@ -1744,10 +1745,13 @@ public class TrackSelectionHelper {
             double offset = positionMS % imageTrack.getDuration();
             int thumbIndex = (int) Math.floor((offset * imageTrack.getCols() * imageTrack.getRows()) / imageTrack.getDuration());
             long seqIdx = seq + ((DashImageTrack) imageTrack).getStartNumber();
+            if (((DashImageTrack) imageTrack).getPresentationTimeOffset() == 0) {
+                seqIdx = (((DashImageTrack) imageTrack).getAvailabilityStartTimeMs() + positionMS) / imageTrack.getDuration();
+            }
             float imageWidth = imageTrack.getWidth() / imageTrack.getCols();
             float imageHeight = imageTrack.getHeight() / imageTrack.getRows();
             float imageX = (float) Math.floor(thumbIndex % imageTrack.getCols()) * imageWidth;
-            float imageY = (float) Math.floor(thumbIndex / imageTrack.getCols()) * imageHeight;
+            float imageY = (float) Math.floor(thumbIndex % imageTrack.getRows()) * imageHeight;
 
             long imageRealUrlTime = ((seqIdx - 1) * imageTrack.getDuration());
             String realImageUrl = imageTrack.getUrl().replace("$Number$", String.valueOf(seqIdx)).replace("$Time$", String.valueOf(imageRealUrlTime));
