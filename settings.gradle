@@ -1,2 +1,3 @@
 include ':playkit'
+include ':simid-controller'
 

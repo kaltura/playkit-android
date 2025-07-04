@@ -23,6 +23,7 @@ import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
+import com.kaltura.playkit.player.simid.SimidControllerProxy;
 
 import java.util.List;
 
@@ -53,6 +54,9 @@ public class PlayerEvent implements PKEvent {
     public static final Class<ConnectionAcquired> connectionAcquired = ConnectionAcquired.class;
     public static final Class<BytesLoaded> bytesLoaded = BytesLoaded.class;
     public static final Class<SurfaceAspectRationResizeModeChanged> surfaceAspectRationSizeModeChanged = SurfaceAspectRationResizeModeChanged.class;
+
+    public static final Class<SimidAdBeginEvent> simidAdBegin = SimidAdBeginEvent.class;
+    public static final Class<SimidAdEndEvent> simidAdEnd = SimidAdEndEvent.class;
 
     public static final PlayerEvent.Type canPlay = Type.CAN_PLAY;
     public static final PlayerEvent.Type ended = Type.ENDED;
@@ -378,6 +382,29 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class SimidAdBeginEvent extends PlayerEvent {
+        public final SimidControllerProxy controller;
+        public final String creativeUri;
+        public final String adParameters;
+        public final long adStartPosition;
+        public final long adDuration;
+
+        public SimidAdBeginEvent(SimidControllerProxy controller, String creativeUri, String adParameters, long adStartPosition, long adDuration) {
+            super(Type.SIMID_AD_BEGIN_EVENT);
+            this.controller = controller;
+            this.creativeUri = creativeUri;
+            this.adParameters = adParameters;
+            this.adStartPosition = adStartPosition;
+            this.adDuration = adDuration;
+        }
+    }
+
+    public static class SimidAdEndEvent extends PlayerEvent {
+        public SimidAdEndEvent() {
+            super(Type.SIMID_AD_END_EVENT);
+        }
+    }
+
     public enum Type {
         STATE_CHANGED,
         CAN_PLAY,   // Sent when enough data is available that the media can be played, at least for a couple of frames. This corresponds to the HAVE_ENOUGH_DATA readyState.
@@ -413,7 +440,9 @@ public class PlayerEvent implements PKEvent {
         BYTES_LOADED,           // Bytes were downloaded from the network.
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
         ASPECT_RATIO_RESIZE_MODE_CHANGED, //Send when updating the Surface Vide Aspect Ratio size mode.
-        EVENT_STREAM_CHANGED //Send event streams received from manifest.
+        EVENT_STREAM_CHANGED, //Send event streams received from manifest.
+        SIMID_AD_BEGIN_EVENT,
+        SIMID_AD_END_EVENT
     }
 
     @Override

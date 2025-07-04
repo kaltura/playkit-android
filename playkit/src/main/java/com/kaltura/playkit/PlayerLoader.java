@@ -25,6 +25,7 @@ import com.kaltura.playkit.ads.AdvertisingConfig;
 import com.kaltura.playkit.ads.AdvertisingController;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.PlayerController;
+import com.kaltura.playkit.player.simid.SimidPlayerController;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
 import com.kaltura.playkit.utils.NetworkUtils;
@@ -59,6 +60,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     private PKAdvertisingController pkAdvertisingController;
     private final String kavaPluginKey = "kava";
     private boolean isKavaImpressionFired;
+    private final boolean useSimidPlayerController = true; // TODO: change this via options?
 
     PlayerLoader(Context context, MessageBus messageBus) {
         this.context = context;
@@ -71,7 +73,16 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     public void load(@NonNull PKPluginConfigs pluginsConfig) {
 
-        playerController = new PlayerController(context);
+        if (playerController != null) {
+            playerController.dispose();
+            playerController = null;
+        }
+
+        if (useSimidPlayerController) {
+            playerController = new SimidPlayerController(pluginsConfig.getPlayerActivity(), context, messageBus);
+        } else {
+            playerController = new PlayerController(context);
+        }
 
         // By default, set Kaltura decorator.
 

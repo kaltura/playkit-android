@@ -244,6 +244,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
         }
     }
 
+    ExoPlayer getPlayer() {
+        return player;
+    }
+
     private void initializePlayer() {
         initializePlayer(false);
     }
@@ -1309,6 +1313,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             return player.getDuration();
         }
         return TIME_UNSET;
+    }
+
+    @Override
+    public boolean isDeviceMuted() {
+        if (assertPlayerIsNotNull("isDeviceMuted()")) {
+            return player.isDeviceMuted();
+        }
+        return PlayerEngine.super.isDeviceMuted();
     }
 
     @Override

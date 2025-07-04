@@ -101,6 +101,8 @@ public interface PlayerEngine {
      */
     long getDuration();
 
+    default boolean isDeviceMuted() { return false; }
+
     /**
      * @return - The buffered position of the current media,
      * or {@link Consts#POSITION_UNSET} if the position is unknown or player is null.

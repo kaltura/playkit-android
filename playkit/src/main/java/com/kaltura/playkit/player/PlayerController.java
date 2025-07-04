@@ -22,7 +22,10 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.common.Timeline;
 import com.kaltura.androidx.media3.datasource.cache.Cache;
+import com.kaltura.androidx.media3.exoplayer.ExoPlayer;
 import com.kaltura.androidx.media3.exoplayer.dash.manifest.EventStream;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
@@ -49,6 +52,7 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
@@ -62,16 +66,16 @@ import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 public class PlayerController implements Player {
 
     private static final PKLog log = PKLog.get("PlayerController");
-    private Context context;
+    protected Context context;
     private PKMediaConfig mediaConfig;
     private PKMediaSourceConfig sourceConfig;
     private PlayerSettings playerSettings = new PlayerSettings();
     private final Runnable updateProgressAction = initProgressAction();
 
-    private PlayerEngine player;
+    protected PlayerEngine player;
     private PlayerEngineType currentPlayerType = PlayerEngineType.Unknown;
 
-    private PlayerView rootPlayerView;
+    protected PlayerView rootPlayerView;
     private PlayerView playerEngineView;
 
     private String sessionId;
@@ -98,6 +102,9 @@ public class PlayerController implements Player {
     public PlayerController(Context context) {
         this.context = context;
         initializeRootPlayerView();
+    }
+
+    public void dispose() {
     }
 
     private void initializeRootPlayerView() {
@@ -388,6 +395,26 @@ public class PlayerController implements Player {
     public long getCurrentPosition() {
         log.v("getCurrentPosition");
         if (assertPlayerIsNotNull("getCurrentPosition()")) {
+            String callingClass = Thread.currentThread().getStackTrace()[3].getClassName();
+            if (Objects.equals(callingClass, "tv.broadpeak.smartlib.player.KalturaPlayerAdapter")
+                    && player instanceof ExoPlayerWrapper) {
+                // Special handling case for Broadpeak KalturaPlayerAdapter class.
+                ExoPlayer exoPlayer = ((ExoPlayerWrapper)player).getPlayer();
+                long playerPosition = exoPlayer.getCurrentPosition();
+                if (exoPlayer.isCurrentMediaItemDynamic()) {
+                    Timeline timeline = exoPlayer.getCurrentTimeline();
+                    if (!timeline.isEmpty()) {
+                        Timeline.Window window = timeline.getWindow(exoPlayer.getCurrentMediaItemIndex(), new Timeline.Window());
+                        if (window.windowStartTimeMs != C.TIME_UNSET) {
+                            playerPosition = exoPlayer.getCurrentPosition() + window.windowStartTimeMs;
+                        } else {
+                            Timeline.Period period = timeline.getPeriod(exoPlayer.getCurrentPeriodIndex(), new Timeline.Period());
+                            playerPosition -= period.getPositionInWindowMs();
+                        }
+                    }
+                }
+                return playerPosition;
+            }
             return player.getCurrentPosition();
         }
         return Consts.POSITION_UNSET;
