@@ -400,20 +400,22 @@ public class PlayerController implements Player {
                     && player instanceof ExoPlayerWrapper) {
                 // Special handling case for Broadpeak KalturaPlayerAdapter class.
                 ExoPlayer exoPlayer = ((ExoPlayerWrapper)player).getPlayer();
-                long playerPosition = exoPlayer.getCurrentPosition();
-                if (exoPlayer.isCurrentMediaItemDynamic()) {
-                    Timeline timeline = exoPlayer.getCurrentTimeline();
-                    if (!timeline.isEmpty()) {
-                        Timeline.Window window = timeline.getWindow(exoPlayer.getCurrentMediaItemIndex(), new Timeline.Window());
-                        if (window.windowStartTimeMs != C.TIME_UNSET) {
-                            playerPosition = exoPlayer.getCurrentPosition() + window.windowStartTimeMs;
-                        } else {
-                            Timeline.Period period = timeline.getPeriod(exoPlayer.getCurrentPeriodIndex(), new Timeline.Period());
-                            playerPosition -= period.getPositionInWindowMs();
+                if (exoPlayer != null) {
+                    long playerPosition = exoPlayer.getCurrentPosition();
+                    if (exoPlayer.isCurrentMediaItemDynamic()) {
+                        Timeline timeline = exoPlayer.getCurrentTimeline();
+                        if (!timeline.isEmpty()) {
+                            Timeline.Window window = timeline.getWindow(exoPlayer.getCurrentMediaItemIndex(), new Timeline.Window());
+                            if (window.windowStartTimeMs != C.TIME_UNSET) {
+                                playerPosition = exoPlayer.getCurrentPosition() + window.windowStartTimeMs;
+                            } else {
+                                Timeline.Period period = timeline.getPeriod(exoPlayer.getCurrentPeriodIndex(), new Timeline.Period());
+                                playerPosition -= period.getPositionInWindowMs();
+                            }
                         }
                     }
+                    return playerPosition;
                 }
-                return playerPosition;
             }
             return player.getCurrentPosition();
         }
