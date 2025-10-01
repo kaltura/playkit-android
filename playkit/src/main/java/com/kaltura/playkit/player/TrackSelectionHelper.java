@@ -1745,7 +1745,8 @@ public class TrackSelectionHelper {
             double offset = positionMS % imageTrack.getDuration();
             int thumbIndex = (int) Math.floor((offset * imageTrack.getCols() * imageTrack.getRows()) / imageTrack.getDuration());
             long seqIdx = seq + ((DashImageTrack) imageTrack).getStartNumber();
-            if (((DashImageTrack) imageTrack).getPresentationTimeOffset() == 0) {
+            if (((DashImageTrack) imageTrack).getPresentationTimeOffset() == 0
+                    && ((DashImageTrack) imageTrack).getAvailabilityStartTimeMs() != C.TIME_UNSET) {
                 seqIdx = (((DashImageTrack) imageTrack).getAvailabilityStartTimeMs() + positionMS) / imageTrack.getDuration();
             }
             float imageWidth = imageTrack.getWidth() / imageTrack.getCols();
