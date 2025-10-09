@@ -1915,6 +1915,7 @@ public final class CustomFormat {
         public int tilesHorizontal;
         public int tilesVertical;
         public long presentationTimeOffset;
+        public long availabilityStartTimeMs;
         public long timeScale;
         public long startNumber;
         public long endNumber;
@@ -1926,6 +1927,7 @@ public final class CustomFormat {
             tilesHorizontal = in.readInt();
             tilesVertical = in.readInt();
             presentationTimeOffset = in.readLong();
+            availabilityStartTimeMs = in.readLong();
             timeScale = in.readLong();
             startNumber = in.readLong();
             endNumber = in.readLong();
@@ -1938,6 +1940,7 @@ public final class CustomFormat {
             tilesHorizontal = builder.tilesHorizontal;
             tilesVertical = builder.tilesVertical;
             presentationTimeOffset = builder.presentationTimeOffset;
+            availabilityStartTimeMs = builder.availabilityStartTimeMs;
             timeScale = builder.timeScale;
             startNumber = builder.startNumber;
             endNumber = builder.endNumber;
@@ -1951,6 +1954,7 @@ public final class CustomFormat {
             dest.writeInt(tilesHorizontal);
             dest.writeInt(tilesVertical);
             dest.writeLong(presentationTimeOffset);
+            dest.writeLong(availabilityStartTimeMs);
             dest.writeLong(timeScale);
             dest.writeLong(startNumber);
             dest.writeLong(endNumber);
@@ -1981,6 +1985,7 @@ public final class CustomFormat {
             private int tilesHorizontal;
             private int tilesVertical;
             private long presentationTimeOffset;
+            private long availabilityStartTimeMs;
             private long timeScale;
             private long startNumber;
             private long endNumber;
@@ -2004,6 +2009,11 @@ public final class CustomFormat {
 
             public FormatThumbnailInfo.Builder setPresentationTimeOffset(long presentationTimeOffset) {
                 this.presentationTimeOffset = presentationTimeOffset;
+                return this;
+            }
+
+            public FormatThumbnailInfo.Builder setAvailabilityStartTimeMs(long availabilityStartTimeMs) {
+                this.availabilityStartTimeMs = availabilityStartTimeMs;
                 return this;
             }
 
