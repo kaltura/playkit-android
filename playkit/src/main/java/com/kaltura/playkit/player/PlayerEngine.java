@@ -29,6 +29,7 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Interface that connect between {@link PlayerController} and actual player engine
@@ -100,6 +101,11 @@ public interface PlayerEngine {
      * or {@link Consts#TIME_UNSET} if the duration is unknown or player is null.
      */
     long getDuration();
+
+    /**
+     * @return - the integer index of the period currently being played
+     */
+    default int getCurrentPeriodIndex() { return 0; };
 
     /**
      * @return - The buffered position of the current media,
@@ -268,6 +274,8 @@ public interface PlayerEngine {
     BaseTrack getLastSelectedTrack(int renderType);
 
     List<EventStream> getEventStreams();
+
+    Map<Integer, List<EventStream>> getEventStreamsMap();
 
     boolean isLive();
 

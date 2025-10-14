@@ -42,6 +42,7 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -615,6 +616,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public List<EventStream> getEventStreams() {
+        return null;
+    }
+
+    @Override
+    public Map<Integer, List<EventStream>> getEventStreamsMap() {
         return null;
     }
 

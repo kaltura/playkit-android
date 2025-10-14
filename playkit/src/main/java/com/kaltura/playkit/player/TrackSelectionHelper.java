@@ -160,6 +160,8 @@ public class TrackSelectionHelper {
         void onImageTrackChanged();
 
         void onEventStreamsChanged(List<EventStream> eventStreamList);
+
+        void onEventStreamsAvailable(Map<Integer, List<EventStream>> eventStreamListMap);
     }
 
     interface TracksErrorListener {
@@ -243,11 +245,15 @@ public class TrackSelectionHelper {
 
         List<CustomFormat> rawImageTracks = new ArrayList<>();
         List<EventStream> eventStreamList = new ArrayList<>();
+        Map<Integer, List<EventStream>> eventStreamListMap = new HashMap<>();
 
         if (customDashManifest != null && customDashManifest.getPeriodCount() > 0) {
             for (int periodIndex = 0; periodIndex < customDashManifest.getPeriodCount(); periodIndex++) {
 
-                eventStreamList.addAll(customDashManifest.getPeriod(periodIndex).eventStreams);
+                if (!customDashManifest.getPeriod(periodIndex).eventStreams.isEmpty()) {
+                    eventStreamListMap.put(periodIndex, customDashManifest.getPeriod(periodIndex).eventStreams);
+                    eventStreamList.addAll(customDashManifest.getPeriod(periodIndex).eventStreams);
+                }
                 List<CustomAdaptationSet> adaptationSets = customDashManifest.getPeriod(periodIndex).adaptationSets;
 
                 for (int adaptationSetIndex = 0 ; adaptationSetIndex < adaptationSets.size() ; adaptationSetIndex++) {
@@ -276,6 +282,10 @@ public class TrackSelectionHelper {
 
             if (!eventStreamList.isEmpty()) {
                 tracksInfoListener.onEventStreamsChanged(eventStreamList);
+            }
+
+            if (!eventStreamListMap.isEmpty()) {
+                tracksInfoListener.onEventStreamsAvailable(eventStreamListMap);
             }
         }
 
