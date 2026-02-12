@@ -560,6 +560,11 @@ public interface Player {
     long getCurrentPosition();
 
     /**
+     * @return - the integer index of the period currently being played
+     */
+    int getCurrentPeriodIndex();
+
+    /**
      * Getter for the current playback position in window.
      *
      * @return - position of the player in window or 0 o/w.

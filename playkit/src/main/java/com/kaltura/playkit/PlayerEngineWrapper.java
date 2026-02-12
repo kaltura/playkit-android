@@ -18,7 +18,9 @@ import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class PlayerEngineWrapper implements PlayerEngine {
 
@@ -57,6 +59,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public long getPositionInWindowMs() {
         return playerEngine.getPositionInWindowMs();
+    }
+
+    @Override
+    public int getCurrentPeriodIndex() {
+        return playerEngine.getCurrentPeriodIndex();
     }
 
     @Override
@@ -212,6 +219,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public List<EventStream> getEventStreams() {
         return playerEngine.getEventStreams();
+    }
+
+    @Override
+    public Map<Integer, List<EventStream>> getEventStreamsMap() {
+        return playerEngine.getEventStreamsMap();
     }
 
     @Override

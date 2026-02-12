@@ -26,6 +26,7 @@ import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 import com.kaltura.playkit.player.simid.SimidControllerProxy;
 
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class PlayerEvent implements PKEvent {
@@ -43,7 +44,13 @@ public class PlayerEvent implements PKEvent {
     public static final Class<VideoTrackChanged> videoTrackChanged = VideoTrackChanged.class;
     public static final Class<AudioTrackChanged> audioTrackChanged = AudioTrackChanged.class;
     public static final Class<TextTrackChanged> textTrackChanged = TextTrackChanged.class;
+    /**
+     * @deprecated
+     * Use {@link PlayerEvent#eventStreamsAvailable} instead
+     */
+    @Deprecated
     public static final Class<EventStreamChanged> eventStreamChanged = EventStreamChanged.class;
+    public static final Class<EventStreamsAvailable> eventStreamsAvailable = EventStreamsAvailable.class;
     public static final Class<ImageTrackChanged> imageTrackChanged = ImageTrackChanged.class;
     public static final Class<ManifestRedirected> sourceRedirected = ManifestRedirected.class;
 
@@ -236,6 +243,14 @@ public class PlayerEvent implements PKEvent {
         public EventStreamChanged(List<EventStream> eventStreams) {
             super(Type.EVENT_STREAM_CHANGED);
             this.eventStreamList = eventStreams;
+        }
+    }
+
+    public static class EventStreamsAvailable extends PlayerEvent {
+        public final Map<Integer, List<EventStream>> eventStreamListMap;
+        public EventStreamsAvailable(Map<Integer, List<EventStream>> eventStreams) {
+            super(Type.EVENT_STREAMS_AVAILABLE);
+            this.eventStreamListMap = eventStreams;
         }
     }
 
@@ -442,7 +457,8 @@ public class PlayerEvent implements PKEvent {
         ASPECT_RATIO_RESIZE_MODE_CHANGED, //Send when updating the Surface Vide Aspect Ratio size mode.
         EVENT_STREAM_CHANGED, //Send event streams received from manifest.
         SIMID_AD_BEGIN_EVENT,
-        SIMID_AD_END_EVENT
+        SIMID_AD_END_EVENT,
+        EVENT_STREAMS_AVAILABLE //Send event streams map received from manifest.
     }
 
     @Override

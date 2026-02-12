@@ -53,6 +53,7 @@ import com.kaltura.playkit.utils.Consts;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
@@ -420,6 +421,15 @@ public class PlayerController implements Player {
             return player.getCurrentPosition();
         }
         return Consts.POSITION_UNSET;
+    }
+
+    @Override
+    public int getCurrentPeriodIndex() {
+        log.v("getCurrentPeriodIndex");
+        if (assertPlayerIsNotNull("getCurrentPeriodIndex()")) {
+            return player.getCurrentPeriodIndex();
+        }
+        return 0;
     }
 
     @Override
@@ -1104,6 +1114,13 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.EventStreamChanged(eventStreamList);
+                        break;
+                    case EVENT_STREAMS_AVAILABLE:
+                        Map<Integer, List<EventStream>> eventStreamMap = player.getEventStreamsMap();
+                        if (eventStreamMap == null || eventStreamMap.isEmpty()) {
+                            return;
+                        }
+                        event = new PlayerEvent.EventStreamsAvailable(eventStreamMap);
                         break;
                     case IMAGE_TRACK_CHANGED:
                         ImageTrack imageTrack = (ImageTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_IMAGE);
