@@ -4,14 +4,14 @@ apply from: 'version.gradle'
 
 android {
     namespace 'com.kaltura.playkit'
-    compileSdk 34
+    compileSdk 35
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionName playkitVersion  // defined in version.gradle
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String","VERSION_NAME","\"${playkitVersion}\"")

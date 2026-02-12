@@ -19,6 +19,7 @@ package com.kaltura.playkit.player;
 public class DashImageTrack extends ImageTrack {
 
     private long presentationTimeOffset;
+    private long availabilityStartTimeMs;
     private long timeScale;
     private long startNumber;
     private long endNumber;
@@ -33,6 +34,7 @@ public class DashImageTrack extends ImageTrack {
                    long duration,
                    String url,
                    long presentationTimeOffset,
+                   long availabilityStartTimeMs,
                    long timeScale,
                    long startNumber,
                    long endtNumber
@@ -40,6 +42,7 @@ public class DashImageTrack extends ImageTrack {
         super(uniqueId, label, bitrate, width, height, cols, rows, duration, url);
 
         this.presentationTimeOffset = presentationTimeOffset;
+        this.availabilityStartTimeMs = availabilityStartTimeMs;
         this.timeScale = timeScale;
         this.startNumber = startNumber;
         this.endNumber = endtNumber;
@@ -47,6 +50,10 @@ public class DashImageTrack extends ImageTrack {
 
     public long getPresentationTimeOffset() {
         return presentationTimeOffset;
+    }
+
+    public long getAvailabilityStartTimeMs() {
+        return availabilityStartTimeMs;
     }
 
     public long getTimeScale() {

@@ -931,6 +931,7 @@ public class CustomDashManifestParser extends DefaultHandler {
             }
         }
         long presentationTimeOffset = ((CustomSegmentBase.SegmentTemplate)segmentBase).getPresentationTimeOffset();
+        long availabilityStartTimeMs = Util.usToMs(((CustomSegmentBase.SegmentTemplate)segmentBase).getPeriodStartUnixTimeUs());
         long timeScale = ((CustomSegmentBase.SegmentTemplate)segmentBase).getTimescale();
         long startNumber = ((CustomSegmentBase.SegmentTemplate)segmentBase).getStartNumber();
         long endNumber = ((CustomSegmentBase.SegmentTemplate)segmentBase).getEndNumber();
@@ -950,6 +951,7 @@ public class CustomDashManifestParser extends DefaultHandler {
         thumbnailInfoBuilder.setTilesHorizontal(tilesHorizontal);
         thumbnailInfoBuilder.setTilesVertical(tilesVertical);
         thumbnailInfoBuilder.setPresentationTimeOffset(presentationTimeOffset);
+        thumbnailInfoBuilder.setAvailabilityStartTimeMs(availabilityStartTimeMs);
         thumbnailInfoBuilder.setTimeScale(timeScale);
         thumbnailInfoBuilder.setStartNumber(startNumber);
         thumbnailInfoBuilder.setEndNumber(endNumber);
