@@ -11,11 +11,11 @@ abstract class SimidComponent (
     protected val type: String
 ) {
     companion object {
-        private const val TAG = "SimidComponent"
+        private const val TAG = "SimidController"
     }
 
     // The SIMID protocol supported version
-    protected val version: String = "1.1"
+    protected val protocolVersion: String = "1.1"
 
     // The session ID
     protected var sessionId: String = ""
@@ -44,7 +44,7 @@ abstract class SimidComponent (
     protected abstract fun postMessage(message: String)
 
     protected open fun receiveMessage(messageStr: String) {
-        Log.v(SimidComponent.TAG, "[SIMID][$type] Receive Message: $messageStr")
+        Log.v(TAG, "[SIMID][$type][R]: $messageStr")
 
         val message: Message = Gson().fromJson(messageStr, Message::class.java);
 
@@ -107,15 +107,12 @@ abstract class SimidComponent (
         // Incrementing between messages keeps each message id unique.
         val messageId: Int = nextMessageId++
 
-        // Only create session does not need to be in the SIMID name space because it is part of the protocol.
-        val nameSpacedMessage: String = if (type == ProtocolMessage.CREATE_SESSION) type else (SIMID_NS + type)
-
         val message: Message = Message(
-            nameSpacedMessage,
-            sessionId,
-            messageId,
-            Calendar.getInstance().time.time,
-            args
+            type = type,
+            sessionId = sessionId,
+            messageId = messageId,
+            timestamp = Calendar.getInstance().time.time,
+            args = args
         )
 
         return message
@@ -146,7 +143,17 @@ abstract class SimidComponent (
     }
 
     private fun postMessage(message: Message) {
-        val messageStr = Gson().toJson(message)
+
+        // Convert to a LinkedHashMap to keep fields ordering when serializing (for debug purpose)
+        val messageMap = linkedMapOf<String, Any?>(
+            "type" to message.type,
+            "sessionId" to message.sessionId,
+            "messageId" to message.messageId,
+            "timestamp" to message.timestamp,
+            "args" to message.args
+        )
+
+        val messageStr = Gson().toJson(messageMap)
         postMessage(messageStr)
     }
 
@@ -171,8 +178,7 @@ abstract class SimidComponent (
     }
 
     private fun invokeMessageListeners(message: Message) {
-        val type = message.type.replace(SIMID_NS, "")
-        messageListeners[type]?.forEach { listener -> listener(message) }
+        messageListeners[message.type]?.forEach { listener -> listener(message) }
     }
 
     //endregion PRIVATE METHODS

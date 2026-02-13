@@ -7,9 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
 import android.util.Log
-import android.view.KeyEvent
 import android.view.View
-import android.view.ViewGroup
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -21,38 +19,44 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.apache.commons.text.StringEscapeUtils
 
-//import tv.broadpeak.smartlib.ad.simid.GenericSimidControllerApi
-
-const val MEDIA_STATE_POLL_INTERVAL_MS = 500L
-
+/**
+ * Set up the SIMID controller starts listening for messages from the creative.
+ * @param playerDimensions the main player dimensions
+ * @param creativeDimensions the initial creative dimensions the application/player will set
+ * @param creativeUri The creative URI
+ * @param adParameters the creative ad parameters
+ * @param adDuration the display duration of the creative (0 by default, meaning no requested duration)
+ * @param adSkippable true if the linear ad is skippable (false by default)
+ * @param mediaTimeupdateInterval the interval in ms to send media timeupdate message to the creative (250ms by default, -1 to disable)
+ */
 public open class SimidController (
     private val activity: Activity,
     private val context: Context,
-    private val mainPlayerDimensions: Rect,
+    private val playerDimensions: Rect,
+    private var creativeDimensions: Rect,
     private val creativeUri: String,
     private val adParameters: String = "",
     private val adDuration: Float = 0.0F,
-    private val adSkippable: Boolean = false
-) : SimidComponent(SIMID_COMPONENT_TYPE) /*: GenericSimidControllerApi()*/ {
-
-//    override fun getSimidControllerName(): String {
-//        return "Bpk SIMID Controller"
-//    }
+    private val adSkippable: Boolean = false,
+    private val mediaTimeupdateInterval: Long = MEDIA_TIMEUPDATE_INTERVAL_MS
+) : SimidComponent(SIMID_COMPONENT_TYPE) {
 
     companion object {
         private const val TAG = "SimidController"
         private const val SIMID_COMPONENT_TYPE = "Player"
+        public const val VERSION = "0.5.0"//BuildConfig.VERSION // TODO: hardcoded as was taken out from the BPK simid repo. Keep up-to-date and review when time comes
+        public const val MEDIA_TIMEUPDATE_INTERVAL_MS = 250L
     }
 
     // The WebView used to load the SIMID creative
     private var webView: WebView? = null
-    private var webViewContainer: ViewGroup? = null
 
-    private var _duration: Float = 0.0F
+    private var _autoStart: Boolean = true
+    private var _initialized: Boolean = false
+
     private var _nonLinearStartTime: Float = 0.0F
-    private var _startPosition: Long = 0L
     private var _isStopping: Boolean = false
-    private var _timerMediaState: Timer? = null
+    private var _timerMediaTimeupdate: Timer? = null
 
     private var onGetMediaState: (() -> MediaState)? = null
     private var onPlayMedia: (() -> Boolean)? = null
@@ -72,6 +76,14 @@ public open class SimidController (
     //region Callbacks
     fun onGetMediaState(cb: () -> MediaState) {
         this.onGetMediaState = cb
+    }
+
+    fun onPlayMedia(cb: () -> Boolean) {
+        this.onPlayMedia = cb
+    }
+
+    fun onPauseMedia(cb: () -> Boolean) {
+        this.onPauseMedia = cb
     }
 
     fun onAddSimid(cb: (WebView) -> Unit) {
@@ -96,21 +108,58 @@ public open class SimidController (
     //endregion Callbacks
 
     @SuppressLint("SetJavaScriptEnabled")
+    fun getVersion(): String {
+        return VERSION
+    }
 
-    fun load() {
+    /**
+     * Initialize and load ad. This should be called before an ad plays.
+     * Creates an iframe with the creative in it, then uses a promise to call init on the creative as soon as the creative initializes a session.
+     * @param autoStart true to start the creative once initialized
+     */
+    fun load(autoStart: Boolean = true) {
+        _autoStart = autoStart
         createWebView()
     }
 
+    /**
+     * Start the loaded creative
+     */
+    fun start() {
+        if (!_initialized) {
+            // start() my be called before creative has been fully initialized, then start it automatically when ready
+            _autoStart = true
+            return
+        }
+        startCreative()
+    }
+
+    /**
+     * Stop and reset the SIMID controller
+     */
     fun reset() {
         stopAd()
     }
 
+    /**
+     * Notify the SIMID controller any changes any of ad components’ size
+     * @param playerDimensions the new player dimensions
+     * @param creativeDimensions the new creative dimensions
+     * @param fullscreen true if in fullscreen mode
+     */
+    fun notifyResize(playerDimensions: Rect, creativeDimensions: Rect, fullscreen: Boolean) {
+        if (!this._initialized) {
+            return
+        }
+        val args = PlayerResizeMessageArgs(dimensions(playerDimensions), dimensions(creativeDimensions), fullscreen)
+        this.sendMessage(PlayerMessage.RESIZE, args)
+    }
+
     override fun postMessage(message: String) {
-        Log.v(TAG, "[SIMID] Send message: $message")
+        Log.v(TAG, "[SIMID][Player][S]: $message")
 
         val script =
             """
-            console.log('[Android] postMessage', '$message')
             window.originalPostMessage('$message', '*');
             """.trimIndent()
 
@@ -128,6 +177,8 @@ public open class SimidController (
         this.addMessageListener(CreativeMessage.REQUEST_RESIZE, ::onCreativeRequestResize)
         this.addMessageListener(CreativeMessage.REQUEST_SKIP, ::onCreativeRequestSkip)
         this.addMessageListener(CreativeMessage.REQUEST_STOP, ::onCreativeRequestStop)
+        this.addMessageListener(CreativeMessage.EXPAND_NONLINEAR, ::onCreativeExpandNonlinear)
+        this.addMessageListener(CreativeMessage.COLLAPSE_NONLINEAR, ::onCreativeCollapseNonlinear)
     }
 
     //region CREATIVE MESSAGE HANDLERS
@@ -150,28 +201,72 @@ public open class SimidController (
     }
 
     private fun onCreativeRequestPause(message: Message) {
+        if (!_initialized) {
+            Log.w(TAG, "Session not initialized, requestPause ignored")
+            return
+        }
         if (onPauseMedia?.invoke() == true) resolveMessage(message) else rejectMessage(message)
     }
 
     private fun onCreativeRequestPlay(message: Message) {
+        if (!_initialized) {
+            Log.w(TAG, "Session not initialized, requestPlay ignored")
+            return
+        }
         if (onPlayMedia?.invoke() == true) resolveMessage(message) else rejectMessage(message)
     }
 
     private fun onCreativeRequestResize(message: Message) {
+        if (onResizeSimid == null || onResizePlayer == null) {
+            this.rejectMessage(message, PlayerErrorCode.UNSPECIFIED, "Resize not supported by the player")
+            return
+        }
         val args: CreativeRequestResizeMessageArgs = Gson().fromJson(message.args.toString(), CreativeRequestResizeMessageArgs::class.java)
 
         var dim = args.creativeDimensions
         val creativeRect = Rect(dim.x, dim.y, dim.x + dim.width, dim.y + dim.height)
         // Resize SIMID iframe
         if (onResizeSimid?.invoke(creativeRect) == false) {
-            rejectMessage(message)
-        } else {
-            // Then if successfull, resize the main player
-            dim = args.mediaDimensions
-            val playerRect = Rect(dim.x, dim.y, dim.x + dim.width, dim.y + dim.height)
-            onResizePlayer?.invoke(playerRect)
-            resolveMessage(message)
+            rejectMessage(message, PlayerErrorCode.UNSPECIFIED, "The player is unable to complete the Creative resizing")
+            return
         }
+        // Store creative dimensions (reused when collapsed)
+        this.creativeDimensions = creativeRect
+
+        // If creative successfully resized then resize the main player
+        dim = args.mediaDimensions
+        val playerRect = Rect(dim.x, dim.y, dim.x + dim.width, dim.y + dim.height)
+        onResizePlayer?.invoke(playerRect)
+
+        resolveMessage(message)
+    }
+
+    private fun onCreativeExpandNonlinear(message: Message) {
+        if (!_initialized) {
+            Log.w(TAG, "Session not initialized, expandNonlinear ignored")
+            return
+        }
+        // Under normal circumstances, the player pauses the media.
+        // In cases when the content is video, the player resizes the creative iframe to the dimensions of the video
+        // and places the expanded creative at video zero coordinates.
+        onPauseMedia?.invoke()
+        if (onResizeSimid?.invoke(playerDimensions) == true)
+            resolveMessage(message) else
+                rejectMessage(message, PlayerErrorCode.UNSPECIFIED, "Unable to expand nonlinear ad")
+    }
+
+    private fun onCreativeCollapseNonlinear(message: Message) {
+        if (!_initialized) {
+            Log.w(TAG, "Session not initialized, collapseNonlinear ignored")
+            return
+        }
+        // Under normal circumstances, the player pauses the media.
+        // In cases when the content is video, the player resizes the creative iframe to the dimensions of the video
+        // and places the expanded creative at video zero coordinates.
+        onPlayMedia?.invoke()
+        if (onResizeSimid?.invoke(creativeDimensions) == true)
+            resolveMessage(message) else
+            rejectMessage(message, PlayerErrorCode.UNSPECIFIED, "Unable to collapse nonlinear ad")
     }
 
     private fun onCreativeRequestSkip(message: Message) {
@@ -201,6 +296,7 @@ public open class SimidController (
                         RelativeLayout.LayoutParams.MATCH_PARENT
                     )
                     setPadding(0, 0, 0, 0)
+                    visibility = View.GONE
                     isFocusable = true
                     isFocusableInTouchMode = true
                     webViewClient = WebViewClient()
@@ -228,7 +324,6 @@ public open class SimidController (
                             console.log("[Android] override postMessage")
                             window.originalPostMessage = window.postMessage;
                             window.postMessage = function(message) {
-                                console.log("[Creative] postMessage:", message)
                                 // Send the message to the Android interface
                                 Android.postMessage(message);
                             };
@@ -259,18 +354,15 @@ public open class SimidController (
     private fun sendInitMessage() {
         // [4] - send Player:init message
 
-        // Since the creative starts as hidden it will take on the main player/video element dimensions, so tell the ad about those dimensions
-        val videoDimensions = Dimensions(mainPlayerDimensions.top, mainPlayerDimensions.left, mainPlayerDimensions.width(), mainPlayerDimensions.height())
-
         val environmentData = EnvironmentData(
-            videoDimensions,
-            videoDimensions,
+            dimensions(playerDimensions),
+            dimensions(creativeDimensions),
             false,
             true,
             true,
             if (adSkippable) SkippableState.AD_HANDLES else SkippableState.NOT_SKIPPABLE,
             null,
-            version,
+            protocolVersion,
             null, // This is not relevant on desktop
             null, // This should be filled in for sdks and players
             null, // This should be filled in on mobile
@@ -279,7 +371,7 @@ public open class SimidController (
             1.0F, // player.volume,
             null, // NavigationSupport.NOT_SUPPORTED,
             null, // CloseButtonSupport.AD_HANDLES,
-            null // _duration / 1000.0,
+            adDuration
         )
 
         // Escape characters to avoid JSON parsing failure in Creative
@@ -291,7 +383,10 @@ public open class SimidController (
         try {
             mainScope.launch {
                 sendMessage(PlayerMessage.INIT, args).await()
-                startCreative()
+                _initialized = true
+                if (_autoStart) {
+                    startCreative()
+                }
             }
         } catch (e: Exception) {
             Log.v(TAG, "Init failed: " + e.message)
@@ -309,7 +404,7 @@ public open class SimidController (
             mainScope.launch {
                 sendMessage(PlayerMessage.START_CREATIVE).await()
                 onShowSimid?.invoke(true)
-                startPollingMediaState()
+                startMediaTimeupdateInterval()
             }
         } catch (e: Exception) {
             Log.v(TAG, "Failed to start creative: " + e.message)
@@ -335,32 +430,39 @@ public open class SimidController (
      * Remove and destroy the SIMID creative iframe and resumes video playback.
      */
     private fun stopSession(skipped: Boolean = false, reason: Int = StopCode.PLAYER_INITATED) {
-        if (_isStopping) {
+        if (_isStopping || webView == null) {
+            resetSession()
             return
         }
         _isStopping = true
-        stopPollingMediaState()
+        stopMediaTimeupdateInterval()
         onShowSimid?.invoke(false)
 
         completeAd(skipped)
 
         // Wait for the SIMID creative to acknowledge stop and then clean up the iframe.
         mainScope.launch {
-            if (skipped) {
-                sendMessage(PlayerMessage.AD_SKIPPED).await()
-            } else {
-                val args = PlayerAdStoppedMessageArgs(reason)
-                sendMessage(PlayerMessage.AD_STOPPED, args).await()
+            if (_initialized) {
+                (when (skipped) {
+                    true -> sendMessage(PlayerMessage.AD_SKIPPED)
+                    false -> sendMessage(PlayerMessage.AD_STOPPED, PlayerAdStoppedMessageArgs(reason))
+                }).await()
             }
-            // Delete webview since issue with clearing webview content (loadUrl("about:blank"))
-            webView = null
+            clearWebView()
             resetSession()
         }
     }
 
+    private fun clearWebView() {
+        webView?.loadUrl("about:blank")
+        webView?.clearHistory()
+        webView?.clearCache(true)
+        webView = null
+    }
+
     private fun completeAd(skipped: Boolean = false) {
         // Resize the main player to its original dimensions
-        onResizePlayer?.invoke(mainPlayerDimensions)
+        onResizePlayer?.invoke(playerDimensions)
 
         // Notify player ad is complete, if skipped this enable player to seek after the current linear ad
         onComplete?.invoke(skipped)
@@ -370,15 +472,18 @@ public open class SimidController (
     }
 
     //region MAIN VIDEO STATE
-    private fun startPollingMediaState() {
-        stopPollingMediaState()
+    private fun startMediaTimeupdateInterval() {
+        stopMediaTimeupdateInterval()
 
+        if (mediaTimeupdateInterval == -1L) {
+            return
+        }
         if (adDuration <= 0) {
             return
         }
 
-        _timerMediaState = Timer()
-        _timerMediaState?.schedule(object : TimerTask() {
+        _timerMediaTimeupdate = Timer()
+        _timerMediaTimeupdate?.schedule(object : TimerTask() {
             override fun run() {
                 activity.runOnUiThread {
                     val mediaState = onGetMediaState?.invoke()
@@ -387,22 +492,29 @@ public open class SimidController (
                     }
                 }
             }
-        }, MEDIA_STATE_POLL_INTERVAL_MS, MEDIA_STATE_POLL_INTERVAL_MS)
+        }, mediaTimeupdateInterval, mediaTimeupdateInterval)
     }
 
-    private fun stopPollingMediaState() {
-        _timerMediaState?.cancel()
-        _timerMediaState = null
+    private fun stopMediaTimeupdateInterval() {
+        _timerMediaTimeupdate?.cancel()
+        _timerMediaTimeupdate = null
     }
 
     private fun mediaTimeUpdated(currentTime: Float) {
-        // For non-linear ads, stop the ad once requested duration is over
+
+        this.sendMessage(MediaMessage.TIME_UPDATE, MediaTimeUpdateMessageArgs(currentTime))
+
+        // For nonlinear ads, stop the ad once requested duration is over
         if (adDuration > 0 &&
             _nonLinearStartTime > 0 &&
             currentTime - _nonLinearStartTime > adDuration) {
             _nonLinearStartTime = 0.0F
             stopAd(StopCode.NON_LINEAR_DURATION_COMPLETE)
         }
+    }
+
+    private fun dimensions(rect: Rect): Dimensions {
+        return Dimensions(rect.top, rect.left, rect.width(), rect.height())
     }
     //endregion MAIN VIDEO STATE
 }

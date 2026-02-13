@@ -11,27 +11,27 @@ object ProtocolMessage {
 const val SIMID_NS = "SIMID:"
 
 object MediaMessage {
-    const val DURATION_CHANGE = "Media:durationchange"
-    const val ENDED = "Media:ended"
-    const val ERROR = "Media:error"
-    const val PAUSE = "Media:pause"
-    const val PLAY = "Media:play"
-    const val PLAYING = "Media:playing"
-    const val SEEKED = "Media:seeked"
-    const val SEEKING = "Media:seeking"
-    const val STALLED = "Media:stalled"
-    const val TIME_UPDATE = "Media:timeupdate"
-    const val VOLUME_CHANGE = "Media:volumechange"
+    const val DURATION_CHANGE = "SIMID:Media:durationchange"
+    const val ENDED = "SIMID:Media:ended"
+    const val ERROR = "SIMID:Media:error"
+    const val PAUSE = "SIMID:Media:pause"
+    const val PLAY = "SIMID:Media:play"
+    const val PLAYING = "SIMID:Media:playing"
+    const val SEEKED = "SIMID:Media:seeked"
+    const val SEEKING = "SIMID:Media:seeking"
+    const val STALLED = "SIMID:Media:stalled"
+    const val TIME_UPDATE = "SIMID:Media:timeupdate"
+    const val VOLUME_CHANGE = "SIMID:Media:volumechange"
 }
 
 object PlayerMessage {
-    const val AD_SKIPPED = "Player:adSkipped"
-    const val AD_STOPPED = "Player:adStopped"
-    const val FATAL_ERROR = "Player:fatalError"
-    const val INIT = "Player:init"
-    const val LOG = "Player:log"
-    const val RESIZE = "Player:resize"
-    const val START_CREATIVE = "Player:startCreative"
+    const val AD_SKIPPED = "SIMID:Player:adSkipped"
+    const val AD_STOPPED = "SIMID:Player:adStopped"
+    const val FATAL_ERROR = "SIMID:Player:fatalError"
+    const val INIT = "SIMID:Player:init"
+    const val LOG = "SIMID:Player:log"
+    const val RESIZE = "SIMID:Player:resize"
+    const val START_CREATIVE = "SIMID:Player:startCreative"
 }
 
 object VideoEvent {
@@ -50,24 +50,24 @@ object VideoEvent {
 
 /** Messages from the creative */
 object CreativeMessage {
-    const val CLICK_THRU = "Creative:clickThru"
-    const val EXPAND_NONLINEAR = "Creative:expandNonlinear"
-    const val COLLAPSE_NONLINEAR = "Creative:collapseNonlinear"
-    const val FATAL_ERROR = "Creative:fatalError"
-    const val GET_MEDIA_STATE = "Creative:getMediaState"
-    const val LOG = "Creative:log"
-    const val READY = "Creative:Ready"
-    const val REPORT_TRACKING = "Creative:reportTracking"
-    const val REQUEST_FULL_SCREEN = "Creative:requestFullScreen"
-    const val REQUEST_SKIP = "Creative:requestSkip"
-    const val REQUEST_STOP = "Creative:requestStop"
-    const val REQUEST_PAUSE = "Creative:requestPause"
-    const val REQUEST_PLAY = "Creative:requestPlay"
-    const val REQUEST_RESIZE = "Creative:requestResize"
-    const val REQUEST_VOLUME = "Creative:requestVolume"
-    const val REQUEST_TRACKING = "Creative:reportTracking"
-    const val REQUEST_CHANGE_AD_DURATION = "Creative:requestChangeAdDuration"
-    const val REQUEST_VIDEO_LOCATION = "Creative:requestVideoLocation"
+    const val CLICK_THRU = "SIMID:Creative:clickThru"
+    const val EXPAND_NONLINEAR = "SIMID:Creative:expandNonlinear"
+    const val COLLAPSE_NONLINEAR = "SIMID:Creative:collapseNonlinear"
+    const val FATAL_ERROR = "SIMID:Creative:fatalError"
+    const val GET_MEDIA_STATE = "SIMID:Creative:getMediaState"
+    const val LOG = "SIMID:Creative:log"
+    const val READY = "SIMID:Creative:Ready"
+    const val REPORT_TRACKING = "SIMID:Creative:reportTracking"
+    const val REQUEST_FULL_SCREEN = "SIMID:Creative:requestFullScreen"
+    const val REQUEST_SKIP = "SIMID:Creative:requestSkip"
+    const val REQUEST_STOP = "SIMID:Creative:requestStop"
+    const val REQUEST_PAUSE = "SIMID:Creative:requestPause"
+    const val REQUEST_PLAY = "SIMID:Creative:requestPlay"
+    const val REQUEST_RESIZE = "SIMID:Creative:requestResize"
+    const val REQUEST_VOLUME = "SIMID:Creative:requestVolume"
+    const val REQUEST_TRACKING = "SIMID:Creative:reportTracking"
+    const val REQUEST_CHANGE_AD_DURATION = "SIMID:Creative:requestChangeAdDuration"
+    const val REQUEST_VIDEO_LOCATION = "SIMID:Creative:requestVideoLocation"
 }
 
 /**
@@ -218,7 +218,7 @@ data class VolumeChangeMessageArgs(
 // Media message args
 
 data class MediaDurationChangeMessageArgs(
-    val duration: Int
+    val duration: Float
 )
 
 data class MediaErrorMessageArgs(
@@ -227,7 +227,7 @@ data class MediaErrorMessageArgs(
 )
 
 data class MediaTimeUpdateMessageArgs(
-    val currentTime: Int
+    val currentTime: Float
 )
 
 data class MediaVolumeChangeMessageArgs(
@@ -267,7 +267,7 @@ data class EnvironmentData(
     val volume: Float?,
     val navigationSupport: String?,
     val closeButtonSupport: String?,
-    val nonlinearDuration: Double?
+    val nonlinearDuration: Float?
 )
 
 data class PlayerInitMessageArgs(
@@ -315,11 +315,11 @@ data class CreativeReportTrackingMessageArgs(
 )
 
 data class CreativeRequestChangeAdDurationMessageArgs(
-    val duration: Int
+    val duration: Float
 )
 
 data class CreativeRequestChangeVolumeMessageArgs(
-    val volume: Int,
+    val volume: Float,
     val muted: Boolean
 )
 

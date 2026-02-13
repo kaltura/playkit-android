@@ -16,8 +16,27 @@ public class KalturaSimidController extends SimidController {
         this.controller = controller;
     }
 
-    public KalturaSimidController(@NonNull Activity activity, @NonNull Context context, @NonNull Rect mainPlayerDimensions, @NonNull String creativeUri, @NonNull String adParameters, float adDuration, boolean adSkippable) {
-        super(activity, context, mainPlayerDimensions, creativeUri, adParameters, adDuration, adSkippable);
+    public KalturaSimidController(@NonNull Activity activity,
+                                  @NonNull Context context,
+                                  @NonNull Rect playerDimensions,
+                                  @NonNull Rect creativeDimensions,
+                                  @NonNull String creativeUri,
+                                  @NonNull String adParameters,
+                                  float adDuration,
+                                  boolean adSkippable) {
+        super(activity, context, playerDimensions, creativeDimensions, creativeUri, adParameters, adDuration, adSkippable, MEDIA_TIMEUPDATE_INTERVAL_MS);
+    }
+
+    public KalturaSimidController(@NonNull Activity activity,
+                                  @NonNull Context context,
+                                  @NonNull Rect playerDimensions,
+                                  @NonNull Rect creativeDimensions,
+                                  @NonNull String creativeUri,
+                                  @NonNull String adParameters,
+                                  float adDuration,
+                                  boolean adSkippable,
+                                  long mediaTimeUpdateInterval) {
+        super(activity, context, playerDimensions, creativeDimensions, creativeUri, adParameters, adDuration, adSkippable, mediaTimeUpdateInterval);
     }
 
     @Override
