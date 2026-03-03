@@ -72,7 +72,6 @@ import com.kaltura.androidx.media3.datasource.ByteArrayDataSink;
 import com.kaltura.androidx.media3.datasource.DataSource;
 import com.kaltura.androidx.media3.datasource.DataSpec;
 import com.kaltura.androidx.media3.exoplayer.upstream.DefaultAllocator;
-import com.kaltura.androidx.media3.exoplayer.upstream.DefaultBandwidthMeter;
 import com.kaltura.androidx.media3.datasource.DefaultDataSource;
 import com.kaltura.androidx.media3.datasource.DefaultHttpDataSource;
 import com.kaltura.androidx.media3.datasource.HttpDataSource;
@@ -151,6 +150,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
     private PKTracks tracks;
     private List<EventStream> eventStreams;
+    private Map<Integer, List<EventStream>> eventStreamsMap;
     private Timeline.Window window;
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
@@ -1010,10 +1010,21 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
 
             if (player.getCurrentManifest() instanceof DashManifest) {
                 if (((DashManifest) player.getCurrentManifest()).getPeriodCount() > 0) {
-                    List<EventStream> eventStreamList = ((DashManifest) player.getCurrentManifest()).getPeriod(0).eventStreams;
+                    List<EventStream> eventStreamList = new ArrayList<>();
+                    Map<Integer, List<EventStream>> eventStreamListMap = new HashMap<>();
+                    for (int periodIndex = 0; periodIndex < ((DashManifest) player.getCurrentManifest()).getPeriodCount(); periodIndex++) {
+                        if (!((DashManifest) player.getCurrentManifest()).getPeriod(periodIndex).eventStreams.isEmpty()) {
+                            eventStreamListMap.put(periodIndex, ((DashManifest) player.getCurrentManifest()).getPeriod(periodIndex).eventStreams);
+                            eventStreamList.addAll(((DashManifest) player.getCurrentManifest()).getPeriod(periodIndex).eventStreams);
+                        }
+                    }
                     if (!eventStreamList.isEmpty()) {
                         eventStreams = eventStreamList;
                         sendDistinctEvent(PlayerEvent.Type.EVENT_STREAM_CHANGED);
+                    }
+                    if (!eventStreamListMap.isEmpty()) {
+                        eventStreamsMap = eventStreamListMap;
+                        sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_AVAILABLE);
                     }
                 }
             }
@@ -1248,6 +1259,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
             }
         }
         return positionInWindowMs;
+    }
+
+    @Override
+    public int getCurrentPeriodIndex() {
+        if (player != null) {
+            return player.getCurrentPeriodIndex();
+        }
+        return 0;
     }
 
     @Override
@@ -1780,6 +1799,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
                 eventStreams = eventStreamList;
                 sendDistinctEvent(PlayerEvent.Type.EVENT_STREAM_CHANGED);
             }
+
+            @Override
+            public void onEventStreamsAvailable(Map<Integer, List<EventStream>> eventStreamListMap) {
+                eventStreamsMap = eventStreamListMap;
+                sendDistinctEvent(PlayerEvent.Type.EVENT_STREAMS_AVAILABLE);
+            }
         };
     }
 
@@ -1845,6 +1870,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     @Override
     public List<EventStream> getEventStreams() {
         return eventStreams;
+    }
+
+    @Override
+    public Map<Integer, List<EventStream>> getEventStreamsMap() {
+        return eventStreamsMap;
     }
 
     @Override

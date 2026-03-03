@@ -56,6 +56,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public int getCurrentPeriodIndex() {
+        return player.getCurrentPeriodIndex();
+    }
+
+    @Override
     public long getPositionInWindowMs() {
         return player.getPositionInWindowMs();
     }
