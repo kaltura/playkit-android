@@ -102,6 +102,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void updatePreferredTracksLanguage() {
+        playerEngine.updatePreferredTracksLanguage();
+    }
+
+    @Override
     public void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers) {
         playerEngine.updateLoadControlBuffers(loadControlBuffers);
     }

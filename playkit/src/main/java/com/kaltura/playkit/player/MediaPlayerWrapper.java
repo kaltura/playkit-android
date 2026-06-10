@@ -302,6 +302,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
+    public void updatePreferredTracksLanguage() {
+        // Do Nothing
+    }
+
+    @Override
     public void overrideMediaVideoCodec() {
         // Do Nothing
     }

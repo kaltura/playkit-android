@@ -141,6 +141,11 @@ public interface PlayerEngine {
     void changeTrack(String uniqueId);
 
     /**
+     * Update preferred tracks language from settings
+     */
+    void updatePreferredTracksLanguage();
+
+    /**
      * Override media for video tracks with ABR
      *
      * @param minAbr - min ABR Value.

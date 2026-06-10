@@ -1431,6 +1431,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.Listener, Metadata
     }
 
     @Override
+    public void updatePreferredTracksLanguage() {
+        log.v("updatePreferredTracksLanguage");
+        if (tracks != null) {
+            selectPreferredTracksLanguage(tracks);
+        }
+    }
+
+    @Override
     public void changeTrack(String uniqueId) {
         if (assertTrackSelectionIsNotNull("changeTrack()")) {
             try {

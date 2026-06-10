@@ -333,6 +333,12 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updatePreferredTracksLanguage() {
+        log.v("updatePreferredTracksLanguage");
+        player.updatePreferredTracksLanguage();
+    }
+
+    @Override
     public void stop() {
         log.v("stop");
         if (eventListener != null && !isPlayerStopped) {
