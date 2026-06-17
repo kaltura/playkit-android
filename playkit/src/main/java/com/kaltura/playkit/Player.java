@@ -526,11 +526,6 @@ public interface Player {
     void destroy();
 
     /**
-     * Update preferred tracks language from settings
-     */
-    void updatePreferredTracksLanguage();
-
-    /**
      * stop player and back to initial playback state.
      */
     void stop();

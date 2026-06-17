@@ -276,11 +276,6 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void updatePreferredTracksLanguage() {
-        player.updatePreferredTracksLanguage();
-    }
-
-    @Override
     public void disableVideoTracks(boolean isDisabled) {
         player.disableVideoTracks(isDisabled);
     }
